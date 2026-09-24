@@ -1,0 +1,8 @@
+import type { Plan } from "@/lib/types";
+
+export const plans: Plan[] = [
+  { id: "starter", name: "Starter", priceMonthly: 12, credits: 300, features: { generations: "300 AI generations / mo", projects: "3 projects", brandKits: "1 brand kit", campaigns: "2 campaigns", videoGenerations: "5 video generations", teamMembers: "1 member" }, highlights: ["Image generator", "Copywriter", "Basic templates"] },
+  { id: "creator", name: "Creator", priceMonthly: 29, credits: 1000, features: { generations: "1,000 AI generations / mo", projects: "Unlimited projects", brandKits: "3 brand kits", campaigns: "10 campaigns", videoGenerations: "30 video generations", teamMembers: "2 members" }, highlights: ["Everything in Starter", "Video + UGC creator", "AI product shoot", "All templates"], popular: true },
+  { id: "studio", name: "Studio", priceMonthly: 59, credits: 3000, features: { generations: "3,000 AI generations / mo", projects: "Unlimited projects", brandKits: "10 brand kits", campaigns: "Unlimited campaigns", videoGenerations: "100 video generations", teamMembers: "5 members" }, highlights: ["Everything in Creator", "Campaign builder + calendar", "Export center (4K)", "Priority rendering"] },
+  { id: "agency", name: "Agency", priceMonthly: 149, credits: 10000, features: { generations: "10,000 AI generations / mo", projects: "Unlimited projects", brandKits: "Unlimited brand kits", campaigns: "Unlimited campaigns", videoGenerations: "Unlimited video generations", teamMembers: "Unlimited members" }, highlights: ["Everything in Studio", "Client workspaces", "Roles + permissions", "Dedicated support"] },
+];

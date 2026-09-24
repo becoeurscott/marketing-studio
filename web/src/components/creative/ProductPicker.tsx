@@ -1,0 +1,82 @@
+"use client";
+
+import { Check, ImagePlus, Loader2, Upload } from "lucide-react";
+import { useMemo, useRef, useState, type DragEvent } from "react";
+import { useToast } from "@/components/ui/Toast";
+import { uploadProduct } from "@/lib/api";
+import { useStore } from "@/lib/store";
+import type { Asset } from "@/lib/types";
+import { cn } from "@/lib/utils";
+
+/**
+ * Pick a product image from the asset library, or upload one (mock).
+ * Compact grid meant for the inspector; `limit` caps the visible assets.
+ */
+export function ProductPicker({ value, onChange, limit = 8, allowUpload = true }: { value: string | null; onChange: (asset: Asset) => void; limit?: number; allowUpload?: boolean }) {
+  const assets = useStore((s) => s.assets);
+  const currentProjectId = useStore((s) => s.currentProjectId);
+  const toast = useToast();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState<number | null>(null);
+  const [drag, setDrag] = useState(false);
+
+  const images = useMemo(() => {
+    const list = assets.filter((a) => a.type === "image");
+    // Current project first, then the rest.
+    return [...list.filter((a) => a.projectId === currentProjectId), ...list.filter((a) => a.projectId !== currentProjectId)].slice(0, limit);
+  }, [assets, currentProjectId, limit]);
+
+  async function handleFiles(files: FileList | null) {
+    const f = files?.[0];
+    if (!f) return;
+    setUploading(0);
+    try {
+      const asset = await uploadProduct({ name: f.name, size: f.size }, setUploading);
+      onChange(asset);
+      toast.success("Product uploaded", asset.name);
+    } catch {
+      toast.error("Upload failed", "Please try again.");
+    } finally {
+      setUploading(null);
+    }
+  }
+  function onDrop(e: DragEvent) {
+    e.preventDefault();
+    setDrag(false);
+    void handleFiles(e.dataTransfer.files);
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-4 gap-2">
+        {allowUpload && (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+            onDragLeave={() => setDrag(false)}
+            onDrop={onDrop}
+            className={cn("aspect-square rounded-md border border-dashed flex flex-col items-center justify-center gap-1 text-muted hover:text-text hover:border-white/30 transition-colors", drag ? "border-accent text-highlight bg-accent/10" : "border-border-strong")}
+            aria-label="Upload product photo"
+          >
+            {uploading !== null ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+            <span className="text-[10px]">{uploading !== null ? `${uploading}%` : "Upload"}</span>
+          </button>
+        )}
+        {images.map((a) => {
+          const selected = a.id === value;
+          return (
+            <button key={a.id} type="button" onClick={() => onChange(a)} title={a.name} className={cn("relative aspect-square rounded-md overflow-hidden border transition-all", selected ? "border-accent ring-2 ring-accent/40" : "border-border hover:border-white/25")}>
+              <img src={a.thumbnail} alt={a.name} className="size-full object-cover" />
+              {selected && <span className="absolute top-1 right-1 size-4 rounded-full bg-accent text-white flex items-center justify-center"><Check className="size-3" /></span>}
+            </button>
+          );
+        })}
+        {!images.length && !allowUpload && (
+          <div className="col-span-4 text-xs text-muted flex items-center gap-2"><ImagePlus className="size-4" /> No product images yet.</div>
+        )}
+      </div>
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
+    </div>
+  );
+}

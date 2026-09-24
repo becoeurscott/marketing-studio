@@ -1,0 +1,175 @@
+"use client";
+
+import { CheckCircle2, Download, FileImage, FileText, FileVideo, Package } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { ProgressBar } from "@/components/ui/ProgressIndicator";
+import { Select } from "@/components/ui/Select";
+import { useToast } from "@/components/ui/Toast";
+import { exportAssets, type ExportParams } from "@/lib/api";
+import { useStore } from "@/lib/store";
+import type { Asset, ID } from "@/lib/types";
+import { cn } from "@/lib/utils";
+
+type Format = ExportParams["format"];
+type Quality = ExportParams["quality"];
+type Scope = "selected" | "campaign";
+
+const FORMATS: { id: Format; label: string; icon: typeof FileImage; hint: string }[] = [
+  { id: "png", label: "PNG", icon: FileImage, hint: "Lossless, transparent" },
+  { id: "jpg", label: "JPG", icon: FileImage, hint: "Small, web-ready" },
+  { id: "mp4", label: "MP4", icon: FileVideo, hint: "Video, H.264" },
+  { id: "pdf", label: "PDF", icon: FileText, hint: "Print or deck" },
+];
+const QUALITIES: { id: Quality; label: string; hint: string }[] = [
+  { id: "standard", label: "Standard", hint: "1x · fast" },
+  { id: "high", label: "High", hint: "2x · recommended" },
+  { id: "maximum", label: "Maximum", hint: "4x · largest file" },
+];
+
+export interface ExportModalProps {
+  open: boolean;
+  onClose: () => void;
+  /** Preselected asset ids (scope "selected"). */
+  assetIds?: ID[];
+  /** When given, the "Export campaign" scope is available and preselected. */
+  campaignId?: ID;
+  onComplete?: (asset: Asset) => void;
+}
+
+/** Export Center (SPEC §35). Reused by the assets grid, campaign workspace and /assets/export. */
+export function ExportModal({ open, onClose, assetIds = [], campaignId, onComplete }: ExportModalProps) {
+  return (
+    <Modal open={open} onClose={onClose} title="Export center" description="Choose a format and quality. Exports are packaged as a new asset." size="lg">
+      <ExportForm key={`${open}-${campaignId ?? ""}-${assetIds.join(",")}`} assetIds={assetIds} campaignId={campaignId} onClose={onClose} onComplete={onComplete} />
+    </Modal>
+  );
+}
+
+/** The export form without the modal chrome (used by /assets/export). */
+export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded }: { assetIds: ID[]; campaignId?: ID; onClose?: () => void; onComplete?: (asset: Asset) => void; embedded?: boolean }) {
+  const toast = useToast();
+  const assets = useStore((s) => s.assets);
+  const campaigns = useStore((s) => s.campaigns);
+  const [format, setFormat] = useState<Format>("png");
+  const [quality, setQuality] = useState<Quality>("high");
+  const [scope, setScope] = useState<Scope>(campaignId ? "campaign" : "selected");
+  const [pickedCampaign, setPickedCampaign] = useState<ID>(campaignId ?? campaigns[0]?.id ?? "");
+  const [progress, setProgress] = useState<{ pct: number; label: string } | null>(null);
+  const [done, setDone] = useState<Asset | null>(null);
+
+  const campaign = campaigns.find((c) => c.id === pickedCampaign);
+  const ids = scope === "campaign" ? (campaign?.assetIds ?? []) : assetIds;
+  const picked = ids.map((id) => assets.find((a) => a.id === id)).filter((a): a is Asset => Boolean(a));
+  const hasVideo = picked.some((a) => a.type === "video");
+
+  const run = async () => {
+    if (ids.length === 0) return;
+    setProgress({ pct: 0, label: "Preparing" });
+    try {
+      const asset = await exportAssets({ assetIds: ids, format, quality, campaignId: scope === "campaign" ? pickedCampaign : undefined }, (pct, label) => setProgress({ pct, label }));
+      setDone(asset);
+      onComplete?.(asset);
+      toast.success("Export complete", `${asset.name} was added to your assets.`);
+    } catch (e) {
+      setProgress(null);
+      toast.error("Something went wrong.", e instanceof Error ? e.message : undefined);
+    }
+  };
+
+  if (done) {
+    return (
+      <div className="text-center py-6">
+        <CheckCircle2 className="size-12 text-success mx-auto" />
+        <h3 className="text-lg font-semibold mt-3">Export ready</h3>
+        <p className="text-sm text-text2 mt-1">{done.name} · {ids.length} item{ids.length === 1 ? "" : "s"} · {format.toUpperCase()} · {quality}</p>
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <Button leftIcon={<Download className="size-4" />} onClick={() => toast.info("Download started", done.name)}>Download</Button>
+          <Link href={`/assets/${done.id}`}><Button variant="secondary" onClick={onClose}>View in assets</Button></Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (progress) {
+    return (
+      <div className="py-8 max-w-sm mx-auto text-center">
+        <Package className="size-8 text-highlight mx-auto animate-pulse" />
+        <p className="text-sm font-medium mt-3">{progress.label}…</p>
+        <ProgressBar value={progress.pct} className="mt-4" />
+        <p className="text-xs text-muted mt-3">{ids.length} item{ids.length === 1 ? "" : "s"} · {format.toUpperCase()} · {quality}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Scope */}
+      <div>
+        <p className="text-[13px] font-medium text-text2 mb-2">What to export</p>
+        <div className="grid sm:grid-cols-2 gap-2">
+          <ScopeCard selected={scope === "selected"} onClick={() => setScope("selected")} title="Export selected" hint={`${assetIds.length} asset${assetIds.length === 1 ? "" : "s"} selected`} disabled={assetIds.length === 0} />
+          <ScopeCard selected={scope === "campaign"} onClick={() => setScope("campaign")} title="Export campaign" hint={campaign ? `${campaign.assetIds.length} assets in ${campaign.name}` : "No campaign"} disabled={campaigns.length === 0} />
+        </div>
+        {scope === "campaign" && !campaignId && (
+          <Select className="mt-2" compact aria-label="Campaign" value={pickedCampaign} onChange={(e) => setPickedCampaign(e.target.value)} options={campaigns.map((c) => ({ value: c.id, label: c.name }))} />
+        )}
+      </div>
+
+      {/* Format */}
+      <div>
+        <p className="text-[13px] font-medium text-text2 mb-2">Format</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {FORMATS.map((f) => (
+            <button key={f.id} type="button" onClick={() => setFormat(f.id)} aria-pressed={format === f.id} className={cn("rounded-lg border p-3 text-left transition-colors", format === f.id ? "border-accent bg-accent/10" : "border-border-strong bg-surface hover:border-white/25")}>
+              <f.icon className={cn("size-4 mb-2", format === f.id ? "text-highlight" : "text-text2")} />
+              <span className="block text-sm font-semibold">{f.label}</span>
+              <span className="block text-[11px] text-muted">{f.hint}</span>
+            </button>
+          ))}
+        </div>
+        {hasVideo && format !== "mp4" && <p className="text-xs text-warning mt-2">Videos in this selection will be exported as poster frames. Choose MP4 to keep motion.</p>}
+      </div>
+
+      {/* Quality */}
+      <div>
+        <p className="text-[13px] font-medium text-text2 mb-2">Quality</p>
+        <div className="grid grid-cols-3 gap-2">
+          {QUALITIES.map((q) => (
+            <button key={q.id} type="button" onClick={() => setQuality(q.id)} aria-pressed={quality === q.id} className={cn("rounded-lg border p-3 text-left transition-colors", quality === q.id ? "border-accent bg-accent/10" : "border-border-strong bg-surface hover:border-white/25")}>
+              <span className="block text-sm font-semibold">{q.label}</span>
+              <span className="block text-[11px] text-muted">{q.hint}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Preview strip */}
+      {picked.length > 0 && (
+        <div>
+          <p className="text-[13px] font-medium text-text2 mb-2">Included · {picked.length}</p>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            {picked.slice(0, 12).map((a) => <img key={a.id} src={a.thumbnail} alt="" className="size-14 rounded-md object-cover border border-border shrink-0" />)}
+            {picked.length > 12 && <span className="size-14 rounded-md bg-elevated border border-border text-xs text-text2 flex items-center justify-center shrink-0">+{picked.length - 12}</span>}
+          </div>
+        </div>
+      )}
+
+      <div className={cn("flex items-center justify-end gap-2", !embedded && "pt-2")}>
+        {onClose && <Button variant="ghost" onClick={onClose}>Cancel</Button>}
+        <Button leftIcon={<Download className="size-4" />} disabled={ids.length === 0} onClick={run}>Export {ids.length > 0 ? `${ids.length} item${ids.length === 1 ? "" : "s"}` : ""}</Button>
+      </div>
+    </div>
+  );
+}
+
+function ScopeCard({ selected, onClick, title, hint, disabled }: { selected: boolean; onClick: () => void; title: string; hint: string; disabled?: boolean }) {
+  return (
+    <button type="button" disabled={disabled} onClick={onClick} aria-pressed={selected} className={cn("rounded-lg border p-3 text-left transition-colors disabled:opacity-40", selected ? "border-accent bg-accent/10" : "border-border-strong bg-surface hover:border-white/25")}>
+      <span className="block text-sm font-semibold">{title}</span>
+      <span className="block text-[11px] text-muted mt-0.5">{hint}</span>
+    </button>
+  );
+}
