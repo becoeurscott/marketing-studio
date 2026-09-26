@@ -9,11 +9,11 @@ export type ComposeMode = "image" | "video" | "ugc";
 
 const tabs: { value: StudioTab; label: string; icon: typeof ImageIcon; href?: string }[] = [
   { value: "image", label: "IMAGE", icon: ImageIcon },
-  { value: "video", label: "VIDEO", icon: Clapperboard },
+  { value: "video", label: "VIDÉO", icon: Clapperboard },
   { value: "ugc", label: "UGC", icon: UserRound },
-  { value: "ads", label: "ADS", icon: Megaphone, href: "/studio/ads" },
-  { value: "copy", label: "COPY", icon: PenLine, href: "/studio/copy" },
-  { value: "campaign", label: "CAMPAIGN", icon: Rocket, href: "/campaigns" },
+  { value: "ads", label: "PUBS", icon: Megaphone, href: "/studio/ads" },
+  { value: "copy", label: "TEXTES", icon: PenLine, href: "/studio/copy" },
+  { value: "campaign", label: "CAMPAGNE", icon: Rocket, href: "/campaigns" },
 ];
 
 /** Mode tabs (SPEC §10). IMAGE/VIDEO/UGC switch in place; ADS/COPY/CAMPAIGN navigate. `compact` = floating segmented pill (mobile). */

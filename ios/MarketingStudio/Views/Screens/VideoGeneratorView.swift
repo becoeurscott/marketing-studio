@@ -11,8 +11,8 @@ struct VideoGeneratorView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Video Generator").msTitle(28)
-                    Text("Turn a still into a 5–15 second motion clip.").msBody(15)
+                    Text("Générateur de vidéos").msTitle(28)
+                    Text("Transformez une image fixe en un clip animé de 5 à 15 secondes.").msBody(15)
                 }
                 switch session.phase {
                 case .generating(let step):
@@ -21,7 +21,7 @@ struct VideoGeneratorView: View {
                             RemoteImage(url: s.imageURL, cornerRadius: MSRadius.md).frame(width: 100, height: 130)
                                 .overlay(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous).strokeBorder(MSColor.accent.opacity(0.5), lineWidth: 1))
                         }
-                        ProgressIndicator(steps: MockAPI.videoSteps, currentStep: step, title: "Generating \(session.duration)s \(session.style.lowercased()) video")
+                        ProgressIndicator(steps: MockAPI.videoSteps, currentStep: step, title: "Génération d'une vidéo \(session.style.lowercased()) de \(session.duration) s")
                     }
                     .frame(maxWidth: .infinity)
                     .msCard(padding: 20)
@@ -41,8 +41,8 @@ struct VideoGeneratorView: View {
                 if !session.isGenerating {
                     VideoOptionsForm(session: session, full: true) { showUpload = true }
                         .msCard()
-                    MSButton(title: "Generate Video · \(VideoGenSession.cost) credits", icon: "video.fill", isDisabled: !session.canGenerate) { generate() }
-                    Text("Balance: \(store.credits.formatted()) credits · \(session.duration)s at \(session.ratio)").msCaption()
+                    MSButton(title: "Générer la vidéo · \(VideoGenSession.cost) crédits", icon: "video.fill", isDisabled: !session.canGenerate) { generate() }
+                    Text("Solde : \(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits · \(session.duration) s en \(session.ratio)").msCaption()
                 }
             }
             .padding(.horizontal, MSSpacing.gutter)
@@ -50,7 +50,7 @@ struct VideoGeneratorView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Video Generator")
+        .navigationTitle("Générateur de vidéos")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .msSheet(isPresented: $showUpload, detents: [.large]) {
@@ -61,14 +61,14 @@ struct VideoGeneratorView: View {
     private func resultActions(_ r: VideoResult) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 6) {
-                pill("Download", "arrow.down.to.line") { router.toast("Saved to Photos", style: .success, icon: "checkmark.circle.fill") }
+                pill("Télécharger", "arrow.down.to.line") { router.toast("Enregistrée dans Photos", style: .success, icon: "checkmark.circle.fill") }
                 let fav = store.isFavorite(.asset, r.assetId)
-                pill(fav ? "Favorited" : "Favorite", fav ? "heart.fill" : "heart", tint: fav ? MSColor.danger : nil) {
+                pill(fav ? "En favori" : "Favori", fav ? "heart.fill" : "heart", tint: fav ? MSColor.danger : nil) {
                     store.toggleFavorite(.asset, r.assetId)
                 }
-                pill("Regenerate", "arrow.clockwise") { generate() }
-                pill("Export", "square.and.arrow.down") { router.present(.exportAssets(ids: [r.assetId])) }
-                pill("New", "plus") { withAnimation(MSAnimation.gentle) { session.reset() } }
+                pill("Régénérer", "arrow.clockwise") { generate() }
+                pill("Exporter", "square.and.arrow.down") { router.present(.exportAssets(ids: [r.assetId])) }
+                pill("Nouveau", "plus") { withAnimation(MSAnimation.gentle) { session.reset() } }
             }
         }
     }

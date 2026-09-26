@@ -14,34 +14,34 @@ struct ProfileView: View {
                 header.padding(.horizontal, MSSpacing.gutter)
 
                 HStack(spacing: 10) {
-                    StatTile(label: "Projects", value: "\(store.projects.count)", icon: "folder", tint: MSColor.highlight) { router.select(.projects) }
-                    StatTile(label: "Assets", value: "\(store.assets.count)", icon: "photo.on.rectangle", tint: Color(hex: 0x60A5FA)) { router.select(.assets) }
-                    StatTile(label: "Campaigns", value: "\(store.campaigns.count)", icon: "flag", tint: MSColor.success) { router.push(.campaigns) }
+                    StatTile(label: "Projets", value: "\(store.projects.count)", icon: "folder", tint: MSColor.highlight) { router.select(.projects) }
+                    StatTile(label: "Ressources", value: "\(store.assets.count)", icon: "photo.on.rectangle", tint: Color(hex: 0x60A5FA)) { router.select(.assets) }
+                    StatTile(label: "Campagnes", value: "\(store.campaigns.count)", icon: "flag", tint: MSColor.success) { router.push(.campaigns) }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                SectionHeader(title: "Account")
+                SectionHeader(title: "Compte")
                 VStack(spacing: 0) {
-                    infoRow("Name", store.user.name, icon: "person")
+                    infoRow("Nom", store.user.name, icon: "person")
                     divider
-                    infoRow("Email", store.user.email, icon: "envelope")
+                    infoRow("E-mail", store.user.email, icon: "envelope")
                     divider
-                    infoRow("Company", store.user.company, icon: "building.2")
+                    infoRow("Entreprise", store.user.company, icon: "building.2")
                     divider
-                    infoRow("Role", store.user.role, icon: "briefcase")
+                    infoRow("Rôle", store.user.role, icon: "briefcase")
                     divider
-                    infoRow("Plan", "\(store.plan.title) · \(store.credits.formatted()) credits", icon: "creditcard")
+                    infoRow("Forfait", "\(store.plan.title) · \(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits", icon: "creditcard")
                 }
                 .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
                 .padding(.horizontal, MSSpacing.gutter)
 
-                SectionHeader(title: "Your studio", subtitle: "From onboarding")
+                SectionHeader(title: "Votre studio", subtitle: "D’après votre inscription")
                 onboardingSummary.padding(.horizontal, MSSpacing.gutter)
 
                 VStack(spacing: 10) {
-                    MSButton(title: "Edit profile", icon: "pencil", style: .secondary) { showEdit = true }
-                    MSButton(title: "Sign out", icon: "rectangle.portrait.and.arrow.right", style: .danger) { confirmSignOut = true }
+                    MSButton(title: "Modifier le profil", icon: "pencil", style: .secondary) { showEdit = true }
+                    MSButton(title: "Se déconnecter", icon: "rectangle.portrait.and.arrow.right", style: .danger) { confirmSignOut = true }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
                 .padding(.top, 6)
@@ -50,7 +50,7 @@ struct ProfileView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Profile")
+        .navigationTitle("Profil")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -58,15 +58,15 @@ struct ProfileView: View {
             }
         }
         .msSheet(isPresented: $showEdit, detents: [.large]) { EditProfileSheet() }
-        .confirmationDialog("Sign out of Marketing Studio?", isPresented: $confirmSignOut, titleVisibility: .visible) {
-            Button("Sign out and reset demo", role: .destructive) {
+        .confirmationDialog("Se déconnecter de Sokozia ?", isPresented: $confirmSignOut, titleVisibility: .visible) {
+            Button("Se déconnecter et réinitialiser la démo", role: .destructive) {
                 store.resetAll()
                 router.popToRoot(on: .more)
                 router.select(.home)
             }
-            Button("Cancel", role: .cancel) {}
+            Button("Annuler", role: .cancel) {}
         } message: {
-            Text("This prototype has no accounts: signing out wipes local data and returns to onboarding.")
+            Text("Ce prototype n’a pas de comptes : la déconnexion efface les données locales et relance l’accueil.")
         }
     }
 
@@ -111,10 +111,10 @@ struct ProfileView: View {
 
     private var onboardingSummary: some View {
         let a = store.onboardingAnswers
-        let rows: [(String, [String])] = [("Creating", a.creating), ("Role", a.role), ("Wants", a.wants), ("Platforms", a.platforms), ("Goal", a.goal)].filter { !$0.1.isEmpty }
+        let rows: [(String, [String])] = [("Création", a.creating), ("Rôle", a.role), ("Envies", a.wants), ("Plateformes", a.platforms), ("Objectif", a.goal)].filter { !$0.1.isEmpty }
         return Group {
             if rows.isEmpty {
-                MSCard { Text("No onboarding answers saved.").msBody(14) }
+                MSCard { Text("Aucune réponse d’inscription enregistrée.").msBody(14) }
             } else {
                 MSCard {
                     VStack(alignment: .leading, spacing: 10) {
@@ -144,28 +144,28 @@ struct EditProfileSheet: View {
     @State private var role = ""
     @State private var avatarSeed = 12
 
-    private let roles = ["Founder", "Marketer", "Creator", "Agency", "Freelancer", "E-commerce seller"]
+    private let roles = ["Fondateur", "Marketeur", "Créateur", "Agence", "Freelance", "Vendeur e-commerce"]
 
     var body: some View {
-        BottomSheetContainer(title: "Edit profile") {
+        BottomSheetContainer(title: "Modifier le profil") {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(spacing: 14) {
                         AvatarView(url: MockData.avatar(avatarSeed), name: name, size: 64)
-                        MSButton(title: "Shuffle avatar", icon: "shuffle", style: .secondary, size: .compact, fullWidth: false) {
+                        MSButton(title: "Avatar aléatoire", icon: "shuffle", style: .secondary, size: .compact, fullWidth: false) {
                             avatarSeed = Int.random(in: 1...70)
                         }
                     }
-                    MSTextField(label: "Name", placeholder: "Your name", text: $name, icon: "person", autocapitalization: .words)
-                    MSTextField(label: "Email", placeholder: "you@company.com", text: $email, icon: "envelope", keyboard: .emailAddress, autocapitalization: .never)
-                    MSTextField(label: "Company", placeholder: "Company or brand", text: $company, icon: "building.2", autocapitalization: .words)
+                    MSTextField(label: "Nom", placeholder: "Votre nom", text: $name, icon: "person", autocapitalization: .words)
+                    MSTextField(label: "E-mail", placeholder: "vous@entreprise.com", text: $email, icon: "envelope", keyboard: .emailAddress, autocapitalization: .never)
+                    MSTextField(label: "Entreprise", placeholder: "Entreprise ou marque", text: $company, icon: "building.2", autocapitalization: .words)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Role").msCaption(color: MSColor.text2)
+                        Text("Rôle").msCaption(color: MSColor.text2)
                         FlowLayout(spacing: 8) {
                             ForEach(roles, id: \.self) { r in MSChip(title: r, selected: role == r) { role = r } }
                         }
                     }
-                    MSButton(title: "Save changes", icon: "checkmark", isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty || !email.contains("@")) {
+                    MSButton(title: "Enregistrer les modifications", icon: "checkmark", isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty || !email.contains("@")) {
                         var u = store.user
                         u.name = name.trimmingCharacters(in: .whitespaces)
                         u.email = email.trimmingCharacters(in: .whitespaces).lowercased()
@@ -173,7 +173,7 @@ struct EditProfileSheet: View {
                         u.role = role
                         u.avatarURL = MockData.avatar(avatarSeed)
                         store.updateUser(u)
-                        router.toast("Profile updated", style: .success)
+                        router.toast("Profil mis à jour", style: .success)
                         dismiss()
                     }
                     .padding(.top, 6)

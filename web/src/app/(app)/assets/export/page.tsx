@@ -13,11 +13,11 @@ import { useStore } from "@/lib/store";
 
 /** /assets/export?ids=a,b,c or ?campaign=id — the Export Center as a full route. */
 export default function ExportCenterPage() {
-  usePageTitle("Export center");
+  usePageTitle("Centre d'export");
   return (
     <>
-      <Link href="/assets" className="inline-flex items-center gap-1 text-[13px] text-text2 hover:text-text mb-3"><ArrowLeft className="size-3.5" /> Assets</Link>
-      <PageHeader title="Export center" description="Package assets or a whole campaign as PNG, JPG, MP4 or PDF." />
+      <Link href="/assets" className="inline-flex items-center gap-1 text-[13px] text-text2 hover:text-text mb-3"><ArrowLeft className="size-3.5" /> Ressources</Link>
+      <PageHeader title="Centre d'export" description="Exportez des ressources ou une campagne entière en PNG, JPG, MP4 ou PDF." />
       <Suspense fallback={null}>
         <ExportRoute />
       </Suspense>
@@ -35,7 +35,7 @@ function ExportRoute() {
   const hasCampaign = campaignId ? campaigns.some((c) => c.id === campaignId) : campaigns.length > 0;
 
   if (ids.length === 0 && !hasCampaign) {
-    return <EmptyState icon={Download} title="Nothing to export" description="Select assets in the library or open a campaign and choose Export campaign." cta={{ label: "Go to assets", href: "/assets" }} />;
+    return <EmptyState icon={Download} title="Rien à exporter" description="Sélectionnez des ressources dans la bibliothèque, ou ouvrez une campagne et choisissez Exporter la campagne." cta={{ label: "Voir les ressources", href: "/assets" }} />;
   }
 
   return (

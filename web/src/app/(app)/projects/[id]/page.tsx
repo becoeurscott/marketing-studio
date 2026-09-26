@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProjectFormModal } from "@/components/projects/NewProjectModal";
+import { objectiveLabel, platformLabel, statusLabel } from "@/components/campaigns/platform";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { usePageTitle } from "@/components/shell/ShellContext";
 import { Badge, statusTone } from "@/components/ui/Badge";
@@ -17,6 +18,8 @@ import { Tabs } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
 import { useStore } from "@/lib/store";
 import { formatDate, formatNumber, timeAgo } from "@/lib/utils";
+
+const GEN_TYPE_LABELS: Record<string, string> = { image: "Image", video: "Vidéo", copy: "Texte", ad: "Publicité" };
 
 type Tab = "overview" | "assets" | "generations" | "campaigns";
 
@@ -44,36 +47,36 @@ export default function ProjectDetailPage() {
   usePageTitle(project?.name);
 
   if (!project) {
-    return <EmptyState icon={FolderKanban} title="Project not found" description="It may have been deleted." cta={{ label: "Back to projects", href: "/projects" }} />;
+    return <EmptyState icon={FolderKanban} title="Projet introuvable" description="Il a peut-être été supprimé." cta={{ label: "Retour aux projets", href: "/projects" }} />;
   }
 
   const archived = project.status === "archived";
   const openInStudio = () => { setCurrentProject(project.id); router.push("/studio"); };
 
-  const overviewStats: [string, number, typeof Images][] = [["Assets", assets.length, Images], ["Generations", generations.length, Sparkles], ["Campaigns", campaigns.length, Megaphone]];
+  const overviewStats: [string, number, typeof Images][] = [["Ressources", assets.length, Images], ["Générations", generations.length, Sparkles], ["Campagnes", campaigns.length, Megaphone]];
 
   return (
     <>
-      <Link href="/projects" className="inline-flex items-center gap-1 text-[13px] text-text2 hover:text-text mb-3"><ArrowLeft className="size-3.5" /> Projects</Link>
+      <Link href="/projects" className="inline-flex items-center gap-1 text-[13px] text-text2 hover:text-text mb-3"><ArrowLeft className="size-3.5" /> Projets</Link>
       <PageHeader
-        eyebrow={<Badge tone={statusTone(project.status)} dot className="capitalize">{project.status}</Badge>}
+        eyebrow={<Badge tone={statusTone(project.status)} dot>{project.status === "active" ? "Actif" : statusLabel(project.status)}</Badge>}
         title={project.name}
-        description={project.description || "No description yet."}
+        description={project.description || "Aucune description pour l'instant."}
         actions={
           <>
-            <IconButton label="Rename" variant="outline" onClick={() => setEditOpen(true)}><Pencil /></IconButton>
-            <IconButton label="Duplicate" variant="outline" onClick={() => { const c = duplicateProject(project.id); if (c) { toast.success("Project duplicated", c.name); router.push(`/projects/${c.id}`); } }}><Copy /></IconButton>
-            <IconButton label={archived ? "Restore" : "Archive"} variant="outline" onClick={() => { archiveProject(project.id, !archived); toast.info(archived ? "Project restored" : "Project archived"); }}>{archived ? <ArchiveRestore /> : <Archive />}</IconButton>
-            <IconButton label="Delete" variant="outline" className="hover:text-danger" onClick={() => setDeleteOpen(true)}><Trash2 /></IconButton>
-            <Button leftIcon={<Wand2 className="size-4" />} onClick={openInStudio}>Open in Studio</Button>
+            <IconButton label="Renommer" variant="outline" onClick={() => setEditOpen(true)}><Pencil /></IconButton>
+            <IconButton label="Dupliquer" variant="outline" onClick={() => { const c = duplicateProject(project.id); if (c) { toast.success("Projet dupliqué", c.name); router.push(`/projects/${c.id}`); } }}><Copy /></IconButton>
+            <IconButton label={archived ? "Restaurer" : "Archiver"} variant="outline" onClick={() => { archiveProject(project.id, !archived); toast.info(archived ? "Projet restauré" : "Projet archivé"); }}>{archived ? <ArchiveRestore /> : <Archive />}</IconButton>
+            <IconButton label="Supprimer" variant="outline" className="hover:text-danger" onClick={() => setDeleteOpen(true)}><Trash2 /></IconButton>
+            <Button leftIcon={<Wand2 className="size-4" />} onClick={openInStudio}>Ouvrir dans le Studio</Button>
           </>
         }
       />
 
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-[13px] text-text2 mb-5">
-        <span>Brand <span className="text-text">{brand?.name ?? "—"}</span></span>
-        <span>Created <span className="text-text">{formatDate(project.createdAt)}</span></span>
-        <span>Updated <span className="text-text">{timeAgo(project.updatedAt)}</span></span>
+        <span>Marque <span className="text-text">{brand?.name ?? "—"}</span></span>
+        <span>Créé le <span className="text-text">{formatDate(project.createdAt)}</span></span>
+        <span>Mis à jour <span className="text-text">{timeAgo(project.updatedAt)}</span></span>
       </div>
 
       <Tabs
@@ -81,10 +84,10 @@ export default function ProjectDetailPage() {
         value={tab}
         onChange={setTab}
         items={[
-          { value: "overview", label: "Overview" },
-          { value: "assets", label: "Assets", count: assets.length },
-          { value: "generations", label: "Generations", count: generations.length },
-          { value: "campaigns", label: "Campaigns", count: campaigns.length },
+          { value: "overview", label: "Vue d'ensemble" },
+          { value: "assets", label: "Ressources", count: assets.length },
+          { value: "generations", label: "Générations", count: generations.length },
+          { value: "campaigns", label: "Campagnes", count: campaigns.length },
         ]}
       />
 
@@ -103,9 +106,9 @@ export default function ProjectDetailPage() {
           </Card>
           <div className="space-y-4">
             <Card>
-              <p className="text-[13px] font-semibold mb-3">Next steps</p>
+              <p className="text-[13px] font-semibold mb-3">Prochaines étapes</p>
               <div className="space-y-2">
-                {[["Generate product shots", "/studio/product-shoot"], ["Create a UGC ad", "/studio/ugc"], ["Write campaign copy", "/studio/copy"], ["Build a campaign", "/campaigns"]].map(([l, h]) => (
+                {[["Générer des photos produit", "/studio/product-shoot"], ["Créer une pub UGC", "/studio/ugc"], ["Rédiger les textes de campagne", "/studio/copy"], ["Créer une campagne", "/campaigns"]].map(([l, h]) => (
                   <Link key={h} href={h} onClick={() => setCurrentProject(project.id)} className="flex items-center justify-between h-10 px-3 rounded-md bg-surface border border-border text-[13px] text-text2 hover:text-text hover:border-white/20 transition-colors">
                     {l} <Plus className="size-4" />
                   </Link>
@@ -116,7 +119,7 @@ export default function ProjectDetailPage() {
               <Card className="flex items-center gap-3">
                 <img src={brand.logoUrl} alt="" className="size-10 rounded-md object-cover border border-border" />
                 <span className="min-w-0"><span className="block text-sm font-medium truncate">{brand.name}</span><span className="block text-xs text-muted">{brand.industry} · {brand.styleTags.slice(0, 2).join(", ")}</span></span>
-                <Link href="/brand" className="ml-auto text-xs text-highlight">Edit</Link>
+                <Link href="/brand" className="ml-auto text-xs text-highlight">Modifier</Link>
               </Card>
             )}
           </div>
@@ -134,7 +137,7 @@ export default function ProjectDetailPage() {
           ))}
         </div>
       ) : (
-        <EmptyState icon={Images} title="No assets in this project" description="Generate or upload something to see it here." cta={{ label: "Open Studio", onClick: openInStudio }} />
+        <EmptyState icon={Images} title="Aucune ressource dans ce projet" description="Générez ou importez un contenu pour le voir apparaître ici." cta={{ label: "Ouvrir le Studio", onClick: openInStudio }} />
       ))}
 
       {tab === "generations" && (generations.length ? (
@@ -146,14 +149,14 @@ export default function ProjectDetailPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm truncate">{g.prompt}</p>
-                <p className="text-xs text-muted mt-0.5 capitalize">{g.type} · {timeAgo(g.createdAt)} · {g.creditsUsed} credits</p>
+                <p className="text-xs text-muted mt-0.5">{GEN_TYPE_LABELS[g.type]} · {timeAgo(g.createdAt)} · {g.creditsUsed} crédits</p>
               </div>
-              <Badge tone={statusTone(g.status)} className="capitalize">{g.status}</Badge>
+              <Badge tone={statusTone(g.status)} >{statusLabel(g.status)}</Badge>
             </Card>
           ))}
         </div>
       ) : (
-        <EmptyState icon={Sparkles} title="No generations yet" description="Every image, video and copy you generate in this project will be listed here." cta={{ label: "Generate", onClick: openInStudio }} />
+        <EmptyState icon={Sparkles} title="Aucune génération pour l'instant" description="Chaque image, vidéo et texte généré dans ce projet sera listé ici." cta={{ label: "Générer", onClick: openInStudio }} />
       ))}
 
       {tab === "campaigns" && (campaigns.length ? (
@@ -164,29 +167,29 @@ export default function ProjectDetailPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold truncate">{c.name}</p>
-                    <p className="text-xs text-muted mt-0.5 capitalize">{c.objective} · {c.platforms.join(", ")}</p>
+                    <p className="text-xs text-muted mt-0.5">{objectiveLabel(c.objective)} · {c.platforms.map(platformLabel).join(", ")}</p>
                   </div>
-                  <Badge tone={statusTone(c.status)} dot className="capitalize">{c.status}</Badge>
+                  <Badge tone={statusTone(c.status)} dot>{statusLabel(c.status)}</Badge>
                 </div>
-                <p className="text-xs text-text2 mt-3">{c.assetIds.length} assets · {c.variations.length} variations · {c.calendar.length} scheduled</p>
+                <p className="text-xs text-text2 mt-3">{c.assetIds.length} ressources · {c.variations.length} variantes · {c.calendar.length} au calendrier</p>
               </Card>
             </Link>
           ))}
         </div>
       ) : (
-        <EmptyState icon={Megaphone} title="No campaigns yet" description="Turn this project's assets into a multi-platform campaign." cta={{ label: "Build a campaign", href: "/campaigns" }} />
+        <EmptyState icon={Megaphone} title="Aucune campagne pour l'instant" description="Transformez les ressources de ce projet en campagne multiplateforme." cta={{ label: "Créer une campagne", href: "/campaigns" }} />
       ))}
 
       <ProjectFormModal open={editOpen} onClose={() => setEditOpen(false)} project={project} />
       <Modal
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
-        title="Delete project?"
-        description={`"${project.name}" and its ${assets.length} assets, ${generations.length} generations and ${campaigns.length} campaigns will be removed.`}
+        title="Supprimer le projet ?"
+        description={`« ${project.name} » ainsi que ses ${assets.length} ressources, ${generations.length} générations et ${campaigns.length} campagnes seront supprimés.`}
         size="sm"
-        footer={<><Button variant="ghost" onClick={() => setDeleteOpen(false)}>Cancel</Button><Button variant="danger" onClick={() => { deleteProject(project.id); toast.info("Project deleted"); router.replace("/projects"); }}>Delete</Button></>}
+        footer={<><Button variant="ghost" onClick={() => setDeleteOpen(false)}>Annuler</Button><Button variant="danger" onClick={() => { deleteProject(project.id); toast.info("Projet supprimé"); router.replace("/projects"); }}>Supprimer</Button></>}
       >
-        <p className="text-sm text-text2">This can&apos;t be undone in the prototype.</p>
+        <p className="text-sm text-text2">Cette action est irréversible dans le prototype.</p>
       </Modal>
     </>
   );

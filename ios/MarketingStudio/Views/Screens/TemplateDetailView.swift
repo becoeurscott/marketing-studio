@@ -13,14 +13,14 @@ struct TemplateDetailView: View {
             if let t = template {
                 content(t)
             } else {
-                EmptyStateView(icon: "rectangle.on.rectangle.angled", title: "Template not found", message: "This template may have been removed.", ctaTitle: "Back to templates") {
+                EmptyStateView(icon: "rectangle.on.rectangle.angled", title: "Modèle introuvable", message: "Ce modèle a peut-être été supprimé.", ctaTitle: "Retour aux modèles") {
                     router.pop()
                 }
                 .padding(.top, 60)
             }
         }
         .msScreen()
-        .navigationTitle(template?.title ?? "Template")
+        .navigationTitle(template?.title ?? "Modèle")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if let t = template {
@@ -28,7 +28,7 @@ struct TemplateDetailView: View {
                     let fav = store.isFavorite(.template, t.id)
                     MSIconButton(icon: fav ? "heart.fill" : "heart", size: 30, tint: fav ? MSColor.danger : MSColor.text) {
                         store.toggleFavorite(.template, t.id)
-                        router.toast(fav ? "Removed from favorites" : "Added to favorites", style: .success)
+                        router.toast(fav ? "Retiré des favoris" : "Ajouté aux favoris", style: .success)
                     }
                 }
             }
@@ -51,7 +51,7 @@ struct TemplateDetailView: View {
                     .padding(.horizontal, MSSpacing.gutter)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(t.category.title.uppercased())
+                    Text(t.category.title.uppercased(with: Locale(identifier: "fr_FR")))
                         .font(.system(size: 11, weight: .semibold)).tracking(0.8).foregroundStyle(MSColor.highlight)
                     Text(t.title).msTitle(26)
                     Text(t.description).msBody(15).lineSpacing(3)
@@ -59,7 +59,7 @@ struct TemplateDetailView: View {
                 .padding(.horizontal, MSSpacing.gutter)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Platforms").msHeadline(15)
+                    Text("Plateformes").msHeadline(15)
                     FlowLayout(spacing: 8) {
                         ForEach(t.platforms) { p in
                             HStack(spacing: 6) {
@@ -77,19 +77,19 @@ struct TemplateDetailView: View {
 
                 MSCard {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Preset").msHeadline(15)
+                        Text("Préréglage").msHeadline(15)
                         presetRow("Prompt", t.prompt)
                         Divider().overlay(MSColor.border)
                         HStack(spacing: 0) {
                             presetStat("Style", t.style)
-                            presetStat("Ratio", t.ratio)
+                            presetStat("Format d’image", t.ratio)
                             presetStat("Format", t.format)
                         }
                     }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                Text("Using a template opens the Studio with the prompt, style and ratio already filled in.")
+                Text("Utiliser un modèle ouvre le Studio avec le prompt, le style et le format déjà renseignés.")
                     .msCaption()
                     .padding(.horizontal, MSSpacing.gutter)
             }
@@ -97,9 +97,9 @@ struct TemplateDetailView: View {
             .padding(.bottom, 110)
         }
         .safeAreaInset(edge: .bottom) {
-            MSButton(title: "Use Template", icon: "sparkles") {
+            MSButton(title: "Utiliser le modèle", icon: "sparkles") {
                 store.pendingTemplateId = t.id
-                router.toast("\(t.title) applied in Studio", style: .success, icon: "sparkles")
+                router.toast("\(t.title) appliqué dans le Studio", style: .success, icon: "sparkles")
                 router.popToRoot(on: .studio)
                 router.select(.studio)
             }

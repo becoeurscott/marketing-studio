@@ -7,7 +7,7 @@ struct ProjectPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        BottomSheetContainer(title: "Switch project", subtitle: "New assets and generations land in the selected project.") {
+        BottomSheetContainer(title: "Changer de projet", subtitle: "Les nouvelles ressources et générations seront ajoutées au projet sélectionné.") {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 8) {
                     ForEach(store.activeProjects) { p in
@@ -21,7 +21,7 @@ struct ProjectPickerSheet: View {
                                 RemoteImage(url: p.thumbnailURL, cornerRadius: 10).frame(width: 46, height: 46)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(p.name).msHeadline(15).lineLimit(1)
-                                    Text("\(store.assets(in: p.id).count) assets · updated \(p.updatedAt.relativeString)").msCaption().lineLimit(1)
+                                    Text("\(store.assets(in: p.id).count) ressources · mis à jour \(p.updatedAt.relativeString)").msCaption().lineLimit(1)
                                 }
                                 Spacer()
                                 if on {
@@ -34,7 +34,7 @@ struct ProjectPickerSheet: View {
                         }
                         .buttonStyle(MSPressStyle())
                     }
-                    MSButton(title: "New project", icon: "plus", style: .secondary) {
+                    MSButton(title: "Nouveau projet", icon: "plus", style: .secondary) {
                         dismiss()
                         router.present(.newProject)
                     }

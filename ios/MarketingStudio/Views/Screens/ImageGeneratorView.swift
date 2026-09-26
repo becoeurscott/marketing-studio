@@ -13,8 +13,8 @@ struct ImageGeneratorView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Image Generator").msTitle(28)
-                    Text("Product visuals in any style, four at a time.").msBody(15)
+                    Text("Générateur d'images").msTitle(28)
+                    Text("Des visuels produit dans tous les styles, quatre à la fois.").msBody(15)
                 }
                 switch session.phase {
                 case .generating:
@@ -32,8 +32,8 @@ struct ImageGeneratorView: View {
                 if session.phase != .generating {
                     ImageOptionsForm(session: session, full: true) { showUpload = true }
                         .msCard()
-                    MSButton(title: "Generate · \(ImageGenSession.cost) credits", icon: "sparkles", isDisabled: !session.canGenerate) { generate() }
-                    Text("Balance: \(store.credits.formatted()) credits · 4 variations per run").msCaption()
+                    MSButton(title: "Générer · \(ImageGenSession.cost) crédits", icon: "sparkles", isDisabled: !session.canGenerate) { generate() }
+                    Text("Solde : \(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits · 4 variantes par génération").msCaption()
                 }
             }
             .padding(.horizontal, MSSpacing.gutter)
@@ -41,7 +41,7 @@ struct ImageGeneratorView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Image Generator")
+        .navigationTitle("Générateur d'images")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .onAppear {
@@ -58,10 +58,10 @@ struct ImageGeneratorView: View {
 
     private var resultsFooter: some View {
         HStack(spacing: 10) {
-            MSButton(title: "Open in Studio", icon: "sparkles", style: .secondary, size: .compact) {
+            MSButton(title: "Ouvrir dans le Studio", icon: "sparkles", style: .secondary, size: .compact) {
                 router.select(.studio)
             }
-            MSButton(title: "New generation", icon: "plus", style: .secondary, size: .compact) {
+            MSButton(title: "Nouvelle génération", icon: "plus", style: .secondary, size: .compact) {
                 withAnimation(MSAnimation.gentle) { session.reset() }
             }
         }

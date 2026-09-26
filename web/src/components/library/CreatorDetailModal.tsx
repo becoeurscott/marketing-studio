@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useStore } from "@/lib/store";
 import type { Creator } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { GENDER_LABELS } from "@/lib/labels";
 
 export function CreatorDetailModal({ creator, onClose }: { creator: Creator | null; onClose: () => void }) {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function CreatorDetailModal({ creator, onClose }: { creator: Creator | nu
 
   const useInUGC = () => {
     if (!creator) return;
-    toast.success(`${creator.name} selected`, "Opening the UGC creator.");
+    toast.success(`${creator.name} sélectionné(e)`, "Ouverture du créateur UGC.");
     onClose();
     router.push(`/studio/ugc?creator=${encodeURIComponent(creator.id)}`);
   };
@@ -31,21 +32,21 @@ export function CreatorDetailModal({ creator, onClose }: { creator: Creator | nu
           <div className="md:w-[260px] shrink-0">
             <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-elevated">
               <img src={creator.avatarUrl} alt={creator.name} className="size-full object-cover" />
-              {creator.featured && <Badge tone="accent" className="absolute top-3 left-3">Featured</Badge>}
+              {creator.featured && <Badge tone="accent" className="absolute top-3 left-3">À la une</Badge>}
             </div>
           </div>
           <div className="flex-1 min-w-0 flex flex-col">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-xl font-bold tracking-tight">{creator.name}</h2>
-                <p className="text-sm text-text2 capitalize">{creator.gender} · {creator.age} · {creator.ageRange}</p>
+                <p className="text-sm text-text2">{GENDER_LABELS[creator.gender]} · {creator.age} ans · {creator.ageRange}</p>
               </div>
               <button
                 type="button"
                 aria-pressed={fav}
                 onClick={() => toggleFavorite("creator", creator.id)}
                 className={cn("size-9 rounded-full border flex items-center justify-center transition-colors", fav ? "bg-accent border-accent text-white" : "border-border-strong text-text2 hover:text-text")}
-                aria-label={fav ? "Remove from favorites" : "Add to favorites"}
+                aria-label={fav ? "Retirer des favoris" : "Ajouter aux favoris"}
               >
                 <Heart className={cn("size-4", fav && "fill-current")} />
               </button>
@@ -57,14 +58,14 @@ export function CreatorDetailModal({ creator, onClose }: { creator: Creator | nu
                 <dd className="mt-1 font-medium">{creator.style}</dd>
               </div>
               <div className="rounded-md bg-surface border border-border p-3">
-                <dt className="text-[11px] uppercase tracking-wide text-muted">Languages</dt>
+                <dt className="text-[11px] uppercase tracking-wide text-muted">Langues</dt>
                 <dd className="mt-1 font-medium">{creator.languages.join(", ")}</dd>
               </div>
             </dl>
-            <p className="text-[11px] text-muted mt-3">AI creator. Fictitious persona; likeness is synthetic.</p>
+            <p className="text-[11px] text-muted mt-3">Créateur IA. Persona fictif ; son apparence est générée par synthèse.</p>
             <div className="mt-auto pt-5 flex items-center gap-2 justify-end">
-              <Button variant="ghost" onClick={onClose}>Close</Button>
-              <Button leftIcon={<Video className="size-4" />} onClick={useInUGC}>Use in UGC</Button>
+              <Button variant="ghost" onClick={onClose}>Fermer</Button>
+              <Button leftIcon={<Video className="size-4" />} onClick={useInUGC}>Utiliser en UGC</Button>
             </div>
           </div>
         </div>

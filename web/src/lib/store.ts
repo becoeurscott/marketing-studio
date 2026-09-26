@@ -110,7 +110,7 @@ function initialState(): StoreState {
     version: SEED_VERSION,
     user: seed.currentUser,
     onboardingDone: false,
-    onboarding: { creating: null, role: null, wants: [], platforms: [], goal: null },
+    onboarding: { creating: null, role: null, wants: [], platforms: [], goal: null, style: null, boldness: null, brandKit: false, product: null },
     projects: seed.projects,
     assets: seed.assets,
     campaigns: seed.campaigns,
@@ -175,7 +175,7 @@ export const useStore = create<Store>()(
       duplicateProject: (id) => {
         const src = get().projects.find((p) => p.id === id);
         if (!src) return undefined;
-        const copy: Project = { ...src, id: uid("proj"), name: `${src.name} (copy)`, status: "active", createdAt: now(), updatedAt: now() };
+        const copy: Project = { ...src, id: uid("proj"), name: `${src.name} (copie)`, status: "active", createdAt: now(), updatedAt: now() };
         const srcAssets = get().assets.filter((a) => a.projectId === id).map((a) => ({ ...a, id: uid("asset"), projectId: copy.id, createdAt: now() }));
         set((s) => ({ projects: [copy, ...s.projects], assets: [...srcAssets, ...s.assets] }));
         return copy;
@@ -288,7 +288,7 @@ export const useStore = create<Store>()(
       buyCredits: (amount, description) =>
         set((s) => ({
           credits: s.credits + amount,
-          transactions: [{ id: uid("tx"), action: "purchase", amount, description: description ?? `Purchased ${amount} credits`, createdAt: now() }, ...s.transactions],
+          transactions: [{ id: uid("tx"), action: "purchase", amount, description: description ?? `Achat de ${amount} crédits`, createdAt: now() }, ...s.transactions],
         })),
 
       markNotificationRead: (id, read = true) =>

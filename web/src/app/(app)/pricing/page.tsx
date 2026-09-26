@@ -19,13 +19,15 @@ type Cycle = "monthly" | "yearly";
 const YEARLY_DISCOUNT = 0.2;
 
 const FEATURE_ROWS: { key: keyof Plan["features"]; label: string }[] = [
-  { key: "generations", label: "AI generations" },
-  { key: "projects", label: "Projects" },
-  { key: "brandKits", label: "Brand kits" },
-  { key: "campaigns", label: "Campaigns" },
-  { key: "videoGenerations", label: "Video generations" },
-  { key: "teamMembers", label: "Team members" },
+  { key: "generations", label: "Générations IA" },
+  { key: "projects", label: "Projets" },
+  { key: "brandKits", label: "Kits de marque" },
+  { key: "campaigns", label: "Campagnes" },
+  { key: "videoGenerations", label: "Générations vidéo" },
+  { key: "teamMembers", label: "Membres de l’équipe" },
 ];
+
+const CYCLE_LABELS: Record<Cycle, string> = { monthly: "Mensuel", yearly: "Annuel" };
 
 const priceFor = (p: Plan, cycle: Cycle) => (cycle === "yearly" ? Math.round(p.priceMonthly * (1 - YEARLY_DISCOUNT)) : p.priceMonthly);
 
@@ -46,18 +48,18 @@ export default function PricingPage() {
     await delay(900, 1400);
     const upgrade = planRank(target.id) > planRank(current);
     setPlan(target.id);
-    if (upgrade) buyCredits(target.credits, `${target.name} plan credits`);
+    if (upgrade) buyCredits(target.credits, `Crédits du forfait ${target.name}`);
     setWorking(false);
     setSuccess(target);
     setTarget(null);
-    toast.success(upgrade ? `Upgraded to ${target.name}` : `Switched to ${target.name}`);
+    toast.success(upgrade ? `Vous êtes passé à ${target.name}` : `Forfait changé pour ${target.name}`);
   };
 
   return (
     <>
       <PageHeader
-        title="Plans & pricing"
-        description="Pick the plan that matches how much you create. Change or cancel any time."
+        title="Forfaits et tarifs"
+        description="Choisissez le forfait adapté à votre rythme de création. Modifiable ou résiliable à tout moment."
         actions={
           <div className="inline-flex items-center p-1 rounded-full bg-surface border border-border">
             {(["monthly", "yearly"] as Cycle[]).map((c) => (
@@ -66,9 +68,9 @@ export default function PricingPage() {
                 type="button"
                 onClick={() => setCycle(c)}
                 aria-pressed={cycle === c}
-                className={cn("h-8 px-3.5 rounded-full text-[13px] font-medium capitalize transition-colors", cycle === c ? "bg-elevated text-text border border-border-strong" : "text-text2 hover:text-text")}
+                className={cn("h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors", cycle === c ? "bg-elevated text-text border border-border-strong" : "text-text2 hover:text-text")}
               >
-                {c} {c === "yearly" && <span className="text-success text-[11px] ml-1">−20%</span>}
+                {CYCLE_LABELS[c]} {c === "yearly" && <span className="text-success text-[11px] ml-1">−20%</span>}
               </button>
             ))}
           </div>
@@ -91,14 +93,14 @@ export default function PricingPage() {
             >
               <div className="flex items-center justify-between gap-2 mb-3">
                 <h3 className="text-base font-semibold">{p.name}</h3>
-                {isCurrent ? <Badge tone="success" dot>Current plan</Badge> : p.popular ? <Badge tone="accent">Most popular</Badge> : null}
+                {isCurrent ? <Badge tone="success" dot>Forfait actuel</Badge> : p.popular ? <Badge tone="accent">Le plus populaire</Badge> : null}
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold tracking-tight tabular-nums">${price}</span>
-                <span className="text-sm text-text2">/mo</span>
+                <span className="text-4xl font-bold tracking-tight tabular-nums">{price} $</span>
+                <span className="text-sm text-text2">/mois</span>
               </div>
-              <p className="text-[12px] text-muted mt-1 h-4">{cycle === "yearly" ? `Billed $${price * 12}/yr` : "Billed monthly"}</p>
-              <p className="text-[13px] text-text2 mt-3 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" />{formatNumber(p.credits)} credits / month</p>
+              <p className="text-[12px] text-muted mt-1 h-4">{cycle === "yearly" ? `Facturé ${price * 12} $/an` : "Facturé mensuellement"}</p>
+              <p className="text-[13px] text-text2 mt-3 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" />{formatNumber(p.credits)} crédits / mois</p>
 
               <ul className="mt-4 space-y-2 text-[13px]">
                 {FEATURE_ROWS.map((f) => (
@@ -117,7 +119,7 @@ export default function PricingPage() {
                 disabled={isCurrent}
                 onClick={() => setTarget(p)}
               >
-                {isCurrent ? "Your plan" : rank > 0 ? `Upgrade to ${p.name}` : `Switch to ${p.name}`}
+                {isCurrent ? "Votre forfait" : rank > 0 ? `Passer à ${p.name}` : `Basculer vers ${p.name}`}
               </Button>
             </div>
           );
@@ -125,33 +127,33 @@ export default function PricingPage() {
       </div>
 
       <div className="rounded-xl border border-border bg-surface/50 p-5 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-5 text-[13px] text-text2">
-        <div><p className="text-text font-medium mb-1">What are credits?</p>Each generation costs credits: images 10, videos 50, upscales 15. Monthly credits are added when your plan renews; top-ups never expire.</div>
-        <div><p className="text-text font-medium mb-1">Can I change plans?</p>Yes, upgrades apply immediately and you get the new plan&apos;s credits right away. Downgrades apply at the next renewal.</div>
-        <div><p className="text-text font-medium mb-1">Need more?</p>Buy a one-time pack on the <Link href="/credits" className="text-highlight hover:underline">Credits</Link> page, or contact us for Enterprise volume.</div>
+        <div><p className="text-text font-medium mb-1">À quoi servent les crédits ?</p>Chaque génération consomme des crédits : 10 par image, 50 par vidéo, 15 par upscale. Les crédits mensuels sont ajoutés au renouvellement de votre forfait ; les recharges n’expirent jamais.</div>
+        <div><p className="text-text font-medium mb-1">Puis-je changer de forfait ?</p>Oui : une montée en gamme s’applique immédiatement et vous recevez tout de suite les crédits du nouveau forfait. Une rétrogradation s’applique au prochain renouvellement.</div>
+        <div><p className="text-text font-medium mb-1">Besoin de plus ?</p>Achetez un pack ponctuel sur la page <Link href="/credits" className="text-highlight hover:underline">Crédits</Link>, ou contactez-nous pour un volume Entreprise.</div>
       </div>
 
       {/* Upgrade modal */}
       <Modal
         open={!!target}
         onClose={() => !working && setTarget(null)}
-        title={target && planRank(target.id) > planRank(current) ? `Upgrade to ${target?.name}` : `Switch to ${target?.name}`}
-        description="Mock checkout: nothing is charged."
+        title={target && planRank(target.id) > planRank(current) ? `Passer à ${target?.name}` : `Basculer vers ${target?.name}`}
+        description="Paiement simulé : aucun montant n’est débité."
         size="sm"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setTarget(null)} disabled={working}>Cancel</Button>
-            <Button onClick={confirm} loading={working}>Confirm</Button>
+            <Button variant="ghost" onClick={() => setTarget(null)} disabled={working}>Annuler</Button>
+            <Button onClick={confirm} loading={working}>Confirmer</Button>
           </>
         }
       >
         {target && (
           <div className="space-y-3">
             <div className="rounded-md bg-surface border border-border p-4 space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-text2">Plan</span><span className="font-medium">{target.name}</span></div>
-              <div className="flex justify-between"><span className="text-text2">Billing</span><span className="font-medium capitalize">{cycle}</span></div>
-              <div className="flex justify-between"><span className="text-text2">Price</span><span className="font-medium">${priceFor(target, cycle)}/mo{cycle === "yearly" && ` · $${priceFor(target, cycle) * 12}/yr`}</span></div>
-              <div className="flex justify-between"><span className="text-text2">Payment</span><span className="font-medium">Visa •••• 4242</span></div>
-              <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-text2">Credits added now</span><span className="font-semibold">{planRank(target.id) > planRank(current) ? `+${formatNumber(target.credits)}` : "At renewal"}</span></div>
+              <div className="flex justify-between"><span className="text-text2">Forfait</span><span className="font-medium">{target.name}</span></div>
+              <div className="flex justify-between"><span className="text-text2">Facturation</span><span className="font-medium">{CYCLE_LABELS[cycle]}</span></div>
+              <div className="flex justify-between"><span className="text-text2">Prix</span><span className="font-medium">{priceFor(target, cycle)} $/mois{cycle === "yearly" && ` · ${priceFor(target, cycle) * 12} $/an`}</span></div>
+              <div className="flex justify-between"><span className="text-text2">Paiement</span><span className="font-medium">Visa •••• 4242</span></div>
+              <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-text2">Crédits ajoutés maintenant</span><span className="font-semibold">{planRank(target.id) > planRank(current) ? `+${formatNumber(target.credits)}` : "Au renouvellement"}</span></div>
             </div>
             <ul className="text-[13px] text-text2 space-y-1">
               {target.highlights.map((h) => <li key={h} className="flex items-center gap-2"><Check className="size-3.5 text-success" />{h}</li>)}
@@ -166,11 +168,11 @@ export default function PricingPage() {
           <div className="mx-auto size-14 rounded-full bg-success/15 border border-success/30 flex items-center justify-center mb-4">
             <Check className="size-6 text-success" />
           </div>
-          <h2 className="text-lg font-semibold tracking-tight">Welcome to {success?.name}</h2>
-          <p className="text-sm text-text2 mt-1">Your subscription is active. {success && `${formatNumber(success.credits)} credits per month, starting now.`}</p>
+          <h2 className="text-lg font-semibold tracking-tight">Bienvenue dans {success?.name}</h2>
+          <p className="text-sm text-text2 mt-1">Votre abonnement est actif. {success && `${formatNumber(success.credits)} crédits par mois, dès maintenant.`}</p>
           <div className="mt-5 flex flex-col gap-2">
-            <Link href="/studio"><Button fullWidth leftIcon={<Wand2 className="size-4" />}>Start creating</Button></Link>
-            <Button fullWidth variant="ghost" onClick={() => setSuccess(null)}>Done</Button>
+            <Link href="/studio"><Button fullWidth leftIcon={<Wand2 className="size-4" />}>Commencer à créer</Button></Link>
+            <Button fullWidth variant="ghost" onClick={() => setSuccess(null)}>Terminé</Button>
           </div>
         </div>
       </Modal>

@@ -5,20 +5,20 @@ struct CampaignsView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
-    @State private var filter = "All"
+    @State private var filter = "Toutes"
     @State private var query = ""
 
-    private static let filters = ["All", "Draft", "Ready", "Scheduled", "Live", "Completed"]
+    private static let filters = ["Toutes", "Brouillon", "Prête", "Planifiée", "En cours", "Terminée"]
 
     private var filtered: [Campaign] {
         store.campaigns
             .filter { c in
                 switch filter {
-                case "Draft": return c.status == .draft
-                case "Ready": return c.status == .ready
-                case "Scheduled": return c.status == .scheduled
-                case "Live": return c.status == .live
-                case "Completed": return c.status == .completed
+                case "Brouillon": return c.status == .draft
+                case "Prête": return c.status == .ready
+                case "Planifiée": return c.status == .scheduled
+                case "En cours": return c.status == .live
+                case "Terminée": return c.status == .completed
                 default: return true
                 }
             }
@@ -32,21 +32,21 @@ struct CampaignsView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Campaigns").msTitle(30)
-                    Text("\(store.campaigns.count) campaigns · \(liveCount) live").msBody(14)
+                    Text("Campagnes").msTitle(30)
+                    Text("\(store.campaigns.count) campagne\(store.campaigns.count > 1 ? "s" : "") · \(liveCount) en cours").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                SearchBar(placeholder: "Search campaigns", text: $query)
+                SearchBar(placeholder: "Rechercher une campagne", text: $query)
                     .padding(.horizontal, MSSpacing.gutter)
                 ChipRow(options: Self.filters, selection: $filter)
 
                 if filtered.isEmpty {
                     EmptyStateView(
                         icon: query.isEmpty ? "flag.badge.ellipsis" : "magnifyingglass",
-                        title: query.isEmpty ? (filter == "All" ? "No campaigns yet" : "No \(filter.lowercased()) campaigns") : "No matches",
-                        message: query.isEmpty ? "Turn a product into a multi-platform campaign in five steps: objective, audience, platforms, formats, generate." : "Try a different name or clear the search.",
-                        ctaTitle: query.isEmpty ? "New campaign" : "Clear search",
+                        title: query.isEmpty ? (filter == "Toutes" ? "Aucune campagne pour l'instant" : "Aucune campagne : \(filter.lowercased())") : "Aucun résultat",
+                        message: query.isEmpty ? "Transformez un produit en campagne multiplateforme en cinq étapes : objectif, audience, plateformes, formats, génération." : "Essayez un autre nom ou effacez la recherche.",
+                        ctaTitle: query.isEmpty ? "Nouvelle campagne" : "Effacer la recherche",
                         ctaIcon: query.isEmpty ? "plus" : nil
                     ) {
                         if query.isEmpty { router.push(.campaignBuilder) } else { query = "" }
@@ -58,14 +58,14 @@ struct CampaignsView: View {
                                 .contextMenu {
                                     Menu {
                                         ForEach(CampaignStatus.allCases) { s in
-                                            Button(s.title) { store.setCampaignStatus(c.id, s); router.toast("Marked \(s.title.lowercased())") }
+                                            Button(s.title) { store.setCampaignStatus(c.id, s); router.toast("Statut : \(s.title.lowercased())") }
                                         }
-                                    } label: { Label("Change status", systemImage: "flag") }
-                                    Button { router.push(.contentCalendar(campaignId: c.id)) } label: { Label("Open calendar", systemImage: "calendar") }
+                                    } label: { Label("Changer le statut", systemImage: "flag") }
+                                    Button { router.push(.contentCalendar(campaignId: c.id)) } label: { Label("Ouvrir le calendrier", systemImage: "calendar") }
                                     Button(role: .destructive) {
                                         store.deleteCampaign(c.id)
-                                        router.toast("Campaign deleted", style: .warning)
-                                    } label: { Label("Delete", systemImage: "trash") }
+                                        router.toast("Campagne supprimée", style: .warning)
+                                    } label: { Label("Supprimer", systemImage: "trash") }
                                 }
                         }
                     }
@@ -77,7 +77,7 @@ struct CampaignsView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Campaigns")
+        .navigationTitle("Campagnes")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

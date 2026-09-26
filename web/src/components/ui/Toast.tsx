@@ -81,7 +81,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   </button>
                 )}
               </div>
-              <button aria-label="Dismiss" className="text-muted hover:text-text" onClick={() => dismiss(t.id)}><X className="size-4" /></button>
+              <button aria-label="Fermer" className="text-muted hover:text-text" onClick={() => dismiss(t.id)}><X className="size-4" /></button>
             </motion.div>
           ))}
         </AnimatePresence>

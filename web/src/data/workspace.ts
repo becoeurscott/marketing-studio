@@ -3,7 +3,7 @@ import { avatar, daysAgo } from "@/lib/utils";
 
 export const workspace: Workspace = {
   id: "ws_main",
-  name: "Marketing Studio",
+  name: "Sokozia",
   members: [
     { id: "user_alex", name: "Alex Carter", email: "alex@northstarcreative.co", role: "owner", avatarUrl: avatar(12), status: "active", joinedAt: daysAgo(210) },
     { id: "user_sarah", name: "Sarah Kim", email: "sarah@northstarcreative.co", role: "admin", avatarUrl: avatar(47), status: "active", joinedAt: daysAgo(150) },

@@ -43,7 +43,7 @@ export default function NotificationsPage() {
       else if (t >= startOfYesterday.getTime()) yesterday.push(n);
       else earlier.push(n);
     }
-    return [["Today", today], ["Yesterday", yesterday], ["Earlier", earlier]] as [string, Notification[]][];
+    return [["Aujourd’hui", today], ["Hier", yesterday], ["Plus tôt", earlier]] as [string, Notification[]][];
   }, [notifications, filter]);
 
   const total = groups.reduce((s, [, l]) => s + l.length, 0);
@@ -57,18 +57,18 @@ export default function NotificationsPage() {
     <>
       <PageHeader
         title="Notifications"
-        description={unread ? `${unread} unread` : "You're all caught up."}
-        actions={<Button variant="secondary" size="sm" leftIcon={<CheckCheck className="size-4" />} disabled={!unread} onClick={markAll}>Mark all read</Button>}
+        description={unread ? `${unread} non lue${unread > 1 ? "s" : ""}` : "Vous êtes à jour."}
+        actions={<Button variant="secondary" size="sm" leftIcon={<CheckCheck className="size-4" />} disabled={!unread} onClick={markAll}>Tout marquer comme lu</Button>}
       />
 
-      <FilterBar className="mb-5" options={[{ value: "all", label: "All", count: notifications.length }, { value: "unread", label: "Unread", count: unread }]} value={filter} onChange={setFilter} />
+      <FilterBar className="mb-5" options={[{ value: "all", label: "Toutes", count: notifications.length }, { value: "unread", label: "Non lues", count: unread }]} value={filter} onChange={setFilter} />
 
       {total === 0 ? (
         <EmptyState
           icon={Bell}
-          title={filter === "unread" ? "No unread notifications" : "No notifications yet"}
-          description={filter === "unread" ? "Nice. Everything has been read." : "Generation, campaign and export updates will land here."}
-          cta={filter === "unread" ? { label: "Show all", onClick: () => setFilter("all") } : { label: "Open Studio", href: "/studio" }}
+          title={filter === "unread" ? "Aucune notification non lue" : "Aucune notification pour le moment"}
+          description={filter === "unread" ? "Parfait, tout a été lu." : "Les mises à jour de vos générations, campagnes et exports apparaîtront ici."}
+          cta={filter === "unread" ? { label: "Tout afficher", onClick: () => setFilter("all") } : { label: "Ouvrir le Studio", href: "/studio" }}
         />
       ) : (
         <div className="space-y-6 max-w-3xl">
@@ -96,7 +96,7 @@ export default function NotificationsPage() {
                         </div>
                         <p className="text-[13px] text-text2 mt-0.5 line-clamp-2">{n.body}</p>
                       </div>
-                      <span className={cn("size-2 rounded-full mt-2 shrink-0", n.read ? "bg-transparent" : "bg-accent")} aria-label={n.read ? undefined : "Unread"} />
+                      <span className={cn("size-2 rounded-full mt-2 shrink-0", n.read ? "bg-transparent" : "bg-accent")} aria-label={n.read ? undefined : "Non lue"} />
                     </button>
                   );
                 })}

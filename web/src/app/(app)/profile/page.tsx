@@ -35,21 +35,21 @@ export default function ProfilePage() {
   const [signingOut, setSigningOut] = useState(false);
 
   const stats = [
-    { label: "Projects", value: projects.length, icon: FolderKanban, href: "/projects" },
-    { label: "Assets", value: assets.length, icon: Images, href: "/assets" },
-    { label: "Campaigns", value: campaigns.length, icon: Megaphone, href: "/campaigns" },
-    { label: "Generations", value: generations.length, icon: Wand2, href: "/generations" },
+    { label: "Projets", value: projects.length, icon: FolderKanban, href: "/projects" },
+    { label: "Ressources", value: assets.length, icon: Images, href: "/assets" },
+    { label: "Campagnes", value: campaigns.length, icon: Megaphone, href: "/campaigns" },
+    { label: "Générations", value: generations.length, icon: Wand2, href: "/generations" },
   ];
 
   const signOut = () => {
     reset();
-    toast.info("Signed out", "Demo data has been reset.");
+    toast.info("Déconnexion effectuée", "Les données de démo ont été réinitialisées.");
     router.replace("/onboarding");
   };
 
   return (
     <>
-      <PageHeader title="Profile" actions={<Button variant="secondary" leftIcon={<Pencil className="size-4" />} onClick={() => setEditing(true)}>Edit profile</Button>} />
+      <PageHeader title="Profil" actions={<Button variant="secondary" leftIcon={<Pencil className="size-4" />} onClick={() => setEditing(true)}>Modifier le profil</Button>} />
 
       <Card className="mb-6 relative overflow-hidden">
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-accent/25 via-accent2/15 to-transparent pointer-events-none" />
@@ -63,15 +63,15 @@ export default function ProfilePage() {
             </p>
             <div className="flex flex-wrap gap-1.5 mt-3">
               <Badge tone="accent">{user.role}</Badge>
-              <Badge tone="outline" className="capitalize">{plan} plan</Badge>
+              <Badge tone="outline">Forfait <span className="capitalize">{plan}</span></Badge>
               <Badge tone="neutral">{workspaceName}</Badge>
             </div>
           </div>
-          <p className="text-[12px] text-muted sm:text-right">Member since {formatDate(user.createdAt)}</p>
+          <p className="text-[12px] text-muted sm:text-right">Membre depuis le {formatDate(user.createdAt)}</p>
         </div>
       </Card>
 
-      <Section title="Overview">
+      <Section title="Vue d’ensemble">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {stats.map((s) => (
             <Link key={s.label} href={s.href} className="rounded-lg border border-border bg-card p-4 hover:border-white/15 transition-colors">
@@ -87,20 +87,20 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[13px] text-text2 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" /> Credits</p>
+              <p className="text-[13px] text-text2 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" /> Crédits</p>
               <p className="text-2xl font-bold tracking-tight tabular-nums mt-1">{formatNumber(credits)}</p>
             </div>
-            <Link href="/credits" className="shrink-0"><Button size="sm" variant="secondary">Manage</Button></Link>
+            <Link href="/credits" className="shrink-0"><Button size="sm" variant="secondary">Gérer</Button></Link>
           </div>
         </Card>
         <Card>
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] text-text2">Last activity</p>
-              <p className="text-sm font-medium mt-1 truncate">{generations[0] ? generations[0].prompt : "No generations yet"}</p>
+              <p className="text-[13px] text-text2">Dernière activité</p>
+              <p className="text-sm font-medium mt-1 truncate">{generations[0] ? generations[0].prompt : "Aucune génération pour le moment"}</p>
               {generations[0] && <p className="text-[12px] text-muted">{timeAgo(generations[0].createdAt)}</p>}
             </div>
-            <Link href="/generations" className="shrink-0"><Button size="sm" variant="secondary">History</Button></Link>
+            <Link href="/generations" className="shrink-0"><Button size="sm" variant="secondary">Historique</Button></Link>
           </div>
         </Card>
       </div>
@@ -108,19 +108,19 @@ export default function ProfilePage() {
       <Card>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-medium">Sign out</p>
-            <p className="text-[13px] text-text2">Ends the session and resets the demo data on this device.</p>
+            <p className="text-sm font-medium">Se déconnecter</p>
+            <p className="text-[13px] text-text2">Met fin à la session et réinitialise les données de démo sur cet appareil.</p>
           </div>
-          <Button variant="danger" leftIcon={<LogOut className="size-4" />} onClick={() => setSigningOut(true)}>Sign out</Button>
+          <Button variant="danger" leftIcon={<LogOut className="size-4" />} onClick={() => setSigningOut(true)}>Se déconnecter</Button>
         </div>
       </Card>
 
-      <Modal open={editing} onClose={() => setEditing(false)} title="Edit profile">
-        <ProfileForm key={String(editing)} user={user} onClose={() => setEditing(false)} onSave={(patch) => { updateUser(patch); toast.success("Profile updated"); }} />
+      <Modal open={editing} onClose={() => setEditing(false)} title="Modifier le profil">
+        <ProfileForm key={String(editing)} user={user} onClose={() => setEditing(false)} onSave={(patch) => { updateUser(patch); toast.success("Profil mis à jour"); }} />
       </Modal>
 
-      <ConfirmModal open={signingOut} onClose={() => setSigningOut(false)} danger title="Sign out?" description="You'll be taken back to onboarding and the demo data will be reset." confirmLabel="Sign out" onConfirm={signOut}>
-        <p className="text-sm text-text2">Projects, assets and settings on this device will return to the sample data.</p>
+      <ConfirmModal open={signingOut} onClose={() => setSigningOut(false)} danger title="Se déconnecter ?" description="Vous serez redirigé vers l’onboarding et les données de démo seront réinitialisées." confirmLabel="Se déconnecter" onConfirm={signOut}>
+        <p className="text-sm text-text2">Les projets, ressources et paramètres de cet appareil reviendront aux données d’exemple.</p>
       </ConfirmModal>
     </>
   );
@@ -136,7 +136,7 @@ function ProfileForm({ user, onClose, onSave }: { user: User; onClose: () => voi
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) { setError("Name is required."); return; }
+    if (!name.trim()) { setError("Le nom est obligatoire."); return; }
     onSave({ name: name.trim(), email: email.trim(), company: company.trim(), role: role.trim(), avatarUrl });
     onClose();
   };
@@ -147,21 +147,21 @@ function ProfileForm({ user, onClose, onSave }: { user: User; onClose: () => voi
         <Avatar src={avatarUrl} name={name || "?"} size={64} />
         <div className="flex flex-wrap gap-2">
           {[12, 47, 33, 20, 5, 58].map((n) => (
-            <button key={n} type="button" onClick={() => setAvatarUrl(avatar(n))} aria-label={`Choose avatar ${n}`} className="rounded-full ring-2 ring-transparent aria-pressed:ring-accent" aria-pressed={avatarUrl === avatar(n)}>
+            <button key={n} type="button" onClick={() => setAvatarUrl(avatar(n))} aria-label={`Choisir l’avatar ${n}`} className="rounded-full ring-2 ring-transparent aria-pressed:ring-accent" aria-pressed={avatarUrl === avatar(n)}>
               <Avatar src={avatar(n)} name="" size={32} />
             </button>
           ))}
         </div>
       </div>
-      <Input label="Name" name="name" value={name} onChange={(e) => setName(e.target.value)} error={error} autoFocus />
-      <Input label="Email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <Input label="Nom" name="name" value={name} onChange={(e) => setName(e.target.value)} error={error} autoFocus />
+      <Input label="E-mail" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input label="Company" name="company" value={company} onChange={(e) => setCompany(e.target.value)} />
-        <Input label="Role" name="role" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Founder" />
+        <Input label="Entreprise" name="company" value={company} onChange={(e) => setCompany(e.target.value)} />
+        <Input label="Poste" name="role" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Fondateur" />
       </div>
       <div className="flex items-center justify-end gap-2 pt-2">
-        <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-        <Button type="submit">Save</Button>
+        <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
+        <Button type="submit">Enregistrer</Button>
       </div>
     </form>
   );

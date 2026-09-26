@@ -31,15 +31,15 @@ export default function FavoritesPage() {
 
   return (
     <>
-      <PageHeader title="Favorites" description="Assets, templates, prompts and creators you've starred." />
+      <PageHeader title="Favoris" description="Les ressources, modèles, prompts et créateurs que vous avez mis en favoris." />
 
       {total === 0 ? (
-        <EmptyState icon={Heart} title="Nothing favorited yet" description="Tap the heart on any asset, template, hook or creator to keep it here." cta={{ label: "Browse assets", href: "/assets" }} />
+        <EmptyState icon={Heart} title="Aucun favori pour l'instant" description="Touchez le cœur d'une ressource, d'un modèle, d'une accroche ou d'un créateur pour le retrouver ici." cta={{ label: "Parcourir les ressources", href: "/assets" }} />
       ) : (
         <>
-          <Section title="Assets" description={`${favAssets.length} saved`}>
+          <Section title="Ressources" description={`${favAssets.length} enregistré${favAssets.length > 1 ? "s" : ""}`}>
             {favAssets.length === 0 ? (
-              <EmptyState compact icon={Images} title="No favorite assets" cta={{ label: "Browse assets", href: "/assets" }} />
+              <EmptyState compact icon={Images} title="Aucune ressource favorite" cta={{ label: "Parcourir les ressources", href: "/assets" }} />
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                 {favAssets.map((a) => <AssetCard key={a.id} asset={a} favorite onToggleFavorite={(x) => toggleFavorite("asset", x.id)} href={`/assets/${a.id}`} />)}
@@ -47,9 +47,9 @@ export default function FavoritesPage() {
             )}
           </Section>
 
-          <Section title="Templates" description={`${favTemplates.length} saved`}>
+          <Section title="Modèles" description={`${favTemplates.length} enregistré${favTemplates.length > 1 ? "s" : ""}`}>
             {favTemplates.length === 0 ? (
-              <EmptyState compact icon={LayoutTemplate} title="No favorite templates" cta={{ label: "Browse templates", href: "/templates" }} />
+              <EmptyState compact icon={LayoutTemplate} title="Aucun modèle favori" cta={{ label: "Parcourir les modèles", href: "/templates" }} />
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {favTemplates.map((t) => (
@@ -61,16 +61,16 @@ export default function FavoritesPage() {
                         <p className="text-[12px] text-muted mt-0.5 capitalize">{t.platform} · {t.format}</p>
                       </div>
                     </Link>
-                    <IconButton label="Remove from favorites" size="sm" className="absolute top-2 right-2 bg-black/50 text-danger backdrop-blur hover:bg-black/70" onClick={() => toggleFavorite("template", t.id)}><Heart className="fill-current" /></IconButton>
+                    <IconButton label="Retirer des favoris" size="sm" className="absolute top-2 right-2 bg-black/50 text-danger backdrop-blur hover:bg-black/70" onClick={() => toggleFavorite("template", t.id)}><Heart className="fill-current" /></IconButton>
                   </div>
                 ))}
               </div>
             )}
           </Section>
 
-          <Section title="Prompts" description={`${favPrompts.length} saved`}>
+          <Section title="Prompts" description={`${favPrompts.length} enregistré${favPrompts.length > 1 ? "s" : ""}`}>
             {favPrompts.length === 0 ? (
-              <EmptyState compact icon={MessageSquareQuote} title="No favorite prompts" description="Save hooks or prompts from the Copywriter." cta={{ label: "Open Copywriter", href: "/studio/copy" }} />
+              <EmptyState compact icon={MessageSquareQuote} title="Aucun prompt favori" description="Enregistrez des accroches ou des prompts depuis le rédacteur." cta={{ label: "Ouvrir le rédacteur", href: "/studio/copy" }} />
             ) : (
               <div className="grid md:grid-cols-2 gap-3">
                 {favPrompts.map((p) => (
@@ -78,8 +78,8 @@ export default function FavoritesPage() {
                     <MessageSquareQuote className="size-4 text-highlight shrink-0 mt-0.5" />
                     <p className="text-sm flex-1">{p.text}</p>
                     <div className="flex items-center gap-1 shrink-0">
-                      <IconButton label="Copy" size="sm" onClick={() => { navigator.clipboard?.writeText(p.text); toast.success("Copied"); }}><Copy /></IconButton>
-                      <IconButton label="Remove from favorites" size="sm" className="text-danger" onClick={() => toggleFavorite("prompt", p.id)}><Heart className="fill-current" /></IconButton>
+                      <IconButton label="Copier" size="sm" onClick={() => { navigator.clipboard?.writeText(p.text); toast.success("Copié"); }}><Copy /></IconButton>
+                      <IconButton label="Retirer des favoris" size="sm" className="text-danger" onClick={() => toggleFavorite("prompt", p.id)}><Heart className="fill-current" /></IconButton>
                     </div>
                   </Card>
                 ))}
@@ -87,9 +87,9 @@ export default function FavoritesPage() {
             )}
           </Section>
 
-          <Section title="Creators" description={`${favCreators.length} saved`}>
+          <Section title="Créateurs" description={`${favCreators.length} enregistré${favCreators.length > 1 ? "s" : ""}`}>
             {favCreators.length === 0 ? (
-              <EmptyState compact icon={Users} title="No favorite creators" cta={{ label: "Browse creators", href: "/creators" }} />
+              <EmptyState compact icon={Users} title="Aucun créateur favori" cta={{ label: "Parcourir les créateurs", href: "/creators" }} />
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {favCreators.map((c) => (
@@ -102,7 +102,7 @@ export default function FavoritesPage() {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1 mt-3">{c.languages.map((l) => <Badge key={l} tone="outline">{l}</Badge>)}</div>
-                    <IconButton label="Remove from favorites" size="sm" className="absolute top-2 right-2 text-danger" onClick={() => toggleFavorite("creator", c.id)}><Heart className="fill-current" /></IconButton>
+                    <IconButton label="Retirer des favoris" size="sm" className="absolute top-2 right-2 text-danger" onClick={() => toggleFavorite("creator", c.id)}><Heart className="fill-current" /></IconButton>
                   </Card>
                 ))}
               </div>

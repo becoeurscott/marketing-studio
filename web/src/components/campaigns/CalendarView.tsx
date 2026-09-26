@@ -10,7 +10,7 @@ import { useStore } from "@/lib/store";
 import type { CalendarItem, Campaign } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CalendarItemModal } from "./CalendarItemModal";
-import { PlatformIcon, adFormatLabel } from "./platform";
+import { PlatformIcon, adFormatLabel, statusLabel } from "./platform";
 
 type View = "week" | "month";
 
@@ -59,8 +59,8 @@ export function CalendarView({ campaign, compact }: { campaign: Campaign; compac
   };
 
   const title = view === "week"
-    ? `${days[0].toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${days[6].toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
-    : cursor.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    ? `${days[0].toLocaleDateString("fr-FR", { month: "short", day: "numeric" })} – ${days[6].toLocaleDateString("fr-FR", { month: "short", day: "numeric", year: "numeric" })}`
+    : cursor.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
   const onDrop = (e: DragEvent, day: Date) => {
     e.preventDefault();
@@ -73,7 +73,7 @@ export function CalendarView({ campaign, compact }: { campaign: Campaign; compac
     next.setHours(old.getHours(), old.getMinutes(), 0, 0);
     if (sameDay(old, next)) return;
     updateCalendarItem(campaign.id, item.id, { date: next.toISOString() });
-    toast.success("Rescheduled", `${item.title} → ${next.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}`);
+    toast.success("Reprogrammé", `${item.title} → ${next.toLocaleDateString("fr-FR", { weekday: "short", month: "short", day: "numeric" })}`);
   };
 
   const today = startOfDay(new Date());
@@ -82,20 +82,20 @@ export function CalendarView({ campaign, compact }: { campaign: Campaign; compac
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="secondary" onClick={() => shift(-1)} aria-label="Previous"><ChevronLeft className="size-4" /></Button>
-          <Button size="sm" variant="secondary" onClick={() => setCursor(today)}>Today</Button>
-          <Button size="sm" variant="secondary" onClick={() => shift(1)} aria-label="Next"><ChevronRight className="size-4" /></Button>
+          <Button size="sm" variant="secondary" onClick={() => shift(-1)} aria-label="Précédent"><ChevronLeft className="size-4" /></Button>
+          <Button size="sm" variant="secondary" onClick={() => setCursor(today)}>Aujourd’hui</Button>
+          <Button size="sm" variant="secondary" onClick={() => shift(1)} aria-label="Suivant"><ChevronRight className="size-4" /></Button>
           <h3 className="text-sm font-semibold ml-1 whitespace-nowrap">{title}</h3>
         </div>
         <div className="flex items-center gap-2">
-          <Tabs variant="pill" layoutId={compact ? "cal-view-compact" : "cal-view"} items={[{ value: "week", label: "Week" }, { value: "month", label: "Month" }]} value={view} onChange={setView} />
-          <Button size="sm" leftIcon={<Plus className="size-4" />} onClick={() => { setNewDate(today); setEditing("new"); }}>Add item</Button>
+          <Tabs variant="pill" layoutId={compact ? "cal-view-compact" : "cal-view"} items={[{ value: "week", label: "Semaine" }, { value: "month", label: "Mois" }]} value={view} onChange={setView} />
+          <Button size="sm" leftIcon={<Plus className="size-4" />} onClick={() => { setNewDate(today); setEditing("new"); }}>Ajouter</Button>
         </div>
       </div>
 
       {/* Weekday header */}
       <div className={cn("grid grid-cols-7 text-[11px] uppercase tracking-wide text-muted mb-1", view === "week" && "hidden md:grid")}>
-        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => <div key={d} className="px-2 py-1">{d}</div>)}
+        {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((d) => <div key={d} className="px-2 py-1">{d}</div>)}
       </div>
 
       <div className={cn("grid gap-px bg-border rounded-lg overflow-hidden border border-border", view === "week" ? "grid-cols-1 md:grid-cols-7" : "grid-cols-7")}>
@@ -119,10 +119,10 @@ export function CalendarView({ campaign, compact }: { campaign: Campaign; compac
             >
               <div className="flex items-center justify-between">
                 <span className={cn("text-[12px] font-medium", isToday ? "h-6 min-w-6 px-1.5 rounded-full bg-accent text-white flex items-center justify-center whitespace-nowrap" : outside ? "text-muted" : "text-text2")}>
-                  <span className="md:hidden">{view === "week" ? day.toLocaleDateString("en-US", { weekday: "short", day: "numeric" }) : day.getDate()}</span>
+                  <span className="md:hidden">{view === "week" ? day.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" }) : day.getDate()}</span>
                   <span className="hidden md:inline">{day.getDate()}</span>
                 </span>
-                <button aria-label="Add item on this day" onClick={() => { setNewDate(day); setEditing("new"); }} className="size-5 rounded text-muted hover:text-text hover:bg-white/5 flex items-center justify-center"><Plus className="size-3" /></button>
+                <button aria-label="Ajouter un élément ce jour-là" onClick={() => { setNewDate(day); setEditing("new"); }} className="size-5 rounded text-muted hover:text-text hover:bg-white/5 flex items-center justify-center"><Plus className="size-3" /></button>
               </div>
               {items.map((it) => (
                 <CalendarChip key={it.id} item={it} thumb={assets.find((a) => a.id === it.assetId)?.thumbnail} dense={view === "month"} onClick={() => setEditing(it)} />
@@ -131,7 +131,7 @@ export function CalendarView({ campaign, compact }: { campaign: Campaign; compac
           );
         })}
       </div>
-      <p className="text-[11px] text-muted mt-2">Drag an item to another day to reschedule. No real publishing happens in the prototype.</p>
+      <p className="text-[11px] text-muted mt-2">Faites glisser un élément vers un autre jour pour le reprogrammer. Aucune publication réelle n’a lieu dans le prototype.</p>
 
       <CalendarItemModal
         open={editing !== null}
@@ -152,7 +152,7 @@ function CalendarChip({ item, thumb, dense, onClick }: { item: CalendarItem; thu
       draggable
       onDragStart={(e) => { e.dataTransfer.setData("text/calendar-item", item.id); e.dataTransfer.effectAllowed = "move"; }}
       onClick={onClick}
-      title={`${item.title} · ${adFormatLabel(item.format)} · ${item.status}`}
+      title={`${item.title} · ${adFormatLabel(item.format)} · ${statusLabel(item.status)}`}
       className={cn(
         "w-full text-left rounded-md border border-border bg-elevated hover:border-white/20 transition-colors overflow-hidden cursor-grab active:cursor-grabbing",
         dense ? "p-1" : "p-1.5",
@@ -167,7 +167,7 @@ function CalendarChip({ item, thumb, dense, onClick }: { item: CalendarItem; thu
             <span className={cn(dense && "hidden lg:inline")}>{adFormatLabel(item.format)}</span>
           </div>
         </div>
-        {!dense && <Badge tone={tone} dot className="capitalize hidden sm:inline-flex">{item.status}</Badge>}
+        {!dense && <Badge tone={tone} dot className="hidden sm:inline-flex">{statusLabel(item.status)}</Badge>}
         {dense && <span className={cn("size-1.5 rounded-full shrink-0", tone === "success" ? "bg-success" : tone === "accent" ? "bg-accent" : "bg-muted")} />}
       </div>
     </button>

@@ -77,6 +77,13 @@ enum ExportFormat: String, CaseIterable, Identifiable {
 enum ExportQuality: String, CaseIterable, Identifiable {
     case standard = "Standard", high = "High", maximum = "Maximum"
     var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .standard: return "Standard"
+        case .high: return "Haute"
+        case .maximum: return "Maximale"
+        }
+    }
 }
 
 struct GeneratedImage: Identifiable, Hashable {
@@ -97,7 +104,7 @@ enum MockAPIError: LocalizedError {
     case failed(String)
     var errorDescription: String? {
         switch self {
-        case .insufficientCredits(let n): return "You need \(n) credits for this. Top up to continue."
+        case .insufficientCredits(let n): return "Il vous faut \(n) crédits pour cette action. Rechargez pour continuer."
         case .failed(let m): return m
         }
     }
@@ -110,8 +117,8 @@ enum MockAPIError: LocalizedError {
 @MainActor
 enum MockAPI {
 
-    static let videoSteps = ["Preparing assets", "Building scene 1...", "Adding motion...", "Rendering...", "Finalizing..."]
-    static let exportSteps = ["Collecting assets", "Rendering files", "Packaging", "Done"]
+    static let videoSteps = ["Préparation des ressources", "Création de la scène 1...", "Ajout du mouvement...", "Rendu...", "Finalisation..."]
+    static let exportSteps = ["Collecte des ressources", "Rendu des fichiers", "Empaquetage", "Terminé"]
 
     private static func wait(_ seconds: Double) async {
         try? await Task.sleep(for: .seconds(seconds))
@@ -133,19 +140,19 @@ enum MockAPI {
 
     static func generateImage(_ p: ImageGenParams, store: AppStore) async throws -> [GeneratedImage] {
         let cost = GenerationKind.image.creditCost * 4
-        try charge(store, cost, "Image generation × 4")
+        try charge(store, cost, "Génération d'images × 4")
         await delay(1.2, 2.5)
         let s = slug()
         let urls = (1...4).map { MockData.image("img-\(s)-\($0)") }
         let g = store.addGeneration(kind: .image, prompt: p.prompt, thumbnails: urls, projectId: p.projectId, credits: cost)
-        store.pushNotification(kind: .generationComplete, title: "Generation complete", message: "4 images are ready for \"\(p.prompt.prefix(40))\".")
+        store.pushNotification(kind: .generationComplete, title: "Génération terminée", message: "4 images sont prêtes pour « \(p.prompt.prefix(40)) ».")
         return urls.map { GeneratedImage(id: IDGen.make("out"), url: $0, generationId: g.id) }
     }
 
     static func upscaleImage(url: String, store: AppStore) async throws -> GeneratedImage {
-        try charge(store, 15, "Upscale")
+        try charge(store, 15, "Agrandissement")
         await delay(0.8, 1.6)
-        let g = store.addGeneration(kind: .image, prompt: "Upscale 2×", thumbnails: [url], credits: 15)
+        let g = store.addGeneration(kind: .image, prompt: "Agrandissement 2×", thumbnails: [url], credits: 15)
         return GeneratedImage(id: IDGen.make("out"), url: url, generationId: g.id)
     }
 
@@ -153,22 +160,22 @@ enum MockAPI {
 
     static func generateVideo(_ p: VideoGenParams, store: AppStore, progress: @escaping (String) -> Void) async throws -> GeneratedVideo {
         let cost = GenerationKind.video.creditCost
-        try charge(store, cost, "Video generation (\(p.duration)s)")
+        try charge(store, cost, "Génération vidéo (\(p.duration) s)")
         for step in videoSteps {
             progress(step)
             await wait(Double.random(in: 0.5...0.9))
         }
         let poster = MockData.image("vid-\(slug())", w: 720, h: 1280)
         let g = store.addGeneration(kind: .video, prompt: p.prompt, thumbnails: [poster], projectId: p.projectId, model: "Motion v1", credits: cost)
-        store.pushNotification(kind: .generationComplete, title: "Video rendered", message: "\(p.duration)s \(p.style.lowercased()) video is ready.")
+        store.pushNotification(kind: .generationComplete, title: "Vidéo générée", message: "Votre vidéo « \(p.style.lowercased()) » de \(p.duration) s est prête.")
         return GeneratedVideo(id: IDGen.make("out"), posterURL: poster, duration: p.duration, generationId: g.id)
     }
 
     static func generateUGC(_ p: UGCParams, store: AppStore, progress: @escaping (String) -> Void) async throws -> GeneratedVideo {
         let cost = GenerationKind.video.creditCost
-        try charge(store, cost, "UGC video")
-        let creatorName = store.creator(p.creatorId)?.name ?? "Creator"
-        for step in ["Casting \(creatorName)", "Reading script...", "Building scene 1...", "Adding motion...", "Rendering...", "Finalizing..."] {
+        try charge(store, cost, "Vidéo UGC")
+        let creatorName = store.creator(p.creatorId)?.name ?? "Créateur"
+        for step in ["Casting de \(creatorName)", "Lecture du script...", "Création de la scène 1...", "Ajout du mouvement...", "Rendu...", "Finalisation..."] {
             progress(step)
             await wait(Double.random(in: 0.4...0.8))
         }
@@ -181,11 +188,11 @@ enum MockAPI {
 
     static func generateProductShoot(_ p: ProductShootParams, store: AppStore) async throws -> [GeneratedImage] {
         let cost = GenerationKind.image.creditCost * p.count
-        try charge(store, cost, "Product shoot × \(p.count)")
+        try charge(store, cost, "Shooting produit × \(p.count)")
         await delay(1.4, 2.5)
         let s = slug()
         let urls = (1...p.count).map { MockData.image("shoot-\(s)-\($0)") }
-        let g = store.addGeneration(kind: .image, prompt: "Product shoot · \(p.environment) · \(p.lighting) · \(p.camera)", thumbnails: urls, projectId: p.projectId, credits: cost)
+        let g = store.addGeneration(kind: .image, prompt: "Shooting produit · \(p.environment) · \(p.lighting) · \(p.camera)", thumbnails: urls, projectId: p.projectId, credits: cost)
         return urls.map { GeneratedImage(id: IDGen.make("out"), url: $0, generationId: g.id) }
     }
 
@@ -193,20 +200,20 @@ enum MockAPI {
 
     static func generateAds(_ p: AdParams, store: AppStore) async throws -> [AdVariation] {
         let cost = GenerationKind.ad.creditCost
-        try charge(store, cost, "Ad variations × 4")
+        try charge(store, cost, "Variantes de pub × 4")
         await delay(1.0, 2.2)
         let s = slug()
-        let headlines = ["\(p.product): \(p.offer)", "Made for \(p.audience.lowercased())", "The upgrade you've been waiting for", "\(p.offer). Today only."]
+        let headlines = ["\(p.product): \(p.offer)", "Pensé pour \(p.audience.lowercased())", "L'amélioration que vous attendiez", "\(p.offer). Aujourd'hui seulement."]
         let bodies = [
-            "Premium quality, honest pricing. \(p.offer) for a limited time.",
-            "Designed for \(p.audience.lowercased()) who want more from every day.",
-            "Thousands already switched. See why \(p.product) is different.",
-            "Don't wait — \(p.offer.lowercased()) ends soon. Tap to claim yours.",
+            "Qualité premium, prix honnête. \(p.offer) pour une durée limitée.",
+            "Conçu pour \(p.audience.lowercased()) qui en veulent plus au quotidien.",
+            "Des milliers de personnes ont déjà changé. Découvrez pourquoi \(p.product) est différent.",
+            "N'attendez pas — \(p.offer.lowercased()) se termine bientôt. Touchez pour en profiter.",
         ]
         let vars = ["A", "B", "C", "D"].enumerated().map { i, l in
-            AdVariation(id: IDGen.make("var"), label: "Creative \(l)", visualURL: MockData.image("ad-\(s)-\(l)"), headline: headlines[i], primaryText: bodies[i], cta: p.cta, platform: p.platform)
+            AdVariation(id: IDGen.make("var"), label: "Création \(l)", visualURL: MockData.image("ad-\(s)-\(l)"), headline: headlines[i], primaryText: bodies[i], cta: p.cta, platform: p.platform)
         }
-        store.addGeneration(kind: .ad, prompt: "\(p.platform.title) \(p.format) ad · \(p.product) · \(p.audience) · \(p.offer)", thumbnails: vars.map { $0.visualURL }, projectId: p.projectId, model: "Ads v1", credits: cost)
+        store.addGeneration(kind: .ad, prompt: "Pub \(p.platform.title) \(p.format) · \(p.product) · \(p.audience) · \(p.offer)", thumbnails: vars.map { $0.visualURL }, projectId: p.projectId, model: "Ads v1", credits: cost)
         return vars
     }
 
@@ -214,31 +221,31 @@ enum MockAPI {
 
     static func generateCopy(_ p: CopyParams, store: AppStore) async throws -> CopyResult {
         let cost = GenerationKind.copy.creditCost
-        try charge(store, cost, "Copywriter · \(p.tool)")
+        try charge(store, cost, "Rédaction · \(p.tool)")
         await delay(0.6, 1.6)
         let voice = store.brand.voice
         let text: String
         switch p.tool {
         case "Instagram Caption":
-            text = "Meet your everyday glow. \(p.product) does the work so your routine doesn't have to. Clean formula, real results. ✨ #\(p.product.replacingOccurrences(of: " ", with: "").lowercased())"
+            text = "Découvrez votre éclat au quotidien. \(p.product) fait le travail pour que votre routine n'ait pas à le faire. Formule clean, vrais résultats. ✨ #\(p.product.replacingOccurrences(of: " ", with: "").lowercased())"
         case "TikTok Caption":
-            text = "POV: your skin finally gets it 💧 \(p.product) is the one. #skincare #glow #fyp"
+            text = "POV : votre peau a enfin compris 💧 \(p.product), c'est le bon. #skincare #glow #fyp"
         case "Email":
-            text = "Subject: Your glow, delivered.\n\nHi there,\n\n\(p.product) is here. Built for \(p.audience.lowercased()), designed for every day. \(voice.writingStyle)\n\nTap below to \(p.goal.lowercased() == "sales" ? "shop the launch" : "learn more").\n\n— Team Luma"
+            text = "Objet : Votre éclat, livré.\n\nBonjour,\n\n\(p.product) est arrivé. Pensé pour \(p.audience.lowercased()), conçu pour tous les jours. \(voice.writingStyle)\n\nTouchez ci-dessous pour \(p.goal.lowercased() == "sales" ? "découvrir le lancement" : "en savoir plus").\n\n— L'équipe Luma"
         case "Headline":
-            text = "\(p.product). Glow, simplified."
+            text = "\(p.product). L'éclat, en toute simplicité."
         case "Hook":
-            text = MockData.hookLibrary.randomElement() ?? "Nobody tells you this about..."
+            text = MockData.hookLibrary.randomElement() ?? "Personne ne vous dit ça sur..."
         case "CTA":
-            text = "Get your glow — Shop now"
+            text = "Révélez votre éclat — Achetez maintenant"
         case "UGC Script":
-            text = "[Hook] Okay, I need to talk about \(p.product).\n[Problem] I tried everything for dull skin.\n[Product] Then I found this. Three drops, every morning.\n[Proof] Two weeks in and people are asking what changed.\n[CTA] Link's below — trust me on this one."
+            text = "[Accroche] Bon, il faut que je vous parle de \(p.product).\n[Problème] J'ai tout essayé contre le teint terne.\n[Produit] Puis j'ai trouvé ça. Trois gouttes, chaque matin.\n[Preuve] Deux semaines après, on me demande ce qui a changé.\n[CTA] Le lien est en dessous — faites-moi confiance."
         case "Landing Page Copy":
-            text = "# \(p.product)\n\nBrighter skin, simpler routine.\n\nA vitamin C serum designed for everyday use. Light, clean and made for \(p.audience.lowercased()).\n\n**Shop now** · Free shipping over $40"
+            text = "# \(p.product)\n\nUne peau plus lumineuse, une routine plus simple.\n\nUn sérum à la vitamine C conçu pour un usage quotidien. Léger, clean et pensé pour \(p.audience.lowercased()).\n\n**Acheter maintenant** · Livraison offerte dès 40 €"
         case "Product Description":
-            text = "\(p.product) is a vitamin C brightening serum designed for everyday skincare routines. Lightweight and fast-absorbing, it evens tone and adds glow without heaviness. Made for \(p.audience.lowercased())."
+            text = "\(p.product) est un sérum éclat à la vitamine C conçu pour les routines de soin quotidiennes. Léger et rapidement absorbé, il unifie le teint et apporte de l'éclat sans effet lourd. Pensé pour \(p.audience.lowercased())."
         default:
-            text = "\(p.product) — the \(p.tone.lowercased()) choice for \(p.audience.lowercased()). \(voice.writingStyle) Shop today."
+            text = "\(p.product) — le choix \(p.tone.lowercased()) pour \(p.audience.lowercased()). \(voice.writingStyle) Achetez dès aujourd'hui."
         }
         store.addGeneration(kind: .copy, prompt: "\(p.tool) · \(p.product) · \(p.tone)", thumbnails: [], model: "Writer v3", credits: cost, resultText: text)
         store.addCopyResult(tool: p.tool, tone: p.tone, text: text)
@@ -247,13 +254,13 @@ enum MockAPI {
 
     static func generateHooks(product: String, audience: String, store: AppStore) async throws -> [HookResult] {
         let cost = GenerationKind.copy.creditCost * 2
-        try charge(store, cost, "Hook generator × 10")
+        try charge(store, cost, "Générateur d'accroches × 10")
         await delay(0.8, 1.8)
-        let cats = ["Curiosity", "Contrarian", "POV", "Pattern interrupt", "Story", "Authority", "Urgency", "Simplicity", "Trend", "Proof"]
+        let cats = ["Curiosité", "À contre-courant", "POV", "Rupture", "Histoire", "Autorité", "Urgence", "Simplicité", "Tendance", "Preuve"]
         let hooks = Array(MockData.hookLibrary.shuffled().prefix(10)).enumerated().map { i, t in
             HookResult(id: IDGen.make("hook"), text: t.replacingOccurrences(of: "vitamin C serums", with: product.lowercased()), category: cats[i % cats.count])
         }
-        store.addGeneration(kind: .copy, prompt: "10 hooks · \(product) · \(audience)", thumbnails: [], model: "Writer v3", credits: cost, resultText: hooks.map { $0.text }.joined(separator: "\n"))
+        store.addGeneration(kind: .copy, prompt: "10 accroches · \(product) · \(audience)", thumbnails: [], model: "Writer v3", credits: cost, resultText: hooks.map { $0.text }.joined(separator: "\n"))
         return hooks
     }
 
@@ -261,23 +268,23 @@ enum MockAPI {
 
     static func createCampaign(_ p: CampaignParams, store: AppStore, progress: @escaping (String) -> Void) async throws -> Campaign {
         let cost = 60
-        try charge(store, cost, "Campaign generation")
-        for step in ["Analysing objective", "Selecting formats", "Generating creatives", "Writing copy", "Building calendar"] {
+        try charge(store, cost, "Génération de campagne")
+        for step in ["Analyse de l'objectif", "Sélection des formats", "Génération des visuels", "Rédaction des textes", "Création du calendrier"] {
             progress(step)
             await wait(Double.random(in: 0.4...0.7))
         }
         let s = slug()
         let assetIds = (1...6).map { i in
-            store.addAsset(name: "\(p.name) creative \(i)", kind: i % 3 == 0 ? .video : .image, imageURL: MockData.image("camp-\(s)-\(i)"), projectId: p.projectId, tags: ["campaign"], durationSeconds: i % 3 == 0 ? 10 : nil).id
+            store.addAsset(name: "\(p.name) visuel \(i)", kind: i % 3 == 0 ? .video : .image, imageURL: MockData.image("camp-\(s)-\(i)"), projectId: p.projectId, tags: ["campaign"], durationSeconds: i % 3 == 0 ? 10 : nil).id
         }
-        let vars = try await generateAds(AdParams(platform: p.platforms.first ?? .instagram, format: "Image", product: store.brand.name, offer: "Launch offer", audience: p.audience, projectId: p.projectId), store: store)
+        let vars = try await generateAds(AdParams(platform: p.platforms.first ?? .instagram, format: "Image", product: store.brand.name, offer: "Offre de lancement", audience: p.audience, projectId: p.projectId), store: store)
         var c = store.createCampaign(name: p.name, objective: p.objective, audience: p.audience, platforms: p.platforms, formats: p.formats, projectId: p.projectId, assetIds: assetIds, variations: vars)
         c.status = .ready
         c.calendarItems = (0..<5).map { d in
-            CalendarItem(id: IDGen.make("cal"), title: ["Teaser", "Hero post", "UGC hook", "Story", "Retarget"][d], date: .daysFromNow(Double(d * 2 + 1)), platform: p.platforms[d % max(p.platforms.count, 1)], format: ["Reel", "Image", "Video", "Story", "Carousel"][d], status: .draft, assetId: assetIds.indices.contains(d) ? assetIds[d] : nil)
+            CalendarItem(id: IDGen.make("cal"), title: ["Teaser", "Post phare", "Accroche UGC", "Story", "Reciblage"][d], date: .daysFromNow(Double(d * 2 + 1)), platform: p.platforms[d % max(p.platforms.count, 1)], format: ["Reel", "Image", "Video", "Story", "Carousel"][d], status: .draft, assetId: assetIds.indices.contains(d) ? assetIds[d] : nil)
         }
         store.updateCampaign(c)
-        store.pushNotification(kind: .campaignReady, title: "Campaign ready", message: "\(p.name) has \(assetIds.count) assets and \(vars.count) ad variations.")
+        store.pushNotification(kind: .campaignReady, title: "Campagne prête", message: "\(p.name) contient \(assetIds.count) ressources et \(vars.count) variantes de pub.")
         return c
     }
 
@@ -288,8 +295,8 @@ enum MockAPI {
             progress(Double(i) / Double(exportSteps.count - 1), step)
             await wait(Double.random(in: 0.4...0.8))
         }
-        let a = store.addAsset(name: "Export \(ids.count) item\(ids.count == 1 ? "" : "s") (\(format.rawValue), \(quality.rawValue))", kind: .export, imageURL: MockData.image("exp-\(slug())", w: 800, h: 800), projectId: store.currentProjectId, tags: ["export"])
-        store.pushNotification(kind: .exportComplete, title: "Export complete", message: "\(a.name) is ready to download.")
+        let a = store.addAsset(name: "Export de \(ids.count) élément\(ids.count == 1 ? "" : "s") (\(format.rawValue), \(quality.label))", kind: .export, imageURL: MockData.image("exp-\(slug())", w: 800, h: 800), projectId: store.currentProjectId, tags: ["export"])
+        store.pushNotification(kind: .exportComplete, title: "Export terminé", message: "\(a.name) est prêt à être téléchargé.")
         return a
     }
 
@@ -305,6 +312,6 @@ enum MockAPI {
 
     static func assistantReply(to message: String, store: AppStore) async -> String {
         await delay(0.6, 1.4)
-        return MockData.assistantReplies.randomElement() ?? "Done."
+        return MockData.assistantReplies.randomElement() ?? "C'est fait."
     }
 }

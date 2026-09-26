@@ -21,7 +21,7 @@ struct SheetHost: View {
             InviteMemberSheet()
         case .uploadProduct:
             UploadProductSheet { asset in
-                router.toast("\(asset.name) added to assets", style: .success, icon: "checkmark.circle.fill")
+                router.toast("\(asset.name) ajouté aux ressources", style: .success, icon: "checkmark.circle.fill")
             }
         case .exportAssets(let ids):
             ExportCenterView(preselectedIds: ids, inSheet: true)
@@ -36,7 +36,7 @@ struct SheetHost: View {
 
     private func placeholder(_ title: String, _ message: String, icon: String) -> some View {
         BottomSheetContainer(title: title) {
-            EmptyStateView(icon: icon, title: title, message: message, ctaTitle: "Close") {
+            EmptyStateView(icon: icon, title: title, message: message, ctaTitle: "Fermer") {
                 router.dismissSheet()
             }
         }

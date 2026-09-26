@@ -11,18 +11,18 @@ export const analytics: AnalyticsSummary = {
     { week: "W6", images: 88, videos: 19, copy: 55, ads: 19 },
   ],
   topFormats: [
-    { format: "UGC video", share: 32 },
-    { format: "Product photos", share: 27 },
+    { format: "Vidéo UGC", share: 32 },
+    { format: "Photos produit", share: 27 },
     { format: "Reels", share: 18 },
-    { format: "Carousels", share: 13 },
+    { format: "Carrousels", share: 13 },
     { format: "Stories", share: 10 },
   ],
 };
 
 export const trendingFormats: { id: string; title: string; description: string; growth: string; mode: "image" | "video" | "ugc" | "product-shoot" | "ads" | "copy" }[] = [
-  { id: "tf_ugc", title: "UGC Video Ads", description: "Creator-led 15s ads with a hook, demo and CTA.", growth: "+38%", mode: "ugc" },
-  { id: "tf_shoot", title: "AI Product Shoot", description: "One photo → nine environments in seconds.", growth: "+27%", mode: "product-shoot" },
-  { id: "tf_reel", title: "Vertical Reels", description: "Slow orbit and push-in product reels for IG and TikTok.", growth: "+19%", mode: "video" },
-  { id: "tf_carousel", title: "Proof Carousels", description: "Before/after and testimonial carousels that convert.", growth: "+14%", mode: "ads" },
-  { id: "tf_hooks", title: "Hook Packs", description: "Ten scroll-stoppers per product in one click.", growth: "+11%", mode: "copy" },
+  { id: "tf_ugc", title: "Pubs vidéo UGC", description: "Pubs de 15 s portées par un créateur : accroche, démo et CTA.", growth: "+38%", mode: "ugc" },
+  { id: "tf_shoot", title: "Shooting produit IA", description: "Une photo → neuf décors en quelques secondes.", growth: "+27%", mode: "product-shoot" },
+  { id: "tf_reel", title: "Reels verticaux", description: "Reels produit en orbite lente et travelling avant pour IG et TikTok.", growth: "+19%", mode: "video" },
+  { id: "tf_carousel", title: "Carrousels de preuve", description: "Carrousels avant/après et témoignages qui convertissent.", growth: "+14%", mode: "ads" },
+  { id: "tf_hooks", title: "Packs d'accroches", description: "Dix accroches qui stoppent le scroll par produit, en un clic.", growth: "+11%", mode: "copy" },
 ];

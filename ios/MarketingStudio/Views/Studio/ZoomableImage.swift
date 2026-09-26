@@ -47,10 +47,10 @@ struct StudioZoomableImage: View {
 
     private var controls: some View {
         HStack(spacing: 4) {
-            canvasControl(icon: "plus.magnifyingglass", label: "Zoom") { zoom(by: 0.5) }
-            canvasControl(icon: "arrow.down.right.and.arrow.up.left", label: "Fit") { fit() }
+            canvasControl(icon: "plus.magnifyingglass", label: "Zoomer") { zoom(by: 0.5) }
+            canvasControl(icon: "arrow.down.right.and.arrow.up.left", label: "Ajuster") { fit() }
             if let onFullscreen {
-                canvasControl(icon: "arrow.up.left.and.arrow.down.right", label: "Full") { onFullscreen() }
+                canvasControl(icon: "arrow.up.left.and.arrow.down.right", label: "Plein écran") { onFullscreen() }
             }
         }
         .padding(4)

@@ -33,9 +33,9 @@ export function ProductPicker({ value, onChange, limit = 8, allowUpload = true }
     try {
       const asset = await uploadProduct({ name: f.name, size: f.size }, setUploading);
       onChange(asset);
-      toast.success("Product uploaded", asset.name);
+      toast.success("Produit importé", asset.name);
     } catch {
-      toast.error("Upload failed", "Please try again.");
+      toast.error("Échec de l'import", "Veuillez réessayer.");
     } finally {
       setUploading(null);
     }
@@ -57,10 +57,10 @@ export function ProductPicker({ value, onChange, limit = 8, allowUpload = true }
             onDragLeave={() => setDrag(false)}
             onDrop={onDrop}
             className={cn("aspect-square rounded-md border border-dashed flex flex-col items-center justify-center gap-1 text-muted hover:text-text hover:border-white/30 transition-colors", drag ? "border-accent text-highlight bg-accent/10" : "border-border-strong")}
-            aria-label="Upload product photo"
+            aria-label="Importer une photo produit"
           >
             {uploading !== null ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-            <span className="text-[10px]">{uploading !== null ? `${uploading}%` : "Upload"}</span>
+            <span className="text-[10px]">{uploading !== null ? `${uploading}%` : "Importer"}</span>
           </button>
         )}
         {images.map((a) => {
@@ -73,7 +73,7 @@ export function ProductPicker({ value, onChange, limit = 8, allowUpload = true }
           );
         })}
         {!images.length && !allowUpload && (
-          <div className="col-span-4 text-xs text-muted flex items-center gap-2"><ImagePlus className="size-4" /> No product images yet.</div>
+          <div className="col-span-4 text-xs text-muted flex items-center gap-2"><ImagePlus className="size-4" /> Aucune image produit pour l’instant.</div>
         )}
       </div>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handleFiles(e.target.files)} />

@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/Select";
 import { TEMPLATE_CATEGORIES, templates } from "@/data";
 import { useStore } from "@/lib/store";
 import type { TemplateCategory } from "@/lib/types";
+import { TEMPLATE_CATEGORY_LABELS, labelOf } from "@/lib/labels";
 
 type Category = TemplateCategory | "All" | "Favorites";
 type Sort = "popular" | "az";
@@ -33,18 +34,18 @@ export default function TemplatesPage() {
 
   return (
     <>
-      <PageHeader title="Templates" description="Start from a proven format. Every template opens Studio preconfigured." />
+      <PageHeader title="Modèles" description="Partez d’un format qui a fait ses preuves. Chaque modèle ouvre le Studio préconfiguré." />
 
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
-        <SearchBar value={q} onChange={setQ} placeholder="Search templates…" className="md:w-72" />
+        <SearchBar value={q} onChange={setQ} placeholder="Rechercher un modèle…" className="md:w-72" />
         <div className="md:ml-auto">
-          <Select compact value={sort} onChange={(e) => setSort(e.target.value as Sort)} options={[{ value: "popular", label: "Most used" }, { value: "az", label: "A – Z" }]} aria-label="Sort" />
+          <Select compact value={sort} onChange={(e) => setSort(e.target.value as Sort)} options={[{ value: "popular", label: "Les plus utilisés" }, { value: "az", label: "A – Z" }]} aria-label="Trier" />
         </div>
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 py-0.5 mb-6">
         {(["All", "Favorites", ...TEMPLATE_CATEGORIES] as Category[]).map((c) => (
-          <Chip key={c} size="sm" label={`${c} · ${countFor(c)}`} selected={category === c} onClick={() => setCategory(c)} />
+          <Chip key={c} size="sm" label={`${c === "All" ? "Tous" : c === "Favorites" ? "Favoris" : labelOf(TEMPLATE_CATEGORY_LABELS, c)} · ${countFor(c)}`} selected={category === c} onClick={() => setCategory(c)} />
         ))}
       </div>
 
@@ -55,9 +56,9 @@ export default function TemplatesPage() {
       ) : (
         <EmptyState
           icon={LayoutTemplate}
-          title={q ? "No templates match" : category === "Favorites" ? "No favorite templates yet" : "No templates in this category"}
-          description={q ? "Try a different search or clear the filter." : category === "Favorites" ? "Tap the heart on any template to keep it here." : "Check back soon: new templates are added every week."}
-          cta={{ label: q ? "Clear search" : "Show all templates", onClick: () => { setQ(""); setCategory("All"); } }}
+          title={q ? "Aucun modèle ne correspond" : category === "Favorites" ? "Aucun modèle favori pour le moment" : "Aucun modèle dans cette catégorie"}
+          description={q ? "Essayez une autre recherche ou retirez le filtre." : category === "Favorites" ? "Touchez le cœur d’un modèle pour le retrouver ici." : "Revenez bientôt : de nouveaux modèles sont ajoutés chaque semaine."}
+          cta={{ label: q ? "Effacer la recherche" : "Afficher tous les modèles", onClick: () => { setQ(""); setCategory("All"); } }}
         />
       )}
     </>

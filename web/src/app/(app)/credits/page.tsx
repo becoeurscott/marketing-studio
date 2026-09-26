@@ -19,14 +19,14 @@ import { cn, formatDate, formatNumber, timeAgo } from "@/lib/utils";
 
 const ACTION_META: Record<CreditAction, { label: string; icon: LucideIcon }> = {
   image: { label: "Image", icon: ImageIcon },
-  video: { label: "Video", icon: Video },
+  video: { label: "Vidéo", icon: Video },
   upscale: { label: "Upscale", icon: Wand2 },
-  copy: { label: "Copy", icon: Type },
-  ads: { label: "Ads", icon: Megaphone },
+  copy: { label: "Texte", icon: Type },
+  ads: { label: "Publicités", icon: Megaphone },
   ugc: { label: "UGC", icon: Users },
-  "product-shoot": { label: "Product shoot", icon: Camera },
+  "product-shoot": { label: "Shooting produit", icon: Camera },
   export: { label: "Export", icon: Download },
-  purchase: { label: "Purchase", icon: CreditCard },
+  purchase: { label: "Achat", icon: CreditCard },
   bonus: { label: "Bonus", icon: Gift },
 };
 
@@ -64,36 +64,36 @@ export default function CreditsPage() {
     if (!pack) return;
     setBuying(true);
     await delay(900, 1400);
-    buyCredits(pack.credits, `Purchased ${formatNumber(pack.credits)} credits`);
+    buyCredits(pack.credits, `Achat de ${formatNumber(pack.credits)} crédits`);
     setBuying(false);
     setSuccess(pack);
     setPack(null);
-    toast.success("Credits added", `+${formatNumber(pack.credits)} credits`);
+    toast.success("Crédits ajoutés", `+${formatNumber(pack.credits)} crédits`);
   };
 
   return (
     <>
-      <PageHeader title="Credits" description="Every generation uses credits. Top up any time; unused credits roll over." />
+      <PageHeader title="Crédits" description="Chaque génération consomme des crédits. Rechargez à tout moment ; les crédits non utilisés sont reportés." />
 
       {/* Balance hero */}
       <Card elevated className="relative overflow-hidden mb-6">
         <div className="absolute -top-24 -right-24 size-64 rounded-full bg-accent/15 blur-3xl pointer-events-none" />
         <div className="relative flex flex-col md:flex-row md:items-end gap-6">
           <div className="flex-1">
-            <p className="text-[13px] text-text2 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" /> Available balance</p>
+            <p className="text-[13px] text-text2 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" /> Solde disponible</p>
             <p className="text-5xl md:text-6xl font-bold tracking-tight mt-1 tabular-nums">{formatNumber(credits)}</p>
             <div className="mt-4 max-w-md">
               <div className="h-2 rounded-full bg-white/8 overflow-hidden">
                 <div className={cn("h-full rounded-full transition-all", low ? "bg-warning" : "bg-accent")} style={{ width: `${pct}%` }} />
               </div>
               <p className="text-[12px] text-muted mt-1.5">
-                {low ? "Running low. Video generations cost 50 each." : `${formatNumber(monthly)} credits included monthly on ${planInfo.name}.`}
+                {low ? "Solde faible. Chaque génération vidéo coûte 50 crédits." : `${formatNumber(monthly)} crédits inclus chaque mois avec ${planInfo.name}.`}
               </p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 md:w-[300px]">
-            <Stat label="Spent · 30 days" value={formatNumber(spentThisMonth)} />
-            <Stat label="Plan" value={planInfo.name} sub={<Link href="/pricing" className="text-highlight hover:underline">Change</Link>} />
+            <Stat label="Dépensés · 30 jours" value={formatNumber(spentThisMonth)} />
+            <Stat label="Forfait" value={planInfo.name} sub={<Link href="/pricing" className="text-highlight hover:underline">Changer</Link>} />
           </div>
         </div>
       </Card>
@@ -101,7 +101,7 @@ export default function CreditsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-6">
         <div>
           {/* Buy packs */}
-          <Section title="Buy credits" description="One-time packs. No real payment in this prototype.">
+          <Section title="Acheter des crédits" description="Packs ponctuels. Aucun paiement réel dans ce prototype.">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {creditPacks.map((p, i) => {
                 const best = i === 1;
@@ -112,11 +112,11 @@ export default function CreditsPage() {
                     onClick={() => setPack(p)}
                     className={cn("relative text-left rounded-lg border p-4 transition-colors hover:border-white/20", best ? "bg-accent/8 border-accent/50" : "bg-card border-border")}
                   >
-                    {best && <Badge tone="accent" className="absolute top-3 right-3">Best value</Badge>}
+                    {best && <Badge tone="accent" className="absolute top-3 right-3">Meilleure offre</Badge>}
                     <p className="text-2xl font-bold tracking-tight tabular-nums">{formatNumber(p.credits)}</p>
-                    <p className="text-[13px] text-text2">credits {p.bonus && <span className="text-success font-medium">{p.bonus}</span>}</p>
-                    <p className="text-sm font-semibold mt-3">${p.price}</p>
-                    <p className="text-[11px] text-muted">${(p.price / p.credits * 100).toFixed(1)} per 100</p>
+                    <p className="text-[13px] text-text2">crédits {p.bonus && <span className="text-success font-medium">{p.bonus}</span>}</p>
+                    <p className="text-sm font-semibold mt-3">{p.price} $</p>
+                    <p className="text-[11px] text-muted">{(p.price / p.credits * 100).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} $ les 100</p>
                   </button>
                 );
               })}
@@ -124,7 +124,7 @@ export default function CreditsPage() {
           </Section>
 
           {/* History */}
-          <Section title="Usage history" action={<FilterBar options={[{ value: "all", label: "All", count: counts.all }, { value: "spent", label: "Spent", count: counts.spent }, { value: "added", label: "Added", count: counts.added }]} value={filter} onChange={setFilter} />}>
+          <Section title="Historique d’utilisation" action={<FilterBar options={[{ value: "all", label: "Tout", count: counts.all }, { value: "spent", label: "Dépensés", count: counts.spent }, { value: "added", label: "Ajoutés", count: counts.added }]} value={filter} onChange={setFilter} />}>
             {list.length ? (
               <Card padded={false} className="divide-y divide-border">
                 {list.map((t) => {
@@ -149,7 +149,7 @@ export default function CreditsPage() {
                 })}
               </Card>
             ) : (
-              <EmptyState compact icon={History} title="No activity yet" description="Generations and purchases will show up here." cta={{ label: "Open Studio", href: "/studio" }} />
+              <EmptyState compact icon={History} title="Aucune activité pour le moment" description="Vos générations et achats apparaîtront ici." cta={{ label: "Ouvrir le Studio", href: "/studio" }} />
             )}
           </Section>
         </div>
@@ -157,8 +157,8 @@ export default function CreditsPage() {
         {/* Cost table */}
         <div className="lg:sticky lg:top-20 self-start">
           <Card>
-            <h3 className="text-[15px] font-semibold mb-1">What things cost</h3>
-            <p className="text-[13px] text-text2 mb-3">Per generation. Exports are free.</p>
+            <h3 className="text-[15px] font-semibold mb-1">Coût des actions</h3>
+            <p className="text-[13px] text-text2 mb-3">Par génération. Les exports sont gratuits.</p>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-border">
                 {COST_ROWS.map((k) => {
@@ -173,7 +173,7 @@ export default function CreditsPage() {
                 })}
               </tbody>
             </table>
-            <p className="text-[12px] text-muted mt-3">With {formatNumber(credits)} credits you can make about {Math.floor(credits / CREDIT_COSTS.image)} images or {Math.floor(credits / CREDIT_COSTS.video)} videos.</p>
+            <p className="text-[12px] text-muted mt-3">Avec {formatNumber(credits)} crédits, vous pouvez créer environ {formatNumber(Math.floor(credits / CREDIT_COSTS.image))} images ou {formatNumber(Math.floor(credits / CREDIT_COSTS.video))} vidéos.</p>
           </Card>
         </div>
       </div>
@@ -182,22 +182,22 @@ export default function CreditsPage() {
       <Modal
         open={!!pack}
         onClose={() => !buying && setPack(null)}
-        title="Confirm purchase"
-        description="Mock checkout: no card is charged."
+        title="Confirmer l’achat"
+        description="Paiement simulé : aucune carte n’est débitée."
         size="sm"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setPack(null)} disabled={buying}>Cancel</Button>
-            <Button onClick={confirmBuy} loading={buying} leftIcon={<CreditCard className="size-4" />}>Pay ${pack?.price}</Button>
+            <Button variant="ghost" onClick={() => setPack(null)} disabled={buying}>Annuler</Button>
+            <Button onClick={confirmBuy} loading={buying} leftIcon={<CreditCard className="size-4" />}>Payer {pack?.price} $</Button>
           </>
         }
       >
         {pack && (
           <div className="rounded-md bg-surface border border-border p-4 space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-text2">Pack</span><span className="font-medium">{formatNumber(pack.credits)} credits {pack.bonus}</span></div>
-            <div className="flex justify-between"><span className="text-text2">Price</span><span className="font-medium">${pack.price}.00</span></div>
-            <div className="flex justify-between"><span className="text-text2">Payment</span><span className="font-medium">Visa •••• 4242</span></div>
-            <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-text2">New balance</span><span className="font-semibold">{formatNumber(credits + pack.credits)}</span></div>
+            <div className="flex justify-between"><span className="text-text2">Pack</span><span className="font-medium">{formatNumber(pack.credits)} crédits {pack.bonus}</span></div>
+            <div className="flex justify-between"><span className="text-text2">Prix</span><span className="font-medium">{pack.price},00 $</span></div>
+            <div className="flex justify-between"><span className="text-text2">Paiement</span><span className="font-medium">Visa •••• 4242</span></div>
+            <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-text2">Nouveau solde</span><span className="font-semibold">{formatNumber(credits + pack.credits)}</span></div>
           </div>
         )}
       </Modal>
@@ -208,11 +208,11 @@ export default function CreditsPage() {
           <div className="mx-auto size-14 rounded-full bg-success/15 border border-success/30 flex items-center justify-center mb-4">
             <Check className="size-6 text-success" />
           </div>
-          <h2 className="text-lg font-semibold tracking-tight">Credits added</h2>
-          <p className="text-sm text-text2 mt-1">+{formatNumber(success?.credits ?? 0)} credits. Your balance is now <span className="text-text font-medium">{formatNumber(credits)}</span>.</p>
+          <h2 className="text-lg font-semibold tracking-tight">Crédits ajoutés</h2>
+          <p className="text-sm text-text2 mt-1">+{formatNumber(success?.credits ?? 0)} crédits. Votre solde est désormais de <span className="text-text font-medium">{formatNumber(credits)}</span>.</p>
           <div className="mt-5 flex flex-col gap-2">
-            <Link href="/studio"><Button fullWidth leftIcon={<Wand2 className="size-4" />}>Start creating</Button></Link>
-            <Button fullWidth variant="ghost" onClick={() => setSuccess(null)}>Done</Button>
+            <Link href="/studio"><Button fullWidth leftIcon={<Wand2 className="size-4" />}>Commencer à créer</Button></Link>
+            <Button fullWidth variant="ghost" onClick={() => setSuccess(null)}>Terminé</Button>
           </div>
         </div>
       </Modal>

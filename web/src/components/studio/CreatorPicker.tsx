@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 /** Modal: pick the UGC creator that will appear in the video. */
 export function CreatorPicker({ open, onClose, onPick, selectedId }: { open: boolean; onClose: () => void; onPick: (c: Creator) => void; selectedId?: string | null }) {
   return (
-    <Modal open={open} onClose={onClose} title="Choose a creator" description="The creator will present your product in the video." size="lg">
+    <Modal open={open} onClose={onClose} title="Choisir un créateur" description="Le créateur présentera votre produit dans la vidéo." size="lg">
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
         {creators.map((c) => {
           const sel = c.id === selectedId;

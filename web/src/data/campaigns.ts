@@ -17,14 +17,14 @@ function analytics(seed: number): CampaignAnalytics {
 
 function variations(seed: string, platform: Platform): AdVariation[] {
   const labels = ["A", "B", "C", "D"] as const;
-  const heads = ["Glow you can see in 7 days", "Your morning just got brighter", "Vitamin C. Done right.", "The serum everyone's asking about"];
+  const heads = ["Un éclat visible en 7 jours", "Vos matins deviennent plus lumineux", "La vitamine C. Bien faite.", "Le sérum dont tout le monde parle"];
   const texts = [
-    "Luma Glow Serum brightens, evens tone and fits into any routine. 20% off for launch week.",
-    "Skip the ten-step routine. One serum, visible glow. Launch offer ends Sunday.",
-    "Stabilized vitamin C in a lightweight formula. Clean, effective, everyday.",
-    "Real people, real results. See why Luma Glow sold out its first drop.",
+    "Le sérum Luma Glow illumine, unifie le teint et s'intègre à toutes les routines. -20 % pendant la semaine de lancement.",
+    "Oubliez la routine en dix étapes. Un seul sérum, un éclat visible. Offre de lancement jusqu'à dimanche.",
+    "De la vitamine C stabilisée dans une formule légère. Clean, efficace, au quotidien.",
+    "De vraies personnes, de vrais résultats. Découvrez pourquoi Luma Glow a été en rupture dès son premier lancement.",
   ];
-  const ctas = ["Shop Now", "Get 20% Off", "Learn More", "Try It Today"];
+  const ctas = ["Acheter", "Profiter de -20 %", "En savoir plus", "Essayer aujourd'hui"];
   return labels.map((label, i) => ({
     id: `var_${seed}_${label}`,
     label,
@@ -48,7 +48,7 @@ function calendar(campaignId: string, platforms: Platform[]): CalendarItem[] {
     format: formats[i % formats.length],
     status: statuses[i % statuses.length],
     assetId: `asset_image_${(i * 3) % 32}`,
-    title: ["Launch teaser", "Hero packshot", "Creator review", "Before/after", "Offer reminder", "Routine reel", "Ingredient story", "Last call"][i],
+    title: ["Teaser de lancement", "Packshot hero", "Avis créateur", "Avant/après", "Rappel de l'offre", "Reel routine", "Histoire des ingrédients", "Dernier appel"][i],
   }));
 }
 
@@ -67,15 +67,15 @@ const base = (
 });
 
 export const campaigns: Campaign[] = [
-  base("camp_luma_summer", "Luma Glow Summer Launch", "proj_luma_summer", "sales", "active", ["instagram", "tiktok", "facebook"], ["product-photos", "ugc", "video-ads", "stories", "carousels"], "Women and men 20–35 interested in skincare", 10, 1),
-  base("camp_skincare_refresh", "Summer Skincare Refresh", "proj_summer_skincare", "engagement", "active", ["instagram", "facebook"], ["product-photos", "carousels"], "Existing customers, 25–40", 20, 2),
-  base("camp_urban_launch", "Urban Coffee Cold Brew Launch", "proj_urban_coffee", "awareness", "active", ["instagram", "tiktok", "youtube"], ["video-ads", "ugc"], "Urban professionals 25–45", 28, 3),
-  base("camp_fitness_drop", "Fitness Apparel Drop", "proj_fitness", "sales", "completed", ["instagram", "tiktok"], ["ugc", "video-ads", "stories"], "Gym-goers 18–34", 38, 4),
-  base("camp_watch_editorial", "Watch Editorial Series", "proj_watch", "awareness", "completed", ["instagram", "youtube"], ["product-photos", "video-ads"], "Men 30–50, luxury shoppers", 42, 5),
-  base("camp_ugc_test", "UGC Hook Test — Serum", "proj_ugc_ads", "leads", "active", ["tiktok", "facebook"], ["ugc"], "Women 20–30, skincare beginners", 15, 6),
-  base("camp_holiday", "Holiday Gift Sets", "proj_holiday", "sales", "draft", ["instagram", "facebook"], ["carousels", "stories", "product-photos"], "Gift shoppers 25–45", 55, 7),
-  base("camp_coldbrew_series", "Cold Brew TikTok Series", "proj_coldbrew_tiktok", "engagement", "active", ["tiktok"], ["video-ads", "ugc"], "Gen Z coffee drinkers", 20, 8),
-  base("camp_founder", "Founder Story Shorts", "proj_founder_story", "awareness", "draft", ["youtube", "instagram"], ["video-ads"], "Brand-curious 25–40", 70, 9),
-  base("camp_spf", "SPF Daily Shield Teaser", "proj_sunscreen", "awareness", "draft", ["instagram", "tiktok"], ["product-photos", "stories"], "Skincare enthusiasts 20–35", 4, 10),
-  base("camp_retention", "Retention — Reorder Reminder", "proj_luma_summer", "sales", "active", ["facebook", "instagram"], ["carousels"], "Customers who purchased 45+ days ago", 8, 11),
+  base("camp_luma_summer", "Lancement été Luma Glow", "proj_luma_summer", "sales", "active", ["instagram", "tiktok", "facebook"], ["product-photos", "ugc", "video-ads", "stories", "carousels"], "Femmes et hommes de 20 à 35 ans intéressés par le soin de la peau", 10, 1),
+  base("camp_skincare_refresh", "Renouveau skincare de l'été", "proj_summer_skincare", "engagement", "active", ["instagram", "facebook"], ["product-photos", "carousels"], "Clients existants, 25–40 ans", 20, 2),
+  base("camp_urban_launch", "Lancement du cold brew Urban Coffee", "proj_urban_coffee", "awareness", "active", ["instagram", "tiktok", "youtube"], ["video-ads", "ugc"], "Actifs urbains, 25–45 ans", 28, 3),
+  base("camp_fitness_drop", "Lancement vêtements de fitness", "proj_fitness", "sales", "completed", ["instagram", "tiktok"], ["ugc", "video-ads", "stories"], "Habitués de la salle, 18–34 ans", 38, 4),
+  base("camp_watch_editorial", "Série éditoriale montres", "proj_watch", "awareness", "completed", ["instagram", "youtube"], ["product-photos", "video-ads"], "Hommes 30–50 ans, acheteurs de luxe", 42, 5),
+  base("camp_ugc_test", "Test d'accroches UGC — Sérum", "proj_ugc_ads", "leads", "active", ["tiktok", "facebook"], ["ugc"], "Femmes 20–30 ans, débutantes en skincare", 15, 6),
+  base("camp_holiday", "Coffrets cadeaux des fêtes", "proj_holiday", "sales", "draft", ["instagram", "facebook"], ["carousels", "stories", "product-photos"], "Acheteurs de cadeaux, 25–45 ans", 55, 7),
+  base("camp_coldbrew_series", "Série TikTok cold brew", "proj_coldbrew_tiktok", "engagement", "active", ["tiktok"], ["video-ads", "ugc"], "Amateurs de café de la génération Z", 20, 8),
+  base("camp_founder", "Shorts histoire du fondateur", "proj_founder_story", "awareness", "draft", ["youtube", "instagram"], ["video-ads"], "Curieux de la marque, 25–40 ans", 70, 9),
+  base("camp_spf", "Teaser SPF Daily Shield", "proj_sunscreen", "awareness", "draft", ["instagram", "tiktok"], ["product-photos", "stories"], "Passionnés de skincare, 20–35 ans", 4, 10),
+  base("camp_retention", "Fidélisation — rappel de réachat", "proj_luma_summer", "sales", "active", ["facebook", "instagram"], ["carousels"], "Clients ayant acheté il y a plus de 45 jours", 8, 11),
 ];

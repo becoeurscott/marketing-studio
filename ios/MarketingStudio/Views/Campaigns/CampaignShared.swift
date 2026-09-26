@@ -90,21 +90,25 @@ struct CalendarItemEditSheet: View {
     @State private var pickingAsset = false
 
     static let formats = ["Image", "Reel", "Video", "Story", "Carousel", "Short", "Pin"]
+    static func formatLabel(_ f: String) -> String {
+        ["Video": "Vidéo", "Carousel": "Carrousel", "Pin": "Épingle"][f] ?? f
+    }
 
     private var campaign: Campaign? { store.campaign(campaignId) }
     private var isEditing: Bool { item != nil }
 
     var body: some View {
-        BottomSheetContainer(title: isEditing ? "Edit content" : "Schedule content", subtitle: campaign?.name) {
+        BottomSheetContainer(title: isEditing ? "Modifier le contenu" : "Programmer un contenu", subtitle: campaign?.name) {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 18) {
-                    MSTextField(label: "Title", placeholder: "e.g. Hero post", text: $title, icon: "textformat")
+                    MSTextField(label: "Titre", placeholder: "ex. Post phare", text: $title, icon: "textformat")
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Day").msCaption(color: MSColor.text2)
+                        Text("Jour").msCaption(color: MSColor.text2)
                         DatePicker("", selection: $date, displayedComponents: .date)
                             .datePickerStyle(.compact)
                             .labelsHidden()
+                            .environment(\.locale, Locale(identifier: "fr_FR"))
                             .tint(MSColor.accent)
                             .padding(.horizontal, 12)
                             .frame(height: 48)
@@ -114,7 +118,7 @@ struct CalendarItemEditSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Platform").msCaption(color: MSColor.text2)
+                        Text("Plateforme").msCaption(color: MSColor.text2)
                         FlowLayout(spacing: 8) {
                             ForEach(campaign?.platforms.isEmpty == false ? campaign!.platforms : SocialPlatform.allCases) { p in
                                 MSChip(title: p.title, icon: p.icon, selected: platform == p) { platform = p }
@@ -126,13 +130,13 @@ struct CalendarItemEditSheet: View {
                         Text("Format").msCaption(color: MSColor.text2)
                         FlowLayout(spacing: 8) {
                             ForEach(Self.formats, id: \.self) { f in
-                                MSChip(title: f, selected: format == f) { format = f }
+                                MSChip(title: Self.formatLabel(f), selected: format == f) { format = f }
                             }
                         }
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Status").msCaption(color: MSColor.text2)
+                        Text("Statut").msCaption(color: MSColor.text2)
                         HStack(spacing: 8) {
                             ForEach(CalendarStatus.allCases) { s in
                                 MSChip(title: s.title, selected: status == s) { status = s }
@@ -141,7 +145,7 @@ struct CalendarItemEditSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Asset").msCaption(color: MSColor.text2)
+                        Text("Ressource").msCaption(color: MSColor.text2)
                         Button { pickingAsset = true } label: {
                             HStack(spacing: 12) {
                                 if let a = assetId.flatMap({ store.asset($0) }) {
@@ -150,7 +154,7 @@ struct CalendarItemEditSheet: View {
                                 } else {
                                     Image(systemName: "photo.badge.plus").foregroundStyle(MSColor.muted).frame(width: 44, height: 44)
                                         .background(MSColor.card, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                                    Text("Choose an asset").msBody(14)
+                                    Text("Choisir une ressource").msBody(14)
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right").font(.system(size: 12, weight: .bold)).foregroundStyle(MSColor.muted)
@@ -163,13 +167,13 @@ struct CalendarItemEditSheet: View {
                     }
 
                     VStack(spacing: 10) {
-                        MSButton(title: isEditing ? "Save changes" : "Add to calendar", icon: isEditing ? "checkmark" : "calendar.badge.plus", isDisabled: title.trimmingCharacters(in: .whitespaces).isEmpty) {
+                        MSButton(title: isEditing ? "Enregistrer les modifications" : "Ajouter au calendrier", icon: isEditing ? "checkmark" : "calendar.badge.plus", isDisabled: title.trimmingCharacters(in: .whitespaces).isEmpty) {
                             save()
                         }
                         if let item {
-                            MSButton(title: "Remove from calendar", icon: "trash", style: .danger) {
+                            MSButton(title: "Retirer du calendrier", icon: "trash", style: .danger) {
                                 store.removeCalendarItem(item.id, from: campaignId)
-                                router.toast("Removed from calendar", style: .warning)
+                                router.toast("Retiré du calendrier", style: .warning)
                                 onDone()
                             }
                         }
@@ -189,7 +193,7 @@ struct CalendarItemEditSheet: View {
             }
         }
         .msSheet(isPresented: $pickingAsset, detents: [.large]) {
-            AssetPickerSheet(title: "Choose asset", preferredIds: campaign?.assetIds ?? [], multiple: false, initial: assetId.map { [$0] } ?? []) { ids in
+            AssetPickerSheet(title: "Choisir une ressource", preferredIds: campaign?.assetIds ?? [], multiple: false, initial: assetId.map { [$0] } ?? []) { ids in
                 assetId = ids.first
             }
         }
@@ -201,11 +205,11 @@ struct CalendarItemEditSheet: View {
             existing.title = trimmed; existing.date = date; existing.platform = platform
             existing.format = format; existing.status = status; existing.assetId = assetId
             store.updateCalendarItem(existing, in: campaignId)
-            router.toast("Content updated", style: .success)
+            router.toast("Contenu mis à jour", style: .success)
         } else {
             let new = CalendarItem(id: IDGen.make("cal"), title: trimmed, date: date, platform: platform, format: format, status: status, assetId: assetId)
             store.addCalendarItem(new, to: campaignId)
-            router.toast("Added to calendar", style: .success)
+            router.toast("Ajouté au calendrier", style: .success)
         }
         MSHaptic.success()
         onDone()

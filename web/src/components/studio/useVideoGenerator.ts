@@ -56,7 +56,7 @@ export function useVideoGenerator() {
       setResult({ ...out, url: SAMPLE_VIDEO_URL, poster: src?.url ?? out.poster, thumbnail: src?.thumbnail ?? out.thumbnail });
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "failed";
-      setError({ code, message: err instanceof Error ? err.message : "Unknown error" });
+      setError({ code, message: err instanceof Error ? err.message : "Erreur inconnue" });
     } finally {
       setGenerating(false);
     }
@@ -65,7 +65,7 @@ export function useVideoGenerator() {
   const ensureAsset = useCallback((): Asset | null => {
     if (!result) return null;
     if (savedAsset) return savedAsset;
-    const a = addAsset({ name: (params.concept.trim() || "Generated video").slice(0, 48), type: "video", url: result.url, thumbnail: result.thumbnail, projectId: currentProjectId, favorite: false, width: 1080, height: 1920, durationSec: result.durationSec, sizeKb: 4200, tags: ["generated", params.style] });
+    const a = addAsset({ name: (params.concept.trim() || "Vidéo générée").slice(0, 48), type: "video", url: result.url, thumbnail: result.thumbnail, projectId: currentProjectId, favorite: false, width: 1080, height: 1920, durationSec: result.durationSec, sizeKb: 4200, tags: ["generated", params.style] });
     setSavedAsset(a);
     return a;
   }, [result, savedAsset, addAsset, params.concept, params.style, currentProjectId]);

@@ -17,7 +17,7 @@ export interface ConfirmModalProps {
 }
 
 /** Small confirm dialog used for destructive or irreversible prototype actions. */
-export function ConfirmModal({ open, onClose, onConfirm, title, description, confirmLabel = "Confirm", danger, loading, children }: ConfirmModalProps) {
+export function ConfirmModal({ open, onClose, onConfirm, title, description, confirmLabel = "Confirmer", danger, loading, children }: ConfirmModalProps) {
   return (
     <Modal
       open={open}
@@ -27,12 +27,12 @@ export function ConfirmModal({ open, onClose, onConfirm, title, description, con
       size="sm"
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={loading}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose} disabled={loading}>Annuler</Button>
           <Button variant={danger ? "danger" : "primary"} onClick={onConfirm} loading={loading}>{confirmLabel}</Button>
         </>
       }
     >
-      {children ?? <p className="text-sm text-text2">This can&apos;t be undone in the prototype.</p>}
+      {children ?? <p className="text-sm text-text2">Cette action est irréversible dans le prototype.</p>}
     </Modal>
   );
 }

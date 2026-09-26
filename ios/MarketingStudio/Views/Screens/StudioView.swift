@@ -14,7 +14,7 @@ struct StudioView: View {
     @State private var mode: StudioMode = .image
     @State private var history = StudioHistory(StudioSnapshot(prompt: "", productAssetId: nil, selectedResultId: nil))
     @State private var restoring = false
-    @State private var saveStatus = "Saved"
+    @State private var saveStatus = "Enregistré"
     @State private var saveTask: Task<Void, Never>?
 
     @State private var showProjects = false
@@ -107,8 +107,8 @@ struct StudioView: View {
             } label: {
                 HStack(spacing: 7) {
                     RoundedRectangle(cornerRadius: 4, style: .continuous).fill(MSColor.accentGradient).frame(width: 14, height: 14)
-                    Text(store.currentProject?.name ?? "No project").msHeadline(13).lineLimit(1)
-                    Circle().fill(saveStatus == "Saved" ? MSColor.success : MSColor.warning).frame(width: 5, height: 5)
+                    Text(store.currentProject?.name ?? "Aucun projet").msHeadline(13).lineLimit(1)
+                    Circle().fill(saveStatus == "Enregistré" ? MSColor.success : MSColor.warning).frame(width: 5, height: 5)
                     Image(systemName: "chevron.down").font(.system(size: 9, weight: .bold)).foregroundStyle(MSColor.muted)
                 }
                 .padding(.horizontal, 11)
@@ -116,7 +116,7 @@ struct StudioView: View {
                 .overlayPill()
             }
             .buttonStyle(MSPressStyle())
-            .accessibilityLabel("Project \(store.currentProject?.name ?? "none"), \(saveStatus)")
+            .accessibilityLabel("Projet \(store.currentProject?.name ?? "aucun"), \(saveStatus)")
 
             Spacer(minLength: 4)
 
@@ -126,7 +126,7 @@ struct StudioView: View {
             } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "bolt.fill").font(.system(size: 10, weight: .bold)).foregroundStyle(MSColor.highlight)
-                    Text(store.credits.formatted()).font(.system(size: 13, weight: .semibold, design: .rounded)).foregroundStyle(MSColor.text).contentTransition(.numericText())
+                    Text(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))).font(.system(size: 13, weight: .semibold, design: .rounded)).foregroundStyle(MSColor.text).contentTransition(.numericText())
                 }
                 .padding(.horizontal, 10)
                 .frame(height: 32)
@@ -136,17 +136,17 @@ struct StudioView: View {
             .animation(MSAnimation.snappy, value: store.credits)
 
             Menu {
-                Button { undo() } label: { Label("Undo", systemImage: "arrow.uturn.backward") }.disabled(!history.canUndo)
-                Button { redo() } label: { Label("Redo", systemImage: "arrow.uturn.forward") }.disabled(!history.canRedo)
+                Button { undo() } label: { Label("Annuler", systemImage: "arrow.uturn.backward") }.disabled(!history.canUndo)
+                Button { redo() } label: { Label("Rétablir", systemImage: "arrow.uturn.forward") }.disabled(!history.canRedo)
                 Divider()
                 if let url = URL(string: currentVisualURL ?? "") {
-                    ShareLink(item: url) { Label("Share", systemImage: "square.and.arrow.up") }
+                    ShareLink(item: url) { Label("Partager", systemImage: "square.and.arrow.up") }
                 }
-                Button { export() } label: { Label("Export", systemImage: "square.and.arrow.down") }
+                Button { export() } label: { Label("Exporter", systemImage: "square.and.arrow.down") }
                 Button { showAssistant = true } label: { Label("Assistant", systemImage: "bubble.left.and.text.bubble.right") }
-                Button { showOptions = true } label: { Label("All options", systemImage: "slider.horizontal.3") }
+                Button { showOptions = true } label: { Label("Toutes les options", systemImage: "slider.horizontal.3") }
                 Divider()
-                Button { showProjects = true } label: { Label("Switch project", systemImage: "folder") }
+                Button { showProjects = true } label: { Label("Changer de projet", systemImage: "folder") }
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 14, weight: .bold))
@@ -155,7 +155,7 @@ struct StudioView: View {
                     .overlayPill()
             }
             .menuOrder(.fixed)
-            .accessibilityLabel("Studio menu")
+            .accessibilityLabel("Menu du studio")
         }
     }
 
@@ -170,7 +170,7 @@ struct StudioView: View {
         .overlay(alignment: .trailing) {
             HStack(spacing: 6) {
                 if let url = currentVisualURL {
-                    overlayIcon("arrow.up.left.and.arrow.down.right", label: "Fullscreen") {
+                    overlayIcon("arrow.up.left.and.arrow.down.right", label: "Plein écran") {
                         fullscreen = FullscreenImageItem(url: url, aspect: currentAspect)
                     }
                 }
@@ -239,7 +239,7 @@ struct StudioView: View {
                 StudioCanvasMedia(url: p.imageURL) { fullscreen = FullscreenImageItem(url: p.imageURL, aspect: 0.8) }
                     .transition(.opacity)
             } else {
-                emptyCanvas(icon: "sparkles", title: "Start creating", message: "Add a product, describe the shot, generate.", primary: "Upload product", primaryIcon: "square.and.arrow.up") {
+                emptyCanvas(icon: "sparkles", title: "Commencez à créer", message: "Ajoutez un produit, décrivez la prise de vue, générez.", primary: "Importer un produit", primaryIcon: "square.and.arrow.up") {
                     showProductPicker = true
                 }
             }
@@ -251,7 +251,7 @@ struct StudioView: View {
         switch video.phase {
         case .generating(let step):
             StudioCanvasMedia(url: video.sourceAsset?.imageURL, dimmed: true)
-            canvasOverlay { progressCard(steps: MockAPI.videoSteps, step: step, title: "Generating \(video.duration)s video") }
+            canvasOverlay { progressCard(steps: MockAPI.videoSteps, step: step, title: "Génération d'une vidéo de \(video.duration) s") }
         case .result:
             if let r = video.result {
                 videoResultCanvas(r)
@@ -263,7 +263,7 @@ struct StudioView: View {
                 StudioCanvasMedia(url: s.imageURL) { fullscreen = FullscreenImageItem(url: s.imageURL, aspect: currentAspect) }
                     .transition(.opacity)
             } else {
-                emptyCanvas(icon: "video", title: "Bring a product to life", message: "Pick a source image, describe the motion, generate.", primary: "Pick source image", primaryIcon: "photo") {
+                emptyCanvas(icon: "video", title: "Donnez vie à un produit", message: "Choisissez une image source, décrivez le mouvement, générez.", primary: "Choisir une image source", primaryIcon: "photo") {
                     showProductPicker = true
                 }
             }
@@ -275,7 +275,7 @@ struct StudioView: View {
         switch ugc.phase {
         case .generating(let step):
             StudioCanvasMedia(url: ugc.creator?.avatarURL, dimmed: true)
-            canvasOverlay { progressCard(steps: UGCGenSession.steps, step: step, title: "Casting \(ugc.creator?.name ?? "creator")") }
+            canvasOverlay { progressCard(steps: UGCGenSession.steps, step: step, title: "Casting de \(ugc.creator?.name ?? "créateur")") }
         case .result:
             if let r = ugc.result {
                 videoResultCanvas(r)
@@ -288,7 +288,7 @@ struct StudioView: View {
                     .id(c.id)
                     .transition(.opacity)
             } else {
-                emptyCanvas(icon: "person.crop.rectangle", title: "Cast a creator", message: "Pick an AI creator, hand them your product and a script.", primary: "Choose creator", primaryIcon: "person") {
+                emptyCanvas(icon: "person.crop.rectangle", title: "Choisissez un créateur", message: "Sélectionnez un créateur IA, confiez-lui votre produit et un script.", primary: "Choisir un créateur", primaryIcon: "person") {
                     showCreatorPicker = true
                 }
             }
@@ -310,7 +310,7 @@ struct StudioView: View {
                     }
                 }
                 .buttonStyle(MSPressStyle())
-                .accessibilityLabel("Play video")
+                .accessibilityLabel("Lire la vidéo")
                 }
             }
             .id(r.id)
@@ -355,7 +355,7 @@ struct StudioView: View {
                 }
                 HStack(spacing: 10) {
                     MSButton(title: primary, icon: primaryIcon, size: .compact, fullWidth: false, action: action)
-                    MSButton(title: "Templates", icon: "square.grid.2x2", style: .secondary, size: .compact, fullWidth: false) { router.push(.templates) }
+                    MSButton(title: "Modèles", icon: "square.grid.2x2", style: .secondary, size: .compact, fullWidth: false) { router.push(.templates) }
                 }
                 .padding(.top, 4)
             }
@@ -394,11 +394,11 @@ struct StudioView: View {
 
     private func videoActions(_ r: VideoResult, reset: @escaping () -> Void) -> some View {
         HStack(spacing: 6) {
-            smallAction("Download", "arrow.down.to.line") { router.toast("Saved to Photos", style: .success, icon: "checkmark.circle.fill") }
+            smallAction("Télécharger", "arrow.down.to.line") { router.toast("Enregistré dans Photos", style: .success, icon: "checkmark.circle.fill") }
             let fav = store.isFavorite(.asset, r.assetId)
-            smallAction(fav ? "Favorited" : "Favorite", fav ? "heart.fill" : "heart", tint: fav ? MSColor.danger : nil) { store.toggleFavorite(.asset, r.assetId) }
-            smallAction("Regenerate", "arrow.clockwise") { generate() }
-            smallAction("New", "plus") { withAnimation(MSAnimation.gentle) { reset() } }
+            smallAction(fav ? "Favori" : "Ajouter aux favoris", fav ? "heart.fill" : "heart", tint: fav ? MSColor.danger : nil) { store.toggleFavorite(.asset, r.assetId) }
+            smallAction("Régénérer", "arrow.clockwise") { generate() }
+            smallAction("Nouveau", "plus") { withAnimation(MSAnimation.gentle) { reset() } }
         }
         .padding(.horizontal, 12)
         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -436,11 +436,11 @@ struct StudioView: View {
         let title: String
         let disabled: Bool
         switch mode {
-        case .video: title = "Video options"; disabled = false
-        case .ugc: title = "UGC options"; disabled = !ugc.canGenerate
-        default: title = "Image options"; disabled = false
+        case .video: title = "Options vidéo"; disabled = false
+        case .ugc: title = "Options UGC"; disabled = !ugc.canGenerate
+        default: title = "Options image"; disabled = false
         }
-        return BottomSheetContainer(title: title, subtitle: "Fine-tune before you generate.") {
+        return BottomSheetContainer(title: title, subtitle: "Peaufinez avant de générer.") {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     switch mode {
@@ -451,7 +451,7 @@ struct StudioView: View {
                     default:
                         ImageOptionsForm(session: image, full: false)
                     }
-                    MSButton(title: "Generate · \(currentCost) credits", icon: "paperplane.fill", isDisabled: disabled) {
+                    MSButton(title: "Générer · \(currentCost) crédits", icon: "paperplane.fill", isDisabled: disabled) {
                         showOptions = false
                         generate()
                     }
@@ -505,14 +505,14 @@ struct StudioView: View {
     private func uploadFromPhotos() {
         guard !uploadingPhoto else { return }
         uploadingPhoto = true
-        router.toast("Uploading from Photos", style: .info, icon: "icloud.and.arrow.up")
+        router.toast("Importation depuis Photos", style: .info, icon: "icloud.and.arrow.up")
         Task {
             defer { uploadingPhoto = false; photoItem = nil }
             do {
-                let a = try await MockAPI.uploadProduct(name: "Camera roll upload", store: store) { _ in }
+                let a = try await MockAPI.uploadProduct(name: "Import de la pellicule", store: store) { _ in }
                 MSHaptic.success()
                 setProduct(a)
-                router.toast("\(a.name) ready", style: .success, icon: "checkmark.circle.fill")
+                router.toast("\(a.name) est prêt", style: .success, icon: "checkmark.circle.fill")
             } catch {
                 router.toast(error.localizedDescription, style: .error)
             }
@@ -545,7 +545,7 @@ struct StudioView: View {
 
     private func export() {
         guard let id = currentAssetId else {
-            router.toast("Nothing to export yet", style: .info)
+            router.toast("Rien à exporter pour le moment", style: .info)
             return
         }
         router.present(.exportAssets(ids: [id]))
@@ -603,14 +603,14 @@ struct StudioView: View {
         DispatchQueue.main.async { restoring = false }
     }
 
-    private func markSaving() { saveStatus = "Saving" }
+    private func markSaving() { saveStatus = "Enregistrement…" }
 
     private func markSaved(after seconds: Double = 0) {
         saveTask?.cancel()
         saveTask = Task {
             try? await Task.sleep(for: .seconds(seconds))
             guard !Task.isCancelled else { return }
-            withAnimation(MSAnimation.gentle) { saveStatus = "Saved" }
+            withAnimation(MSAnimation.gentle) { saveStatus = "Enregistré" }
         }
     }
 }
@@ -688,7 +688,7 @@ struct StudioModePill: View {
                     .frame(width: 28, height: 30)
             }
             .menuOrder(.fixed)
-            .accessibilityLabel("More modes")
+            .accessibilityLabel("Plus de modes")
         }
         .padding(3)
         .overlayPill()

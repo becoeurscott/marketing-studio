@@ -37,7 +37,7 @@ struct ProductPicker: View {
                     Button(action: onUpload) {
                         VStack(spacing: 6) {
                             Image(systemName: "plus").font(.system(size: 18, weight: .semibold)).foregroundStyle(MSColor.text)
-                            Text("Upload").msCaption(color: MSColor.text2)
+                            Text("Importer").msCaption(color: MSColor.text2)
                         }
                         .frame(width: 84, height: 104)
                         .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
@@ -101,9 +101,9 @@ struct CreditCostRow: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "bolt.fill").font(.system(size: 11, weight: .bold)).foregroundStyle(MSColor.highlight)
-            Text("\(cost) credits · \(label)").msCaption(color: MSColor.text2)
+            Text("\(cost) crédits · \(label)").msCaption(color: MSColor.text2)
             Spacer()
-            Text("Balance \(store.credits.formatted())").msCaption(color: store.canAfford(cost) ? MSColor.muted : MSColor.danger)
+            Text("Solde \(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR"))))").msCaption(color: store.canAfford(cost) ? MSColor.muted : MSColor.danger)
         }
         .padding(.horizontal, MSSpacing.gutter)
     }
@@ -149,10 +149,10 @@ struct CreativeErrorView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            ErrorStateView(message: isCredits ? "Not enough credits." : "Something went wrong.", retry: retry, back: back)
+            ErrorStateView(message: isCredits ? "Crédits insuffisants." : "Une erreur s'est produite.", retry: retry, back: back)
             Text(error.localizedDescription).msBody(13).multilineTextAlignment(.center).padding(.horizontal, MSSpacing.gutter)
             if isCredits {
-                MSButton(title: "Top up credits", icon: "bolt.fill", style: .secondary, size: .compact, fullWidth: false) {
+                MSButton(title: "Recharger des crédits", icon: "bolt.fill", style: .secondary, size: .compact, fullWidth: false) {
                     router.present(.buyCredits)
                 }
             }
@@ -172,9 +172,9 @@ struct CampaignPickerSheet: View {
     var onDone: () -> Void
 
     var body: some View {
-        BottomSheetContainer(title: "Use in campaign", subtitle: "Attach \(assetIds.count) asset\(assetIds.count == 1 ? "" : "s") to a campaign") {
+        BottomSheetContainer(title: "Utiliser dans une campagne", subtitle: "Associer \(assetIds.count) ressource\(assetIds.count == 1 ? "" : "s") à une campagne") {
             if store.campaigns.isEmpty {
-                EmptyStateView(icon: "flag", title: "No campaigns yet", message: "Build a campaign first, then attach creatives.", ctaTitle: "Campaign builder") {
+                EmptyStateView(icon: "flag", title: "Aucune campagne pour l'instant", message: "Créez d'abord une campagne, puis associez-y vos visuels.", ctaTitle: "Créateur de campagne") {
                     onDone()
                     router.push(.campaignBuilder)
                 }
@@ -187,7 +187,7 @@ struct CampaignPickerSheet: View {
                                     Image(systemName: c.objective.icon).foregroundStyle(MSColor.highlight).frame(width: 30)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(c.name).font(MSFont.control(14)).foregroundStyle(MSColor.text)
-                                        Text("\(c.assetIds.count) assets · \(c.platforms.map { $0.title }.joined(separator: ", "))").msCaption().lineLimit(1)
+                                        Text("\(c.assetIds.count) ressources · \(c.platforms.map { $0.title }.joined(separator: ", "))").msCaption().lineLimit(1)
                                     }
                                     Spacer()
                                     MSBadge(text: c.status.title, tone: MSBadge.tone(for: c.status))
@@ -196,7 +196,7 @@ struct CampaignPickerSheet: View {
                             .onTapGesture {
                                 store.addAssets(assetIds, toCampaign: c.id)
                                 MSHaptic.success()
-                                router.toast("Added to \(c.name)", style: .success)
+                                router.toast("Ajouté à \(c.name)", style: .success)
                                 onDone()
                             }
                         }

@@ -7,16 +7,16 @@ struct WorkspaceView: View {
 
     @State private var memberToRemove: WorkspaceMember?
 
-    private let workspaceName = "Marketing Studio"
+    private let workspaceName = "Sokozia"
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 header.padding(.horizontal, MSSpacing.gutter)
 
-                SectionHeader(title: "Members", subtitle: "\(store.members.count) of \(seatLimit) seats", actionTitle: "Invite") { invite() }
+                SectionHeader(title: "Membres", subtitle: "\(store.members.count) sur \(seatLimit) places", actionTitle: "Inviter") { invite() }
                 if store.members.isEmpty {
-                    EmptyStateView(icon: "person.2", title: "No members", message: "Invite teammates to collaborate on projects.", ctaTitle: "Invite", ctaIcon: "person.badge.plus") { invite() }
+                    EmptyStateView(icon: "person.2", title: "Aucun membre", message: "Invitez vos coéquipiers à collaborer sur vos projets.", ctaTitle: "Inviter", ctaIcon: "person.badge.plus") { invite() }
                 } else {
                     VStack(spacing: 0) {
                         ForEach(Array(store.members.enumerated()), id: \.element.id) { i, m in
@@ -30,29 +30,29 @@ struct WorkspaceView: View {
                     .animation(MSAnimation.gentle, value: store.members.map { $0.id })
                 }
 
-                MSButton(title: "Invite teammate", icon: "person.badge.plus", style: .secondary) { invite() }
+                MSButton(title: "Inviter un coéquipier", icon: "person.badge.plus", style: .secondary) { invite() }
                     .padding(.horizontal, MSSpacing.gutter)
 
-                SectionHeader(title: "Role permissions")
+                SectionHeader(title: "Permissions par rôle")
                 legend.padding(.horizontal, MSSpacing.gutter)
             }
             .padding(.top, 8)
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Workspace")
+        .navigationTitle("Espace de travail")
         .navigationBarTitleDisplayMode(.inline)
-        .confirmationDialog("Remove \(memberToRemove?.name ?? "member")?", isPresented: Binding(get: { memberToRemove != nil }, set: { if !$0 { memberToRemove = nil } }), titleVisibility: .visible) {
-            Button("Remove from workspace", role: .destructive) {
+        .confirmationDialog("Retirer \(memberToRemove?.name ?? "ce membre") ?", isPresented: Binding(get: { memberToRemove != nil }, set: { if !$0 { memberToRemove = nil } }), titleVisibility: .visible) {
+            Button("Retirer de l’espace de travail", role: .destructive) {
                 if let m = memberToRemove {
                     withAnimation(MSAnimation.gentle) { store.removeMember(m.id) }
-                    router.toast("\(m.name) removed", style: .warning)
+                    router.toast("\(m.name) a été retiré", style: .warning)
                 }
                 memberToRemove = nil
             }
-            Button("Cancel", role: .cancel) { memberToRemove = nil }
+            Button("Annuler", role: .cancel) { memberToRemove = nil }
         } message: {
-            Text("They lose access to every project in this workspace.")
+            Text("Cette personne perdra l’accès à tous les projets de cet espace de travail.")
         }
     }
 
@@ -67,7 +67,7 @@ struct WorkspaceView: View {
 
     private func invite() {
         if store.members.count >= seatLimit {
-            router.present(.paywall(feature: "More team seats"))
+            router.present(.paywall(feature: "Plus de places dans l’équipe"))
         } else {
             router.present(.inviteMember)
         }
@@ -77,13 +77,13 @@ struct WorkspaceView: View {
         HStack(spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 16, style: .continuous).fill(MSColor.accentGradient).frame(width: 60, height: 60)
-                Text("MS").font(.system(size: 20, weight: .bold, design: .rounded)).foregroundStyle(.white)
+                Text("SK").font(.system(size: 20, weight: .bold, design: .rounded)).foregroundStyle(.white)
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text(workspaceName).msTitle(24)
                 HStack(spacing: 6) {
                     MSBadge(text: store.plan.title, tone: .accent)
-                    Text("\(store.projects.count) projects · \(store.campaigns.count) campaigns").msCaption()
+                    Text("\(store.projects.count) projets · \(store.campaigns.count) campagnes").msCaption()
                 }
             }
             Spacer()
@@ -99,26 +99,26 @@ struct WorkspaceView: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(m.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                    if m.id == "mem_alex" || m.email == store.user.email { Text("You").msCaption() }
+                    if m.id == "mem_alex" || m.email == store.user.email { Text("Vous").msCaption() }
                 }
                 Text(m.email).msCaption().lineLimit(1)
             }
             Spacer()
             if m.role == .owner {
-                MSBadge(text: "Owner", tone: .accent, icon: "crown")
+                MSBadge(text: "Propriétaire", tone: .accent, icon: "crown")
             } else {
                 Menu {
-                    Section("Change role") {
+                    Section("Changer le rôle") {
                         ForEach(MemberRole.allCases.filter { $0 != .owner }) { r in
                             Button {
                                 store.changeRole(m.id, to: r)
-                                router.toast("\(m.name) is now \(r.title)", style: .success)
+                                router.toast("\(m.name) est maintenant \(r.title)", style: .success)
                             } label: {
                                 Label(r.title, systemImage: m.role == r ? "checkmark" : roleIcon(r))
                             }
                         }
                     }
-                    Button(role: .destructive) { memberToRemove = m } label: { Label("Remove", systemImage: "person.badge.minus") }
+                    Button(role: .destructive) { memberToRemove = m } label: { Label("Retirer", systemImage: "person.badge.minus") }
                 } label: {
                     HStack(spacing: 4) {
                         MSBadge(text: m.role.title, tone: roleTone(m.role), icon: roleIcon(m.role))
@@ -134,13 +134,13 @@ struct WorkspaceView: View {
 
     private var legend: some View {
         VStack(spacing: 0) {
-            legendRow(.owner, "Billing, delete workspace, everything below")
+            legendRow(.owner, "Facturation, suppression de l’espace, et tout ce qui suit")
             Rectangle().fill(MSColor.border).frame(height: 1)
-            legendRow(.admin, "Manage members, brand kits and settings")
+            legendRow(.admin, "Gérer les membres, kits de marque et réglages")
             Rectangle().fill(MSColor.border).frame(height: 1)
-            legendRow(.editor, "Create and edit projects, assets and campaigns")
+            legendRow(.editor, "Créer et modifier projets, ressources et campagnes")
             Rectangle().fill(MSColor.border).frame(height: 1)
-            legendRow(.viewer, "View and download only")
+            legendRow(.viewer, "Consultation et téléchargement uniquement")
         }
         .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
@@ -187,12 +187,12 @@ struct InviteMemberSheet: View {
     private var emailValid: Bool { email.contains("@") && email.contains(".") && !email.hasSuffix(".") }
 
     var body: some View {
-        BottomSheetContainer(title: "Invite teammate", subtitle: "They get an email with a link to join Marketing Studio.") {
+        BottomSheetContainer(title: "Inviter un coéquipier", subtitle: "Cette personne recevra un e-mail avec un lien pour rejoindre Sokozia.") {
             VStack(alignment: .leading, spacing: 14) {
-                MSTextField(label: "Name", placeholder: "e.g. Jamie Lee", text: $name, icon: "person", autocapitalization: .words)
-                MSTextField(label: "Email", placeholder: "name@company.com", text: $email, icon: "envelope", keyboard: .emailAddress, autocapitalization: .never)
+                MSTextField(label: "Nom", placeholder: "ex. Awa Diallo", text: $name, icon: "person", autocapitalization: .words)
+                MSTextField(label: "E-mail", placeholder: "nom@entreprise.com", text: $email, icon: "envelope", keyboard: .emailAddress, autocapitalization: .never)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Role").msCaption(color: MSColor.text2)
+                    Text("Rôle").msCaption(color: MSColor.text2)
                     HStack(spacing: 8) {
                         ForEach(MemberRole.allCases.filter { $0 != .owner }) { r in
                             MSChip(title: r.title, selected: role == r) { role = r }
@@ -201,14 +201,14 @@ struct InviteMemberSheet: View {
                     Text(roleHint).msCaption()
                 }
                 Spacer(minLength: 0)
-                MSButton(title: sending ? "Sending invite" : "Send invite", icon: sending ? nil : "paperplane.fill", isLoading: sending, isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty || !emailValid) {
+                MSButton(title: sending ? "Envoi de l’invitation" : "Envoyer l’invitation", icon: sending ? nil : "paperplane.fill", isLoading: sending, isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty || !emailValid) {
                     sending = true
                     Task {
                         try? await Task.sleep(for: .milliseconds(900))
                         let m = store.inviteMember(name: name.trimmingCharacters(in: .whitespaces), email: email.lowercased(), role: role)
                         MSHaptic.success()
                         router.dismissSheet()
-                        router.toast("Invite sent to \(m.name)", style: .success)
+                        router.toast("Invitation envoyée à \(m.name)", style: .success)
                     }
                 }
             }
@@ -220,9 +220,9 @@ struct InviteMemberSheet: View {
     private var roleHint: String {
         switch role {
         case .owner: return ""
-        case .admin: return "Can manage members, brand kits and settings."
-        case .editor: return "Can create and edit projects, assets and campaigns."
-        case .viewer: return "Can view and download only."
+        case .admin: return "Peut gérer les membres, kits de marque et réglages."
+        case .editor: return "Peut créer et modifier projets, ressources et campagnes."
+        case .viewer: return "Peut uniquement consulter et télécharger."
         }
     }
 }

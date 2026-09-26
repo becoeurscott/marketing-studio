@@ -47,11 +47,11 @@ export function PaywallModal({ open, onClose, reason = "credits", required = 0, 
         <div className="mx-auto size-12 rounded-xl bg-accent/15 border border-accent/30 flex items-center justify-center mb-4">
           {isCredits ? <Sparkles className="size-5 text-highlight" /> : <Lock className="size-5 text-highlight" />}
         </div>
-        <h2 className="text-lg font-semibold tracking-tight">{isCredits ? "Not enough credits" : `${feature ?? "This feature"} needs ${target.name}`}</h2>
+        <h2 className="text-lg font-semibold tracking-tight">{isCredits ? "Crédits insuffisants" : `${feature ?? "Cette fonctionnalité"} nécessite le forfait ${target.name}`}</h2>
         <p className="text-sm text-text2 mt-1.5">
           {isCredits
-            ? <>{feature ?? "This action"} costs <span className="text-text font-medium">{formatNumber(required)}</span> credits. You have <span className="text-text font-medium">{formatNumber(credits)}</span>.</>
-            : <>You&apos;re on the <span className="text-text font-medium capitalize">{plan}</span> plan. Upgrade to {target.name} (${target.priceMonthly}/mo) to unlock it.</>}
+            ? <>{feature ?? "Cette action"} coûte <span className="text-text font-medium">{formatNumber(required)}</span> crédits. Vous en avez <span className="text-text font-medium">{formatNumber(credits)}</span>.</>
+            : <>Vous êtes sur le forfait <span className="text-text font-medium capitalize">{plan}</span>. Passez à {target.name} ({target.priceMonthly} $/mois) pour la débloquer.</>}
         </p>
         {!isCredits && (
           <ul className="mt-4 text-left space-y-1.5 text-[13px] text-text2 bg-surface border border-border rounded-md p-3">
@@ -61,8 +61,8 @@ export function PaywallModal({ open, onClose, reason = "credits", required = 0, 
           </ul>
         )}
         <div className="mt-5 flex flex-col gap-2">
-          <Button fullWidth onClick={() => go(isCredits ? "/credits" : "/pricing")}>{isCredits ? "Buy credits" : `Upgrade to ${target.name}`}</Button>
-          <Button fullWidth variant="ghost" onClick={() => go(isCredits ? "/pricing" : "/credits")}>{isCredits ? "See plans" : "Buy credits instead"}</Button>
+          <Button fullWidth onClick={() => go(isCredits ? "/credits" : "/pricing")}>{isCredits ? "Acheter des crédits" : `Passer à ${target.name}`}</Button>
+          <Button fullWidth variant="ghost" onClick={() => go(isCredits ? "/pricing" : "/credits")}>{isCredits ? "Voir les forfaits" : "Acheter plutôt des crédits"}</Button>
         </div>
       </div>
     </Modal>

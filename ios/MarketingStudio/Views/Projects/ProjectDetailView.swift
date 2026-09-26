@@ -16,7 +16,7 @@ struct ProjectDetailView: View {
             if let project {
                 content(project)
             } else {
-                EmptyStateView(icon: "folder.badge.questionmark", title: "Project not found", message: "It may have been deleted.", ctaTitle: "Back to projects") { router.pop() }
+                EmptyStateView(icon: "folder.badge.questionmark", title: "Projet introuvable", message: "Il a peut-être été supprimé.", ctaTitle: "Retour aux projets") { router.pop() }
                     .msScreen()
             }
         }
@@ -27,7 +27,7 @@ struct ProjectDetailView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 header(project)
-                SegmentedTabs(tabs: ["Overview", "Assets", "Generations", "Campaigns"], selection: $tab)
+                SegmentedTabs(tabs: ["Aperçu", "Visuels", "Générations", "Campagnes"], selection: $tab)
                     .padding(.horizontal, MSSpacing.gutter)
                 Group {
                     switch tab {
@@ -63,7 +63,7 @@ struct ProjectDetailView: View {
                 .frame(height: 180)
                 .overlay(alignment: .bottomLeading) {
                     HStack(spacing: 6) {
-                        MSBadge(text: project.status == .active ? "Active" : "Archived", tone: project.status == .active ? .success : .neutral)
+                        MSBadge(text: project.status == .active ? "Actif" : "Archivé", tone: project.status == .active ? .success : .neutral)
                         if let bid = project.brandId, bid == store.brand.id {
                             MSBadge(text: store.brand.name, tone: .accent, icon: "paintpalette")
                         }
@@ -75,11 +75,11 @@ struct ProjectDetailView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(project.name).msTitle(26)
                 Text(project.description).msBody(14).lineSpacing(2)
-                Text("Created \(project.createdAt.formatted(date: .abbreviated, time: .omitted)) · Updated \(project.updatedAt.relativeString)").msCaption()
+                Text("Créé le \(project.createdAt.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(Locale(identifier: "fr_FR")))) · Mis à jour \(project.updatedAt.relativeString)").msCaption()
             }
             HStack(spacing: 10) {
-                MSButton(title: "Generate", icon: "sparkles", size: .compact) { router.push(.studio) }
-                MSButton(title: "New campaign", icon: "flag", style: .secondary, size: .compact) { router.push(.campaignBuilder) }
+                MSButton(title: "Générer", icon: "sparkles", size: .compact) { router.push(.studio) }
+                MSButton(title: "Nouvelle campagne", icon: "flag", style: .secondary, size: .compact) { router.push(.campaignBuilder) }
             }
         }
         .padding(.horizontal, MSSpacing.gutter)
@@ -93,15 +93,15 @@ struct ProjectDetailView: View {
         let camps = store.campaigns(in: project.id)
         return VStack(alignment: .leading, spacing: 18) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                StatTile(label: "Assets", value: "\(assets.count)", icon: "photo.on.rectangle") { tab = 1 }
-                StatTile(label: "Generations", value: "\(gens.count)", icon: "sparkles") { tab = 2 }
-                StatTile(label: "Campaigns", value: "\(camps.count)", icon: "flag") { tab = 3 }
+                StatTile(label: "Visuels", value: "\(assets.count)", icon: "photo.on.rectangle") { tab = 1 }
+                StatTile(label: "Générations", value: "\(gens.count)", icon: "sparkles") { tab = 2 }
+                StatTile(label: "Campagnes", value: "\(camps.count)", icon: "flag") { tab = 3 }
             }
             .padding(.horizontal, MSSpacing.gutter)
 
             if !assets.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
-                    SectionHeader(title: "Latest assets", actionTitle: "All") { tab = 1 }
+                    SectionHeader(title: "Derniers visuels", actionTitle: "Tout") { tab = 1 }
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                         ForEach(assets.prefix(6)) { a in
                             AssetThumb(asset: a) { router.push(.assetDetail(id: a.id)) }
@@ -112,7 +112,7 @@ struct ProjectDetailView: View {
             }
             if !gens.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
-                    SectionHeader(title: "Recent generations", actionTitle: "All") { tab = 2 }
+                    SectionHeader(title: "Générations récentes", actionTitle: "Tout") { tab = 2 }
                     VStack(spacing: 8) {
                         ForEach(gens.prefix(3)) { g in GenerationRow(generation: g) { router.push(.generations) } }
                     }
@@ -120,7 +120,7 @@ struct ProjectDetailView: View {
                 }
             }
             if assets.isEmpty && gens.isEmpty {
-                EmptyStateView(icon: "sparkles", title: "This project is empty", message: "Generate your first visual or upload a product photo to get started.", ctaTitle: "Open Studio", ctaIcon: "sparkles") { router.push(.studio) }
+                EmptyStateView(icon: "sparkles", title: "Ce projet est vide", message: "Générez votre premier visuel ou importez une photo produit pour commencer.", ctaTitle: "Ouvrir le Studio", ctaIcon: "sparkles") { router.push(.studio) }
             }
         }
     }
@@ -129,7 +129,7 @@ struct ProjectDetailView: View {
         let assets = store.assets(in: project.id)
         return Group {
             if assets.isEmpty {
-                EmptyStateView(icon: "photo.on.rectangle", title: "No assets", message: "Generated images, videos and exports for this project show up here.", ctaTitle: "Upload product", ctaIcon: "square.and.arrow.up") { router.present(.uploadProduct) }
+                EmptyStateView(icon: "photo.on.rectangle", title: "Aucun visuel", message: "Les images, vidéos et exports générés pour ce projet apparaissent ici.", ctaTitle: "Importer un produit", ctaIcon: "square.and.arrow.up") { router.present(.uploadProduct) }
             } else {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                     ForEach(assets) { a in
@@ -145,7 +145,7 @@ struct ProjectDetailView: View {
         let gens = store.generations(in: project.id)
         return Group {
             if gens.isEmpty {
-                EmptyStateView(icon: "clock.arrow.circlepath", title: "No generations", message: "Every image, video and copy you generate in this project is logged here.", ctaTitle: "Generate", ctaIcon: "sparkles") { router.push(.studio) }
+                EmptyStateView(icon: "clock.arrow.circlepath", title: "Aucune génération", message: "Chaque image, vidéo et texte générés dans ce projet sont enregistrés ici.", ctaTitle: "Générer", ctaIcon: "sparkles") { router.push(.studio) }
             } else {
                 VStack(spacing: 8) {
                     ForEach(gens) { g in GenerationRow(generation: g) { router.push(.generations) } }
@@ -159,7 +159,7 @@ struct ProjectDetailView: View {
         let camps = store.campaigns(in: project.id)
         return Group {
             if camps.isEmpty {
-                EmptyStateView(icon: "flag", title: "No campaigns", message: "Turn this project's assets into a multi-platform campaign.", ctaTitle: "Build campaign", ctaIcon: "flag") { router.push(.campaignBuilder) }
+                EmptyStateView(icon: "flag", title: "Aucune campagne", message: "Transformez les visuels de ce projet en campagne multiplateforme.", ctaTitle: "Créer une campagne", ctaIcon: "flag") { router.push(.campaignBuilder) }
             } else {
                 VStack(spacing: 8) {
                     ForEach(camps) { c in
@@ -172,7 +172,7 @@ struct ProjectDetailView: View {
                                     .background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(c.name).font(MSFont.control(14)).foregroundStyle(MSColor.text)
-                                    Text("\(c.platforms.map { $0.title }.joined(separator: " · ")) · \(c.assetIds.count) assets").msCaption().lineLimit(1)
+                                    Text("\(c.platforms.map { $0.title }.joined(separator: " · ")) · \(c.assetIds.count) visuels").msCaption().lineLimit(1)
                                 }
                                 Spacer()
                                 MSBadge(text: c.status.title, tone: MSBadge.tone(for: c.status))

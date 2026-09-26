@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { useStore } from "@/lib/store";
 import type { Creator } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { GENDER_LABELS } from "@/lib/labels";
 
 export function CreatorCard({ creator, onOpen, className }: { creator: Creator; onOpen?: (c: Creator) => void; className?: string }) {
   const favorites = useStore((s) => s.favorites.creator);
@@ -21,10 +22,10 @@ export function CreatorCard({ creator, onOpen, className }: { creator: Creator; 
         <div className="relative aspect-[4/5] bg-elevated overflow-hidden">
           <img src={creator.avatarUrl} alt={creator.name} className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-          {creator.featured && <Badge tone="accent" className="absolute top-3 left-3">Featured</Badge>}
+          {creator.featured && <Badge tone="accent" className="absolute top-3 left-3">À la une</Badge>}
           <div className="absolute inset-x-3 bottom-3">
             <p className="text-base font-semibold text-white leading-tight">{creator.name}, {creator.age}</p>
-            <p className="text-[12px] text-white/70 mt-0.5 capitalize">{creator.gender} · {creator.ageRange}</p>
+            <p className="text-[12px] text-white/70 mt-0.5">{GENDER_LABELS[creator.gender]} · {creator.ageRange}</p>
           </div>
         </div>
         <div className="px-3 py-2.5 space-y-1.5">
@@ -36,7 +37,7 @@ export function CreatorCard({ creator, onOpen, className }: { creator: Creator; 
       </button>
       <button
         type="button"
-        aria-label={fav ? "Remove from favorites" : "Add to favorites"}
+        aria-label={fav ? "Retirer des favoris" : "Ajouter aux favoris"}
         aria-pressed={fav}
         onClick={(e) => { e.stopPropagation(); toggleFavorite("creator", creator.id); }}
         className={cn(

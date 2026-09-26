@@ -330,6 +330,11 @@ export interface OnboardingAnswers {
   wants: string[];
   platforms: Platform[];
   goal: string | null;
+  /** Campaign-first onboarding (optional for older persisted state). */
+  style?: string | null;
+  boldness?: string | null;
+  brandKit?: boolean;
+  product?: { name: string; category: string; description: string; sample: boolean } | null;
 }
 
 export interface Preferences {

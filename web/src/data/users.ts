@@ -6,7 +6,7 @@ export const currentUser: User = {
   name: "Alex Carter",
   email: "alex@northstarcreative.co",
   company: "Northstar Creative",
-  role: "Founder",
+  role: "Fondateur",
   avatarUrl: avatar(12),
   createdAt: daysAgo(210),
 };

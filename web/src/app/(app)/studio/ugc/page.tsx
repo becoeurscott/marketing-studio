@@ -15,14 +15,16 @@ import { useToast } from "@/components/ui/Toast";
 import { creators } from "@/data";
 import { generateUGC, VIDEO_STEPS, type VideoResult } from "@/lib/api";
 import { capitalize, useTemplatePreset } from "@/components/studio/useTemplatePreset";
+import { VIDEO_STEP_LABELS } from "@/components/studio/constants";
 import { useStore } from "@/lib/store";
 import { CREDIT_COSTS, type Asset } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const DEFAULT_SCRIPT = "Create a 15-second TikTok-style video introducing this product.";
+const DEFAULT_SCRIPT = "Créez une vidéo de 15 secondes façon TikTok pour présenter ce produit.";
 const TONES = ["Excited", "Casual", "Professional", "Funny", "Luxury", "Authentic"] as const;
 type UgcTone = (typeof TONES)[number];
-const LOCATIONS = ["Bathroom", "Kitchen", "Living room", "Bedroom", "Outdoors", "Gym", "Car", "Office", "Studio"];
+const TONE_LABELS: Record<UgcTone, string> = { Excited: "Enthousiaste", Casual: "Décontracté", Professional: "Professionnel", Funny: "Drôle", Luxury: "Luxe", Authentic: "Authentique" };
+const LOCATIONS = ["Salle de bain", "Cuisine", "Salon", "Chambre", "Extérieur", "Salle de sport", "Voiture", "Bureau", "Studio"];
 const DURATIONS = ["5", "10", "15"] as const;
 
 type Phase = { kind: "idle" } | { kind: "loading"; step: number } | { kind: "done"; result: VideoResult } | { kind: "error"; error: unknown };
@@ -55,7 +57,7 @@ function UGCPage() {
   const loading = phase.kind === "loading";
 
   async function generate() {
-    if (!script.trim()) { toast.error("Add a script first"); return; }
+    if (!script.trim()) { toast.error("Ajoutez d'abord un script"); return; }
     setPhase({ kind: "loading", step: 0 });
     setSavedId(null);
     try {
@@ -64,7 +66,7 @@ function UGCPage() {
         (_step, index) => setPhase({ kind: "loading", step: index }),
       );
       setPhase({ kind: "done", result });
-      toast.success("UGC video ready", `${creator.name} · ${duration}s`);
+      toast.success("Vidéo UGC prête", `${creator.name} · ${duration} s`);
     } catch (error) {
       setPhase({ kind: "error", error });
     }
@@ -72,10 +74,10 @@ function UGCPage() {
 
   function save(): Asset | null {
     if (phase.kind !== "done") return null;
-    if (savedId) { toast.info("Already saved to project"); return null; }
+    if (savedId) { toast.info("Déjà enregistrée dans le projet"); return null; }
     const asset = addAsset({ name: `UGC — ${creator.name} ${duration}s`, type: "video", url: phase.result.url, thumbnail: phase.result.thumbnail, projectId: currentProjectId, favorite: false, width: 1080, height: 1920, durationSec: phase.result.durationSec, sizeKb: 4200 * (phase.result.durationSec / 5), tags: ["ugc", creator.name.toLowerCase(), tone.toLowerCase()] });
     setSavedId(asset.id);
-    toast.success("Saved to project", asset.name);
+    toast.success("Enregistrée dans le projet", asset.name);
     return asset;
   }
   function addToCampaign() {
@@ -85,29 +87,29 @@ function UGCPage() {
 
   const controls = (
     <>
-      <ControlField label="Product" hint={product?.name}>
+      <ControlField label="Produit" hint={product?.name}>
         <ProductPicker value={productId} onChange={(a) => setProductId(a.id)} />
       </ControlField>
-      <ControlField label="Creator">
+      <ControlField label="Créateur">
         <div className="grid grid-cols-1 gap-2">
           {featured.map((c) => <CreatorCard key={c.id} creator={c} compact selected={c.id === creatorId} onSelect={() => setCreatorId(c.id)} />)}
         </div>
       </ControlField>
-      <Textarea label="Script" value={script} onChange={(e) => setScript(e.target.value)} rows={4} hint={`${script.length} chars`} />
-      <Select label="Location" value={location} onChange={(e) => setLocation(e.target.value)} options={LOCATIONS.map((l) => ({ value: l, label: l }))} />
+      <Textarea label="Script" value={script} onChange={(e) => setScript(e.target.value)} rows={4} hint={`${script.length} caractères`} />
+      <Select label="Lieu" value={location} onChange={(e) => setLocation(e.target.value)} options={LOCATIONS.map((l) => ({ value: l, label: l }))} />
       <ControlField label="Tone">
-        <ChipGroup size="sm" options={TONES.map((t) => ({ value: t, label: t }))} value={tone} onChange={setTone} />
+        <ChipGroup size="sm" options={TONES.map((t) => ({ value: t, label: TONE_LABELS[t] }))} value={tone} onChange={setTone} />
       </ControlField>
-      <ControlField label="Duration">
-        <ChipGroup size="sm" options={DURATIONS.map((d) => ({ value: d, label: `${d}s` }))} value={duration} onChange={setDuration} />
+      <ControlField label="Durée">
+        <ChipGroup size="sm" options={DURATIONS.map((d) => ({ value: d, label: `${d} s` }))} value={duration} onChange={setDuration} />
       </ControlField>
     </>
   );
 
   return (
     <>
-      <PageHeader title="UGC creator" description="Pick a creator, write the script, and generate an authentic-looking product video." eyebrow={<div className="flex flex-wrap items-center gap-1.5"><Badge tone="accent">Studio · UGC</Badge>{template && <Badge tone="outline">Template · {template.title}</Badge>}</div>} />
-      <StudioControls title="UGC settings" controls={controls} generateLabel={phase.kind === "done" ? "Regenerate" : "Generate UGC Video"} generateIcon={Clapperboard} onGenerate={generate} loading={loading} cost={CREDIT_COSTS.ugc} />
+      <PageHeader title="Créateur UGC" description="Choisissez un créateur, écrivez le script et générez une vidéo produit authentique." eyebrow={<div className="flex flex-wrap items-center gap-1.5"><Badge tone="accent">Studio · UGC</Badge>{template && <Badge tone="outline">Modèle · {template.title}</Badge>}</div>} />
+      <StudioControls title="Paramètres UGC" controls={controls} generateLabel={phase.kind === "done" ? "Régénérer" : "Générer la vidéo UGC"} generateIcon={Clapperboard} onGenerate={generate} loading={loading} cost={CREDIT_COSTS.ugc} />
 
       <Canvas>
         {phase.kind === "error" ? (
@@ -119,11 +121,11 @@ function UGCPage() {
               <div className="relative w-full max-w-[300px] aspect-[9/16] rounded-2xl overflow-hidden border border-border-strong bg-elevated shadow-float">
                 {phase.kind === "done" ? (
                   <>
-                    <img src={phase.result.poster} alt="Generated UGC video" className="size-full object-cover" />
-                    <button type="button" className="absolute inset-0 flex items-center justify-center" aria-label="Play video" onClick={() => toast.info("Playback is mocked in this prototype")}>
+                    <img src={phase.result.poster} alt="Vidéo UGC générée" className="size-full object-cover" />
+                    <button type="button" className="absolute inset-0 flex items-center justify-center" aria-label="Lire la vidéo" onClick={() => toast.info("La lecture est simulée dans ce prototype")}>
                       <span className="size-16 rounded-full bg-white/90 text-black flex items-center justify-center shadow-float"><Play className="size-6 ml-1 fill-current" /></span>
                     </button>
-                    <span className="absolute top-3 left-3 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 backdrop-blur">{phase.result.durationSec}s · 9:16</span>
+                    <span className="absolute top-3 left-3 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 backdrop-blur">{phase.result.durationSec} s · 9:16</span>
                     <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 to-transparent flex items-center gap-2">
                       <img src={creator.avatarUrl} alt="" className="size-7 rounded-full border border-white/30" />
                       <div className="min-w-0"><p className="text-xs font-semibold">@{creator.name.toLowerCase()}</p><p className="text-[11px] text-white/70 truncate">{script}</p></div>
@@ -140,10 +142,10 @@ function UGCPage() {
                     {loading && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/50 backdrop-blur-sm p-4">
                         <Video className="size-6 text-highlight animate-pulse" />
-                        <StepProgress steps={VIDEO_STEPS} current={phase.step} className="text-left" />
+                        <StepProgress steps={VIDEO_STEPS.map((s) => VIDEO_STEP_LABELS[s] ?? s)} current={phase.step} className="text-left" />
                       </div>
                     )}
-                    {!loading && <span className="absolute top-3 left-3 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 backdrop-blur">Preview · {duration}s</span>}
+                    {!loading && <span className="absolute top-3 left-3 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 backdrop-blur">Aperçu · {duration} s</span>}
                   </>
                 )}
               </div>
@@ -152,25 +154,25 @@ function UGCPage() {
             {/* Summary column */}
             <aside className="min-w-0 border-t lg:border-t-0 lg:border-l border-border p-4 md:p-5 space-y-5 pb-28 lg:pb-5">
               <div>
-                <p className="text-[11px] uppercase tracking-wider text-muted mb-2">Creator</p>
+                <p className="text-[11px] uppercase tracking-wider text-muted mb-2">Créateur</p>
                 <CreatorCard creator={creator} compact selected={false} />
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-wider text-muted mb-2">Product</p>
+                <p className="text-[11px] uppercase tracking-wider text-muted mb-2">Produit</p>
                 {product ? (
                   <div className="flex items-center gap-3"><img src={product.thumbnail} alt="" className="size-11 rounded-md object-cover border border-border" /><div className="min-w-0"><p className="text-sm font-medium truncate">{product.name}</p><p className="text-xs text-muted">{product.width ?? 800}×{product.height ?? 1000}</p></div></div>
-                ) : <p className="text-sm text-muted">Pick a product in settings.</p>}
+                ) : <p className="text-sm text-muted">Choisissez un produit dans les paramètres.</p>}
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-muted mb-2">Script</p>
                 <p className="text-sm text-text2 whitespace-pre-wrap">{script}</p>
-                <div className="flex flex-wrap gap-1.5 mt-3"><Badge tone="outline">{tone}</Badge><Badge tone="outline">{location}</Badge><Badge tone="outline">{duration}s</Badge></div>
+                <div className="flex flex-wrap gap-1.5 mt-3"><Badge tone="outline">{TONE_LABELS[tone]}</Badge><Badge tone="outline">{location}</Badge><Badge tone="outline">{duration} s</Badge></div>
               </div>
               {phase.kind === "done" && (
                 <div className="grid grid-cols-1 gap-2 pt-2 border-t border-border">
-                  <Button variant="secondary" leftIcon={<Save className="size-4" />} onClick={save} disabled={!!savedId}>{savedId ? "Saved" : "Save"}</Button>
-                  <Button variant="secondary" leftIcon={<Megaphone className="size-4" />} onClick={addToCampaign}>Use in Campaign</Button>
-                  <Button variant="ghost" leftIcon={<RefreshCw className="size-4" />} onClick={generate}>Regenerate</Button>
+                  <Button variant="secondary" leftIcon={<Save className="size-4" />} onClick={save} disabled={!!savedId}>{savedId ? "Enregistrée" : "Enregistrer"}</Button>
+                  <Button variant="secondary" leftIcon={<Megaphone className="size-4" />} onClick={addToCampaign}>Utiliser dans une campagne</Button>
+                  <Button variant="ghost" leftIcon={<RefreshCw className="size-4" />} onClick={generate}>Régénérer</Button>
                 </div>
               )}
             </aside>

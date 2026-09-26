@@ -35,7 +35,7 @@ export function MobileNav() {
           })}
           <button onClick={() => setMobileMenuOpen(true)} className={cn("flex flex-col items-center justify-center gap-0.5 text-[10.5px] font-medium", moreActive ? "text-highlight" : "text-muted")}>
             <MoreHorizontal className="size-5" />
-            More
+            Plus
           </button>
         </div>
       </nav>
@@ -47,7 +47,7 @@ export function MobileNav() {
             <span className="block text-sm font-medium truncate">{user.name}</span>
             <span className="block text-xs text-muted truncate">{user.email}</span>
           </span>
-          <span className="text-xs text-highlight font-medium">{formatNumber(credits)} cr</span>
+          <span className="text-xs text-highlight font-medium">{formatNumber(credits)} cr.</span>
         </Link>
         <div className="grid grid-cols-2 gap-2">
           {more.map((item) => {

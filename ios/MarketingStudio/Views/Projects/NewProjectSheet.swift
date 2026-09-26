@@ -12,23 +12,23 @@ struct NewProjectSheet: View {
     private var isEditing: Bool { editingId != nil }
 
     var body: some View {
-        BottomSheetContainer(title: isEditing ? "Rename project" : "New project", subtitle: isEditing ? nil : "Group assets, generations and campaigns.") {
+        BottomSheetContainer(title: isEditing ? "Renommer le projet" : "Nouveau projet", subtitle: isEditing ? nil : "Regroupez visuels, générations et campagnes.") {
             VStack(spacing: 14) {
-                MSTextField(label: "Name", placeholder: "e.g. Luma Skin Summer Launch", text: $name, icon: "folder")
+                MSTextField(label: "Nom", placeholder: "ex. Lancement été Luma Skin", text: $name, icon: "folder")
                 if !isEditing {
-                    MSTextEditor(label: "Description", placeholder: "What is this project for?", text: $description, minHeight: 90)
+                    MSTextEditor(label: "Description", placeholder: "À quoi sert ce projet ?", text: $description, minHeight: 90)
                 }
                 Spacer(minLength: 0)
-                MSButton(title: isEditing ? "Save" : "Create project", icon: isEditing ? "checkmark" : "plus", isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty) {
+                MSButton(title: isEditing ? "Enregistrer" : "Créer le projet", icon: isEditing ? "checkmark" : "plus", isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty) {
                     let trimmed = name.trimmingCharacters(in: .whitespaces)
                     if let editingId {
                         store.renameProject(editingId, to: trimmed)
-                        router.toast("Renamed to \(trimmed)", style: .success)
+                        router.toast("Renommé en \(trimmed)", style: .success)
                         router.dismissSheet()
                     } else {
                         let p = store.createProject(name: trimmed, description: description.trimmingCharacters(in: .whitespacesAndNewlines))
                         router.dismissSheet()
-                        router.toast("Project created", style: .success)
+                        router.toast("Projet créé", style: .success)
                         router.push(.projectDetail(id: p.id), on: .projects)
                     }
                 }

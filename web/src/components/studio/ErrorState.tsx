@@ -24,15 +24,15 @@ export function StudioError({ message, code = "failed", onRetry, backHref = "/st
       <div className={cn("size-12 rounded-xl border flex items-center justify-center mb-4", credits ? "bg-warning/10 border-warning/30" : "bg-danger/10 border-danger/30")}>
         {credits ? <Coins className="size-5 text-warning" /> : <AlertTriangle className="size-5 text-danger" />}
       </div>
-      <h3 className="text-[15px] font-semibold">{credits ? "Not enough credits" : "Something went wrong."}</h3>
-      <p className="text-sm text-text2 mt-1 max-w-sm">{message ?? (credits ? "Top up to keep generating." : "The generation didn't complete. You weren't charged.")}</p>
+      <h3 className="text-[15px] font-semibold">{credits ? "Crédits insuffisants" : "Une erreur est survenue."}</h3>
+      <p className="text-sm text-text2 mt-1 max-w-sm">{message ?? (credits ? "Rechargez pour continuer à générer." : "La génération n'a pas abouti. Aucun crédit n'a été débité.")}</p>
       <div className="mt-5 flex items-center gap-2">
         {credits ? (
-          <Link href="/credits"><Button size="md" leftIcon={<Coins className="size-4" />}>Get credits</Button></Link>
+          <Link href="/credits"><Button size="md" leftIcon={<Coins className="size-4" />}>Obtenir des crédits</Button></Link>
         ) : (
-          onRetry && <Button size="md" onClick={onRetry}>Try Again</Button>
+          onRetry && <Button size="md" onClick={onRetry}>Réessayer</Button>
         )}
-        <Link href={backHref}><Button size="md" variant="secondary">Back to Studio</Button></Link>
+        <Link href={backHref}><Button size="md" variant="secondary">Retour au Studio</Button></Link>
       </div>
     </div>
   );

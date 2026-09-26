@@ -16,9 +16,9 @@ import { useStore } from "@/lib/store";
 import { CREDIT_COSTS, type Asset } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const ENVIRONMENTS = ["Luxury bathroom", "Modern kitchen", "Beach", "Office", "Street", "Studio", "Restaurant", "Gym", "Car interior"];
-const LIGHTING = ["Natural", "Golden hour", "Studio", "Neon", "Softbox", "Dramatic"];
-const CAMERAS = ["Close-up", "Medium", "Wide", "Macro"];
+const ENVIRONMENTS = ["Salle de bain de luxe", "Cuisine moderne", "Plage", "Bureau", "Rue", "Studio", "Restaurant", "Salle de sport", "Intérieur de voiture"];
+const LIGHTING = ["Naturelle", "Heure dorée", "Studio", "Néon", "Softbox", "Dramatique"];
+const CAMERAS = ["Gros plan", "Plan moyen", "Plan large", "Macro"];
 
 type Phase = { kind: "idle" } | { kind: "loading" } | { kind: "done"; results: ImageResult[] } | { kind: "error"; error: unknown };
 
@@ -52,9 +52,9 @@ export default function ProductShootPage() {
     try {
       const asset = await uploadProduct({ name: f.name, size: f.size, projectId: currentProjectId }, setUploading);
       setProductId(asset.id);
-      toast.success("Product uploaded", asset.name);
+      toast.success("Produit importé", asset.name);
     } catch {
-      toast.error("Upload failed", "Please try again.");
+      toast.error("Échec de l'import", "Veuillez réessayer.");
     } finally {
       setUploading(null);
     }
@@ -62,14 +62,14 @@ export default function ProductShootPage() {
   function onDrop(e: DragEvent) { e.preventDefault(); setDrag(false); void handleFiles(e.dataTransfer.files); }
 
   async function generate() {
-    if (!product) { toast.error("Upload or pick a product photo first"); return; }
+    if (!product) { toast.error("Importez ou choisissez d'abord une photo produit"); return; }
     setPhase({ kind: "loading" });
     setSelected(null);
     try {
       const results = await generateProductShoot({ productUrl: product.url, environment, lighting, camera, projectId: currentProjectId });
       setPhase({ kind: "done", results });
       setSelected(results[0]?.id ?? null);
-      toast.success("Product shoot ready", `${results.length} photos · ${environment}`);
+      toast.success("Shooting produit prêt", `${results.length} photos · ${environment}`);
     } catch (error) {
       setPhase({ kind: "error", error });
     }
@@ -78,30 +78,30 @@ export default function ProductShootPage() {
   function save(r: ImageResult): Asset {
     const existing = saved[r.id] && assets.find((a) => a.id === saved[r.id]);
     if (existing) return existing;
-    const asset = addAsset({ name: `${product?.name ?? "Product"} — ${environment}`, type: "image", url: r.url, thumbnail: r.thumbnail, projectId: currentProjectId, favorite: favorites.includes(r.id), width: 1600, height: 2000, sizeKb: 1400, tags: ["product-shoot", environment.toLowerCase(), lighting.toLowerCase(), camera.toLowerCase()] });
+    const asset = addAsset({ name: `${product?.name ?? "Produit"} — ${environment}`, type: "image", url: r.url, thumbnail: r.thumbnail, projectId: currentProjectId, favorite: favorites.includes(r.id), width: 1600, height: 2000, sizeKb: 1400, tags: ["product-shoot", environment.toLowerCase(), lighting.toLowerCase(), camera.toLowerCase()] });
     setSaved((s) => ({ ...s, [r.id]: asset.id }));
     return asset;
   }
-  function download(r: ImageResult) { toast.success("Download started", `${environment} · ${camera}.png`); void r; }
+  function download(r: ImageResult) { toast.success("Téléchargement lancé", `${environment} · ${camera}.png`); void r; }
   function addToCampaign(r: ImageResult) { const a = save(r); router.push(`/campaigns?asset=${a.id}`); }
   function saveAll() {
     if (phase.kind !== "done") return;
     phase.results.forEach(save);
-    toast.success("Saved to project", `${phase.results.length} photos added to assets`);
+    toast.success("Enregistré dans le projet", `${phase.results.length} photos ajoutées aux ressources`);
   }
 
   const controls = (
     <>
-      <ControlField label="Product photo" hint={product?.name}>
+      <ControlField label="Photo produit" hint={product?.name}>
         <ProductPicker value={productId} onChange={(a) => setProductId(a.id)} />
       </ControlField>
       <ControlField label="Environment">
         <ChipGroup size="sm" options={ENVIRONMENTS.map((e) => ({ value: e, label: e }))} value={environment} onChange={setEnvironment} />
       </ControlField>
-      <ControlField label="Lighting">
+      <ControlField label="Éclairage">
         <ChipGroup size="sm" options={LIGHTING.map((l) => ({ value: l, label: l }))} value={lighting} onChange={setLighting} />
       </ControlField>
-      <ControlField label="Camera">
+      <ControlField label="Cadrage">
         <ChipGroup size="sm" options={CAMERAS.map((c) => ({ value: c, label: c }))} value={camera} onChange={setCamera} />
       </ControlField>
     </>
@@ -109,8 +109,8 @@ export default function ProductShootPage() {
 
   return (
     <>
-      <PageHeader title="AI product shoot" description="One product photo in. A full set of on-brand scenes out." eyebrow={<div className="flex flex-wrap items-center gap-1.5"><Badge tone="accent">Studio · Product shoot</Badge>{template && <Badge tone="outline">Template · {template.title}</Badge>}</div>} />
-      <StudioControls title="Shoot settings" controls={controls} generateLabel={phase.kind === "done" ? "Regenerate" : "Generate shoot"} generateIcon={Camera} onGenerate={generate} loading={loading} disabled={!product} cost={CREDIT_COSTS["product-shoot"]} />
+      <PageHeader title="Shooting produit IA" description="Une photo produit en entrée. Une série complète de scènes fidèles à votre marque en sortie." eyebrow={<div className="flex flex-wrap items-center gap-1.5"><Badge tone="accent">Studio · Shooting produit</Badge>{template && <Badge tone="outline">Modèle · {template.title}</Badge>}</div>} />
+      <StudioControls title="Paramètres du shooting" controls={controls} generateLabel={phase.kind === "done" ? "Régénérer" : "Générer le shooting"} generateIcon={Camera} onGenerate={generate} loading={loading} disabled={!product} cost={CREDIT_COSTS["product-shoot"]} />
 
       <Canvas>
         {phase.kind === "error" ? (
@@ -125,11 +125,11 @@ export default function ProductShootPage() {
               className={cn("w-full max-w-lg rounded-2xl border-2 border-dashed p-10 text-center transition-colors", drag ? "border-accent bg-accent/10" : "border-border-strong")}
             >
               <span className="mx-auto size-14 rounded-full bg-accent/15 text-highlight flex items-center justify-center mb-4">{uploading !== null ? <Loader2 className="size-6 animate-spin" /> : <ImagePlus className="size-6" />}</span>
-              <h3 className="text-lg font-semibold">{uploading !== null ? `Uploading… ${uploading}%` : "Drop product image here"}</h3>
-              <p className="text-sm text-text2 mt-1">PNG or JPG, one product, plain background works best.</p>
+              <h3 className="text-lg font-semibold">{uploading !== null ? `Import… ${uploading} %` : "Déposez l'image produit ici"}</h3>
+              <p className="text-sm text-text2 mt-1">PNG ou JPG, un seul produit ; un fond uni donne les meilleurs résultats.</p>
               <div className="flex flex-wrap justify-center gap-2 mt-5">
-                <Button leftIcon={<Upload className="size-4" />} onClick={() => fileRef.current?.click()} loading={uploading !== null}>Upload Product</Button>
-                <Button variant="secondary" onClick={() => { const first = assets.find((a) => a.type === "image"); if (first) setProductId(first.id); }}>Pick from assets</Button>
+                <Button leftIcon={<Upload className="size-4" />} onClick={() => fileRef.current?.click()} loading={uploading !== null}>Importer un produit</Button>
+                <Button variant="secondary" onClick={() => { const first = assets.find((a) => a.type === "image"); if (first) setProductId(first.id); }}>Choisir dans les ressources</Button>
               </div>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
             </div>
@@ -145,15 +145,15 @@ export default function ProductShootPage() {
               </div>
               {phase.kind === "done" && (
                 <div className="flex gap-2">
-                  <Button variant="secondary" size="sm" leftIcon={<Save className="size-4" />} onClick={saveAll}>Save all</Button>
-                  <Button variant="secondary" size="sm" leftIcon={<RefreshCw className="size-4" />} onClick={generate}>Regenerate</Button>
+                  <Button variant="secondary" size="sm" leftIcon={<Save className="size-4" />} onClick={saveAll}>Tout enregistrer</Button>
+                  <Button variant="secondary" size="sm" leftIcon={<RefreshCw className="size-4" />} onClick={generate}>Régénérer</Button>
                 </div>
               )}
             </div>
 
             {phase.kind === "loading" ? (
               <div>
-                <p className="text-sm text-text2 mb-3 flex items-center gap-2"><Loader2 className="size-4 animate-spin text-highlight" /> Creating your visual...</p>
+                <p className="text-sm text-text2 mb-3 flex items-center gap-2"><Loader2 className="size-4 animate-spin text-highlight" /> Création de vos visuels…</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="aspect-[4/5] rounded-lg" />)}</div>
               </div>
             ) : phase.kind === "done" ? (
@@ -161,30 +161,30 @@ export default function ProductShootPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {phase.results.map((r, i) => (
                     <ResultImageCard
-                      key={r.id} src={r.thumbnail} alt={`Shot ${i + 1}`} badge={`${i + 1} / ${phase.results.length}`}
+                      key={r.id} src={r.thumbnail} alt={`Photo ${i + 1}`} badge={`${i + 1} / ${phase.results.length}`}
                       selected={selected === r.id} favorite={favorites.includes(r.id)} saved={!!saved[r.id]}
                       onSelect={() => setSelected(r.id)}
                       onFavorite={() => setFavorites((f) => (f.includes(r.id) ? f.filter((x) => x !== r.id) : [...f, r.id]))}
                       onDownload={() => download(r)}
-                      onSave={() => { save(r); toast.success("Saved to project"); }}
+                      onSave={() => { save(r); toast.success("Enregistré dans le projet"); }}
                       onUse={() => addToCampaign(r)}
                     />
                   ))}
                 </div>
                 {selected && (() => { const r = phase.results.find((x) => x.id === selected)!; return (
                   <div className="mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3">
-                    <p className="text-sm text-text2 flex-1 min-w-0">Shot {phase.results.indexOf(r) + 1} selected</p>
-                    <Button size="sm" variant="secondary" leftIcon={<Download className="size-4" />} onClick={() => download(r)}>Download</Button>
-                    <Button size="sm" variant="secondary" leftIcon={<Save className="size-4" />} onClick={() => { save(r); toast.success("Saved to project"); }}>{saved[r.id] ? "Saved" : "Save to project"}</Button>
-                    <Button size="sm" leftIcon={<Megaphone className="size-4" />} onClick={() => addToCampaign(r)}>Use in Campaign</Button>
+                    <p className="text-sm text-text2 flex-1 min-w-0">Photo {phase.results.indexOf(r) + 1} sélectionnée</p>
+                    <Button size="sm" variant="secondary" leftIcon={<Download className="size-4" />} onClick={() => download(r)}>Télécharger</Button>
+                    <Button size="sm" variant="secondary" leftIcon={<Save className="size-4" />} onClick={() => { save(r); toast.success("Enregistré dans le projet"); }}>{saved[r.id] ? "Enregistré" : "Enregistrer dans le projet"}</Button>
+                    <Button size="sm" leftIcon={<Megaphone className="size-4" />} onClick={() => addToCampaign(r)}>Utiliser dans une campagne</Button>
                   </div>
                 ); })()}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center text-center py-16 gap-3">
                 <div className="w-40 aspect-[4/5] rounded-lg overflow-hidden border border-border-strong shadow-float"><img src={product!.thumbnail} alt="" className="size-full object-cover" /></div>
-                <p className="text-sm text-text2 max-w-xs">Choose an environment, lighting and camera, then generate six photos.</p>
-                <Button leftIcon={<Camera className="size-4" />} onClick={generate}>Generate shoot · {CREDIT_COSTS["product-shoot"]} cr</Button>
+                <p className="text-sm text-text2 max-w-xs">Choisissez un environnement, un éclairage et un cadrage, puis générez six photos.</p>
+                <Button leftIcon={<Camera className="size-4" />} onClick={generate}>Générer le shooting · {CREDIT_COSTS["product-shoot"]} cr.</Button>
               </div>
             )}
           </div>

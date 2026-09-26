@@ -28,7 +28,7 @@ const toLocalInput = (d: Date) => {
 
 export function CalendarItemModal({ open, onClose, campaign, item, defaultDate }: CalendarItemModalProps) {
   return (
-    <Modal open={open} onClose={onClose} title={item ? "Edit calendar item" : "Add calendar item"} description={item ? undefined : "Schedule a post for one of the campaign platforms."} size="lg">
+    <Modal open={open} onClose={onClose} title={item ? "Modifier l'élément" : "Ajouter un élément au calendrier"} description={item ? undefined : "Programmez une publication sur l'une des plateformes de la campagne."} size="lg">
       <Form key={`${open}-${item?.id ?? "new"}-${defaultDate.getTime()}`} campaign={campaign} item={item} defaultDate={defaultDate} onClose={onClose} />
     </Modal>
   );
@@ -58,30 +58,30 @@ function Form({ campaign, item, defaultDate, onClose }: { campaign: Campaign; it
 
   const save = () => {
     const iso = new Date(date).toISOString();
-    const patch = { title: title.trim() || `${campaign.name} — post`, date: iso, platform, format, status, assetId };
+    const patch = { title: title.trim() || `${campaign.name} — publication`, date: iso, platform, format, status, assetId };
     if (item) {
       updateCalendarItem(campaign.id, item.id, patch);
-      toast.success("Item updated", patch.title);
+      toast.success("Élément mis à jour", patch.title);
     } else {
       addCalendarItem(campaign.id, patch);
-      toast.success("Item added", patch.title);
+      toast.success("Élément ajouté", patch.title);
     }
     onClose();
   };
 
   return (
     <div className="space-y-4">
-      <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Launch teaser" autoFocus />
+      <Input label="Titre" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Teaser de lancement" autoFocus />
       <div className="grid sm:grid-cols-2 gap-4">
-        <Input label="Date & time" type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} />
-        <Select label="Status" value={status} onChange={(e) => setStatus(e.target.value as CalendarStatus)} options={CALENDAR_STATUSES.map((s) => ({ value: s.id, label: s.label }))} />
-        <Select label="Platform" value={platform} onChange={(e) => setPlatform(e.target.value as Platform)} options={platformOptions} />
+        <Input label="Date et heure" type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} />
+        <Select label="Statut" value={status} onChange={(e) => setStatus(e.target.value as CalendarStatus)} options={CALENDAR_STATUSES.map((s) => ({ value: s.id, label: s.label }))} />
+        <Select label="Plateforme" value={platform} onChange={(e) => setPlatform(e.target.value as Platform)} options={platformOptions} />
         <Select label="Format" value={format} onChange={(e) => setFormat(e.target.value as AdFormat)} options={AD_FORMATS.map((f) => ({ value: f.id, label: f.label }))} />
       </div>
       <div>
-        <p className="text-[13px] font-medium text-text2 mb-2">Asset</p>
+        <p className="text-[13px] font-medium text-text2 mb-2">Ressource</p>
         <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-48 overflow-y-auto pr-1">
-          <button type="button" onClick={() => setAssetId(null)} aria-pressed={assetId === null} className={cn("aspect-square rounded-md border text-[11px] text-text2 flex items-center justify-center", assetId === null ? "border-accent bg-accent/10 text-highlight" : "border-border-strong bg-surface hover:border-white/25")}>None</button>
+          <button type="button" onClick={() => setAssetId(null)} aria-pressed={assetId === null} className={cn("aspect-square rounded-md border text-[11px] text-text2 flex items-center justify-center", assetId === null ? "border-accent bg-accent/10 text-highlight" : "border-border-strong bg-surface hover:border-white/25")}>Aucune</button>
           {candidates.map((a) => (
             <button key={a.id} type="button" onClick={() => setAssetId(a.id)} aria-pressed={assetId === a.id} title={a.name} className={cn("aspect-square rounded-md overflow-hidden border transition-colors", assetId === a.id ? "border-accent ring-2 ring-accent/40" : "border-border hover:border-white/25")}>
               <img src={a.thumbnail} alt="" className="size-full object-cover" />
@@ -91,11 +91,11 @@ function Form({ campaign, item, defaultDate, onClose }: { campaign: Campaign; it
       </div>
       <div className="flex items-center justify-between gap-2 pt-2 border-t border-border">
         {item ? (
-          <Button variant="ghost" className="text-danger hover:text-danger" leftIcon={<Trash2 className="size-4" />} onClick={() => { removeCalendarItem(campaign.id, item.id); toast.info("Item removed"); onClose(); }}>Remove</Button>
+          <Button variant="ghost" className="text-danger hover:text-danger" leftIcon={<Trash2 className="size-4" />} onClick={() => { removeCalendarItem(campaign.id, item.id); toast.info("Élément retiré"); onClose(); }}>Retirer</Button>
         ) : <span />}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={save}>{item ? "Save changes" : "Add to calendar"}</Button>
+          <Button variant="ghost" onClick={onClose}>Annuler</Button>
+          <Button onClick={save}>{item ? "Enregistrer" : "Ajouter au calendrier"}</Button>
         </div>
       </div>
     </div>

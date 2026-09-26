@@ -5,14 +5,14 @@ struct CreditsView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
-    @State private var historyFilter = "All"
+    @State private var historyFilter = "Tout"
 
     private var transactions: [CreditTransaction] {
         store.transactions
             .filter {
                 switch historyFilter {
-                case "Spent": return $0.amount < 0
-                case "Added": return $0.amount > 0
+                case "Dépensés": return $0.amount < 0
+                case "Ajoutés": return $0.amount > 0
                 default: return true
                 }
             }
@@ -30,20 +30,20 @@ struct CreditsView: View {
                 hero.padding(.horizontal, MSSpacing.gutter)
 
                 HStack(spacing: 10) {
-                    StatTile(label: "Spent this month", value: spentThisMonth.formatted(), icon: "arrow.down.right", tint: MSColor.warning)
-                    StatTile(label: "\(store.plan.title) plan refill", value: store.plan.monthlyCredits.formatted(), icon: "arrow.clockwise", tint: MSColor.success) {
+                    StatTile(label: "Dépensés ce mois-ci", value: spentThisMonth.formatted(.number.locale(Locale(identifier: "fr_FR"))), icon: "arrow.down.right", tint: MSColor.warning)
+                    StatTile(label: "Recharge forfait \(store.plan.title)", value: store.plan.monthlyCredits.formatted(.number.locale(Locale(identifier: "fr_FR"))), icon: "arrow.clockwise", tint: MSColor.success) {
                         router.push(.pricing)
                     }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                SectionHeader(title: "What things cost")
+                SectionHeader(title: "Coût des actions")
                 costTable.padding(.horizontal, MSSpacing.gutter)
 
-                SectionHeader(title: "Usage history", subtitle: "\(store.transactions.count) transactions")
-                ChipRow(options: ["All", "Spent", "Added"], selection: $historyFilter)
+                SectionHeader(title: "Historique d'utilisation", subtitle: "\(store.transactions.count) transaction\(store.transactions.count == 1 ? "" : "s")")
+                ChipRow(options: ["Tout", "Dépensés", "Ajoutés"], selection: $historyFilter)
                 if transactions.isEmpty {
-                    EmptyStateView(icon: "clock.arrow.circlepath", title: "No activity yet", message: "Generate something and it will show up here.", ctaTitle: "Open Studio") {
+                    EmptyStateView(icon: "clock.arrow.circlepath", title: "Aucune activité pour l'instant", message: "Générez quelque chose et cela apparaîtra ici.", ctaTitle: "Ouvrir le Studio") {
                         router.select(.studio)
                     }
                 } else {
@@ -65,7 +65,7 @@ struct CreditsView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Credits")
+        .navigationTitle("Crédits")
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -74,22 +74,22 @@ struct CreditsView: View {
             HStack {
                 HStack(spacing: 6) {
                     Image(systemName: "bolt.fill").font(.system(size: 12, weight: .bold)).foregroundStyle(MSColor.highlight)
-                    Text("AVAILABLE CREDITS").font(.system(size: 11, weight: .semibold)).tracking(0.8).foregroundStyle(MSColor.text2)
+                    Text("CRÉDITS DISPONIBLES").font(.system(size: 11, weight: .semibold)).tracking(0.8).foregroundStyle(MSColor.text2)
                 }
                 Spacer()
                 MSBadge(text: store.plan.title, tone: .accent)
             }
-            Text(store.credits.formatted())
+            Text(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR"))))
                 .font(.system(size: 52, weight: .bold, design: .rounded))
                 .tracking(-1.5)
                 .foregroundStyle(MSColor.text)
                 .contentTransition(.numericText())
                 .animation(MSAnimation.snappy, value: store.credits)
-            Text(store.credits < 100 ? "Running low. Top up to keep generating." : "Roughly \(store.credits / 10) images or \(store.credits / 50) videos.")
+            Text(store.credits < 100 ? "Solde faible. Rechargez pour continuer à générer." : "Environ \(store.credits / 10) images ou \(store.credits / 50) vidéos.")
                 .msBody(14)
             HStack(spacing: 10) {
-                MSButton(title: "Buy credits", icon: "plus") { router.present(.buyCredits) }
-                MSButton(title: "Plans", icon: "creditcard", style: .secondary, fullWidth: false) { router.push(.pricing) }
+                MSButton(title: "Acheter des crédits", icon: "plus") { router.present(.buyCredits) }
+                MSButton(title: "Forfaits", icon: "creditcard", style: .secondary, fullWidth: false) { router.push(.pricing) }
             }
         }
         .padding(20)
@@ -105,15 +105,15 @@ struct CreditsView: View {
 
     private var costTable: some View {
         VStack(spacing: 0) {
-            costRow("Image generation", "4 images per run", cost: 10, icon: "photo.on.rectangle.angled", each: "per image")
+            costRow("Génération d'images", "4 images par lancement", cost: 10, icon: "photo.on.rectangle.angled", each: "par image")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Video generation", "5–15 seconds", cost: 50, icon: "video", each: "per video")
+            costRow("Génération de vidéos", "5 à 15 secondes", cost: 50, icon: "video", each: "par vidéo")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Upscale", "2× resolution", cost: 15, icon: "arrow.up.left.and.arrow.down.right", each: "per image")
+            costRow("Agrandissement", "Résolution ×2", cost: 15, icon: "arrow.up.left.and.arrow.down.right", each: "par image")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Ad variations", "Creative A–D", cost: 20, icon: "rectangle.stack", each: "per set")
+            costRow("Variantes publicitaires", "Créas A à D", cost: 20, icon: "rectangle.stack", each: "par lot")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Copywriting", "Any tool", cost: 2, icon: "text.alignleft", each: "per result")
+            costRow("Rédaction", "Tous les outils", cost: 2, icon: "text.alignleft", each: "par résultat")
         }
         .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
@@ -157,7 +157,7 @@ struct TransactionRow: View {
                 Text(tx.createdAt.relativeString).msCaption()
             }
             Spacer()
-            Text((isSpend ? "" : "+") + tx.amount.formatted())
+            Text((isSpend ? "" : "+") + tx.amount.formatted(.number.locale(Locale(identifier: "fr_FR"))))
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                 .foregroundStyle(isSpend ? MSColor.text : MSColor.success)
         }
@@ -176,8 +176,8 @@ struct CreditPack: Identifiable, Hashable {
     let tag: String?
     static let all: [CreditPack] = [
         CreditPack(id: "pack_s", credits: 500, price: 9, bonus: 0, tag: nil),
-        CreditPack(id: "pack_m", credits: 1500, price: 24, bonus: 100, tag: "Popular"),
-        CreditPack(id: "pack_l", credits: 4000, price: 59, bonus: 500, tag: "Best value"),
+        CreditPack(id: "pack_m", credits: 1500, price: 24, bonus: 100, tag: "Populaire"),
+        CreditPack(id: "pack_l", credits: 4000, price: 59, bonus: 500, tag: "Meilleur rapport"),
         CreditPack(id: "pack_xl", credits: 10000, price: 129, bonus: 2000, tag: nil),
     ]
 }
@@ -191,7 +191,7 @@ struct BuyCreditsSheet: View {
     @State private var purchased: CreditPack?
 
     var body: some View {
-        BottomSheetContainer(title: purchased == nil ? "Buy credits" : nil, subtitle: purchased == nil ? "Credits never expire. No real payment in this prototype." : nil) {
+        BottomSheetContainer(title: purchased == nil ? "Acheter des crédits" : nil, subtitle: purchased == nil ? "Les crédits n'expirent jamais. Aucun paiement réel dans ce prototype." : nil) {
             if let p = purchased {
                 successView(p)
             } else {
@@ -204,12 +204,12 @@ struct BuyCreditsSheet: View {
                     Spacer(minLength: 0)
                     VStack(spacing: 8) {
                         HStack {
-                            Text("Balance after purchase").msCaption()
+                            Text("Solde après l'achat").msCaption()
                             Spacer()
-                            Text((store.credits + selected.credits + selected.bonus).formatted()).font(MSFont.mono(13)).foregroundStyle(MSColor.text)
+                            Text((store.credits + selected.credits + selected.bonus).formatted(.number.locale(Locale(identifier: "fr_FR")))).font(MSFont.mono(13)).foregroundStyle(MSColor.text)
                         }
-                        MSButton(title: purchasing ? "Processing" : "Pay $\(selected.price)", icon: purchasing ? nil : "lock.fill", isLoading: purchasing) { purchase() }
-                        Text("Mock checkout: adds credits instantly.").msCaption()
+                        MSButton(title: purchasing ? "Traitement en cours" : "Payer \(selected.price) $", icon: purchasing ? nil : "lock.fill", isLoading: purchasing) { purchase() }
+                        Text("Paiement simulé : les crédits sont ajoutés instantanément.").msCaption()
                     }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
@@ -231,13 +231,13 @@ struct BuyCreditsSheet: View {
                 }
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 6) {
-                        Text("\(pack.credits.formatted()) credits").font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                        Text("\(pack.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits").font(MSFont.control(15)).foregroundStyle(MSColor.text)
                         if let tag = pack.tag { MSBadge(text: tag, tone: .accent) }
                     }
-                    Text(pack.bonus > 0 ? "+\(pack.bonus) bonus · \(String(format: "%.1f", Double(pack.price) / Double(pack.credits + pack.bonus) * 100))¢ per credit" : "\(String(format: "%.1f", Double(pack.price) / Double(pack.credits) * 100))¢ per credit").msCaption()
+                    Text(pack.bonus > 0 ? "+\(pack.bonus) en bonus · \((Double(pack.price) / Double(pack.credits + pack.bonus) * 100).formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "fr_FR")))) ¢ par crédit" : "\((Double(pack.price) / Double(pack.credits) * 100).formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "fr_FR")))) ¢ par crédit").msCaption()
                 }
                 Spacer()
-                Text("$\(pack.price)").font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
+                Text("\(pack.price) $").font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
             }
             .padding(14)
             .background(isSel ? MSColor.accent.opacity(0.08) : MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
@@ -253,14 +253,14 @@ struct BuyCreditsSheet: View {
                 Image(systemName: "checkmark").font(.system(size: 34, weight: .bold)).foregroundStyle(MSColor.success)
             }
             .padding(.top, 20)
-            Text("+\((p.credits + p.bonus).formatted()) credits").msTitle(28)
-            Text("Your balance is now \(store.credits.formatted()). Time to create.").msBody(15).multilineTextAlignment(.center)
+            Text("+\((p.credits + p.bonus).formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits").msTitle(28)
+            Text("Votre solde est maintenant de \(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))). À vous de créer.").msBody(15).multilineTextAlignment(.center)
             Spacer(minLength: 0)
-            MSButton(title: "Start creating", icon: "sparkles") {
+            MSButton(title: "Commencer à créer", icon: "sparkles") {
                 router.dismissSheet()
                 router.select(.studio)
             }
-            MSButton(title: "Done", style: .ghost) { router.dismissSheet() }
+            MSButton(title: "Terminé", style: .ghost) { router.dismissSheet() }
         }
         .padding(.horizontal, MSSpacing.gutter)
         .padding(.bottom, 16)

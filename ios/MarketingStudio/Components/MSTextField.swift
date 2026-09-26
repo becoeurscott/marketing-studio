@@ -78,7 +78,7 @@ struct MSTextEditor: View {
 }
 
 struct SearchBar: View {
-    var placeholder: String = "Search"
+    var placeholder: String = "Rechercher"
     @Binding var text: String
 
     var body: some View {

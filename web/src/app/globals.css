@@ -85,3 +85,16 @@ h1, h2, h3 {
   background-size: 800px 100%;
   animation: shimmer 1.6s linear infinite;
 }
+
+/* Landing page */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.8; }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-["] { animation: none !important; }
+}

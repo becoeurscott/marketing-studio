@@ -7,6 +7,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { industryLabel, toneLabel } from "@/components/account/BrandEditModal";
 import { ConfirmModal } from "@/components/account/ConfirmModal";
 import { Toggle } from "@/components/account/Toggle";
 import { PageHeader } from "@/components/shell/PageHeader";
@@ -24,17 +25,24 @@ import { selectCurrentBrand, useStore } from "@/lib/store";
 import { IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
 import { avatar, cn, formatDate, formatNumber } from "@/lib/utils";
 
+const ROLE_LABELS: Record<string, string> = { owner: "Propriétaire", admin: "Admin", editor: "Éditeur", viewer: "Lecteur" };
+
+const STYLE_LABELS: Record<string, string> = {
+  "Product Photography": "Photo produit", Luxury: "Luxe", Minimal: "Minimaliste", Street: "Street", Lifestyle: "Lifestyle", Editorial: "Éditorial",
+  Cinematic: "Cinématique", UGC: "UGC", Studio: "Studio", Fashion: "Mode", Food: "Culinaire", Tech: "Tech",
+};
+
 type SectionId = "account" | "workspace" | "notifications" | "appearance" | "brand" | "subscription" | "security" | "help";
 
 const SECTIONS: { id: SectionId; label: string; icon: LucideIcon; description: string }[] = [
-  { id: "account", label: "Account", icon: UserIcon, description: "Your name, email and avatar." },
-  { id: "workspace", label: "Workspace", icon: Building2, description: "Workspace name and team." },
-  { id: "notifications", label: "Notifications", icon: Bell, description: "What we tell you about, and where." },
-  { id: "appearance", label: "Appearance", icon: Palette, description: "Theme, motion and Studio defaults." },
-  { id: "brand", label: "Brand", icon: Sparkles, description: "Active brand kit and voice." },
-  { id: "subscription", label: "Subscription", icon: CreditCard, description: "Plan, credits and billing." },
-  { id: "security", label: "Security", icon: Shield, description: "Password, two-factor and sessions." },
-  { id: "help", label: "Help", icon: LifeBuoy, description: "Docs, support and about." },
+  { id: "account", label: "Compte", icon: UserIcon, description: "Votre nom, votre e-mail et votre avatar." },
+  { id: "workspace", label: "Espace de travail", icon: Building2, description: "Nom de l’espace de travail et équipe." },
+  { id: "notifications", label: "Notifications", icon: Bell, description: "Ce dont nous vous informons, et où." },
+  { id: "appearance", label: "Apparence", icon: Palette, description: "Thème, animations et réglages par défaut du Studio." },
+  { id: "brand", label: "Marque", icon: Sparkles, description: "Kit de marque actif et ton de marque." },
+  { id: "subscription", label: "Abonnement", icon: CreditCard, description: "Forfait, crédits et facturation." },
+  { id: "security", label: "Sécurité", icon: Shield, description: "Mot de passe, double authentification et sessions." },
+  { id: "help", label: "Aide", icon: LifeBuoy, description: "Documentation, support et à propos." },
 ];
 
 export default function SettingsPage() {
@@ -49,21 +57,21 @@ export default function SettingsPage() {
     reset();
     try { localStorage.removeItem("ms-store"); } catch { /* ignore */ }
     setResetting(false);
-    toast.info("Demo data reset", "Everything is back to the sample content.");
+    toast.info("Données de démo réinitialisées", "Tout est revenu au contenu d’exemple.");
     router.replace("/onboarding");
   };
 
   return (
     <>
       <PageHeader
-        title="Settings"
-        description="Account, workspace, notifications, appearance, brand, subscription, security and help."
-        actions={<Button variant="secondary" leftIcon={<RotateCcw className="size-4" />} onClick={() => setResetting(true)}>Reset demo data</Button>}
+        title="Paramètres"
+        description="Compte, espace de travail, notifications, apparence, marque, abonnement, sécurité et aide."
+        actions={<Button variant="secondary" leftIcon={<RotateCcw className="size-4" />} onClick={() => setResetting(true)}>Réinitialiser la démo</Button>}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-start">
         {/* Section nav: vertical list on desktop, scrollable pill row on mobile */}
-        <nav aria-label="Settings sections" className="lg:sticky lg:top-4 -mx-4 px-4 lg:mx-0 lg:px-0 overflow-x-auto no-scrollbar">
+        <nav aria-label="Sections des paramètres" className="lg:sticky lg:top-4 -mx-4 px-4 lg:mx-0 lg:px-0 overflow-x-auto no-scrollbar">
           <ul className="flex lg:flex-col gap-1 min-w-max lg:min-w-0">
             {SECTIONS.map((s) => {
               const active = s.id === section;
@@ -104,10 +112,10 @@ export default function SettingsPage() {
           <Card className="border-danger/30">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium">Reset demo data</p>
-                <p className="text-[13px] text-text2">Returns projects, assets, campaigns, brand, credits and preferences on this device to the sample content.</p>
+                <p className="text-sm font-medium">Réinitialiser les données de démo</p>
+                <p className="text-[13px] text-text2">Rétablit le contenu d’exemple pour les projets, ressources, campagnes, marque, crédits et préférences sur cet appareil.</p>
               </div>
-              <Button variant="danger" leftIcon={<RotateCcw className="size-4" />} onClick={() => setResetting(true)}>Reset</Button>
+              <Button variant="danger" leftIcon={<RotateCcw className="size-4" />} onClick={() => setResetting(true)}>Réinitialiser</Button>
             </div>
           </Card>
         </div>
@@ -118,9 +126,9 @@ export default function SettingsPage() {
         onClose={() => setResetting(false)}
         onConfirm={doReset}
         danger
-        title="Reset demo data?"
-        description="All changes on this device will be lost and you'll go through onboarding again."
-        confirmLabel="Reset everything"
+        title="Réinitialiser les données de démo ?"
+        description="Toutes les modifications effectuées sur cet appareil seront perdues et vous repasserez par l’onboarding."
+        confirmLabel="Tout réinitialiser"
       />
     </>
   );
@@ -143,24 +151,24 @@ function AccountSection() {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) { setError("Name is required."); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Enter a valid email address."); return; }
+    if (!name.trim()) { setError("Le nom est obligatoire."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Saisissez une adresse e-mail valide."); return; }
     setError("");
     updateUser({ name: name.trim(), email: email.trim(), company: company.trim(), role: role.trim(), avatarUrl });
-    toast.success("Account updated");
+    toast.success("Compte mis à jour");
   };
 
   return (
     <form onSubmit={submit}>
       <Card>
-        <CardHeader title="Profile" subtitle="Shown on your workspace and in shared campaigns." />
+        <CardHeader title="Profil" subtitle="Affiché dans votre espace de travail et dans les campagnes partagées." />
         <div className="flex items-center gap-4 mb-5">
           <Avatar src={avatarUrl} name={name || "?"} size={64} />
           <div>
-            <p className="text-[13px] text-text2 mb-1.5">Choose an avatar</p>
+            <p className="text-[13px] text-text2 mb-1.5">Choisissez un avatar</p>
             <div className="flex flex-wrap gap-2">
               {[12, 47, 33, 20, 5, 58].map((n) => (
-                <button key={n} type="button" onClick={() => setAvatarUrl(avatar(n))} aria-label={`Choose avatar ${n}`} aria-pressed={avatarUrl === avatar(n)} className="rounded-full ring-2 ring-transparent aria-pressed:ring-accent">
+                <button key={n} type="button" onClick={() => setAvatarUrl(avatar(n))} aria-label={`Choisir l’avatar ${n}`} aria-pressed={avatarUrl === avatar(n)} className="rounded-full ring-2 ring-transparent aria-pressed:ring-accent">
                   <Avatar src={avatar(n)} name="" size={32} />
                 </button>
               ))}
@@ -168,14 +176,14 @@ function AccountSection() {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input label="Full name" name="name" value={name} onChange={(e) => setName(e.target.value)} error={error && !name.trim() ? error : undefined} />
-          <Input label="Email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error && name.trim() ? error : undefined} />
-          <Input label="Company" name="company" value={company} onChange={(e) => setCompany(e.target.value)} />
-          <Input label="Role" name="role" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Founder" />
+          <Input label="Nom complet" name="name" value={name} onChange={(e) => setName(e.target.value)} error={error && !name.trim() ? error : undefined} />
+          <Input label="E-mail" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error && name.trim() ? error : undefined} />
+          <Input label="Entreprise" name="company" value={company} onChange={(e) => setCompany(e.target.value)} />
+          <Input label="Poste" name="role" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Fondateur" />
         </div>
         <div className="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-border">
-          <p className="text-[12px] text-muted">Member since {formatDate(user.createdAt)} · <Link href="/profile" className="text-text2 hover:text-text underline-offset-2 hover:underline">View profile</Link></p>
-          <Button type="submit" disabled={!dirty}>Save changes</Button>
+          <p className="text-[12px] text-muted">Membre depuis le {formatDate(user.createdAt)} · <Link href="/profile" className="text-text2 hover:text-text underline-offset-2 hover:underline">Voir le profil</Link></p>
+          <Button type="submit" disabled={!dirty}>Enregistrer les modifications</Button>
         </div>
       </Card>
     </form>
@@ -198,25 +206,25 @@ function WorkspaceSection() {
     const v = draft.trim();
     if (!v) return;
     setWorkspaceName(v);
-    toast.success("Workspace renamed", v);
+    toast.success("Espace de travail renommé", v);
   };
 
   return (
     <>
       <form onSubmit={save}>
         <Card>
-          <CardHeader title="Workspace name" subtitle="Appears in the sidebar and on invites." />
+          <CardHeader title="Nom de l’espace de travail" subtitle="Affiché dans la barre latérale et sur les invitations." />
           <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
-            <Input label="Name" name="workspaceName" value={draft} onChange={(e) => setDraft(e.target.value)} className="flex-1" />
-            <Button type="submit" disabled={!draft.trim() || draft.trim() === workspaceName}>Save</Button>
+            <Input label="Nom" name="workspaceName" value={draft} onChange={(e) => setDraft(e.target.value)} className="flex-1" />
+            <Button type="submit" disabled={!draft.trim() || draft.trim() === workspaceName}>Enregistrer</Button>
           </div>
         </Card>
       </form>
       <Card>
         <CardHeader
-          title="Team"
-          subtitle={`${members.length} member${members.length === 1 ? "" : "s"} · ${planInfo?.features.teamMembers ?? ""} on your plan`}
-          action={<Link href="/workspace"><Button size="sm" variant="secondary" leftIcon={<Users className="size-4" />}>Manage team</Button></Link>}
+          title="Équipe"
+          subtitle={`${members.length} membre${members.length > 1 ? "s" : ""} · ${planInfo?.features.teamMembers ?? ""} inclus dans votre forfait`}
+          action={<Link href="/workspace"><Button size="sm" variant="secondary" leftIcon={<Users className="size-4" />}>Gérer l’équipe</Button></Link>}
         />
         <ul className="divide-y divide-border">
           {members.slice(0, 5).map((m) => (
@@ -226,8 +234,8 @@ function WorkspaceSection() {
                 <p className="text-sm font-medium truncate">{m.name}</p>
                 <p className="text-[12px] text-muted truncate">{m.email}</p>
               </div>
-              <Badge tone={m.role === "owner" ? "accent" : "neutral"} className="capitalize">{m.role}</Badge>
-              {m.status === "invited" && <Badge tone="warning">Invited</Badge>}
+              <Badge tone={m.role === "owner" ? "accent" : "neutral"}>{ROLE_LABELS[m.role] ?? m.role}</Badge>
+              {m.status === "invited" && <Badge tone="warning">Invité</Badge>}
             </li>
           ))}
         </ul>
@@ -239,12 +247,12 @@ function WorkspaceSection() {
 /* ---------- Notifications ---------- */
 
 const NOTIFY_KINDS = [
-  { id: "generation", label: "Generation complete", description: "Images, videos, ads and copy finished rendering." },
-  { id: "campaign", label: "Campaign ready", description: "A campaign has finished building." },
-  { id: "export", label: "Export complete", description: "Your export is ready to download." },
-  { id: "credits", label: "Credits low", description: "Warn me when credits drop under 200." },
-  { id: "template", label: "New templates", description: "Weekly digest of new templates." },
-  { id: "share", label: "Project shared", description: "Someone shared a project with you." },
+  { id: "generation", label: "Génération terminée", description: "Rendu terminé pour vos images, vidéos, publicités et textes." },
+  { id: "campaign", label: "Campagne prête", description: "La création d’une campagne est terminée." },
+  { id: "export", label: "Export terminé", description: "Votre export est prêt à être téléchargé." },
+  { id: "credits", label: "Crédits faibles", description: "Me prévenir quand il me reste moins de 200 crédits." },
+  { id: "template", label: "Nouveaux modèles", description: "Récapitulatif hebdomadaire des nouveaux modèles." },
+  { id: "share", label: "Projet partagé", description: "Quelqu’un a partagé un projet avec vous." },
 ] as const;
 
 function NotificationsSection() {
@@ -259,12 +267,12 @@ function NotificationsSection() {
   return (
     <>
       <Card>
-        <CardHeader title="Channels" subtitle="Where notifications are delivered. In-app notifications are always on." />
-        <Toggle label="Email" description="Send a copy of important notifications to your inbox." checked={prefs.emailNotifications} onChange={(v) => setPreference("emailNotifications", v)} />
-        <Toggle label="Push" description="Browser push notifications while Marketing Studio is closed." checked={prefs.pushNotifications} onChange={(v) => setPreference("pushNotifications", v)} className="border-t border-border" />
+        <CardHeader title="Canaux" subtitle="Où vos notifications sont envoyées. Les notifications dans l’application restent toujours actives." />
+        <Toggle label="E-mail" description="Recevoir une copie des notifications importantes dans votre boîte mail." checked={prefs.emailNotifications} onChange={(v) => setPreference("emailNotifications", v)} />
+        <Toggle label="Push" description="Notifications push du navigateur lorsque Sokozia est fermé." checked={prefs.pushNotifications} onChange={(v) => setPreference("pushNotifications", v)} className="border-t border-border" />
       </Card>
       <Card className={cn(channelsOff && "opacity-60")}>
-        <CardHeader title="Notify me about" subtitle={channelsOff ? "Turn on a channel above to receive these outside the app." : "Choose which events reach you by email or push."} />
+        <CardHeader title="Me notifier pour" subtitle={channelsOff ? "Activez un canal ci-dessus pour les recevoir en dehors de l’application." : "Choisissez les événements qui vous sont envoyés par e-mail ou push."} />
         {NOTIFY_KINDS.map((k, i) => (
           <Toggle key={k.id} label={k.label} description={k.description} checked={kinds[k.id]} onChange={(v) => setKinds((s) => ({ ...s, [k.id]: v }))} className={cn(i > 0 && "border-t border-border")} />
         ))}
@@ -272,12 +280,12 @@ function NotificationsSection() {
       <Card>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-medium">Inbox</p>
-            <p className="text-[13px] text-text2">{unread === 0 ? "You're all caught up." : `${unread} unread notification${unread === 1 ? "" : "s"}.`}</p>
+            <p className="text-sm font-medium">Boîte de réception</p>
+            <p className="text-[13px] text-text2">{unread === 0 ? "Vous êtes à jour." : `${unread} notification${unread > 1 ? "s" : ""} non lue${unread > 1 ? "s" : ""}.`}</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="ghost" disabled={unread === 0} onClick={() => { markAll(); toast.success("All notifications marked as read"); }}>Mark all read</Button>
-            <Link href="/notifications"><Button size="sm" variant="secondary">Open inbox</Button></Link>
+            <Button size="sm" variant="ghost" disabled={unread === 0} onClick={() => { markAll(); toast.success("Toutes les notifications sont marquées comme lues"); }}>Tout marquer comme lu</Button>
+            <Link href="/notifications"><Button size="sm" variant="secondary">Ouvrir la boîte de réception</Button></Link>
           </div>
         </div>
       </Card>
@@ -295,12 +303,12 @@ function AppearanceSection() {
   return (
     <>
       <Card>
-        <CardHeader title="Theme" subtitle="Marketing Studio is designed as a dark creative workspace." />
+        <CardHeader title="Thème" subtitle="Sokozia est conçu comme un espace créatif sombre." />
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { id: "dark", label: "Dark", available: true },
-            { id: "light", label: "Light", available: false },
-            { id: "system", label: "System", available: false },
+            { id: "dark", label: "Sombre", available: true },
+            { id: "light", label: "Clair", available: false },
+            { id: "system", label: "Système", available: false },
           ].map((t) => (
             <button
               key={t.id}
@@ -321,21 +329,21 @@ function AppearanceSection() {
                 </div>
               </div>
               <p className="text-[13px] font-medium flex items-center justify-between">{t.label}{t.id === "dark" && <Check className="size-3.5 text-highlight" />}</p>
-              {!t.available && <p className="text-[11px] text-muted">Coming soon</p>}
+              {!t.available && <p className="text-[11px] text-muted">Bientôt disponible</p>}
             </button>
           ))}
         </div>
       </Card>
       <Card>
         <CardHeader title="Interface" />
-        <Toggle label="Compact sidebar" description="Collapse the sidebar to icons on desktop." checked={prefs.compactSidebar} onChange={(v) => { setPreference("compactSidebar", v); setSidebarCollapsed(v); }} />
-        <Toggle label="Reduce motion" description="Minimise animations and transitions across the app." checked={prefs.reducedMotion} onChange={(v) => setPreference("reducedMotion", v)} className="border-t border-border" />
+        <Toggle label="Barre latérale compacte" description="Réduire la barre latérale aux icônes sur ordinateur." checked={prefs.compactSidebar} onChange={(v) => { setPreference("compactSidebar", v); setSidebarCollapsed(v); }} />
+        <Toggle label="Réduire les animations" description="Limiter les animations et transitions dans toute l’application." checked={prefs.reducedMotion} onChange={(v) => setPreference("reducedMotion", v)} className="border-t border-border" />
       </Card>
       <Card>
-        <CardHeader title="Studio defaults" subtitle="Pre-selected when you start a new generation." />
+        <CardHeader title="Réglages par défaut du Studio" subtitle="Présélectionnés lorsque vous lancez une nouvelle génération." />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Select label="Default aspect ratio" name="defaultRatio" value={prefs.defaultRatio} onChange={(e) => setPreference("defaultRatio", e.target.value as AspectRatio)} options={RATIOS.map((r) => ({ value: r, label: r }))} />
-          <Select label="Default style" name="defaultStyle" value={prefs.defaultStyle} onChange={(e) => setPreference("defaultStyle", e.target.value as ImageStyle)} options={IMAGE_STYLES.map((s) => ({ value: s, label: s }))} />
+          <Select label="Format par défaut" name="defaultRatio" value={prefs.defaultRatio} onChange={(e) => setPreference("defaultRatio", e.target.value as AspectRatio)} options={RATIOS.map((r) => ({ value: r, label: r }))} />
+          <Select label="Style par défaut" name="defaultStyle" value={prefs.defaultStyle} onChange={(e) => setPreference("defaultStyle", e.target.value as ImageStyle)} options={IMAGE_STYLES.map((s) => ({ value: s, label: STYLE_LABELS[s] ?? s }))} />
         </div>
       </Card>
     </>
@@ -353,8 +361,8 @@ function BrandSection() {
   if (!brand) {
     return (
       <Card>
-        <p className="text-sm text-text2">No brand kit yet.</p>
-        <Link href="/brand" className="inline-block mt-3"><Button size="sm">Create a brand kit</Button></Link>
+        <p className="text-sm text-text2">Aucun kit de marque pour le moment.</p>
+        <Link href="/brand" className="inline-block mt-3"><Button size="sm">Créer un kit de marque</Button></Link>
       </Card>
     );
   }
@@ -362,12 +370,12 @@ function BrandSection() {
   return (
     <>
       <Card>
-        <CardHeader title="Active brand" subtitle="Used for generated copy, ads and exports." action={<Link href="/brand"><Button size="sm" variant="secondary" rightIcon={<ExternalLink className="size-3.5" />}>Edit brand kit</Button></Link>} />
+        <CardHeader title="Marque active" subtitle="Utilisée pour les textes générés, les publicités et les exports." action={<Link href="/brand"><Button size="sm" variant="secondary" rightIcon={<ExternalLink className="size-3.5" />}>Modifier le kit de marque</Button></Link>} />
         <div className="flex items-center gap-4">
           <img src={brand.logoUrl} alt="" className="size-14 rounded-lg object-cover border border-border" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold truncate">{brand.name}</p>
-            <p className="text-[13px] text-text2 truncate">{brand.industry || "No industry"} · {brand.audience || "No audience set"}</p>
+            <p className="text-[13px] text-text2 truncate">{brand.industry ? industryLabel(brand.industry) : "Aucun secteur"} · {brand.audience || "Aucune audience définie"}</p>
             <div className="flex items-center gap-1.5 mt-2">
               {brand.colors.map((c) => <span key={c} className="size-4 rounded-full border border-border-strong" style={{ background: c }} title={c} />)}
               <span className="text-[12px] text-muted ml-1">{brand.fonts.heading} / {brand.fonts.body}</span>
@@ -377,19 +385,19 @@ function BrandSection() {
         {brands.length > 1 && (
           <div className="mt-4 pt-4 border-t border-border">
             <Select
-              label="Switch brand"
+              label="Changer de marque"
               name="brand"
               value={brand.id}
-              onChange={(e) => { setCurrentBrand(e.target.value); toast.success("Brand switched", brands.find((b) => b.id === e.target.value)?.name); }}
+              onChange={(e) => { setCurrentBrand(e.target.value); toast.success("Marque changée", brands.find((b) => b.id === e.target.value)?.name); }}
               options={brands.map((b) => ({ value: b.id, label: b.name }))}
             />
           </div>
         )}
       </Card>
       <Card>
-        <CardHeader title="Brand voice" subtitle="Tone and writing style applied to generated copy." action={<Link href="/brand/voice"><Button size="sm" variant="secondary">Edit voice</Button></Link>} />
-        <div className="flex flex-wrap gap-1.5 mb-2"><Badge tone="accent">{brand.voice.tone}</Badge>{brand.voice.keywords.slice(0, 4).map((k) => <Badge key={k} tone="outline">{k}</Badge>)}</div>
-        <p className="text-[13px] text-text2 italic">{brand.voice.writingStyle || "No writing style defined yet."}</p>
+        <CardHeader title="Ton de marque" subtitle="Ton et style d’écriture appliqués aux textes générés." action={<Link href="/brand/voice"><Button size="sm" variant="secondary">Modifier le ton</Button></Link>} />
+        <div className="flex flex-wrap gap-1.5 mb-2"><Badge tone="accent">{toneLabel(brand.voice.tone)}</Badge>{brand.voice.keywords.slice(0, 4).map((k) => <Badge key={k} tone="outline">{k}</Badge>)}</div>
+        <p className="text-[13px] text-text2 italic">{brand.voice.writingStyle || "Aucun style d’écriture défini pour le moment."}</p>
       </Card>
     </>
   );
@@ -411,13 +419,13 @@ function SubscriptionSection() {
         <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-accent/10 to-transparent pointer-events-none" />
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-[13px] text-text2">Current plan</p>
-            <p className="text-2xl font-bold tracking-tight">{current.name} <span className="text-base font-medium text-text2">${current.priceMonthly}/mo</span></p>
-            <p className="text-[12px] text-muted mt-1">Renews {formatDate(renew.toISOString())} · {formatNumber(current.credits)} credits per month</p>
+            <p className="text-[13px] text-text2">Forfait actuel</p>
+            <p className="text-2xl font-bold tracking-tight">{current.name} <span className="text-base font-medium text-text2">{current.priceMonthly} $/mois</span></p>
+            <p className="text-[12px] text-muted mt-1">Renouvellement le {formatDate(renew.toISOString())} · {formatNumber(current.credits)} crédits par mois</p>
           </div>
           <div className="flex gap-2">
-            <Link href="/pricing"><Button variant={next ? "primary" : "secondary"}>{next ? `Upgrade to ${next.name}` : "Manage plan"}</Button></Link>
-            <Link href="/pricing"><Button variant="ghost">Compare plans</Button></Link>
+            <Link href="/pricing"><Button variant={next ? "primary" : "secondary"}>{next ? `Passer à ${next.name}` : "Gérer le forfait"}</Button></Link>
+            <Link href="/pricing"><Button variant="ghost">Comparer les forfaits</Button></Link>
           </div>
         </div>
         <ul className="relative grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-5 pt-4 border-t border-border text-[13px] text-text2">
@@ -427,24 +435,24 @@ function SubscriptionSection() {
       <Card>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <p className="text-[13px] text-text2 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" /> Credits</p>
+            <p className="text-[13px] text-text2 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" /> Crédits</p>
             <p className="text-2xl font-bold tracking-tight tabular-nums">{formatNumber(credits)}</p>
-            <p className="text-[12px] text-muted">{transactions.length} transactions in history</p>
+            <p className="text-[12px] text-muted">{transactions.length} transaction{transactions.length > 1 ? "s" : ""} dans l’historique</p>
           </div>
-          <Link href="/credits"><Button variant="secondary">Buy credits</Button></Link>
+          <Link href="/credits"><Button variant="secondary">Acheter des crédits</Button></Link>
         </div>
       </Card>
       <Card>
-        <CardHeader title="Billing" subtitle="Payment method and invoices (simulated)." />
+        <CardHeader title="Facturation" subtitle="Moyen de paiement et factures (simulés)." />
         <div className="flex items-center gap-3 rounded-md border border-border bg-surface p-3">
           <div className="h-8 w-12 rounded-xs bg-elevated flex items-center justify-center text-[10px] font-bold tracking-wider">VISA</div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">Visa ending in 4242</p>
-            <p className="text-[12px] text-muted">Expires 08/28 · Default</p>
+            <p className="text-sm font-medium">Visa se terminant par 4242</p>
+            <p className="text-[12px] text-muted">Expire le 08/28 · Par défaut</p>
           </div>
           <Badge tone="success" dot>Active</Badge>
         </div>
-        <p className="text-[12px] text-muted mt-3">Payments are mocked in this prototype. No card is charged.</p>
+        <p className="text-[12px] text-muted mt-3">Les paiements sont simulés dans ce prototype. Aucune carte n’est débitée.</p>
       </Card>
     </>
   );
@@ -461,53 +469,53 @@ function SecuritySection() {
   const [saving, setSaving] = useState(false);
   const [twoFactor, setTwoFactor] = useState(false);
   const [sessions, setSessions] = useState([
-    { id: "s1", device: "This device · Chrome on macOS", location: "New York, US", current: true, icon: Monitor },
-    { id: "s2", device: "iPhone · Marketing Studio app", location: "New York, US", current: false, icon: Smartphone },
-    { id: "s3", device: "Safari on macOS", location: "Los Angeles, US", current: false, icon: Monitor },
+    { id: "s1", device: "Cet appareil · Chrome sur macOS", location: "New York, États-Unis", current: true, icon: Monitor },
+    { id: "s2", device: "iPhone · application Sokozia", location: "New York, États-Unis", current: false, icon: Smartphone },
+    { id: "s3", device: "Safari sur macOS", location: "Los Angeles, États-Unis", current: false, icon: Monitor },
   ]);
 
   const changePassword = async (e: FormEvent) => {
     e.preventDefault();
-    if (!current) { setError("Enter your current password."); return; }
-    if (next.length < 8) { setError("New password must be at least 8 characters."); return; }
-    if (next !== confirm) { setError("Passwords don't match."); return; }
+    if (!current) { setError("Saisissez votre mot de passe actuel."); return; }
+    if (next.length < 8) { setError("Le nouveau mot de passe doit contenir au moins 8 caractères."); return; }
+    if (next !== confirm) { setError("Les mots de passe ne correspondent pas."); return; }
     setError("");
     setSaving(true);
     await delay(900);
     setSaving(false);
     setCurrent(""); setNext(""); setConfirm("");
-    toast.success("Password updated", "Use your new password next time you sign in.");
+    toast.success("Mot de passe mis à jour", "Utilisez votre nouveau mot de passe lors de votre prochaine connexion.");
   };
 
   return (
     <>
       <form onSubmit={changePassword}>
         <Card>
-          <CardHeader title="Change password" />
+          <CardHeader title="Changer de mot de passe" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Input label="Current password" name="currentPassword" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
-            <Input label="New password" name="newPassword" type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} hint="At least 8 characters." />
-            <Input label="Confirm new password" name="confirmPassword" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+            <Input label="Mot de passe actuel" name="currentPassword" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+            <Input label="Nouveau mot de passe" name="newPassword" type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} hint="Au moins 8 caractères." />
+            <Input label="Confirmer le nouveau mot de passe" name="confirmPassword" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           </div>
           <div className="flex items-center justify-between gap-3 mt-4">
             <p className="text-xs text-danger min-h-4">{error}</p>
-            <Button type="submit" loading={saving} leftIcon={<KeyRound className="size-4" />}>Update password</Button>
+            <Button type="submit" loading={saving} leftIcon={<KeyRound className="size-4" />}>Mettre à jour le mot de passe</Button>
           </div>
         </Card>
       </form>
       <Card>
-        <CardHeader title="Two-factor authentication" />
+        <CardHeader title="Double authentification" />
         <Toggle
-          label="Authenticator app"
-          description={twoFactor ? "Enabled. You'll be asked for a code when signing in on a new device." : "Add a second step when signing in."}
+          label="Application d’authentification"
+          description={twoFactor ? "Activée. Un code vous sera demandé lors de la connexion sur un nouvel appareil." : "Ajoutez une seconde étape lors de la connexion."}
           checked={twoFactor}
-          onChange={(v) => { setTwoFactor(v); toast.success(v ? "Two-factor enabled" : "Two-factor disabled"); }}
+          onChange={(v) => { setTwoFactor(v); toast.success(v ? "Double authentification activée" : "Double authentification désactivée"); }}
         />
       </Card>
       <Card>
         <CardHeader
-          title="Active sessions"
-          action={sessions.length > 1 && <Button size="sm" variant="ghost" onClick={() => { setSessions((s) => s.filter((x) => x.current)); toast.success("Other sessions signed out"); }}>Sign out others</Button>}
+          title="Sessions actives"
+          action={sessions.length > 1 && <Button size="sm" variant="ghost" onClick={() => { setSessions((s) => s.filter((x) => x.current)); toast.success("Autres sessions déconnectées"); }}>Déconnecter les autres</Button>}
         />
         <ul className="divide-y divide-border">
           {sessions.map((s) => (
@@ -517,8 +525,8 @@ function SecuritySection() {
                 <p className="text-sm font-medium truncate">{s.device}</p>
                 <p className="text-[12px] text-muted">{s.location}</p>
               </div>
-              {s.current ? <Badge tone="success" dot>Current</Badge> : (
-                <Button size="sm" variant="ghost" onClick={() => { setSessions((list) => list.filter((x) => x.id !== s.id)); toast.success("Session signed out"); }}>Sign out</Button>
+              {s.current ? <Badge tone="success" dot>Actuelle</Badge> : (
+                <Button size="sm" variant="ghost" onClick={() => { setSessions((list) => list.filter((x) => x.id !== s.id)); toast.success("Session déconnectée"); }}>Déconnecter</Button>
               )}
             </li>
           ))}
@@ -532,9 +540,9 @@ function SecuritySection() {
 
 function HelpSection() {
   const links = [
-    { label: "Help center & FAQ", description: "Guides, shortcuts and answers to common questions.", href: "/help" },
-    { label: "Contact support", description: "Send us a message. We reply within a day.", href: "/help" },
-    { label: "Credits & pricing", description: "How credits work and what each plan includes.", href: "/pricing" },
+    { label: "Centre d’aide et FAQ", description: "Guides, raccourcis et réponses aux questions fréquentes.", href: "/help" },
+    { label: "Contacter le support", description: "Envoyez-nous un message. Nous répondons sous 24 h.", href: "/help" },
+    { label: "Crédits et tarifs", description: "Le fonctionnement des crédits et le contenu de chaque forfait.", href: "/pricing" },
   ];
   return (
     <>
@@ -554,11 +562,11 @@ function HelpSection() {
         </ul>
       </Card>
       <Card>
-        <CardHeader title="About" />
+        <CardHeader title="À propos" />
         <dl className="grid grid-cols-2 gap-y-2 text-[13px]">
           <dt className="text-text2">Version</dt><dd>0.9.0 (prototype)</dd>
-          <dt className="text-text2">Build</dt><dd>Next.js · frontend-only, mock APIs</dd>
-          <dt className="text-text2">Data</dt><dd>Stored locally in this browser</dd>
+          <dt className="text-text2">Build</dt><dd>Next.js · frontend uniquement, API simulées</dd>
+          <dt className="text-text2">Données</dt><dd>Stockées localement dans ce navigateur</dd>
         </dl>
       </Card>
     </>

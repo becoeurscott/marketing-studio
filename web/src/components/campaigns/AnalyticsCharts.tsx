@@ -22,7 +22,7 @@ export function BarChart({ data, height = 160, accent, labels, className }: { da
   const bw = (w - gap * (data.length - 1)) / data.length;
   return (
     <div className={className}>
-      <svg viewBox={`0 0 ${w} 40`} preserveAspectRatio="none" className="w-full block" style={{ height }} role="img" aria-label="Bar chart">
+      <svg viewBox={`0 0 ${w} 40`} preserveAspectRatio="none" className="w-full block" style={{ height }} role="img" aria-label="Graphique en barres">
         {[0.25, 0.5, 0.75].map((g) => <line key={g} x1={0} x2={w} y1={40 - g * 40} y2={40 - g * 40} stroke="currentColor" className="text-border" strokeWidth={0.2} />)}
         {data.map((v, i) => {
           const h = (v / max) * 38;
@@ -50,7 +50,7 @@ export function Sparkline({ data, height = 48, className, stroke = "stroke-highl
   const path = pts.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`).join(" ");
   const area = `${path} L${w},30 L0,30 Z`;
   return (
-    <svg viewBox={`0 0 ${w} 32`} preserveAspectRatio="none" className={cn("w-full block", className)} style={{ height }} role="img" aria-label="Trend">
+    <svg viewBox={`0 0 ${w} 32`} preserveAspectRatio="none" className={cn("w-full block", className)} style={{ height }} role="img" aria-label="Tendance">
       <path d={area} className="fill-accent/15" />
       <path d={path} fill="none" strokeWidth={0.9} vectorEffect="non-scaling-stroke" className={stroke} strokeLinejoin="round" strokeLinecap="round" />
     </svg>
@@ -58,35 +58,35 @@ export function Sparkline({ data, height = 48, className, stroke = "stroke-highl
 }
 
 export function CampaignAnalyticsPanel({ analytics }: { analytics: CampaignAnalytics }) {
-  const labels = analytics.daily.map((d) => new Date(d.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }));
+  const labels = analytics.daily.map((d) => new Date(d.date).toLocaleDateString("fr-FR", { month: "short", day: "numeric" }));
   const engagement = analytics.daily.map((d) => Math.round(d.impressions * 0.06 + d.clicks * 0.4));
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatTile label="Reach" value={formatNumber(analytics.reach)} sub={`${formatNumber(analytics.impressions)} impressions`} />
-        <StatTile label="Engagement" value={formatNumber(engagement.reduce((a, b) => a + b, 0))} sub="Likes, saves, comments" />
-        <StatTile label="Clicks" value={formatNumber(analytics.clicks)} sub={`${analytics.ctr}% CTR`} />
-        <StatTile label="ROAS" value={`${analytics.roas}x`} sub={`$${formatNumber(analytics.spend)} spend · ${analytics.conversions} orders`} />
+        <StatTile label="Portée" value={formatNumber(analytics.reach)} sub={`${formatNumber(analytics.impressions)} impressions`} />
+        <StatTile label="Engagement" value={formatNumber(engagement.reduce((a, b) => a + b, 0))} sub="J'aime, enregistrements, commentaires" />
+        <StatTile label="Clics" value={formatNumber(analytics.clicks)} sub={`${analytics.ctr.toLocaleString("fr-FR")} % de CTR`} />
+        <StatTile label="ROAS" value={`${analytics.roas.toLocaleString("fr-FR")}x`} sub={`${formatNumber(analytics.spend)} $ dépensés · ${formatNumber(analytics.conversions)} commandes`} />
       </div>
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="text-[15px] font-semibold">Reach by day</h3>
-              <p className="text-[12px] text-text2">Last 14 days</p>
+              <h3 className="text-[15px] font-semibold">Portée par jour</h3>
+              <p className="text-[12px] text-text2">14 derniers jours</p>
             </div>
           </div>
           <BarChart data={analytics.daily.map((d) => Math.round(d.impressions * 0.72))} labels={labels} accent />
         </Card>
         <div className="space-y-4">
           <Card>
-            <p className="text-[12px] text-muted">Engagement trend</p>
-            <p className="text-lg font-semibold mt-0.5">{formatNumber(engagement[engagement.length - 1])} <span className="text-[12px] text-success font-medium">today</span></p>
+            <p className="text-[12px] text-muted">Tendance de l’engagement</p>
+            <p className="text-lg font-semibold mt-0.5">{formatNumber(engagement[engagement.length - 1])} <span className="text-[12px] text-success font-medium">aujourd’hui</span></p>
             <Sparkline data={engagement} className="mt-2" />
           </Card>
           <Card>
-            <p className="text-[12px] text-muted">Clicks trend</p>
-            <p className="text-lg font-semibold mt-0.5">{formatNumber(analytics.daily[analytics.daily.length - 1].clicks)} <span className="text-[12px] text-text2 font-medium">today</span></p>
+            <p className="text-[12px] text-muted">Tendance des clics</p>
+            <p className="text-lg font-semibold mt-0.5">{formatNumber(analytics.daily[analytics.daily.length - 1].clicks)} <span className="text-[12px] text-text2 font-medium">aujourd’hui</span></p>
             <Sparkline data={analytics.daily.map((d) => d.clicks)} className="mt-2" stroke="stroke-success" />
           </Card>
         </div>

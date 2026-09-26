@@ -45,24 +45,24 @@ export function ProjectCard({ project, assetCount, onRename, onDuplicate, onArch
         <div className="relative aspect-[16/10] bg-elevated overflow-hidden">
           <img src={project.thumbnail} alt="" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-          <Badge tone={statusTone(project.status)} dot className="absolute top-3 left-3 capitalize">{project.status}</Badge>
+          <Badge tone={statusTone(project.status)} dot className="absolute top-3 left-3">{project.status === "archived" ? "Archivé" : "Actif"}</Badge>
         </div>
         <div className="p-4">
           <p className="text-sm font-semibold truncate">{project.name}</p>
-          <p className="text-xs text-muted mt-1">Created {formatDate(project.createdAt)} · {assetCount} asset{assetCount === 1 ? "" : "s"}</p>
+          <p className="text-xs text-muted mt-1">Créé le {formatDate(project.createdAt)} · {assetCount} ressource{assetCount > 1 ? "s" : ""}</p>
         </div>
       </Link>
       {hasMenu && (
         <div className="absolute top-3 right-3">
-          <IconButton label="Project actions" size="sm" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur" onClick={(e) => { e.preventDefault(); setMenu((v) => !v); }}>
+          <IconButton label="Actions sur le projet" size="sm" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur" onClick={(e) => { e.preventDefault(); setMenu((v) => !v); }}>
             <MoreHorizontal />
           </IconButton>
           {menu && (
-            <div className="absolute right-0 mt-1 w-44 rounded-md bg-elevated border border-border-strong shadow-float py-1 z-20">
-              {item("Rename", Pencil, onRename)}
-              {item("Duplicate", Copy, onDuplicate)}
-              {item(project.status === "archived" ? "Restore" : "Archive", project.status === "archived" ? ArchiveRestore : Archive, onArchive)}
-              {item("Delete", Trash2, onDelete, true)}
+            <div className="absolute right-0 mt-1 w-48 rounded-md bg-elevated border border-border-strong shadow-float py-1 z-20">
+              {item("Renommer", Pencil, onRename)}
+              {item("Dupliquer", Copy, onDuplicate)}
+              {item(project.status === "archived" ? "Restaurer" : "Archiver", project.status === "archived" ? ArchiveRestore : Archive, onArchive)}
+              {item("Supprimer", Trash2, onDelete, true)}
             </div>
           )}
         </div>

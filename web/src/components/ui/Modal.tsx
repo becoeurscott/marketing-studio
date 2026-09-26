@@ -67,7 +67,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
                   {title && <h2 className="text-lg font-semibold text-text">{title}</h2>}
                   {description && <p className="text-sm text-text2 mt-0.5">{description}</p>}
                 </div>
-                <IconButton label="Close" size="sm" onClick={onClose}><X /></IconButton>
+                <IconButton label="Fermer" size="sm" onClick={onClose}><X /></IconButton>
               </div>
             )}
             <div className="px-5 pb-5 overflow-y-auto flex-1">{children}</div>

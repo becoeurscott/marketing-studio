@@ -34,11 +34,11 @@ export function TopBar() {
       <h1 className="text-[15px] md:text-base font-semibold tracking-tight truncate flex-1 md:flex-none">{title ?? titleForPath(path)}</h1>
 
       <form onSubmit={submit} className={cn("hidden md:block md:flex-1 max-w-md md:mx-auto")}>
-        <SearchBar value={q} onChange={setQ} placeholder="Search projects, assets, templates…" />
+        <SearchBar value={q} onChange={setQ} placeholder="Rechercher projets, ressources, modèles…" />
       </form>
 
       <div className="flex items-center gap-1.5 md:gap-2 ml-auto">
-        <span className="inline-flex md:hidden"><IconButton label="Search" onClick={() => setMobileSearch((v) => !v)}><Search /></IconButton></span>
+        <span className="inline-flex md:hidden"><IconButton label="Rechercher" onClick={() => setMobileSearch((v) => !v)}><Search /></IconButton></span>
         <span className="hidden sm:inline-flex"><CreditBadge /></span>
         <Link href="/notifications" className="relative inline-flex">
           <IconButton label="Notifications" active={path === "/notifications"}><Bell /></IconButton>
@@ -48,13 +48,13 @@ export function TopBar() {
             </span>
           )}
         </Link>
-        <span className="hidden sm:inline-flex"><Button size="sm" leftIcon={<Plus className="size-4" />} onClick={() => router.push("/studio")}>Create</Button></span>
-        <span className="inline-flex sm:hidden"><IconButton label="Create" variant="solid" className="bg-accent text-white hover:bg-highlight" onClick={() => router.push("/studio")}><Plus /></IconButton></span>
+        <span className="hidden sm:inline-flex"><Button size="sm" leftIcon={<Plus className="size-4" />} onClick={() => router.push("/studio")}>Créer</Button></span>
+        <span className="inline-flex sm:hidden"><IconButton label="Créer" variant="solid" className="bg-accent text-white hover:bg-highlight" onClick={() => router.push("/studio")}><Plus /></IconButton></span>
       </div>
 
       {mobileSearch && (
         <form onSubmit={submit} className="absolute left-0 right-0 top-14 p-3 bg-bg border-b border-border md:hidden">
-          <SearchBar value={q} onChange={setQ} placeholder="Search…" autoFocus />
+          <SearchBar value={q} onChange={setQ} placeholder="Rechercher…" autoFocus />
         </form>
       )}
     </header>

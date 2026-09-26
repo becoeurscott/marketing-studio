@@ -43,7 +43,7 @@ export function Drawer({ open, onClose, title, children, side = "right", width =
           >
             <div className="flex items-center justify-between px-5 h-14 border-b border-border">
               <h2 className="text-[15px] font-semibold">{title}</h2>
-              <IconButton label="Close" size="sm" onClick={onClose}><X /></IconButton>
+              <IconButton label="Fermer" size="sm" onClick={onClose}><X /></IconButton>
             </div>
             <div className="flex-1 overflow-y-auto p-5">{children}</div>
             {footer && <div className="p-4 border-t border-border flex items-center justify-end gap-2">{footer}</div>}

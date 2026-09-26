@@ -19,7 +19,7 @@ struct AssetDetailView: View {
             if let asset {
                 content(asset)
             } else {
-                EmptyStateView(icon: "photo.badge.exclamationmark", title: "Asset not found", message: "It may have been deleted.", ctaTitle: "Back to library") { router.pop() }
+                EmptyStateView(icon: "photo.badge.exclamationmark", title: "Ressource introuvable", message: "Elle a peut-être été supprimée.", ctaTitle: "Retour à la bibliothèque") { router.pop() }
                     .msScreen()
             }
         }
@@ -54,34 +54,34 @@ struct AssetDetailView: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(a.name).msTitle(24)
-                    Text("Added \(a.createdAt.formatted(date: .abbreviated, time: .shortened))").msCaption()
+                    Text("Ajoutée le \(a.createdAt.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened).locale(Locale(identifier: "fr_FR"))))").msCaption()
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
                 HStack(spacing: 10) {
-                    MSButton(title: "Download", icon: "arrow.down.circle", size: .compact) {
-                        router.toast("Saved \(a.name) to Photos", style: .success, icon: "arrow.down.circle")
+                    MSButton(title: "Télécharger", icon: "arrow.down.circle", size: .compact) {
+                        router.toast("\(a.name) enregistrée dans Photos", style: .success, icon: "arrow.down.circle")
                     }
-                    MSButton(title: a.favorite ? "Favorited" : "Favorite", icon: a.favorite ? "heart.fill" : "heart", style: .secondary, size: .compact) {
+                    MSButton(title: a.favorite ? "En favori" : "Favori", icon: a.favorite ? "heart.fill" : "heart", style: .secondary, size: .compact) {
                         store.toggleFavorite(.asset, a.id)
-                        router.toast(a.favorite ? "Removed from favorites" : "Added to favorites", style: .success)
+                        router.toast(a.favorite ? "Retirée des favoris" : "Ajoutée aux favoris", style: .success)
                     }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    SectionHeader(title: "Details")
+                    SectionHeader(title: "Détails")
                     MSCard(padding: 0) {
                         VStack(spacing: 0) {
                             detailRow("Type", a.kind.title)
                             divider
                             detailRow("Dimensions", a.width > 0 ? "\(a.width) × \(a.height)" : "—")
                             divider
-                            detailRow("Project", a.projectId.flatMap { store.project($0)?.name } ?? "Unassigned")
+                            detailRow("Project", a.projectId.flatMap { store.project($0)?.name } ?? "Non assignée")
                             divider
                             detailRow("Tags", a.tags.isEmpty ? "—" : a.tags.joined(separator: ", "))
                             divider
-                            detailRow("Used in", usedIn(a))
+                            detailRow("Utilisée dans", usedIn(a))
                         }
                     }
                     .padding(.horizontal, MSSpacing.gutter)
@@ -90,14 +90,14 @@ struct AssetDetailView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     SectionHeader(title: "Actions")
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
-                        actionTile("Use in campaign", "flag") { usingInCampaign = true }
-                        actionTile("Edit", "slider.horizontal.3") {
-                            router.toast("Image editor coming soon", icon: "slider.horizontal.3")
+                        actionTile("Utiliser dans une campagne", "flag") { usingInCampaign = true }
+                        actionTile("Modifier", "slider.horizontal.3") {
+                            router.toast("Éditeur d'image bientôt disponible", icon: "slider.horizontal.3")
                         }
-                        actionTile("Rename", "pencil") { renaming = true }
-                        actionTile("Move to project", "folder") { moving = true }
-                        actionTile("Export", "square.and.arrow.up") { router.present(.exportAssets(ids: [a.id])) }
-                        actionTile("Delete", "trash", tint: MSColor.danger) { confirmDelete = true }
+                        actionTile("Renommer", "pencil") { renaming = true }
+                        actionTile("Déplacer vers un projet", "folder") { moving = true }
+                        actionTile("Exporter", "square.and.arrow.up") { router.present(.exportAssets(ids: [a.id])) }
+                        actionTile("Supprimer", "trash", tint: MSColor.danger) { confirmDelete = true }
                     }
                     .padding(.horizontal, MSSpacing.gutter)
                 }
@@ -127,13 +127,13 @@ struct AssetDetailView: View {
             }
             .preferredColorScheme(.dark)
         }
-        .confirmationDialog("Delete \(a.name)?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Delete asset", role: .destructive) {
+        .confirmationDialog("Supprimer \(a.name) ?", isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("Supprimer la ressource", role: .destructive) {
                 store.deleteAsset(a.id)
-                router.toast("Asset deleted", style: .warning)
+                router.toast("Ressource supprimée", style: .warning)
                 router.pop()
             }
-        } message: { Text("This removes it from every project and campaign.") }
+        } message: { Text("Elle sera retirée de tous les projets et campagnes.") }
     }
 
     private var divider: some View { Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 14) }
@@ -149,7 +149,7 @@ struct AssetDetailView: View {
 
     private func usedIn(_ a: Asset) -> String {
         let names = store.campaigns.filter { $0.assetIds.contains(a.id) }.map { $0.name }
-        return names.isEmpty ? "No campaigns" : names.joined(separator: ", ")
+        return names.isEmpty ? "Aucune campagne" : names.joined(separator: ", ")
     }
 
     private func actionTile(_ title: String, _ icon: String, tint: Color = MSColor.text, action: @escaping () -> Void) -> some View {

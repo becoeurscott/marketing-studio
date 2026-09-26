@@ -20,11 +20,11 @@ struct UploadProductSheet: View {
     }
 
     var body: some View {
-        BottomSheetContainer(title: "Upload product", subtitle: "Pick a product photo to build visuals around.") {
+        BottomSheetContainer(title: "Importer un produit", subtitle: "Choisissez une photo produit pour créer vos visuels.") {
             if uploading {
                 VStack(spacing: 16) {
                     Image(systemName: "icloud.and.arrow.up").font(.system(size: 30, weight: .medium)).foregroundStyle(MSColor.highlight)
-                    Text("Uploading \(uploadName)...").msHeadline(15)
+                    Text("Import de \(uploadName)...").msHeadline(15)
                     MSProgressBar(progress: progress).padding(.horizontal, 40)
                     Text("\(Int(progress * 100))%").font(MSFont.mono(12)).foregroundStyle(MSColor.text2)
                 }
@@ -39,8 +39,8 @@ struct UploadProductSheet: View {
                                     .frame(width: 42, height: 42)
                                     .background(MSColor.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text("Choose from Photos").msHeadline(15)
-                                    Text("PNG or JPG, up to 20 MB").msCaption()
+                                    Text("Choisir dans Photos").msHeadline(15)
+                                    Text("PNG ou JPG, jusqu'à 20 Mo").msCaption()
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right").foregroundStyle(MSColor.muted)
@@ -50,10 +50,10 @@ struct UploadProductSheet: View {
                         .buttonStyle(MSPressStyle())
                         .onChange(of: pickerItem) { _, item in
                             guard item != nil else { return }
-                            upload(name: "Camera roll upload")
+                            upload(name: "Import depuis la pellicule")
                         }
 
-                        SectionHeader(title: "Your product images")
+                        SectionHeader(title: "Vos images produit")
                         LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                             ForEach(candidates) { a in
                                 Button {
@@ -108,7 +108,7 @@ struct UploadProductSheet: View {
 
     private func finish(_ asset: Asset) {
         MSHaptic.success()
-        router.toast("\(asset.name) ready", style: .success, icon: "checkmark.circle.fill")
+        router.toast("\(asset.name) est prêt", style: .success, icon: "checkmark.circle.fill")
         onUploaded(asset)
         dismiss()
     }

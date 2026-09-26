@@ -92,7 +92,7 @@ export function useImageGenerator() {
       markSaved();
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "failed";
-      setError({ code, message: err instanceof Error ? err.message : "Unknown error" });
+      setError({ code, message: err instanceof Error ? err.message : "Erreur inconnue" });
     } finally {
       setGenerating(false);
     }
@@ -103,7 +103,7 @@ export function useImageGenerator() {
   const ensureAsset = useCallback((r: ImageResult): Asset => {
     const cached = savedAssets.current.get(r.id);
     if (cached) return cached;
-    const name = (params.prompt.trim() || "Generated visual").slice(0, 48);
+    const name = (params.prompt.trim() || "Visuel généré").slice(0, 48);
     const asset = addAsset({ name, type: "image", url: r.url, thumbnail: r.thumbnail, projectId: currentProjectId, favorite: false, width: 1600, height: 2000, sizeKb: 1400, tags: ["generated", params.style] });
     savedAssets.current.set(r.id, asset);
     return asset;
@@ -129,7 +129,7 @@ export function useImageGenerator() {
       return true;
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "failed";
-      setError({ code, message: err instanceof Error ? err.message : "Unknown error" });
+      setError({ code, message: err instanceof Error ? err.message : "Erreur inconnue" });
       return false;
     } finally {
       setBusyId(null);

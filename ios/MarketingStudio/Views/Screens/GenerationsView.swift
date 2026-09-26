@@ -5,15 +5,15 @@ struct GenerationsView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
-    @State private var filter = "All"
+    @State private var filter = "Tout"
     @State private var query = ""
     @State private var selected: Generation? = nil
 
-    private static let filters = ["All"] + GenerationKind.allCases.map { $0.title }
+    private static let filters = ["Tout"] + GenerationKind.allCases.map { $0.title }
 
     private var filtered: [Generation] {
         store.recentGenerations
-            .filter { g in filter == "All" || g.kind.title == filter }
+            .filter { g in filter == "Tout" || g.kind.title == filter }
             .filter { query.isEmpty || $0.prompt.localizedCaseInsensitiveContains(query) }
     }
 
@@ -22,10 +22,10 @@ struct GenerationsView: View {
         var buckets: [(String, [Generation])] = []
         for g in filtered {
             let key: String
-            if cal.isDateInToday(g.createdAt) { key = "Today" }
-            else if cal.isDateInYesterday(g.createdAt) { key = "Yesterday" }
-            else if g.createdAt > .daysAgo(7) { key = "This week" }
-            else { key = "Earlier" }
+            if cal.isDateInToday(g.createdAt) { key = "Aujourd'hui" }
+            else if cal.isDateInYesterday(g.createdAt) { key = "Hier" }
+            else if g.createdAt > .daysAgo(7) { key = "Cette semaine" }
+            else { key = "Plus tôt" }
             if let i = buckets.firstIndex(where: { $0.0 == key }) { buckets[i].1.append(g) } else { buckets.append((key, [g])) }
         }
         return buckets
@@ -35,19 +35,19 @@ struct GenerationsView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Generations").msTitle(30)
-                    Text("\(store.generations.count) total · \(store.generations.reduce(0) { $0 + $1.creditsSpent }) credits spent").msBody(14)
+                    Text("Générations").msTitle(30)
+                    Text("\(store.generations.count) au total · \(store.generations.reduce(0) { $0 + $1.creditsSpent }) crédits dépensés").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
-                SearchBar(placeholder: "Search prompts", text: $query).padding(.horizontal, MSSpacing.gutter)
+                SearchBar(placeholder: "Rechercher des prompts", text: $query).padding(.horizontal, MSSpacing.gutter)
                 ChipRow(options: Self.filters, selection: $filter)
 
                 if filtered.isEmpty {
                     EmptyStateView(
                         icon: query.isEmpty ? "clock.arrow.circlepath" : "magnifyingglass",
-                        title: query.isEmpty ? "No generations yet" : "No matches",
-                        message: query.isEmpty ? "Every image, video, ad and copy you generate is logged here so you can rerun it later." : "Try a different prompt keyword.",
-                        ctaTitle: query.isEmpty ? "Open Studio" : "Clear search",
+                        title: query.isEmpty ? "Aucune génération pour l'instant" : "Aucun résultat",
+                        message: query.isEmpty ? "Chaque image, vidéo, pub et texte que vous générez est enregistré ici pour pouvoir le relancer plus tard." : "Essayez un autre mot-clé.",
+                        ctaTitle: query.isEmpty ? "Ouvrir le Studio" : "Effacer la recherche",
                         ctaIcon: query.isEmpty ? "sparkles" : nil
                     ) { if query.isEmpty { router.push(.studio) } else { query = "" } }
                 } else {
@@ -58,11 +58,11 @@ struct GenerationsView: View {
                                 ForEach(gens) { g in
                                     GenerationHistoryRow(generation: g) { selected = g }
                                         .contextMenu {
-                                            Button { selected = g } label: { Label("Details", systemImage: "info.circle") }
+                                            Button { selected = g } label: { Label("Détails", systemImage: "info.circle") }
                                             Button { store.toggleFavorite(.prompt, g.id) } label: {
-                                                Label(store.isFavorite(.prompt, g.id) ? "Unsave prompt" : "Save prompt", systemImage: "bookmark")
+                                                Label(store.isFavorite(.prompt, g.id) ? "Retirer le prompt" : "Enregistrer le prompt", systemImage: "bookmark")
                                             }
-                                            Button(role: .destructive) { store.deleteGeneration(g.id) } label: { Label("Delete", systemImage: "trash") }
+                                            Button(role: .destructive) { store.deleteGeneration(g.id) } label: { Label("Supprimer", systemImage: "trash") }
                                         }
                                 }
                             }
@@ -76,7 +76,7 @@ struct GenerationsView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Generations")
+        .navigationTitle("Générations")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .msSheet(item: $selected, detents: [.large]) { g in
@@ -140,7 +140,7 @@ struct GenerationDetailSheet: View {
     private var generation: Generation? { store.generation(generationId) }
 
     var body: some View {
-        BottomSheetContainer(title: generation?.kind.title ?? "Generation", subtitle: generation.map { "\($0.model) · \($0.creditsSpent) credits · \($0.createdAt.formatted(date: .abbreviated, time: .shortened))" }) {
+        BottomSheetContainer(title: generation?.kind.title ?? "Génération", subtitle: generation.map { "\($0.model) · \($0.creditsSpent) crédits · \($0.createdAt.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened).locale(Locale(identifier: "fr_FR"))))" }) {
             if let g = generation {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 16) {
@@ -181,11 +181,11 @@ struct GenerationDetailSheet: View {
                         if let text = g.resultText, !text.isEmpty {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {
-                                    Text("Result").msCaption(color: MSColor.text2)
+                                    Text("Résultat").msCaption(color: MSColor.text2)
                                     Spacer()
                                     Button {
                                         UIPasteboard.general.string = text
-                                        router.toast("Copied", style: .success, icon: "doc.on.doc")
+                                        router.toast("Copié", style: .success, icon: "doc.on.doc")
                                     } label: { Image(systemName: "doc.on.doc").font(.system(size: 12, weight: .semibold)).foregroundStyle(MSColor.text2) }
                                 }
                                 Text(text).msBody(14).lineSpacing(3)
@@ -195,12 +195,12 @@ struct GenerationDetailSheet: View {
                         }
 
                         VStack(spacing: 10) {
-                            MSButton(title: "Rerun · \(g.creditsSpent) credits", icon: "arrow.clockwise", isLoading: rerunning) { rerun(g) }
+                            MSButton(title: "Relancer · \(g.creditsSpent) crédits", icon: "arrow.clockwise", isLoading: rerunning) { rerun(g) }
                             if let first = g.thumbnails.first {
-                                MSButton(title: "Open asset", icon: "photo", style: .secondary) { openAsset(first, g) }
+                                MSButton(title: "Ouvrir le visuel", icon: "photo", style: .secondary) { openAsset(first, g) }
                             }
                             if g.status == .failed {
-                                MSButton(title: "Delete", icon: "trash", style: .danger) {
+                                MSButton(title: "Supprimer", icon: "trash", style: .danger) {
                                     store.deleteGeneration(g.id)
                                     onDone()
                                 }
@@ -211,7 +211,7 @@ struct GenerationDetailSheet: View {
                     .padding(.bottom, 24)
                 }
             } else {
-                EmptyStateView(icon: "clock.badge.xmark", title: "Generation removed", message: "", ctaTitle: "Close") { onDone() }
+                EmptyStateView(icon: "clock.badge.xmark", title: "Génération supprimée", message: "", ctaTitle: "Fermer") { onDone() }
             }
         }
     }
@@ -238,10 +238,10 @@ struct GenerationDetailSheet: View {
                 case .copy:
                     _ = try await MockAPI.generateCopy(CopyParams(product: store.brand.name, audience: store.brand.audience), store: store)
                 case .ad:
-                    _ = try await MockAPI.generateAds(AdParams(product: store.brand.name, offer: "Launch offer", audience: store.brand.audience, projectId: g.projectId), store: store)
+                    _ = try await MockAPI.generateAds(AdParams(product: store.brand.name, offer: "Offre de lancement", audience: store.brand.audience, projectId: g.projectId), store: store)
                 }
                 MSHaptic.success()
-                router.toast("Rerun complete", style: .success)
+                router.toast("Relance terminée", style: .success)
                 onDone()
             } catch {
                 router.toast(error.localizedDescription, style: .error)

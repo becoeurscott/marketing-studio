@@ -9,8 +9,8 @@ struct HookGeneratorView: View {
 
     private enum Phase: Equatable { case idle, generating, done, failed }
 
-    @State private var product = "Luma Glow Serum"
-    @State private var audience = "Women and men 20–35"
+    @State private var product = "Sérum Luma Glow"
+    @State private var audience = "Femmes et hommes de 20 à 35 ans"
     @State private var phase: Phase = .idle
     @State private var hooks: [HookResult] = []
     @State private var lastError: Error?
@@ -23,12 +23,12 @@ struct HookGeneratorView: View {
             VStack(alignment: .leading, spacing: 22) {
                 header
                 VStack(spacing: 14) {
-                    MSTextField(label: "Product", placeholder: "e.g. Luma Glow Serum", text: $product, icon: "shippingbox")
-                    MSTextField(label: "Audience", placeholder: "e.g. Women and men 20–35", text: $audience, icon: "person.2")
+                    MSTextField(label: "Produit", placeholder: "ex. Sérum Luma Glow", text: $product, icon: "shippingbox")
+                    MSTextField(label: "Audience", placeholder: "ex. Femmes et hommes de 20 à 35 ans", text: $audience, icon: "person.2")
                 }
                 .padding(.horizontal, MSSpacing.gutter)
-                CreditCostRow(cost: Self.cost, label: "10 hooks")
-                MSButton(title: hooks.isEmpty ? "Generate 10 hooks" : "Generate 10 more", icon: "bolt.fill", isLoading: phase == .generating, isDisabled: !canGenerate) { generate() }
+                CreditCostRow(cost: Self.cost, label: "10 accroches")
+                MSButton(title: hooks.isEmpty ? "Générer 10 accroches" : "En générer 10 de plus", icon: "bolt.fill", isLoading: phase == .generating, isDisabled: !canGenerate) { generate() }
                     .padding(.horizontal, MSSpacing.gutter)
                 resultsSection
                 savedSection
@@ -37,15 +37,15 @@ struct HookGeneratorView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Hook Generator")
+        .navigationTitle("Générateur d'accroches")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Hook Generator").msTitle(26)
-            Text("Scroll-stopping first lines for short-form video and ads.").msBody(14)
+            Text("Générateur d'accroches").msTitle(26)
+            Text("Des premières phrases qui stoppent le scroll, pour vos vidéos courtes et vos pubs.").msBody(14)
         }
         .padding(.horizontal, MSSpacing.gutter)
     }
@@ -55,13 +55,13 @@ struct HookGeneratorView: View {
         switch phase {
         case .idle:
             if hooks.isEmpty {
-                EmptyStateView(icon: "bolt", title: "No hooks yet", message: "Describe your product and audience, then generate 10 hooks in one tap.", ctaTitle: "Generate 10 hooks", ctaIcon: "bolt.fill") { generate() }
+                EmptyStateView(icon: "bolt", title: "Aucune accroche pour l'instant", message: "Décrivez votre produit et votre audience, puis générez 10 accroches en un seul geste.", ctaTitle: "Générer 10 accroches", ctaIcon: "bolt.fill") { generate() }
             }
         case .generating:
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     ProgressView().tint(MSColor.accent)
-                    Text("Writing hooks...").msHeadline(15)
+                    Text("Rédaction des accroches...").msHeadline(15)
                 }
                 ForEach(0..<5, id: \.self) { _ in
                     HStack(spacing: 12) {
@@ -76,7 +76,7 @@ struct HookGeneratorView: View {
             if let lastError { CreativeErrorView(error: lastError, retry: generate, back: { router.popToRoot() }) }
         case .done:
             VStack(alignment: .leading, spacing: 10) {
-                SectionHeader(title: "\(hooks.count) hooks", subtitle: "For \(product)", actionTitle: "Save all") { saveAll() }
+                SectionHeader(title: "\(hooks.count) accroches", subtitle: "Pour \(product)", actionTitle: "Tout enregistrer") { saveAll() }
                 ForEach(Array(hooks.enumerated()), id: \.element.id) { i, h in
                     HookRow(index: i + 1, hook: h, saved: store.savedHooks.contains { $0.text == h.text },
                             onCopy: { copy(h) }, onSave: { save(h) }, onUse: { use(h) })
@@ -90,12 +90,12 @@ struct HookGeneratorView: View {
     private var savedSection: some View {
         if !store.savedHooks.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                SectionHeader(title: "Saved hooks", subtitle: "\(store.savedHooks.count) in your library", actionTitle: showSaved ? "Hide" : "Show") {
+                SectionHeader(title: "Accroches enregistrées", subtitle: "\(store.savedHooks.count) dans votre bibliothèque", actionTitle: showSaved ? "Masquer" : "Afficher") {
                     withAnimation(MSAnimation.snappy) { showSaved.toggle() }
                 }
                 if showSaved {
                     ForEach(Array(store.savedHooks.prefix(10).enumerated()), id: \.element.id) { i, h in
-                        HookRow(index: i + 1, hook: h, saved: true, onCopy: { copy(h) }, onSave: { router.toast("Already saved", style: .info) }, onUse: { use(h) })
+                        HookRow(index: i + 1, hook: h, saved: true, onCopy: { copy(h) }, onSave: { router.toast("Déjà enregistrée", style: .info) }, onUse: { use(h) })
                     }
                 }
             }
@@ -115,7 +115,7 @@ struct HookGeneratorView: View {
                 let r = try await MockAPI.generateHooks(product: product, audience: audience, store: store)
                 MSHaptic.success()
                 withAnimation(MSAnimation.snappy) { hooks = r; phase = .done }
-                router.toast("10 hooks ready", style: .success, icon: "bolt.fill")
+                router.toast("10 accroches prêtes", style: .success, icon: "bolt.fill")
             } catch {
                 MSHaptic.warning()
                 lastError = error
@@ -127,24 +127,24 @@ struct HookGeneratorView: View {
     private func copy(_ h: HookResult) {
         UIPasteboard.general.string = h.text
         MSHaptic.success()
-        router.toast("Hook copied", style: .success, icon: "doc.on.doc")
+        router.toast("Accroche copiée", style: .success, icon: "doc.on.doc")
     }
 
     private func save(_ h: HookResult) {
         store.saveHook(h)
         MSHaptic.success()
-        router.toast("Hook saved", style: .success)
+        router.toast("Accroche enregistrée", style: .success)
     }
 
     private func saveAll() {
         for h in hooks { store.saveHook(h) }
         MSHaptic.success()
-        router.toast("Saved \(hooks.count) hooks", style: .success)
+        router.toast("\(hooks.count) accroches enregistrées", style: .success)
     }
 
     private func use(_ h: HookResult) {
         MSHaptic.tap()
-        router.push(.ugcCreatorWithScript(script: "\(h.text)\n\nCreate a 15-second TikTok-style video introducing \(product)."))
+        router.push(.ugcCreatorWithScript(script: "\(h.text)\n\nCréez une vidéo de 15 secondes façon TikTok pour présenter \(product)."))
     }
 }
 
@@ -172,9 +172,9 @@ struct HookRow: View {
                 Spacer(minLength: 0)
             }
             HStack(spacing: 8) {
-                ResultAction(title: "Copy", icon: "doc.on.doc", action: onCopy)
-                ResultAction(title: saved ? "Saved" : "Save", icon: saved ? "checkmark" : "bookmark", tint: saved ? MSColor.success : MSColor.text, action: onSave)
-                ResultAction(title: "Use in Script", icon: "person.wave.2", action: onUse)
+                ResultAction(title: "Copier", icon: "doc.on.doc", action: onCopy)
+                ResultAction(title: saved ? "Enregistrée" : "Enregistrer", icon: saved ? "checkmark" : "bookmark", tint: saved ? MSColor.success : MSColor.text, action: onSave)
+                ResultAction(title: "Utiliser dans un script", icon: "person.wave.2", action: onUse)
             }
         }
         .msCard(padding: 12)

@@ -4,9 +4,12 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { StepProgress } from "@/components/ui/ProgressIndicator";
 import { cn } from "@/lib/utils";
+import { VIDEO_STEP_LABELS } from "./constants";
+
+const label_ = (s: string) => VIDEO_STEP_LABELS[s] ?? s;
 
 /** "Creating your visual..." animated placeholder (SPEC §44). Optional step list for video. */
-export function GeneratingOverlay({ label = "Creating your visual...", hint, steps, step, className }: { label?: string; hint?: string; steps?: readonly string[]; step?: number; className?: string }) {
+export function GeneratingOverlay({ label = "Création de votre visuel…", hint, steps, step, className }: { label?: string; hint?: string; steps?: readonly string[]; step?: number; className?: string }) {
   return (
     <div className={cn("relative overflow-hidden rounded-xl border border-border bg-card flex flex-col items-center justify-center text-center p-8 min-h-[320px]", className)} aria-live="polite" aria-busy>
       {/* drifting glow */}
@@ -27,7 +30,7 @@ export function GeneratingOverlay({ label = "Creating your visual...", hint, ste
         <p className="text-base font-semibold">{label}</p>
         {hint && <p className="text-sm text-text2 mt-1">{hint}</p>}
         {steps ? (
-          <StepProgress steps={steps} current={step ?? 0} className="mt-5 text-left inline-block" />
+          <StepProgress steps={steps.map((s) => label_(s))} current={step ?? 0} className="mt-5 text-left inline-block" />
         ) : (
           <div className="mt-5 h-1 w-48 mx-auto rounded-full bg-white/8 overflow-hidden">
             <motion.div className="h-full w-1/3 bg-accent rounded-full" animate={{ x: ["-100%", "300%"] }} transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }} />

@@ -32,7 +32,7 @@ export function Sidebar() {
         <span className="size-7 rounded-md bg-gradient-to-br from-accent to-accent2 flex items-center justify-center shadow-glow">
           <Sparkles className="size-4 text-white" />
         </span>
-        {!collapsed && <span className="text-[15px] font-semibold tracking-tight">Marketing Studio</span>}
+        {!collapsed && <span className="text-[15px] font-semibold tracking-tight">Sokozia</span>}
       </Link>
 
       {/* Nav */}
@@ -63,12 +63,12 @@ export function Sidebar() {
         <Link
           href="/credits"
           className={cn("flex items-center h-9 rounded-md text-[13px] font-medium text-text2 hover:text-text hover:bg-white/4 transition-colors", collapsed ? "justify-center" : "px-2.5 gap-3")}
-          title={`${formatNumber(credits)} credits`}
+          title={`${formatNumber(credits)} crédits`}
         >
           <Sparkles className="size-[18px] text-highlight shrink-0" />
           {!collapsed && (
             <span className="flex-1 flex items-center justify-between">
-              <span>{formatNumber(credits)} credits</span>
+              <span>{formatNumber(credits)} crédits</span>
               <span className="text-[11px] text-muted capitalize">{plan}</span>
             </span>
           )}
@@ -85,9 +85,9 @@ export function Sidebar() {
         <button
           onClick={() => setSidebarCollapsed(!collapsed)}
           className={cn("flex items-center h-8 w-full rounded-md text-[12px] text-muted hover:text-text hover:bg-white/4 transition-colors", collapsed ? "justify-center" : "px-2.5 gap-3")}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? "Déplier la barre latérale" : "Replier la barre latérale"}
         >
-          {collapsed ? <ChevronsRight className="size-4" /> : <><ChevronsLeft className="size-4" /> Collapse</>}
+          {collapsed ? <ChevronsRight className="size-4" /> : <><ChevronsLeft className="size-4" /> Replier</>}
         </button>
       </div>
     </motion.aside>

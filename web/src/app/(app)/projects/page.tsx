@@ -48,19 +48,19 @@ export default function ProjectsPage() {
   return (
     <>
       <PageHeader
-        title="Projects"
-        description="Everything you're working on, grouped by product or launch."
-        actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => { setEditing(null); setFormOpen(true); }}>New project</Button>}
+        title="Projets"
+        description="Tout ce sur quoi vous travaillez, regroupé par produit ou par lancement."
+        actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => { setEditing(null); setFormOpen(true); }}>Nouveau projet</Button>}
       />
 
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-5">
-        <SearchBar value={q} onChange={setQ} placeholder="Search projects…" className="md:w-72" />
+        <SearchBar value={q} onChange={setQ} placeholder="Rechercher un projet…" className="md:w-72" />
         <FilterBar
           className="flex-1"
-          options={[{ value: "all", label: "All", count: counts.all }, { value: "active", label: "Active", count: counts.active }, { value: "archived", label: "Archived", count: counts.archived }]}
+          options={[{ value: "all", label: "Tous", count: counts.all }, { value: "active", label: "Actifs", count: counts.active }, { value: "archived", label: "Archivés", count: counts.archived }]}
           value={filter}
           onChange={setFilter}
-          right={<Select compact value={sort} onChange={(e) => setSort(e.target.value as Sort)} options={[{ value: "updated", label: "Last updated" }, { value: "created", label: "Newest" }, { value: "name", label: "Name" }]} aria-label="Sort" />}
+          right={<Select compact value={sort} onChange={(e) => setSort(e.target.value as Sort)} options={[{ value: "updated", label: "Dernière mise à jour" }, { value: "created", label: "Plus récents" }, { value: "name", label: "Nom" }]} aria-label="Trier" />}
         />
       </div>
 
@@ -72,8 +72,8 @@ export default function ProjectsPage() {
               project={p}
               assetCount={assetCount(p.id)}
               onRename={(pr) => { setEditing(pr); setFormOpen(true); }}
-              onDuplicate={(pr) => { const c = duplicateProject(pr.id); if (c) toast.success("Project duplicated", c.name); }}
-              onArchive={(pr) => { const arch = pr.status !== "archived"; archiveProject(pr.id, arch); toast.info(arch ? "Project archived" : "Project restored", pr.name); }}
+              onDuplicate={(pr) => { const c = duplicateProject(pr.id); if (c) toast.success("Projet dupliqué", c.name); }}
+              onArchive={(pr) => { const arch = pr.status !== "archived"; archiveProject(pr.id, arch); toast.info(arch ? "Projet archivé" : "Projet restauré", pr.name); }}
               onDelete={(pr) => setDeleting(pr)}
             />
           ))}
@@ -81,9 +81,9 @@ export default function ProjectsPage() {
       ) : (
         <EmptyState
           icon={FolderKanban}
-          title={q ? "No projects match" : filter === "archived" ? "No archived projects" : "No projects yet"}
-          description={q ? "Try a different search or clear the filter." : "Create a project to organize assets, generations and campaigns for a product or launch."}
-          cta={q ? { label: "Clear search", onClick: () => setQ("") } : { label: "New project", onClick: () => { setEditing(null); setFormOpen(true); } }}
+          title={q ? "Aucun projet ne correspond" : filter === "archived" ? "Aucun projet archivé" : "Aucun projet pour l'instant"}
+          description={q ? "Essayez une autre recherche ou effacez le filtre." : "Créez un projet pour organiser les ressources, générations et campagnes d'un produit ou d'un lancement."}
+          cta={q ? { label: "Effacer la recherche", onClick: () => setQ("") } : { label: "Nouveau projet", onClick: () => { setEditing(null); setFormOpen(true); } }}
         />
       )}
 
@@ -92,17 +92,17 @@ export default function ProjectsPage() {
       <Modal
         open={!!deleting}
         onClose={() => setDeleting(null)}
-        title="Delete project?"
-        description={`"${deleting?.name}" and its ${deleting ? assetCount(deleting.id) : 0} assets, generations and campaigns will be removed.`}
+        title="Supprimer le projet ?"
+        description={`« ${deleting?.name} » ainsi que ses ${deleting ? assetCount(deleting.id) : 0} ressources, ses générations et ses campagnes seront supprimés.`}
         size="sm"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setDeleting(null)}>Cancel</Button>
-            <Button variant="danger" onClick={() => { if (deleting) { deleteProject(deleting.id); toast.info("Project deleted", deleting.name); } setDeleting(null); }}>Delete</Button>
+            <Button variant="ghost" onClick={() => setDeleting(null)}>Annuler</Button>
+            <Button variant="danger" onClick={() => { if (deleting) { deleteProject(deleting.id); toast.info("Projet supprimé", deleting.name); } setDeleting(null); }}>Supprimer</Button>
           </>
         }
       >
-        <p className="text-sm text-text2">This can&apos;t be undone in the prototype.</p>
+        <p className="text-sm text-text2">Cette action est irréversible dans le prototype.</p>
       </Modal>
     </>
   );

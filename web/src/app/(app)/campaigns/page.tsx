@@ -43,35 +43,35 @@ export default function CampaignsPage() {
   }, [campaigns, filter, q, sort]);
 
   const newButton = (
-    <Link href="/campaigns/new"><Button leftIcon={<Plus className="size-4" />}>New campaign</Button></Link>
+    <Link href="/campaigns/new"><Button leftIcon={<Plus className="size-4" />}>Nouvelle campagne</Button></Link>
   );
 
   return (
     <>
-      <PageHeader title="Campaigns" description="Plan, generate and schedule multi-platform campaigns from one brief." actions={newButton} />
+      <PageHeader title="Campagnes" description="Planifiez, générez et programmez des campagnes multiplateformes à partir d'un seul brief." actions={newButton} />
 
       {campaigns.length === 0 ? (
-        <EmptyState icon={Megaphone} title="No campaigns yet" description="Answer five quick questions and we'll generate creatives, copy and a starter calendar." cta={{ label: "New campaign", href: "/campaigns/new" }} />
+        <EmptyState icon={Megaphone} title="Aucune campagne pour l'instant" description="Répondez à cinq questions rapides et nous générerons vos visuels, vos textes et un premier calendrier." cta={{ label: "Nouvelle campagne", href: "/campaigns/new" }} />
       ) : (
         <>
           <div className="flex flex-col md:flex-row md:items-center gap-3 mb-5">
-            <SearchBar value={q} onChange={setQ} placeholder="Search campaigns…" className="md:w-72" />
+            <SearchBar value={q} onChange={setQ} placeholder="Rechercher une campagne…" className="md:w-72" />
             <FilterBar
               className="flex-1"
               options={[
-                { value: "all", label: "All", count: counts.all },
-                { value: "draft", label: "Draft", count: counts.draft },
+                { value: "all", label: "Toutes", count: counts.all },
+                { value: "draft", label: "Brouillon", count: counts.draft },
                 { value: "active", label: "Active", count: counts.active },
-                { value: "completed", label: "Completed", count: counts.completed },
+                { value: "completed", label: "Terminée", count: counts.completed },
               ]}
               value={filter}
               onChange={setFilter}
-              right={<Select compact aria-label="Sort" value={sort} onChange={(e) => setSort(e.target.value as Sort)} options={[{ value: "updated", label: "Last updated" }, { value: "created", label: "Newest" }, { value: "name", label: "Name" }]} />}
+              right={<Select compact aria-label="Trier" value={sort} onChange={(e) => setSort(e.target.value as Sort)} options={[{ value: "updated", label: "Dernière mise à jour" }, { value: "created", label: "Plus récentes" }, { value: "name", label: "Nom" }]} />}
             />
           </div>
 
           {list.length === 0 ? (
-            <EmptyState compact icon={Megaphone} title="No campaigns match" description="Try a different filter or search term." cta={{ label: "Clear filters", onClick: () => { setFilter("all"); setQ(""); } }} />
+            <EmptyState compact icon={Megaphone} title="Aucune campagne ne correspond" description="Essayez un autre filtre ou un autre terme de recherche." cta={{ label: "Effacer les filtres", onClick: () => { setFilter("all"); setQ(""); } }} />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {list.map((c) => <CampaignCard key={c.id} campaign={c} assets={assets} />)}

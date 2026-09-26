@@ -54,10 +54,10 @@ export function VideoPlayer({ result, className, heightClass = "h-[70vh]", maxHe
             onClick={toggle}
           />
         ) : (
-          <img src={result.poster} alt="Video poster" className="size-full object-cover" />
+          <img src={result.poster} alt="Aperçu de la vidéo" className="size-full object-cover" />
         )}
         {!playing && (
-          <button onClick={toggle} className="absolute inset-0 flex items-center justify-center bg-black/25 hover:bg-black/35 transition-colors" aria-label="Play">
+          <button onClick={toggle} className="absolute inset-0 flex items-center justify-center bg-black/25 hover:bg-black/35 transition-colors" aria-label="Lire">
             <span className="size-16 rounded-full bg-white/90 text-black flex items-center justify-center shadow-float"><Play className="size-7 ml-1 fill-current" /></span>
           </button>
         )}
@@ -65,11 +65,11 @@ export function VideoPlayer({ result, className, heightClass = "h-[70vh]", maxHe
       </div>
       {/* controls */}
       <div className="flex items-center gap-2 px-3 py-2 bg-card border-t border-border">
-        <IconButton size="sm" label={playing ? "Pause" : "Play"} onClick={toggle}>{playing ? <Pause /> : <Play />}</IconButton>
+        <IconButton size="sm" label={playing ? "Pause" : "Lire"} onClick={toggle}>{playing ? <Pause /> : <Play />}</IconButton>
         <span className="text-[11px] tabular-nums text-text2 w-8">{fmt(time)}</span>
-        <input type="range" min={0} max={duration} step={0.1} value={Math.min(time, duration)} onChange={(e) => seek(Number(e.target.value))} className="flex-1 accent-[#a855f7]" aria-label="Seek" />
+        <input type="range" min={0} max={duration} step={0.1} value={Math.min(time, duration)} onChange={(e) => seek(Number(e.target.value))} className="flex-1 accent-[#a855f7]" aria-label="Position de lecture" />
         <span className="text-[11px] tabular-nums text-text2 w-8 text-right">{fmt(duration)}</span>
-        <IconButton size="sm" label={muted ? "Unmute" : "Mute"} onClick={() => setMuted((m) => !m)}>{muted ? <VolumeX /> : <Volume2 />}</IconButton>
+        <IconButton size="sm" label={muted ? "Activer le son" : "Couper le son"} onClick={() => setMuted((m) => !m)}>{muted ? <VolumeX /> : <Volume2 />}</IconButton>
       </div>
     </div>
   );

@@ -16,16 +16,16 @@ enum MockData {
         name: "Alex Carter",
         email: "alex@northstarcreative.co",
         company: "Northstar Creative",
-        role: "Founder",
+        role: "Fondateur",
         avatarURL: avatar(12),
         plan: .creator
     )
 
     static let brandVoice = BrandVoice(
         tone: "Luxury",
-        writingStyle: "Short sentences. Confident. Never overly formal.",
-        keywords: ["glow", "clean", "everyday", "brightening", "ritual"],
-        avoid: ["miracle", "anti-aging", "cheap", "clinical jargon"]
+        writingStyle: "Phrases courtes. Confiant. Jamais trop formel.",
+        keywords: ["éclat", "clean", "quotidien", "illuminateur", "rituel"],
+        avoid: ["miracle", "anti-âge", "bon marché", "jargon clinique"]
     )
 
     static let brand = Brand(
@@ -36,9 +36,9 @@ enum MockData {
         colors: ["#F4E9E1", "#1A1A1A", "#D9A66B", "#FFFFFF"],
         fonts: ["Inter", "Playfair Display"],
         website: "https://lumaskin.co",
-        description: "Vitamin C brightening serum designed for everyday skincare routines.",
-        industry: "Beauty",
-        audience: "Women and men 20–35 who want simple, effective skincare.",
+        description: "Sérum éclat à la vitamine C conçu pour les routines de soin quotidiennes.",
+        industry: "Beauté",
+        audience: "Femmes et hommes de 20 à 35 ans qui veulent des soins simples et efficaces.",
         voice: brandVoice,
         assetIds: ["asset_logo_primary", "asset_logo_icon", "asset_product_hero"]
     )
@@ -53,18 +53,18 @@ enum MockData {
 
     static let projects: [Project] = {
         let rows: [(String, String, String, ProjectStatus, Double)] = [
-            ("proj_luma_summer", "Luma Skin Summer Launch", "Launch campaign for Luma Glow Serum across Instagram, TikTok and Facebook.", .active, 1),
-            ("proj_summer_skincare", "Summer Skincare Campaign", "Seasonal skincare visuals with warm lighting and poolside sets.", .active, 3),
-            ("proj_urban_coffee", "Urban Coffee Launch", "Street-style launch content for a cold brew line.", .active, 6),
-            ("proj_fitness", "Nike-Inspired Fitness Campaign", "High-energy fitness visuals with bold typography.", .active, 9),
-            ("proj_watch", "Luxury Watch Campaign", "Dark editorial product shots for a premium timepiece.", .active, 14),
-            ("proj_ugc_ads", "New Product UGC Ads", "Creator-led UGC ads testing four hooks.", .active, 18),
-            ("proj_gift_guide", "Holiday Gift Guide", "Carousel-first gift guide across three product lines.", .active, 25),
-            ("proj_home_office", "Minimal Home Office Drop", "Calm lifestyle stills for a desk accessories brand.", .active, 31),
-            ("proj_vegan_snack", "Vegan Snack Teaser", "Playful teaser reels for a plant-based snack launch.", .active, 40),
-            ("proj_headphones", "Studio Headphones Reveal", "Tech reveal with neon lighting and macro details.", .archived, 62),
-            ("proj_fragrance", "Spring Fragrance Story", "Story-format sequence for a niche fragrance house.", .archived, 88),
-            ("proj_black_friday", "Black Friday Sprint", "Urgency-driven ads and countdown stories.", .active, 120),
+            ("proj_luma_summer", "Lancement d'été Luma Skin", "Campagne de lancement du sérum Luma Glow sur Instagram, TikTok et Facebook.", .active, 1),
+            ("proj_summer_skincare", "Campagne soins d'été", "Visuels de soins saisonniers avec lumière chaude et décors au bord de la piscine.", .active, 3),
+            ("proj_urban_coffee", "Lancement Urban Coffee", "Contenus de lancement style street pour une gamme de cold brew.", .active, 6),
+            ("proj_fitness", "Campagne fitness inspirée de Nike", "Visuels fitness pleins d'énergie avec une typographie audacieuse.", .active, 9),
+            ("proj_watch", "Campagne montre de luxe", "Photos produit éditoriales sombres pour une montre haut de gamme.", .active, 14),
+            ("proj_ugc_ads", "Pubs UGC nouveau produit", "Pubs UGC portées par des créateurs pour tester quatre accroches.", .active, 18),
+            ("proj_gift_guide", "Guide cadeaux des fêtes", "Guide cadeaux en carrousels sur trois gammes de produits.", .active, 25),
+            ("proj_home_office", "Collection bureau minimaliste", "Visuels lifestyle apaisants pour une marque d'accessoires de bureau.", .active, 31),
+            ("proj_vegan_snack", "Teaser snack vegan", "Reels teasers ludiques pour le lancement d'un snack végétal.", .active, 40),
+            ("proj_headphones", "Révélation casque studio", "Révélation tech avec éclairage néon et détails en macro.", .archived, 62),
+            ("proj_fragrance", "Histoire parfum de printemps", "Séquence au format story pour une maison de parfum de niche.", .archived, 88),
+            ("proj_black_friday", "Sprint Black Friday", "Pubs axées sur l'urgence et stories avec compte à rebours.", .active, 120),
         ]
         return rows.map { id, name, desc, status, days in
             Project(
@@ -80,12 +80,12 @@ enum MockData {
     static let assets: [Asset] = {
         var list: [Asset] = []
         let imageNames = [
-            "Serum hero shot", "Serum on marble", "Golden hour bottle", "Poolside flatlay", "Bathroom shelf",
-            "Macro dropper", "Model applying serum", "Ingredient splash", "Minimal white set", "Sunset lifestyle",
-            "Cold brew can street", "Coffee pour macro", "Barista hands", "Watch on wrist", "Watch dark editorial",
-            "Watch macro dial", "Sneaker motion blur", "Gym sprint", "Trail run wide", "Desk setup morning",
-            "Notebook and lamp", "Snack bag playful", "Snack ingredients", "Headphones neon", "Headphones macro",
-            "Fragrance bottle mist", "Gift box stack", "Carousel slide 1", "Carousel slide 2", "Carousel slide 3",
+            "Sérum photo principale", "Sérum sur marbre", "Flacon à l'heure dorée", "Flatlay bord de piscine", "Étagère de salle de bain",
+            "Pipette en macro", "Mannequin appliquant le sérum", "Éclaboussure d'ingrédients", "Décor blanc minimaliste", "Lifestyle au coucher du soleil",
+            "Canette cold brew dans la rue", "Café versé en macro", "Mains de barista", "Montre au poignet", "Montre éditorial sombre",
+            "Cadran de montre en macro", "Sneaker flou de mouvement", "Sprint en salle", "Trail plan large", "Bureau le matin",
+            "Carnet et lampe", "Sachet de snack ludique", "Ingrédients du snack", "Casque néon", "Casque en macro",
+            "Flacon de parfum brume", "Pile de coffrets cadeaux", "Carrousel diapo 1", "Carrousel diapo 2", "Carrousel diapo 3",
         ]
         let projectCycle = projects.map { $0.id }
         for (i, name) in imageNames.enumerated() {
@@ -97,7 +97,7 @@ enum MockData {
                 tags: i < 10 ? ["serum", "beauty"] : ["lifestyle"], width: 1600, height: 2000, durationSeconds: nil
             ))
         }
-        let videoNames = ["UGC hook: Maya", "UGC hook: Jordan", "Slow zoom serum", "Orbit watch", "Coffee push-in", "Gym tracking shot", "Snack reveal", "Headphones unboxing", "Story: 3 steps", "Product demo 15s"]
+        let videoNames = ["Accroche UGC : Maya", "Accroche UGC : Jordan", "Zoom lent sérum", "Orbite montre", "Travelling avant café", "Travelling salle de sport", "Révélation snack", "Déballage casque", "Story : 3 étapes", "Démo produit 15 s"]
         for (i, name) in videoNames.enumerated() {
             list.append(Asset(
                 id: "asset_vid_\(i + 1)", name: name, kind: .video,
@@ -106,7 +106,7 @@ enum MockData {
                 tags: ["video"], width: 1080, height: 1920, durationSeconds: [15, 10, 5, 10, 5, 15, 10, 15, 15, 15][i]
             ))
         }
-        let audioNames = ["Upbeat pop bed", "Soft piano loop", "Lo-fi ambient", "Voiceover: Maya take 2", "Whoosh pack"]
+        let audioNames = ["Fond pop entraînant", "Boucle de piano douce", "Ambiance lo-fi", "Voix off : Maya prise 2", "Pack de whoosh"]
         for (i, name) in audioNames.enumerated() {
             list.append(Asset(
                 id: "asset_aud_\(i + 1)", name: name, kind: .audio,
@@ -115,13 +115,13 @@ enum MockData {
                 tags: ["audio"], width: 0, height: 0, durationSeconds: [30, 60, 90, 12, 5][i]
             ))
         }
-        list.append(Asset(id: "asset_logo_primary", name: "Luma primary logo", kind: .logo, imageURL: image("luma-logo", w: 600, h: 600), projectId: nil, favorite: true, createdAt: .daysAgo(200), tags: ["brand"], width: 2000, height: 2000, durationSeconds: nil))
-        list.append(Asset(id: "asset_logo_icon", name: "Luma icon", kind: .logo, imageURL: image("luma-icon", w: 300, h: 300), projectId: nil, favorite: false, createdAt: .daysAgo(200), tags: ["brand"], width: 1024, height: 1024, durationSeconds: nil))
-        list.append(Asset(id: "asset_logo_mono", name: "Luma mono logo", kind: .logo, imageURL: image("luma-mono", w: 600, h: 600), projectId: nil, favorite: false, createdAt: .daysAgo(199), tags: ["brand"], width: 2000, height: 2000, durationSeconds: nil))
-        list.append(Asset(id: "asset_product_hero", name: "Luma Glow Serum packshot", kind: .brand, imageURL: image("luma-packshot"), projectId: nil, favorite: true, createdAt: .daysAgo(150), tags: ["brand", "product"], width: 2400, height: 3000, durationSeconds: nil))
-        list.append(Asset(id: "asset_brand_palette", name: "Brand palette board", kind: .brand, imageURL: image("luma-palette", w: 800, h: 600), projectId: nil, favorite: false, createdAt: .daysAgo(150), tags: ["brand"], width: 1600, height: 1200, durationSeconds: nil))
-        list.append(Asset(id: "asset_brand_type", name: "Typography sheet", kind: .brand, imageURL: image("luma-type", w: 800, h: 600), projectId: nil, favorite: false, createdAt: .daysAgo(149), tags: ["brand"], width: 1600, height: 1200, durationSeconds: nil))
-        let exportNames = ["Summer launch pack (PNG)", "TikTok ads batch (MP4)", "Gift guide carousel (PDF)", "Watch editorial (JPG)", "Story set 9:16 (PNG)"]
+        list.append(Asset(id: "asset_logo_primary", name: "Logo principal Luma", kind: .logo, imageURL: image("luma-logo", w: 600, h: 600), projectId: nil, favorite: true, createdAt: .daysAgo(200), tags: ["brand"], width: 2000, height: 2000, durationSeconds: nil))
+        list.append(Asset(id: "asset_logo_icon", name: "Icône Luma", kind: .logo, imageURL: image("luma-icon", w: 300, h: 300), projectId: nil, favorite: false, createdAt: .daysAgo(200), tags: ["brand"], width: 1024, height: 1024, durationSeconds: nil))
+        list.append(Asset(id: "asset_logo_mono", name: "Logo mono Luma", kind: .logo, imageURL: image("luma-mono", w: 600, h: 600), projectId: nil, favorite: false, createdAt: .daysAgo(199), tags: ["brand"], width: 2000, height: 2000, durationSeconds: nil))
+        list.append(Asset(id: "asset_product_hero", name: "Packshot sérum Luma Glow", kind: .brand, imageURL: image("luma-packshot"), projectId: nil, favorite: true, createdAt: .daysAgo(150), tags: ["brand", "product"], width: 2400, height: 3000, durationSeconds: nil))
+        list.append(Asset(id: "asset_brand_palette", name: "Planche palette de marque", kind: .brand, imageURL: image("luma-palette", w: 800, h: 600), projectId: nil, favorite: false, createdAt: .daysAgo(150), tags: ["brand"], width: 1600, height: 1200, durationSeconds: nil))
+        list.append(Asset(id: "asset_brand_type", name: "Fiche typographique", kind: .brand, imageURL: image("luma-type", w: 800, h: 600), projectId: nil, favorite: false, createdAt: .daysAgo(149), tags: ["brand"], width: 1600, height: 1200, durationSeconds: nil))
+        let exportNames = ["Pack lancement d'été (PNG)", "Lot de pubs TikTok (MP4)", "Carrousel guide cadeaux (PDF)", "Éditorial montre (JPG)", "Série de stories 9:16 (PNG)"]
         for (i, name) in exportNames.enumerated() {
             list.append(Asset(id: "asset_exp_\(i + 1)", name: name, kind: .export, imageURL: image("exp-\(i + 1)", w: 800, h: 800), projectId: projectCycle[i], favorite: false, createdAt: .daysAgo(Double(i) * 5 + 1), tags: ["export"], width: 0, height: 0, durationSeconds: nil))
         }
@@ -132,38 +132,38 @@ enum MockData {
 
     static let templates: [Template] = {
         let rows: [(String, TemplateCategory, [SocialPlatform], String, String, String)] = [
-            ("Luxury Product Launch", .productAds, [.instagram, .facebook], "Image", "Luxury", "4:5"),
-            ("15-Second UGC Ad", .ugc, [.tiktok, .instagram], "Video", "UGC", "9:16"),
-            ("New Product Reel", .socialMedia, [.instagram], "Reel", "Lifestyle", "9:16"),
-            ("Black Friday Campaign", .ecommerce, [.facebook, .instagram, .google], "Carousel", "Bold", "1:1"),
-            ("Clean Beauty Story", .beauty, [.instagram], "Story", "Minimal", "9:16"),
-            ("Skincare Before / After", .beauty, [.tiktok, .instagram], "Video", "UGC", "9:16"),
-            ("Streetwear Drop", .fashion, [.instagram, .tiktok], "Image", "Street", "4:5"),
-            ("Editorial Lookbook", .fashion, [.pinterest, .instagram], "Carousel", "Editorial", "4:5"),
-            ("Menu Hero Shot", .food, [.instagram, .facebook], "Image", "Food", "1:1"),
-            ("Recipe Short", .food, [.youtube, .tiktok], "Short", "Lifestyle", "9:16"),
-            ("Gadget Unboxing", .technology, [.youtube, .tiktok], "Video", "Tech", "16:9"),
-            ("Feature Spotlight", .technology, [.instagram, .google], "Image", "Studio", "1:1"),
-            ("Open House Reel", .realEstate, [.instagram, .facebook], "Reel", "Cinematic", "9:16"),
-            ("Listing Carousel", .realEstate, [.facebook, .instagram], "Carousel", "Editorial", "4:5"),
-            ("30-Day Challenge Promo", .fitness, [.tiktok, .instagram], "Video", "Commercial", "9:16"),
-            ("Gym Motivation Story", .fitness, [.instagram], "Story", "Cinematic", "9:16"),
-            ("Testimonial Ad", .ugc, [.facebook, .youtube], "Video", "UGC", "1:1"),
-            ("Founder Story", .ugc, [.tiktok, .instagram], "Video", "Authentic", "9:16"),
-            ("Flash Sale Countdown", .ecommerce, [.instagram, .facebook], "Story", "Urgent", "9:16"),
-            ("Bundle Offer Ad", .ecommerce, [.google, .facebook], "Image", "Studio", "1:1"),
-            ("Product on Marble", .productAds, [.instagram, .pinterest], "Image", "Product Photography", "4:5"),
-            ("Ingredient Macro", .productAds, [.instagram], "Image", "Editorial", "1:1"),
-            ("Weekly Tips Carousel", .socialMedia, [.instagram], "Carousel", "Minimal", "1:1"),
-            ("Behind the Scenes", .socialMedia, [.tiktok, .youtube], "Short", "Authentic", "9:16"),
+            ("Lancement produit de luxe", .productAds, [.instagram, .facebook], "Image", "Luxury", "4:5"),
+            ("Pub UGC de 15 secondes", .ugc, [.tiktok, .instagram], "Video", "UGC", "9:16"),
+            ("Reel nouveau produit", .socialMedia, [.instagram], "Reel", "Lifestyle", "9:16"),
+            ("Campagne Black Friday", .ecommerce, [.facebook, .instagram, .google], "Carousel", "Bold", "1:1"),
+            ("Story beauté clean", .beauty, [.instagram], "Story", "Minimal", "9:16"),
+            ("Soin avant / après", .beauty, [.tiktok, .instagram], "Video", "UGC", "9:16"),
+            ("Sortie streetwear", .fashion, [.instagram, .tiktok], "Image", "Street", "4:5"),
+            ("Lookbook éditorial", .fashion, [.pinterest, .instagram], "Carousel", "Editorial", "4:5"),
+            ("Photo phare du menu", .food, [.instagram, .facebook], "Image", "Food", "1:1"),
+            ("Short recette", .food, [.youtube, .tiktok], "Short", "Lifestyle", "9:16"),
+            ("Déballage de gadget", .technology, [.youtube, .tiktok], "Video", "Tech", "16:9"),
+            ("Focus fonctionnalité", .technology, [.instagram, .google], "Image", "Studio", "1:1"),
+            ("Reel portes ouvertes", .realEstate, [.instagram, .facebook], "Reel", "Cinematic", "9:16"),
+            ("Carrousel d'annonce", .realEstate, [.facebook, .instagram], "Carousel", "Editorial", "4:5"),
+            ("Promo défi 30 jours", .fitness, [.tiktok, .instagram], "Video", "Commercial", "9:16"),
+            ("Story motivation sport", .fitness, [.instagram], "Story", "Cinematic", "9:16"),
+            ("Pub témoignage", .ugc, [.facebook, .youtube], "Video", "UGC", "1:1"),
+            ("Histoire du fondateur", .ugc, [.tiktok, .instagram], "Video", "Authentic", "9:16"),
+            ("Compte à rebours vente flash", .ecommerce, [.instagram, .facebook], "Story", "Urgent", "9:16"),
+            ("Pub offre groupée", .ecommerce, [.google, .facebook], "Image", "Studio", "1:1"),
+            ("Produit sur marbre", .productAds, [.instagram, .pinterest], "Image", "Product Photography", "4:5"),
+            ("Ingrédient en macro", .productAds, [.instagram], "Image", "Editorial", "1:1"),
+            ("Carrousel conseils de la semaine", .socialMedia, [.instagram], "Carousel", "Minimal", "1:1"),
+            ("Coulisses", .socialMedia, [.tiktok, .youtube], "Short", "Authentic", "9:16"),
         ]
         return rows.enumerated().map { i, r in
             Template(
                 id: "tpl_\(i + 1)", title: r.0,
-                description: "A ready-to-run \(r.3.lowercased()) template for \(r.1.title.lowercased()) brands. Swap the product, adjust the copy and generate in seconds.",
+                description: "Un modèle \(r.3.lowercased()) prêt à l'emploi pour les marques de la catégorie \(r.1.title.lowercased()). Changez le produit, ajustez le texte et générez en quelques secondes.",
                 category: r.1, platforms: r.2, format: r.3,
                 thumbnailURL: image("tpl-\(i + 1)"),
-                prompt: "Create a \(r.4.lowercased()) \(r.3.lowercased()) for a premium product with clean lighting and a clear focal point.",
+                prompt: "Créez un visuel \(r.3.lowercased()) de style \(r.4.lowercased()) pour un produit premium, avec un éclairage net et un point focal clair.",
                 style: r.4, ratio: r.5
             )
         }
@@ -173,28 +173,28 @@ enum MockData {
 
     static let creators: [Creator] = {
         let rows: [(String, String, String, Int, String, [String], Int)] = [
-            ("Maya", "Female", "20–26", 24, "Lifestyle", ["English", "Spanish"], 5),
-            ("Jordan", "Male", "26–32", 29, "Fitness", ["English"], 11),
-            ("Sofia", "Female", "24–30", 27, "Beauty", ["English", "Italian"], 9),
-            ("Marcus", "Male", "28–34", 31, "Tech", ["English", "German"], 14),
-            ("Priya", "Female", "24–30", 26, "Wellness", ["English", "Hindi"], 20),
-            ("Leo", "Male", "20–26", 23, "Streetwear", ["English", "French"], 15),
-            ("Hana", "Female", "28–34", 30, "Home & Decor", ["English", "Japanese"], 25),
-            ("Diego", "Male", "30–36", 33, "Food", ["Spanish", "English"], 17),
-            ("Amara", "Female", "22–28", 25, "Fashion", ["English"], 26),
-            ("Ethan", "Male", "24–30", 27, "Gaming", ["English"], 18),
-            ("Chloe", "Female", "26–32", 28, "Parenting", ["English", "French"], 32),
-            ("Noah", "Male", "34–40", 36, "Finance", ["English"], 53),
-            ("Isabella", "Female", "20–26", 22, "Beauty", ["English", "Portuguese"], 44),
-            ("Kai", "Male", "22–28", 24, "Travel", ["English", "Korean"], 59),
-            ("Zara", "Female", "30–36", 32, "Luxury", ["English", "Arabic"], 45),
-            ("Tomas", "Male", "26–32", 29, "Outdoor", ["English", "Czech"], 60),
+            ("Maya", "Femme", "20–26", 24, "Lifestyle", ["Anglais", "Espagnol"], 5),
+            ("Jordan", "Homme", "26–32", 29, "Fitness", ["Anglais"], 11),
+            ("Sofia", "Femme", "24–30", 27, "Beauté", ["Anglais", "Italien"], 9),
+            ("Marcus", "Homme", "28–34", 31, "Tech", ["Anglais", "Allemand"], 14),
+            ("Priya", "Femme", "24–30", 26, "Bien-être", ["Anglais", "Hindi"], 20),
+            ("Leo", "Homme", "20–26", 23, "Streetwear", ["Anglais", "Français"], 15),
+            ("Hana", "Femme", "28–34", 30, "Maison & déco", ["Anglais", "Japonais"], 25),
+            ("Diego", "Homme", "30–36", 33, "Cuisine", ["Espagnol", "Anglais"], 17),
+            ("Amara", "Femme", "22–28", 25, "Mode", ["Anglais"], 26),
+            ("Ethan", "Homme", "24–30", 27, "Jeux vidéo", ["Anglais"], 18),
+            ("Chloe", "Femme", "26–32", 28, "Parentalité", ["Anglais", "Français"], 32),
+            ("Noah", "Homme", "34–40", 36, "Finance", ["Anglais"], 53),
+            ("Isabella", "Femme", "20–26", 22, "Beauté", ["Anglais", "Portugais"], 44),
+            ("Kai", "Homme", "22–28", 24, "Voyage", ["Anglais", "Coréen"], 59),
+            ("Zara", "Femme", "30–36", 32, "Luxe", ["Anglais", "Arabe"], 45),
+            ("Tomas", "Homme", "26–32", 29, "Plein air", ["Anglais", "Tchèque"], 60),
         ]
         return rows.map { r in
             Creator(
                 id: "creator_\(r.0.lowercased())", name: r.0, gender: r.1, ageRange: r.2, age: r.3,
                 style: r.4, languages: r.5, avatarURL: avatar(r.6),
-                bio: "\(r.0) is a fictional AI creator specialising in \(r.4.lowercased()) content with a natural, camera-friendly delivery."
+                bio: "\(r.0) est \(r.1 == "Femme" ? "une créatrice IA fictive spécialisée" : "un créateur IA fictif spécialisé") dans les contenus \(r.4.lowercased()), avec un jeu naturel et à l'aise face caméra."
             )
         }
     }()
@@ -203,38 +203,38 @@ enum MockData {
 
     static let generations: [Generation] = {
         let prompts: [(GenerationKind, String, GenerationStatus)] = [
-            (.image, "Luma Glow Serum on wet marble, golden hour, soft shadows", .completed),
-            (.image, "Serum bottle floating with citrus slices, studio lighting", .completed),
-            (.video, "Slow zoom on serum with light rays, 10s, cinematic", .completed),
-            (.copy, "Instagram caption for summer launch, luxury tone", .completed),
-            (.ad, "TikTok ad: Premium serum, women 20–35, 20% launch discount", .completed),
-            (.image, "Cold brew can on rainy street at night, neon reflections", .completed),
-            (.image, "Watch on wrist, dark editorial, single spotlight", .completed),
-            (.video, "UGC: Maya explains her 3-step morning routine", .completed),
-            (.copy, "Product description for Luma Glow Serum", .completed),
-            (.image, "Sneaker mid-air on concrete, motion blur, bold", .completed),
-            (.ad, "Instagram carousel: Holiday gift guide, three tiers", .completed),
-            (.image, "Desk setup with morning light, minimal, warm", .completed),
-            (.video, "Orbit shot around headphones, neon rim light, 5s", .completed),
-            (.copy, "10 hooks for skincare UGC ads", .completed),
-            (.image, "Vegan snack bag with confetti, playful, bright", .completed),
-            (.image, "Fragrance bottle with mist, moody, macro", .completed),
-            (.video, "Push-in on coffee pour, handheld, 5s", .processing),
-            (.image, "Serum in luxury bathroom, softbox lighting, close-up", .completed),
-            (.ad, "Facebook ad: Bundle offer, CTA Shop Now", .completed),
-            (.copy, "Email for Black Friday sprint, urgent tone", .completed),
-            (.image, "Gift boxes stacked, festive, studio", .completed),
-            (.video, "Story: three steps to glow, 15s, UGC", .queued),
-            (.image, "Serum macro dropper with vitamin C droplets", .completed),
-            (.image, "Coffee pour macro with crema, food style", .completed),
-            (.copy, "TikTok caption for gym challenge reel", .completed),
-            (.ad, "Google display: Luxury watch, men 25–40", .completed),
-            (.image, "Model applying serum, natural light, lifestyle", .completed),
-            (.video, "Tracking shot: trail run at dawn, 15s", .completed),
-            (.image, "Headphones macro on velvet, dramatic lighting", .failed),
-            (.copy, "Landing page copy for fragrance story", .completed),
-            (.image, "Poolside flatlay with serum and sunglasses", .completed),
-            (.ad, "Pinterest pin: Ingredient macro, minimal", .completed),
+            (.image, "Sérum Luma Glow sur marbre mouillé, heure dorée, ombres douces", .completed),
+            (.image, "Flacon de sérum flottant avec des tranches d'agrumes, éclairage studio", .completed),
+            (.video, "Zoom lent sur le sérum avec rayons de lumière, 10 s, cinématique", .completed),
+            (.copy, "Légende Instagram pour le lancement d'été, ton luxe", .completed),
+            (.ad, "Pub TikTok : sérum premium, femmes 20–35 ans, -20 % au lancement", .completed),
+            (.image, "Canette de cold brew dans une rue pluvieuse la nuit, reflets néon", .completed),
+            (.image, "Montre au poignet, éditorial sombre, projecteur unique", .completed),
+            (.video, "UGC : Maya explique sa routine matinale en 3 étapes", .completed),
+            (.copy, "Description produit du sérum Luma Glow", .completed),
+            (.image, "Sneaker en l'air sur béton, flou de mouvement, audacieux", .completed),
+            (.ad, "Carrousel Instagram : guide cadeaux des fêtes, trois gammes", .completed),
+            (.image, "Bureau à la lumière du matin, minimaliste, chaleureux", .completed),
+            (.video, "Plan en orbite autour du casque, contre-jour néon, 5 s", .completed),
+            (.copy, "10 accroches pour des pubs UGC de soins", .completed),
+            (.image, "Sachet de snack vegan avec confettis, ludique, lumineux", .completed),
+            (.image, "Flacon de parfum avec brume, ambiance sombre, macro", .completed),
+            (.video, "Travelling avant sur café versé, caméra à l'épaule, 5 s", .processing),
+            (.image, "Sérum dans une salle de bain luxueuse, éclairage softbox, gros plan", .completed),
+            (.ad, "Pub Facebook : offre groupée, CTA Acheter", .completed),
+            (.copy, "E-mail pour le sprint Black Friday, ton urgent", .completed),
+            (.image, "Coffrets cadeaux empilés, festif, studio", .completed),
+            (.video, "Story : trois étapes vers l'éclat, 15 s, UGC", .queued),
+            (.image, "Pipette de sérum en macro avec gouttes de vitamine C", .completed),
+            (.image, "Café versé en macro avec crema, style culinaire", .completed),
+            (.copy, "Légende TikTok pour un reel défi sportif", .completed),
+            (.ad, "Display Google : montre de luxe, hommes 25–40 ans", .completed),
+            (.image, "Mannequin appliquant le sérum, lumière naturelle, lifestyle", .completed),
+            (.video, "Travelling : trail à l'aube, 15 s", .completed),
+            (.image, "Casque en macro sur velours, éclairage dramatique", .failed),
+            (.copy, "Texte de landing page pour l'histoire du parfum", .completed),
+            (.image, "Flatlay bord de piscine avec sérum et lunettes de soleil", .completed),
+            (.ad, "Épingle Pinterest : ingrédient en macro, minimaliste", .completed),
         ]
         let projectCycle = projects.map { $0.id }
         return prompts.enumerated().map { i, p in
@@ -249,7 +249,7 @@ enum MockData {
                 projectId: i < 6 ? "proj_luma_summer" : projectCycle[i % projectCycle.count],
                 model: p.0 == .video ? "Motion v1" : (p.0 == .copy ? "Writer v3" : "Studio v2"),
                 creditsSpent: p.0.creditCost, createdAt: .daysAgo(Double(i) * 0.8),
-                resultText: p.0 == .copy ? "Meet your everyday glow. Luma Glow Serum brightens, smooths and protects — in one step. Clean formula. Real results." : nil
+                resultText: p.0 == .copy ? "Découvrez votre éclat au quotidien. Le sérum Luma Glow illumine, lisse et protège — en une seule étape. Formule clean. Vrais résultats." : nil
             )
         }
     }()
@@ -258,22 +258,22 @@ enum MockData {
 
     static let campaigns: [Campaign] = {
         let rows: [(String, String, String?, CampaignObjective, String, [SocialPlatform], [ContentFormat], CampaignStatus, Double)] = [
-            ("camp_luma_summer", "Luma Glow Summer Launch", "proj_luma_summer", .sales, "Women and men 20–35, skincare-curious", [.instagram, .tiktok, .facebook], [.productPhotos, .ugc, .videoAds, .stories, .carousels], .ready, 1),
-            ("camp_skincare_seasonal", "Summer Skincare Push", "proj_summer_skincare", .awareness, "Women 25–40", [.instagram, .facebook], [.productPhotos, .stories], .live, 4),
-            ("camp_coffee", "Urban Coffee Cold Brew", "proj_urban_coffee", .engagement, "City commuters 22–35", [.tiktok, .instagram], [.ugc, .videoAds], .draft, 7),
-            ("camp_fitness", "30-Day Sprint Challenge", "proj_fitness", .leads, "Fitness beginners 20–30", [.instagram, .youtube, .tiktok], [.videoAds, .stories], .scheduled, 10),
-            ("camp_watch", "Timepiece Editorial", "proj_watch", .sales, "Men 25–40, premium buyers", [.instagram, .facebook, .google], [.productPhotos, .carousels], .live, 15),
-            ("camp_ugc", "UGC Hook Test", "proj_ugc_ads", .sales, "Broad, lookalike buyers", [.tiktok, .facebook], [.ugc], .completed, 20),
-            ("camp_gift", "Holiday Gift Guide", "proj_gift_guide", .sales, "Gift shoppers 25–45", [.instagram, .facebook, .pinterest], [.carousels, .stories], .draft, 26),
-            ("camp_office", "Calm Desk Collection", "proj_home_office", .awareness, "Remote workers 25–40", [.instagram, .pinterest], [.productPhotos], .scheduled, 32),
-            ("camp_snack", "Snack Teaser Week", "proj_vegan_snack", .engagement, "Gen Z snackers", [.tiktok], [.ugc, .videoAds], .completed, 41),
-            ("camp_black_friday", "Black Friday Sprint", "proj_black_friday", .sales, "Past customers + cart abandoners", [.facebook, .instagram, .google], [.videoAds, .stories, .carousels], .completed, 121),
+            ("camp_luma_summer", "Lancement d'été Luma Glow", "proj_luma_summer", .sales, "Femmes et hommes 20–35 ans, curieux de soins", [.instagram, .tiktok, .facebook], [.productPhotos, .ugc, .videoAds, .stories, .carousels], .ready, 1),
+            ("camp_skincare_seasonal", "Offensive soins d'été", "proj_summer_skincare", .awareness, "Femmes 25–40 ans", [.instagram, .facebook], [.productPhotos, .stories], .live, 4),
+            ("camp_coffee", "Urban Coffee Cold Brew", "proj_urban_coffee", .engagement, "Citadins pendulaires 22–35 ans", [.tiktok, .instagram], [.ugc, .videoAds], .draft, 7),
+            ("camp_fitness", "Défi sprint 30 jours", "proj_fitness", .leads, "Débutants en fitness 20–30 ans", [.instagram, .youtube, .tiktok], [.videoAds, .stories], .scheduled, 10),
+            ("camp_watch", "Éditorial horlogerie", "proj_watch", .sales, "Hommes 25–40 ans, acheteurs premium", [.instagram, .facebook, .google], [.productPhotos, .carousels], .live, 15),
+            ("camp_ugc", "Test d'accroches UGC", "proj_ugc_ads", .sales, "Large, acheteurs similaires", [.tiktok, .facebook], [.ugc], .completed, 20),
+            ("camp_gift", "Guide cadeaux des fêtes", "proj_gift_guide", .sales, "Acheteurs de cadeaux 25–45 ans", [.instagram, .facebook, .pinterest], [.carousels, .stories], .draft, 26),
+            ("camp_office", "Collection bureau zen", "proj_home_office", .awareness, "Télétravailleurs 25–40 ans", [.instagram, .pinterest], [.productPhotos], .scheduled, 32),
+            ("camp_snack", "Semaine teaser snack", "proj_vegan_snack", .engagement, "Grignoteurs de la génération Z", [.tiktok], [.ugc, .videoAds], .completed, 41),
+            ("camp_black_friday", "Sprint Black Friday", "proj_black_friday", .sales, "Anciens clients + paniers abandonnés", [.facebook, .instagram, .google], [.videoAds, .stories, .carousels], .completed, 121),
         ]
         return rows.enumerated().map { i, r in
             let assetIds = assets.filter { $0.projectId == r.2 && ($0.kind == .image || $0.kind == .video) }.map { $0.id }
             let items: [CalendarItem] = (0..<6).map { d in
                 CalendarItem(
-                    id: "cal_\(i)_\(d)", title: ["Launch teaser", "Hero post", "UGC hook", "Story sequence", "Carousel", "Retarget ad"][d],
+                    id: "cal_\(i)_\(d)", title: ["Teaser de lancement", "Post phare", "Accroche UGC", "Séquence story", "Carrousel", "Pub de reciblage"][d],
                     date: .daysFromNow(Double(d * 2 - 3)),
                     platform: r.5[d % r.5.count], format: ["Reel", "Image", "Video", "Story", "Carousel", "Video"][d],
                     status: d < 2 ? .published : (d < 4 ? .scheduled : .draft),
@@ -282,11 +282,11 @@ enum MockData {
             }
             let variations: [AdVariation] = ["A", "B", "C", "D"].enumerated().map { vi, letter in
                 AdVariation(
-                    id: "var_\(i)_\(letter)", label: "Creative \(letter)",
+                    id: "var_\(i)_\(letter)", label: "Création \(letter)",
                     visualURL: image("var-\(i)-\(letter)"),
-                    headline: ["Glow starts here.", "Your skin, upgraded.", "One drop. Real results.", "Meet the everyday serum."][vi],
-                    primaryText: ["Vitamin C brightening serum for every routine. Clean, light, effective.", "Brighter skin in 14 days or your money back. Try Luma Glow.", "Skip the 10-step routine. One serum does the work.", "Trusted by 40,000+ people who wanted simpler skincare."][vi],
-                    cta: ["Shop Now", "Learn More", "Get 20% Off", "Try It"][vi],
+                    headline: ["L'éclat commence ici.", "Votre peau, sublimée.", "Une goutte. De vrais résultats.", "Découvrez le sérum du quotidien."][vi],
+                    primaryText: ["Sérum éclat à la vitamine C pour toutes les routines. Clean, léger, efficace.", "Une peau plus lumineuse en 14 jours ou remboursé. Essayez Luma Glow.", "Oubliez la routine en 10 étapes. Un seul sérum fait tout.", "Adopté par plus de 40 000 personnes qui voulaient des soins plus simples."][vi],
+                    cta: ["Acheter", "En savoir plus", "Profiter de -20 %", "Essayer"][vi],
                     platform: r.5[vi % r.5.count]
                 )
             }
@@ -303,28 +303,28 @@ enum MockData {
 
     static let notifications: [AppNotification] = {
         let rows: [(NotificationKind, String, String, Double, Bool)] = [
-            (.generationComplete, "Generation complete", "4 product shots for Luma Glow Serum are ready.", 0.02, false),
-            (.campaignReady, "Campaign ready", "Luma Glow Summer Launch has 12 assets and 4 ad variations.", 0.1, false),
-            (.exportComplete, "Export complete", "Summer launch pack (PNG) is ready to download.", 0.3, false),
-            (.creditsLow, "Credits running low", "You have 1,250 credits left. Top up before your next video batch.", 0.6, true),
-            (.newTemplate, "New template", "Skincare Before / After was added to Beauty.", 1, true),
-            (.projectShared, "Project shared", "Sarah shared Urban Coffee Launch with you.", 1.4, true),
-            (.generationComplete, "Video rendered", "Slow zoom on serum (10s) finished rendering.", 2, true),
-            (.generationComplete, "Copy ready", "Instagram caption for summer launch is ready.", 2.3, true),
-            (.campaignReady, "Campaign scheduled", "30-Day Sprint Challenge is scheduled for next week.", 3, true),
-            (.exportComplete, "Export complete", "TikTok ads batch (MP4) is ready.", 3.5, true),
-            (.newTemplate, "New template", "Founder Story added to UGC.", 4, true),
-            (.projectShared, "Project shared", "Michael shared Holiday Gift Guide with you.", 5, true),
-            (.generationComplete, "Generation complete", "Cold brew street shots are ready.", 6, true),
-            (.creditsLow, "Credits refilled", "Your Creator plan added 1,500 credits.", 7, true),
-            (.generationComplete, "Generation failed", "Headphones macro failed. Tap to retry.", 8, true),
-            (.campaignReady, "Campaign completed", "UGC Hook Test wrapped with 4 winning hooks.", 9, true),
-            (.exportComplete, "Export complete", "Gift guide carousel (PDF) is ready.", 11, true),
-            (.newTemplate, "New template", "Open House Reel added to Real Estate.", 12, true),
-            (.generationComplete, "Generation complete", "Watch editorial set is ready.", 14, true),
-            (.projectShared, "Access changed", "Michael is now an Editor on Marketing Studio.", 16, true),
-            (.generationComplete, "Generation complete", "Desk setup lifestyle set is ready.", 20, true),
-            (.campaignReady, "Campaign ready", "Calm Desk Collection assets are ready to review.", 24, true),
+            (.generationComplete, "Génération terminée", "4 photos produit du sérum Luma Glow sont prêtes.", 0.02, false),
+            (.campaignReady, "Campagne prête", "Lancement d'été Luma Glow contient 12 ressources et 4 variantes de pub.", 0.1, false),
+            (.exportComplete, "Export terminé", "Pack lancement d'été (PNG) est prêt à être téléchargé.", 0.3, false),
+            (.creditsLow, "Crédits bientôt épuisés", "Il vous reste 1 250 crédits. Rechargez avant votre prochain lot de vidéos.", 0.6, true),
+            (.newTemplate, "Nouveau modèle", "Soin avant / après a été ajouté à Beauté.", 1, true),
+            (.projectShared, "Projet partagé", "Sarah a partagé Lancement Urban Coffee avec vous.", 1.4, true),
+            (.generationComplete, "Vidéo générée", "Le rendu de Zoom lent sur le sérum (10 s) est terminé.", 2, true),
+            (.generationComplete, "Texte prêt", "La légende Instagram du lancement d'été est prête.", 2.3, true),
+            (.campaignReady, "Campagne programmée", "Défi sprint 30 jours est programmé pour la semaine prochaine.", 3, true),
+            (.exportComplete, "Export terminé", "Lot de pubs TikTok (MP4) est prêt.", 3.5, true),
+            (.newTemplate, "Nouveau modèle", "Histoire du fondateur ajouté à UGC.", 4, true),
+            (.projectShared, "Projet partagé", "Michael a partagé Guide cadeaux des fêtes avec vous.", 5, true),
+            (.generationComplete, "Génération terminée", "Les photos de rue cold brew sont prêtes.", 6, true),
+            (.creditsLow, "Crédits rechargés", "Votre forfait Créateur a ajouté 1 500 crédits.", 7, true),
+            (.generationComplete, "Échec de la génération", "Casque en macro a échoué. Touchez pour réessayer.", 8, true),
+            (.campaignReady, "Campagne terminée", "Test d'accroches UGC s'est terminé avec 4 accroches gagnantes.", 9, true),
+            (.exportComplete, "Export terminé", "Carrousel guide cadeaux (PDF) est prêt.", 11, true),
+            (.newTemplate, "Nouveau modèle", "Reel portes ouvertes ajouté à Immobilier.", 12, true),
+            (.generationComplete, "Génération terminée", "La série éditoriale montre est prête.", 14, true),
+            (.projectShared, "Accès modifié", "Michael est désormais Éditeur sur Sokozia.", 16, true),
+            (.generationComplete, "Génération terminée", "La série lifestyle bureau est prête.", 20, true),
+            (.campaignReady, "Campagne prête", "Les ressources de Collection bureau zen sont prêtes à être vérifiées.", 24, true),
         ]
         return rows.enumerated().map { i, r in
             AppNotification(id: "notif_\(i + 1)", kind: r.0, title: r.1, message: r.2, createdAt: .daysAgo(r.3), read: r.4, routeHint: nil)
@@ -336,47 +336,47 @@ enum MockData {
     static let startingCredits = 1_250
 
     static let transactions: [CreditTransaction] = [
-        CreditTransaction(id: "tx_1", amount: 1500, reason: "Creator plan monthly credits", createdAt: .daysAgo(7)),
-        CreditTransaction(id: "tx_2", amount: -40, reason: "Image generation × 4", createdAt: .daysAgo(6)),
-        CreditTransaction(id: "tx_3", amount: -50, reason: "Video generation (10s)", createdAt: .daysAgo(5.5)),
-        CreditTransaction(id: "tx_4", amount: -15, reason: "Upscale", createdAt: .daysAgo(5)),
-        CreditTransaction(id: "tx_5", amount: -20, reason: "Ad variations × 4", createdAt: .daysAgo(4)),
-        CreditTransaction(id: "tx_6", amount: -40, reason: "Product shoot × 4", createdAt: .daysAgo(3)),
-        CreditTransaction(id: "tx_7", amount: -50, reason: "UGC video", createdAt: .daysAgo(2.2)),
-        CreditTransaction(id: "tx_8", amount: -10, reason: "Image generation", createdAt: .daysAgo(1.5)),
-        CreditTransaction(id: "tx_9", amount: -15, reason: "Upscale", createdAt: .daysAgo(1)),
-        CreditTransaction(id: "tx_10", amount: -10, reason: "Copywriter × 5", createdAt: .daysAgo(0.5)),
+        CreditTransaction(id: "tx_1", amount: 1500, reason: "Crédits mensuels du forfait Créateur", createdAt: .daysAgo(7)),
+        CreditTransaction(id: "tx_2", amount: -40, reason: "Génération d'images × 4", createdAt: .daysAgo(6)),
+        CreditTransaction(id: "tx_3", amount: -50, reason: "Génération vidéo (10 s)", createdAt: .daysAgo(5.5)),
+        CreditTransaction(id: "tx_4", amount: -15, reason: "Agrandissement", createdAt: .daysAgo(5)),
+        CreditTransaction(id: "tx_5", amount: -20, reason: "Variantes de pub × 4", createdAt: .daysAgo(4)),
+        CreditTransaction(id: "tx_6", amount: -40, reason: "Shooting produit × 4", createdAt: .daysAgo(3)),
+        CreditTransaction(id: "tx_7", amount: -50, reason: "Vidéo UGC", createdAt: .daysAgo(2.2)),
+        CreditTransaction(id: "tx_8", amount: -10, reason: "Génération d'image", createdAt: .daysAgo(1.5)),
+        CreditTransaction(id: "tx_9", amount: -15, reason: "Agrandissement", createdAt: .daysAgo(1)),
+        CreditTransaction(id: "tx_10", amount: -10, reason: "Rédaction × 5", createdAt: .daysAgo(0.5)),
     ]
 
     // MARK: Copy / Hooks
 
     static let hookLibrary: [String] = [
-        "Nobody tells you this about vitamin C serums...",
-        "You've been using this wrong your whole life.",
-        "POV: you finally found the serum that actually works.",
-        "Stop scrolling if your skin looks dull by 3pm.",
-        "I replaced my 10-step routine with this one bottle.",
-        "The $48 serum dermatologists keep quiet about.",
-        "This is your sign to fix your skincare in 14 days.",
-        "Three drops. That's it. That's the routine.",
-        "Why does everyone suddenly have glass skin?",
-        "I tested it for 30 days so you don't have to.",
-        "Wait for the before and after...",
-        "If you only buy one skincare product this year...",
+        "Personne ne vous dit ça sur les sérums à la vitamine C...",
+        "Vous l'utilisez mal depuis toujours.",
+        "POV : vous avez enfin trouvé le sérum qui marche vraiment.",
+        "Arrêtez de scroller si votre teint est terne dès 15 h.",
+        "J'ai remplacé ma routine en 10 étapes par ce seul flacon.",
+        "Le sérum à 48 € dont les dermatologues ne parlent pas.",
+        "C'est le signe qu'il vous faut pour corriger vos soins en 14 jours.",
+        "Trois gouttes. C'est tout. C'est ça, la routine.",
+        "Pourquoi tout le monde a soudain une peau de verre ?",
+        "Je l'ai testé pendant 30 jours pour que vous n'ayez pas à le faire.",
+        "Attendez de voir l'avant/après...",
+        "Si vous n'achetez qu'un seul soin cette année...",
     ]
 
     static let assistantReplies: [String] = [
-        "I can build that. Want me to start with product shots, a UGC script, or the full campaign?",
-        "Based on your brand voice (luxury, short sentences), here's a direction: minimal set, golden hour light, one hero angle.",
-        "I'd recommend 4:5 for Instagram feed and 9:16 for Stories and TikTok. Want both?",
-        "Drafted. I've saved it to your project — you can refine it in the editor.",
+        "Je peux le créer. Voulez-vous commencer par des photos produit, un script UGC ou la campagne complète ?",
+        "D'après votre voix de marque (luxe, phrases courtes), voici une piste : décor minimaliste, lumière d'heure dorée, un seul angle phare.",
+        "Je recommande le 4:5 pour le fil Instagram et le 9:16 pour les Stories et TikTok. Vous voulez les deux ?",
+        "Brouillon prêt. Je l'ai enregistré dans votre projet — vous pouvez l'affiner dans l'éditeur.",
     ]
 
     static let trendingFormats: [(title: String, subtitle: String, icon: String)] = [
-        ("UGC hook video", "9:16 · 15s", "person.wave.2"),
-        ("Product reel", "9:16 · 10s", "play.rectangle"),
-        ("Carousel", "4:5 · 5 slides", "rectangle.stack"),
-        ("Story sequence", "9:16 · 3 frames", "rectangle.portrait.on.rectangle.portrait"),
-        ("Before / After", "1:1 · image", "arrow.left.arrow.right"),
+        ("Vidéo accroche UGC", "9:16 · 15 s", "person.wave.2"),
+        ("Reel produit", "9:16 · 10 s", "play.rectangle"),
+        ("Carrousel", "4:5 · 5 diapos", "rectangle.stack"),
+        ("Séquence story", "9:16 · 3 images", "rectangle.portrait.on.rectangle.portrait"),
+        ("Avant / Après", "1:1 · image", "arrow.left.arrow.right"),
     ]
 }

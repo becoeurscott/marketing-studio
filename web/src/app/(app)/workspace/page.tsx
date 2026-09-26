@@ -19,19 +19,19 @@ import type { WorkspaceMember, WorkspaceRole } from "@/lib/types";
 import { cn, formatDate } from "@/lib/utils";
 
 export const ROLES: { id: WorkspaceRole; label: string; tone: BadgeTone; description: string }[] = [
-  { id: "owner", label: "Owner", tone: "accent", description: "Full access, billing, delete workspace." },
-  { id: "admin", label: "Admin", tone: "success", description: "Manage members, brands and all projects." },
-  { id: "editor", label: "Editor", tone: "neutral", description: "Create and edit projects, assets and campaigns." },
-  { id: "viewer", label: "Viewer", tone: "outline", description: "View and comment. Cannot generate or export." },
+  { id: "owner", label: "Propriétaire", tone: "accent", description: "Accès complet, facturation, suppression de l’espace." },
+  { id: "admin", label: "Admin", tone: "success", description: "Gère les membres, les marques et tous les projets." },
+  { id: "editor", label: "Éditeur", tone: "neutral", description: "Crée et modifie projets, ressources et campagnes." },
+  { id: "viewer", label: "Lecteur", tone: "outline", description: "Consulte et commente. Ne peut ni générer ni exporter." },
 ];
 
 const PERMISSIONS: { label: string; owner: boolean; admin: boolean; editor: boolean; viewer: boolean }[] = [
-  { label: "View projects & assets", owner: true, admin: true, editor: true, viewer: true },
-  { label: "Generate & edit content", owner: true, admin: true, editor: true, viewer: false },
-  { label: "Export assets", owner: true, admin: true, editor: true, viewer: false },
-  { label: "Manage brand kits", owner: true, admin: true, editor: false, viewer: false },
-  { label: "Invite & remove members", owner: true, admin: true, editor: false, viewer: false },
-  { label: "Billing & plan", owner: true, admin: false, editor: false, viewer: false },
+  { label: "Voir les projets et ressources", owner: true, admin: true, editor: true, viewer: true },
+  { label: "Générer et modifier du contenu", owner: true, admin: true, editor: true, viewer: false },
+  { label: "Exporter les ressources", owner: true, admin: true, editor: true, viewer: false },
+  { label: "Gérer les kits de marque", owner: true, admin: true, editor: false, viewer: false },
+  { label: "Inviter et retirer des membres", owner: true, admin: true, editor: false, viewer: false },
+  { label: "Facturation et forfait", owner: true, admin: false, editor: false, viewer: false },
 ];
 
 export default function WorkspacePage() {
@@ -52,7 +52,7 @@ export default function WorkspacePage() {
 
   const saveName = () => {
     const v = nameDraft.trim();
-    if (v && v !== workspaceName) { setWorkspaceName(v); toast.success("Workspace renamed", v); }
+    if (v && v !== workspaceName) { setWorkspaceName(v); toast.success("Espace de travail renommé", v); }
     setEditingName(false);
   };
 
@@ -62,9 +62,9 @@ export default function WorkspacePage() {
   return (
     <>
       <PageHeader
-        title="Workspace"
-        description="Your team, their roles, and what each role can do."
-        actions={<Button leftIcon={<UserPlus className="size-4" />} onClick={() => setInviteOpen(true)}>Invite member</Button>}
+        title="Espace de travail"
+        description="Votre équipe, ses rôles et les droits associés à chacun."
+        actions={<Button leftIcon={<UserPlus className="size-4" />} onClick={() => setInviteOpen(true)}>Inviter un membre</Button>}
       />
 
       <Card className="mb-6">
@@ -75,25 +75,25 @@ export default function WorkspacePage() {
           <div className="flex-1 min-w-0">
             {editingName ? (
               <form onSubmit={(e) => { e.preventDefault(); saveName(); }} className="flex items-center gap-2 max-w-md">
-                <Input name="workspaceName" value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} autoFocus className="flex-1" aria-label="Workspace name" />
-                <IconButton label="Save" variant="solid" type="submit"><Check /></IconButton>
-                <IconButton label="Cancel" type="button" onClick={() => { setNameDraft(workspaceName); setEditingName(false); }}><X /></IconButton>
+                <Input name="workspaceName" value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} autoFocus className="flex-1" aria-label="Nom de l’espace de travail" />
+                <IconButton label="Enregistrer" variant="solid" type="submit"><Check /></IconButton>
+                <IconButton label="Annuler" type="button" onClick={() => { setNameDraft(workspaceName); setEditingName(false); }}><X /></IconButton>
               </form>
             ) : (
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold tracking-tight truncate">{workspaceName}</h2>
-                <IconButton label="Rename workspace" size="sm" onClick={() => { setNameDraft(workspaceName); setEditingName(true); }}><Pencil /></IconButton>
+                <IconButton label="Renommer l’espace de travail" size="sm" onClick={() => { setNameDraft(workspaceName); setEditingName(true); }}><Pencil /></IconButton>
               </div>
             )}
             <p className="text-[13px] text-text2 mt-0.5">
-              {active} active member{active === 1 ? "" : "s"}{invited ? ` · ${invited} pending invite${invited === 1 ? "" : "s"}` : ""} · <span className="capitalize">{plan}</span> plan
+              {active} membre{active > 1 ? "s" : ""} actif{active > 1 ? "s" : ""}{invited ? ` · ${invited} invitation${invited > 1 ? "s" : ""} en attente` : ""} · forfait <span className="capitalize">{plan}</span>
             </p>
           </div>
         </div>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-6">
-        <Section title="Members" description="Owners and admins can change roles.">
+        <Section title="Membres" description="Les propriétaires et admins peuvent modifier les rôles.">
           {members.length ? (
             <Card padded={false} className="divide-y divide-border">
               {members.map((m) => {
@@ -103,31 +103,31 @@ export default function WorkspacePage() {
                   <div key={m.id} className="flex items-center gap-3 px-4 py-3">
                     <Avatar src={m.avatarUrl} name={m.name} size={36} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{m.name} {isSelf && <span className="text-muted font-normal">(you)</span>}</p>
-                      <p className="text-[12px] text-muted truncate">{m.email} · {m.status === "invited" ? "Invited" : `Joined ${formatDate(m.joinedAt)}`}</p>
+                      <p className="text-sm font-medium truncate">{m.name} {isSelf && <span className="text-muted font-normal">(vous)</span>}</p>
+                      <p className="text-[12px] text-muted truncate">{m.email} · {m.status === "invited" ? "Invité" : `Membre depuis le ${formatDate(m.joinedAt)}`}</p>
                     </div>
-                    {m.status === "invited" && <Badge tone="warning" dot className="hidden sm:inline-flex">Pending</Badge>}
+                    {m.status === "invited" && <Badge tone="warning" dot className="hidden sm:inline-flex">En attente</Badge>}
                     {m.role === "owner" ? (
                       <Badge tone={role.tone}>{role.label}</Badge>
                     ) : (
-                      <RoleMenu value={m.role} onChange={(r) => { changeMemberRole(m.id, r); toast.success("Role updated", `${m.name} is now ${ROLES.find((x) => x.id === r)?.label}`); }} />
+                      <RoleMenu value={m.role} onChange={(r) => { changeMemberRole(m.id, r); toast.success("Rôle mis à jour", `${m.name} est désormais ${ROLES.find((x) => x.id === r)?.label}`); }} />
                     )}
-                    <IconButton label="Remove member" size="sm" disabled={m.role === "owner"} className="text-muted hover:text-danger" onClick={() => setRemoving(m)}><Trash2 /></IconButton>
+                    <IconButton label="Retirer le membre" size="sm" disabled={m.role === "owner"} className="text-muted hover:text-danger" onClick={() => setRemoving(m)}><Trash2 /></IconButton>
                   </div>
                 );
               })}
             </Card>
           ) : (
-            <EmptyState icon={Users} title="No members yet" description="Invite teammates to collaborate on projects." cta={{ label: "Invite member", onClick: () => setInviteOpen(true) }} />
+            <EmptyState icon={Users} title="Aucun membre pour le moment" description="Invitez vos collègues à collaborer sur vos projets." cta={{ label: "Inviter un membre", onClick: () => setInviteOpen(true) }} />
           )}
         </Section>
 
-        <Section title="Permissions" description="What each role can do.">
+        <Section title="Autorisations" description="Ce que chaque rôle peut faire.">
           <Card padded={false}>
             <div className="p-4 space-y-3 border-b border-border">
               {ROLES.map((r) => (
                 <div key={r.id} className="flex items-start gap-2">
-                  <Badge tone={r.tone} className="mt-0.5 w-14 justify-center">{r.label}</Badge>
+                  <Badge tone={r.tone} className="mt-0.5 min-w-14 shrink-0 justify-center">{r.label}</Badge>
                   <p className="text-[13px] text-text2">{r.description}</p>
                 </div>
               ))}
@@ -135,7 +135,7 @@ export default function WorkspacePage() {
             <table className="w-full text-[12px]">
               <thead>
                 <tr className="text-muted">
-                  <th className="text-left font-medium px-4 py-2">Permission</th>
+                  <th className="text-left font-medium px-4 py-2">Autorisation</th>
                   {ROLES.map((r) => <th key={r.id} className="font-medium px-1 py-2 w-9" title={r.label}>{r.label[0]}</th>)}
                 </tr>
               </thead>
@@ -152,21 +152,21 @@ export default function WorkspacePage() {
                 ))}
               </tbody>
             </table>
-            <p className="px-4 py-3 text-[11px] text-muted flex items-center gap-1.5 border-t border-border"><Shield className="size-3" /> Roles are enforced in the real product; the prototype only displays them.</p>
+            <p className="px-4 py-3 text-[11px] text-muted flex items-center gap-1.5 border-t border-border"><Shield className="size-3" /> Les rôles sont appliqués dans le produit final ; ce prototype se contente de les afficher.</p>
           </Card>
         </Section>
       </div>
 
-      <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={(input) => { const m = inviteMember(input); toast.success("Invite sent", `${m.email} as ${ROLES.find((r) => r.id === m.role)?.label}`); }} />
+      <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={(input) => { const m = inviteMember(input); toast.success("Invitation envoyée", `${m.email} en tant que ${ROLES.find((r) => r.id === m.role)?.label}`); }} />
 
       <ConfirmModal
         open={!!removing}
         onClose={() => setRemoving(null)}
         danger
-        title="Remove member?"
-        description={`${removing?.name} will lose access to ${workspaceName}.`}
-        confirmLabel="Remove"
-        onConfirm={() => { if (removing) { removeMember(removing.id); toast.info("Member removed", removing.name); } setRemoving(null); }}
+        title="Retirer ce membre ?"
+        description={`${removing?.name} perdra l’accès à ${workspaceName}.`}
+        confirmLabel="Retirer"
+        onConfirm={() => { if (removing) { removeMember(removing.id); toast.info("Membre retiré", removing.name); } setRemoving(null); }}
       />
     </>
   );
@@ -203,7 +203,7 @@ function RoleMenu({ value, onChange }: { value: WorkspaceRole; onChange: (r: Wor
 
 function InviteModal({ open, onClose, onInvite }: { open: boolean; onClose: () => void; onInvite: (i: { name: string; email: string; role: WorkspaceRole }) => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="Invite a member" description="They'll get an email with a link to join.">
+    <Modal open={open} onClose={onClose} title="Inviter un membre" description="Cette personne recevra un e-mail avec un lien pour rejoindre l’espace.">
       <InviteForm key={String(open)} onClose={onClose} onInvite={onInvite} />
     </Modal>
   );
@@ -216,18 +216,18 @@ function InviteForm({ onClose, onInvite }: { onClose: () => void; onInvite: (i: 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const v = email.trim();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { setError("Enter a valid email address."); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { setError("Saisissez une adresse e-mail valide."); return; }
     const name = v.split("@")[0].split(/[._-]/).map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
     onInvite({ name, email: v, role });
     onClose();
   };
   return (
     <form onSubmit={submit} className="space-y-4">
-      <Input label="Email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="teammate@company.com" leftIcon={<Mail />} error={error} autoFocus />
-      <Select label="Role" name="role" value={role} onChange={(e) => setRole(e.target.value as WorkspaceRole)} options={ROLES.filter((r) => r.id !== "owner").map((r) => ({ value: r.id, label: `${r.label} — ${r.description}` }))} />
+      <Input label="E-mail" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="collegue@entreprise.com" leftIcon={<Mail />} error={error} autoFocus />
+      <Select label="Rôle" name="role" value={role} onChange={(e) => setRole(e.target.value as WorkspaceRole)} options={ROLES.filter((r) => r.id !== "owner").map((r) => ({ value: r.id, label: `${r.label} — ${r.description}` }))} />
       <div className="flex items-center justify-end gap-2 pt-2">
-        <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-        <Button type="submit" leftIcon={<UserPlus className="size-4" />}>Send invite</Button>
+        <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
+        <Button type="submit" leftIcon={<UserPlus className="size-4" />}>Envoyer l’invitation</Button>
       </div>
     </form>
   );

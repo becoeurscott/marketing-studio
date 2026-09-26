@@ -56,34 +56,65 @@ export function PlatformIcons({ platforms, size = "sm", className }: { platforms
 }
 
 export const OBJECTIVES: { id: CampaignObjective; label: string; description: string }[] = [
-  { id: "awareness", label: "Awareness", description: "Reach new people and introduce the product." },
-  { id: "engagement", label: "Engagement", description: "Drive saves, shares and comments." },
-  { id: "leads", label: "Leads", description: "Collect sign-ups, waitlists and inquiries." },
-  { id: "sales", label: "Sales", description: "Turn clicks into orders with offer-led creatives." },
+  { id: "awareness", label: "Notoriété", description: "Touchez de nouvelles personnes et présentez le produit." },
+  { id: "engagement", label: "Engagement", description: "Suscitez enregistrements, partages et commentaires." },
+  { id: "leads", label: "Prospects", description: "Collectez inscriptions, listes d'attente et demandes." },
+  { id: "sales", label: "Ventes", description: "Transformez les clics en commandes grâce à des visuels centrés sur l'offre." },
 ];
 
 export const CAMPAIGN_FORMATS: { id: CampaignFormat; label: string; description: string }[] = [
-  { id: "product-photos", label: "Product photos", description: "Studio and lifestyle packshots." },
-  { id: "ugc", label: "UGC", description: "Creator-style videos with a hook and demo." },
-  { id: "video-ads", label: "Video ads", description: "Short cinematic product films." },
-  { id: "stories", label: "Stories", description: "Vertical 9:16 story frames." },
-  { id: "carousels", label: "Carousels", description: "Multi-slide proof and benefits." },
+  { id: "product-photos", label: "Photos produit", description: "Packshots studio et lifestyle." },
+  { id: "ugc", label: "UGC", description: "Vidéos façon créateur avec accroche et démo." },
+  { id: "video-ads", label: "Pubs vidéo", description: "Courts films produit cinématiques." },
+  { id: "stories", label: "Stories", description: "Visuels verticaux 9:16 pour les stories." },
+  { id: "carousels", label: "Carrousels", description: "Plusieurs slides pour preuves et bénéfices." },
 ];
 
 export const AD_FORMATS: { id: AdFormat; label: string }[] = [
   { id: "image", label: "Image" },
-  { id: "video", label: "Video" },
-  { id: "carousel", label: "Carousel" },
+  { id: "video", label: "Vidéo" },
+  { id: "carousel", label: "Carrousel" },
   { id: "story", label: "Story" },
   { id: "reel", label: "Reel" },
   { id: "short", label: "Short" },
 ];
 
 export const CALENDAR_STATUSES: { id: CalendarStatus; label: string }[] = [
-  { id: "draft", label: "Draft" },
-  { id: "scheduled", label: "Scheduled" },
-  { id: "published", label: "Published" },
+  { id: "draft", label: "Brouillon" },
+  { id: "scheduled", label: "Programmé" },
+  { id: "published", label: "Publié" },
 ];
+
+/** French display labels for status values (campaigns, calendar items, projects). */
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Brouillon",
+  active: "Active",
+  completed: "Terminée",
+  scheduled: "Programmé",
+  published: "Publié",
+  archived: "Archivé",
+  paused: "En pause",
+  queued: "En file d'attente",
+  processing: "En cours",
+  failed: "Échec",
+};
+export function statusLabel(s: string): string {
+  return STATUS_LABELS[s] ?? s;
+}
+
+const TONE_LABELS: Record<string, string> = {
+  playful: "Ludique",
+  professional: "Professionnel",
+  luxury: "Luxe",
+  friendly: "Amical",
+  bold: "Audacieux",
+  minimal: "Minimaliste",
+  funny: "Humoristique",
+  urgent: "Urgent",
+};
+export function toneLabel(t: string): string {
+  return TONE_LABELS[t] ?? t;
+}
 
 export function objectiveLabel(o: CampaignObjective): string {
   return OBJECTIVES.find((x) => x.id === o)?.label ?? o;

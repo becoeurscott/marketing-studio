@@ -24,6 +24,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { templates } from "@/data";
 import { useStore } from "@/lib/store";
 import type { Asset } from "@/lib/types";
+import { IMAGE_STYLE_LABELS, label } from "@/components/studio/constants";
 
 const MODE_ICON = { image: ImageIcon, video: Clapperboard, ugc: UserRound } as const;
 
@@ -45,7 +46,7 @@ export default function StudioPage() {
 
   const product = assets.find((a) => a.id === gen.params.productAssetId) ?? null;
   const media = mode === "image"
-    ? gen.selected ? { url: gen.selected.url, alt: "Selected result", kind: "image" as const } : product ? { url: product.url, alt: product.name, kind: "image" as const } : null
+    ? gen.selected ? { url: gen.selected.url, alt: "Résultat sélectionné", kind: "image" as const } : product ? { url: product.url, alt: product.name, kind: "image" as const } : null
     : null;
 
   const setProduct = (a: Asset | null) => { gen.update("productAssetId", a?.id ?? null); vid.update("sourceAssetId", a?.id ?? null); };
@@ -55,10 +56,10 @@ export default function StudioPage() {
   /* --- per-mode overlay (generating / error / video result) --- */
   let overlay: React.ReactNode = null;
   if (mode === "image") {
-    if (gen.generating) overlay = <GeneratingOverlay hint={`${gen.params.style} · ${gen.params.ratio}`} />;
+    if (gen.generating) overlay = <GeneratingOverlay hint={`${label(IMAGE_STYLE_LABELS, gen.params.style)} · ${gen.params.ratio}`} />;
     else if (gen.error) overlay = <StudioError code={gen.error.code} message={gen.error.message} onRetry={generate} />;
   } else {
-    if (vid.generating) overlay = <GeneratingOverlay label={mode === "ugc" ? "Filming your creator..." : "Generating your video..."} steps={vid.steps} step={vid.step} />;
+    if (vid.generating) overlay = <GeneratingOverlay label={mode === "ugc" ? "Tournage avec votre créateur…" : "Génération de votre vidéo…"} steps={vid.steps} step={vid.step} />;
     else if (vid.error) overlay = <StudioError code={vid.error.code} message={vid.error.message} onRetry={generate} />;
     else if (vid.result) overlay = <VideoPlayer result={vid.result} className="mx-auto" heightClass="h-[calc(100dvh-28rem)] md:h-[calc(100dvh-26.5rem)]" maxHeightClass="max-h-[calc(100dvh-28rem)] md:max-h-[calc(100dvh-26.5rem)]" />;
     else if (vid.source || (mode === "ugc" && vid.creator)) overlay = (
@@ -69,10 +70,10 @@ export default function StudioPage() {
         </div>
         <p className="text-sm text-text2 max-w-sm">
           {mode === "ugc"
-            ? <>{vid.creator ? <span className="text-text">{vid.creator.name}</span> : "Pick a creator"} will present {vid.source ? <span className="text-text">{vid.source.name}</span> : "your product"}. Describe the scene and generate.</>
-            : <>Source frame: <span className="text-text">{vid.source?.name}</span>. Describe the motion and generate.</>}
+            ? <>{vid.creator ? <span className="text-text">{vid.creator.name}</span> : "Choisissez un créateur, qui"} présentera {vid.source ? <span className="text-text">{vid.source.name}</span> : "votre produit"}. Décrivez la scène et lancez la génération.</>
+            : <>Image source : <span className="text-text">{vid.source?.name}</span>. Décrivez le mouvement et lancez la génération.</>}
         </p>
-        <Button variant="secondary" size="sm" leftIcon={<Clapperboard className="size-4" />} onClick={() => setPicker(true)}>{vid.source ? "Change product" : "Add product"}</Button>
+        <Button variant="secondary" size="sm" leftIcon={<Clapperboard className="size-4" />} onClick={() => setPicker(true)}>{vid.source ? "Changer de produit" : "Ajouter un produit"}</Button>
       </div>
     );
   }
@@ -117,8 +118,8 @@ export default function StudioPage() {
           footer={mode === "image" && gen.results.length > 0 && !gen.generating ? (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-[13px] font-medium text-text2">Results</p>
-                <span className="text-xs text-muted">Tap a result to put it on the canvas</span>
+                <p className="text-[13px] font-medium text-text2">Résultats</p>
+                <span className="text-xs text-muted">Touchez un résultat pour l’afficher sur le canevas</span>
               </div>
               <ImageWorkbench gen={gen} dense className="!grid-cols-2 sm:!grid-cols-4" />
             </div>
@@ -162,14 +163,14 @@ export default function StudioPage() {
           <div className="p-4 flex flex-col min-h-full" key={mode}>
             <div className="flex items-center gap-2 mb-4">
               <Icon className="size-4 text-highlight" />
-              <h2 className="text-[15px] font-semibold flex-1">Advanced options</h2>
-              <IconButton size="sm" label="Hide options" onClick={() => setAdvanced(false)}><X /></IconButton>
+              <h2 className="text-[15px] font-semibold flex-1">Options avancées</h2>
+              <IconButton size="sm" label="Masquer les options" onClick={() => setAdvanced(false)}><X /></IconButton>
             </div>
             {advancedPanel}
           </div>
         </Inspector>
       )}
-      <BottomSheet open={advanced && !isDesktop} onClose={() => setAdvanced(false)} title="Advanced options">
+      <BottomSheet open={advanced && !isDesktop} onClose={() => setAdvanced(false)} title="Options avancées">
         <div className="px-4 pb-4 overflow-y-auto">{advancedPanel}</div>
       </BottomSheet>
 

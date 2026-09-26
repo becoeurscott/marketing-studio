@@ -11,12 +11,21 @@ struct ProductShootView: View {
     static let cameras = ["Close-up", "Medium", "Wide", "Macro"]
     static let counts = [4, 6]
 
+    /// French display labels → English values sent to the generation API.
+    static let environmentLabels: [(fr: String, en: String)] = [("Salle de bain de luxe", "Luxury bathroom"), ("Cuisine moderne", "Modern kitchen"), ("Plage", "Beach"), ("Bureau", "Office"), ("Rue", "Street"), ("Studio", "Studio"), ("Restaurant", "Restaurant"), ("Salle de sport", "Gym"), ("Intérieur de voiture", "Car interior")]
+    static let lightingLabels: [(fr: String, en: String)] = [("Naturelle", "Natural"), ("Heure dorée", "Golden hour"), ("Studio", "Studio"), ("Néon", "Neon"), ("Softbox", "Softbox"), ("Dramatique", "Dramatic")]
+    static let cameraLabels: [(fr: String, en: String)] = [("Gros plan", "Close-up"), ("Plan moyen", "Medium"), ("Plan large", "Wide"), ("Macro", "Macro")]
+    private static func english(_ fr: String?, in table: [(fr: String, en: String)], default d: String) -> String {
+        guard let fr else { return d }
+        return table.first { $0.fr == fr }?.en ?? d
+    }
+
     private enum Phase: Equatable { case idle, generating, done, failed }
 
     @State private var productId: String?
     @State private var environment: Set<String> = ["Studio"]
-    @State private var lighting: Set<String> = ["Natural"]
-    @State private var camera: Set<String> = ["Medium"]
+    @State private var lighting: Set<String> = ["Naturelle"]
+    @State private var camera: Set<String> = ["Plan moyen"]
     @State private var count = 4
     @State private var phase: Phase = .idle
     @State private var results: [GeneratedImage] = []
@@ -36,9 +45,9 @@ struct ProductShootView: View {
             VStack(alignment: .leading, spacing: 22) {
                 header
                 uploadCard
-                CreativeSection(title: "Environment") { ChipGroup(options: Self.environments, selection: $environment, allowDeselect: false) }
-                CreativeSection(title: "Lighting") { ChipGroup(options: Self.lightings, selection: $lighting, allowDeselect: false) }
-                CreativeSection(title: "Camera") { ChipGroup(options: Self.cameras, selection: $camera, allowDeselect: false) }
+                CreativeSection(title: "Décor") { ChipGroup(options: Self.environmentLabels.map(\.fr), selection: $environment, allowDeselect: false) }
+                CreativeSection(title: "Éclairage") { ChipGroup(options: Self.lightingLabels.map(\.fr), selection: $lighting, allowDeselect: false) }
+                CreativeSection(title: "Cadrage") { ChipGroup(options: Self.cameraLabels.map(\.fr), selection: $camera, allowDeselect: false) }
                 CreativeSection(title: "Photos") {
                     HStack(spacing: 8) {
                         ForEach(Self.counts, id: \.self) { c in
@@ -46,11 +55,11 @@ struct ProductShootView: View {
                         }
                     }
                 }
-                CreditCostRow(cost: cost, label: "\(count) product photos")
-                MSButton(title: results.isEmpty ? "Generate Product Shoot" : "Generate Again", icon: "camera.aperture", isLoading: phase == .generating, isDisabled: productId == nil) { generate() }
+                CreditCostRow(cost: cost, label: "\(count) photos produit")
+                MSButton(title: results.isEmpty ? "Lancer le shooting produit" : "Générer à nouveau", icon: "camera.aperture", isLoading: phase == .generating, isDisabled: productId == nil) { generate() }
                     .padding(.horizontal, MSSpacing.gutter)
                 if productId == nil {
-                    Text("Upload or pick a product photo to start.").msCaption().frame(maxWidth: .infinity).padding(.top, -12)
+                    Text("Importez ou choisissez une photo produit pour commencer.").msCaption().frame(maxWidth: .infinity).padding(.top, -12)
                 }
                 resultsSection
             }
@@ -58,7 +67,7 @@ struct ProductShootView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Product Shoot")
+        .navigationTitle("Shooting produit")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .msSheet(isPresented: $uploadSheet, detents: [.large]) {
@@ -76,14 +85,14 @@ struct ProductShootView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("AI Product Shoot").msTitle(26)
-            Text("One photo in, a full set of on-location product shots out.").msBody(14)
+            Text("Shooting produit IA").msTitle(26)
+            Text("Une seule photo suffit pour obtenir une série complète de photos produit en situation.").msBody(14)
         }
         .padding(.horizontal, MSSpacing.gutter)
     }
 
     private var uploadCard: some View {
-        CreativeSection(title: "Product photo", subtitle: "Upload one clean photo of your product") {
+        CreativeSection(title: "Photo produit", subtitle: "Importez une photo nette de votre produit") {
             Button { uploadSheet = true } label: {
                 Group {
                     if let product {
@@ -92,7 +101,7 @@ struct ProductShootView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(product.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
                                 Text("\(product.width) × \(product.height) · \(product.tags.joined(separator: ", "))").msCaption().lineLimit(1)
-                                Text("Tap to change").msCaption(color: MSColor.highlight)
+                                Text("Touchez pour modifier").msCaption(color: MSColor.highlight)
                             }
                             Spacer()
                             Image(systemName: "checkmark.circle.fill").foregroundStyle(MSColor.success)
@@ -100,10 +109,10 @@ struct ProductShootView: View {
                     } else {
                         VStack(spacing: 10) {
                             Image(systemName: "photo.badge.plus").font(.system(size: 30, weight: .medium)).foregroundStyle(MSColor.highlight)
-                            Text("Drop product image here").msHeadline(15)
-                            Text("PNG or JPG · transparent background works best").msCaption()
+                            Text("Déposez l'image du produit ici").msHeadline(15)
+                            Text("PNG ou JPG · idéalement sur fond transparent").msCaption()
                             HStack(spacing: 8) {
-                                MSButton(title: "Upload Product", icon: "square.and.arrow.up", style: .secondary, size: .compact, fullWidth: false) { uploadSheet = true }
+                                MSButton(title: "Importer un produit", icon: "square.and.arrow.up", style: .secondary, size: .compact, fullWidth: false) { uploadSheet = true }
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -127,7 +136,7 @@ struct ProductShootView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
                     ProgressView().tint(MSColor.accent)
-                    Text("Creating your visual...").msHeadline(15)
+                    Text("Création de votre visuel...").msHeadline(15)
                     Spacer()
                     Text("\(environment.first ?? "") · \(lighting.first ?? "")").msCaption()
                 }
@@ -144,7 +153,7 @@ struct ProductShootView: View {
                         Text("\(environment.first ?? "") · \(lighting.first ?? "") · \(camera.first ?? "")").msCaption()
                     }
                     Spacer()
-                    ResultAction(title: selectedIds.count == results.count ? "Clear" : "Select all", icon: "checkmark.circle") {
+                    ResultAction(title: selectedIds.count == results.count ? "Désélectionner" : "Tout sélectionner", icon: "checkmark.circle") {
                         withAnimation(MSAnimation.snappy) { selectedIds = selectedIds.count == results.count ? [] : Set(results.map { $0.id }) }
                     }
                 }
@@ -163,16 +172,16 @@ struct ProductShootView: View {
     private var bulkBar: some View {
         let targets = selectedIds.isEmpty ? results : results.filter { selectedIds.contains($0.id) }
         return VStack(alignment: .leading, spacing: 10) {
-            Text(selectedIds.isEmpty ? "Actions apply to all \(results.count) photos" : "\(selectedIds.count) selected").msCaption()
+            Text(selectedIds.isEmpty ? "Les actions s'appliquent aux \(results.count) photos" : "\(selectedIds.count) sélectionnée\(selectedIds.count > 1 ? "s" : "")").msCaption()
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ResultAction(title: "Save to project", icon: "folder.badge.plus") { save(targets); router.toast("Saved \(targets.count) photo\(targets.count == 1 ? "" : "s") to \(store.currentProject?.name ?? "project")", style: .success) }
-                    ResultAction(title: "Use in Campaign", icon: "flag") {
+                    ResultAction(title: "Enregistrer dans le projet", icon: "folder.badge.plus") { save(targets); router.toast("\(targets.count) photo\(targets.count == 1 ? "" : "s") enregistrée\(targets.count == 1 ? "" : "s") dans \(store.currentProject?.name ?? "le projet")", style: .success) }
+                    ResultAction(title: "Utiliser dans une campagne", icon: "flag") {
                         campaignAssetIds = save(targets, quiet: true)
                         campaignPicker = true
                     }
-                    ResultAction(title: "Download", icon: "arrow.down.circle") { router.toast("Downloading \(targets.count) photo\(targets.count == 1 ? "" : "s")...", style: .info, icon: "arrow.down.circle") }
-                    ResultAction(title: "Regenerate", icon: "arrow.clockwise") { generate() }
+                    ResultAction(title: "Télécharger", icon: "arrow.down.circle") { router.toast("Téléchargement de \(targets.count) photo\(targets.count == 1 ? "" : "s")...", style: .info, icon: "arrow.down.circle") }
+                    ResultAction(title: "Régénérer", icon: "arrow.clockwise") { generate() }
                 }
             }
         }
@@ -186,13 +195,13 @@ struct ProductShootView: View {
         MSHaptic.tap()
         lastError = nil
         withAnimation(MSAnimation.gentle) { phase = .generating; results = []; selectedIds = []; favoriteIds = []; savedIds = [:] }
-        let p = ProductShootParams(productAssetId: productId, environment: environment.first ?? "Studio", lighting: lighting.first ?? "Natural", camera: camera.first ?? "Medium", count: count, projectId: store.currentProjectId)
+        let p = ProductShootParams(productAssetId: productId, environment: Self.english(environment.first, in: Self.environmentLabels, default: "Studio"), lighting: Self.english(lighting.first, in: Self.lightingLabels, default: "Natural"), camera: Self.english(camera.first, in: Self.cameraLabels, default: "Medium"), count: count, projectId: store.currentProjectId)
         Task {
             do {
                 let imgs = try await MockAPI.generateProductShoot(p, store: store)
                 MSHaptic.success()
                 withAnimation(MSAnimation.snappy) { results = imgs; phase = .done }
-                router.toast("\(imgs.count) product photos ready", style: .success, icon: "sparkles")
+                router.toast("\(imgs.count) photos produit prêtes", style: .success, icon: "sparkles")
             } catch {
                 MSHaptic.warning()
                 lastError = error
@@ -219,7 +228,7 @@ struct ProductShootView: View {
     }
 
     private func download(_ img: GeneratedImage) {
-        router.toast("Downloading photo...", style: .info, icon: "arrow.down.circle")
+        router.toast("Téléchargement de la photo...", style: .info, icon: "arrow.down.circle")
     }
 
     @discardableResult
@@ -227,7 +236,7 @@ struct ProductShootView: View {
         var ids: [String] = []
         for (i, img) in imgs.enumerated() {
             if let existing = savedIds[img.id] { ids.append(existing); continue }
-            let a = store.addAsset(name: "\(product?.name ?? "Product") · \(environment.first ?? "") \(i + 1)", kind: .image, imageURL: img.url, projectId: store.currentProjectId, tags: ["product shoot", (environment.first ?? "").lowercased()])
+            let a = store.addAsset(name: "\(product?.name ?? "Produit") · \(environment.first ?? "") \(i + 1)", kind: .image, imageURL: img.url, projectId: store.currentProjectId, tags: ["shooting produit", (environment.first ?? "").lowercased()])
             savedIds[img.id] = a.id
             ids.append(a.id)
         }
@@ -259,7 +268,7 @@ struct ShootResultTile: View {
             }
             .overlay(alignment: .topTrailing) {
                 if saved {
-                    MSBadge(text: "Saved", tone: .success).padding(8)
+                    MSBadge(text: "Enregistrée", tone: .success).padding(8)
                 }
             }
             .overlay(alignment: .bottomTrailing) {
@@ -289,26 +298,26 @@ struct ProductUploadSheet: View {
     @State private var uploading = false
 
     private static let samples: [(String, String)] = [
-        ("Luma Glow Serum", "luma-packshot"), ("Aurora Watch", "watch-hero"), ("Nimbus Sneakers", "sneaker-1"),
-        ("Cold Brew Can", "coffee-can"), ("Velvet Lipstick", "lipstick"), ("Halo Headphones", "headphones"),
+        ("Sérum Luma Glow", "luma-packshot"), ("Montre Aurora", "watch-hero"), ("Baskets Nimbus", "sneaker-1"),
+        ("Canette Cold Brew", "coffee-can"), ("Rouge à lèvres Velvet", "lipstick"), ("Casque Halo", "headphones"),
     ]
 
     private var existing: [Asset] { store.recentAssets.filter { $0.kind == .image || $0.kind == .brand }.prefix(6).map { $0 } }
 
     var body: some View {
-        BottomSheetContainer(title: "Upload product", subtitle: "Pick a sample, an existing asset or a photo from your library") {
+        BottomSheetContainer(title: "Importer un produit", subtitle: "Choisissez un exemple, un visuel existant ou une photo de votre photothèque") {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 18) {
                     if uploading {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("Uploading \(name)...").msHeadline(15)
+                            Text("Importation de \(name)...").msHeadline(15)
                             MSProgressBar(progress: progress)
                             Text("\(Int(progress * 100))%").msCaption()
                         }
                         .msCard()
                         .padding(.horizontal, MSSpacing.gutter)
                     }
-                    CreativeSection(title: "From your library") {
+                    CreativeSection(title: "Depuis votre bibliothèque") {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 10) {
                                 ForEach(existing) { a in
@@ -325,7 +334,7 @@ struct ProductUploadSheet: View {
                         }
                         .padding(.horizontal, -MSSpacing.gutter)
                     }
-                    CreativeSection(title: "Sample products") {
+                    CreativeSection(title: "Produits d'exemple") {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                             ForEach(Self.samples, id: \.1) { s in
                                 let url = MockData.image(s.1)
@@ -344,11 +353,11 @@ struct ProductUploadSheet: View {
                             }
                         }
                     }
-                    CreativeSection(title: "Or choose a photo") {
+                    CreativeSection(title: "Ou choisissez une photo") {
                         PhotosPicker(selection: $photoItem, matching: .images) {
                             HStack(spacing: 10) {
                                 Image(systemName: "photo.on.rectangle").foregroundStyle(MSColor.highlight)
-                                Text("Choose from Photos").font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                                Text("Choisir dans Photos").font(MSFont.control(14)).foregroundStyle(MSColor.text)
                                 Spacer()
                                 Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(MSColor.muted)
                             }
@@ -359,13 +368,13 @@ struct ProductUploadSheet: View {
                         .onChange(of: photoItem) { _, item in
                             guard item != nil else { return }
                             pickedURL = MockData.image("photo-\(Int.random(in: 100...999))")
-                            if name.isEmpty { name = "My product photo" }
+                            if name.isEmpty { name = "Ma photo produit" }
                         }
                     }
-                    CreativeSection(title: "Name") {
-                        MSTextField(placeholder: "Product name", text: $name, icon: "tag")
+                    CreativeSection(title: "Nom") {
+                        MSTextField(placeholder: "Nom du produit", text: $name, icon: "tag")
                     }
-                    MSButton(title: "Upload", icon: "square.and.arrow.up", isLoading: uploading, isDisabled: pickedURL == nil || name.trimmingCharacters(in: .whitespaces).isEmpty) { upload() }
+                    MSButton(title: "Importer", icon: "square.and.arrow.up", isLoading: uploading, isDisabled: pickedURL == nil || name.trimmingCharacters(in: .whitespaces).isEmpty) { upload() }
                         .padding(.horizontal, MSSpacing.gutter)
                 }
                 .padding(.bottom, 30)
@@ -381,7 +390,7 @@ struct ProductUploadSheet: View {
                 var a = try await MockAPI.uploadProduct(name: name, store: store) { p in withAnimation(MSAnimation.gentle) { progress = p } }
                 if let pickedURL { a.imageURL = pickedURL; store.updateAsset(a) }
                 MSHaptic.success()
-                router.toast("\(name) uploaded", style: .success)
+                router.toast("\(name) importé", style: .success)
                 onUploaded(a)
             } catch {
                 router.toast(error.localizedDescription, style: .error)

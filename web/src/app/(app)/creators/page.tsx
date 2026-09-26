@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/Select";
 import { creators } from "@/data";
 import { useStore } from "@/lib/store";
 import type { Creator } from "@/lib/types";
+import { GENDER_LABELS } from "@/lib/labels";
 
 type Gender = "all" | Creator["gender"];
 
@@ -35,24 +36,24 @@ export default function CreatorsPage() {
 
   return (
     <>
-      <PageHeader title="Creators" description="AI creators for UGC-style videos. Pick a persona, write a script, generate." />
+      <PageHeader title="Créateurs" description="Des créateurs IA pour vos vidéos style UGC. Choisissez un persona, écrivez un script, générez." />
 
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
-        <SearchBar value={q} onChange={setQ} placeholder="Search creators…" className="md:w-72" />
+        <SearchBar value={q} onChange={setQ} placeholder="Rechercher un créateur…" className="md:w-72" />
         <div className="md:ml-auto">
           <Select
             compact
             value={gender}
             onChange={(e) => setGender(e.target.value as Gender)}
-            aria-label="Gender"
-            options={[{ value: "all", label: "Any gender" }, { value: "female", label: "Female" }, { value: "male", label: "Male" }, { value: "non-binary", label: "Non-binary" }]}
+            aria-label="Genre"
+            options={[{ value: "all", label: "Tous les genres" }, { value: "female", label: GENDER_LABELS.female }, { value: "male", label: GENDER_LABELS.male }, { value: "non-binary", label: GENDER_LABELS["non-binary"] }]}
           />
         </div>
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 py-0.5 mb-6">
         {styles.map((s) => (
-          <Chip key={s} size="sm" label={s === "Favorites" ? `Favorites · ${favorites.length}` : s} selected={style === s} onClick={() => setStyle(s)} />
+          <Chip key={s} size="sm" label={s === "Favorites" ? `Favoris · ${favorites.length}` : s === "All" ? "Tous" : s} selected={style === s} onClick={() => setStyle(s)} />
         ))}
       </div>
 
@@ -63,9 +64,9 @@ export default function CreatorsPage() {
       ) : (
         <EmptyState
           icon={Users}
-          title={style === "Favorites" && !q ? "No favorite creators yet" : "No creators match"}
-          description={style === "Favorites" && !q ? "Tap the heart on a creator to keep them here." : "Try another style, gender or search term."}
-          cta={{ label: "Show all creators", onClick: () => { setQ(""); setStyle("All"); setGender("all"); } }}
+          title={style === "Favorites" && !q ? "Aucun créateur favori pour le moment" : "Aucun créateur ne correspond"}
+          description={style === "Favorites" && !q ? "Touchez le cœur d’un créateur pour le retrouver ici." : "Essayez un autre style, genre ou terme de recherche."}
+          cta={{ label: "Afficher tous les créateurs", onClick: () => { setQ(""); setStyle("All"); setGender("all"); } }}
         />
       )}
 

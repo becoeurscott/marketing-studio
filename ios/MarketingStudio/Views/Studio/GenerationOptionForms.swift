@@ -14,7 +14,7 @@ struct OptionChips: View {
             Text(label.uppercased()).font(MSFont.caption(11)).tracking(0.6).foregroundStyle(MSColor.muted)
             FlowLayout(spacing: 8) {
                 ForEach(options, id: \.self) { o in
-                    MSChip(title: o, icon: icons[o], selected: o == value) {
+                    MSChip(title: StudioOptions.label(o), icon: icons[o], selected: o == value) {
                         withAnimation(MSAnimation.snappy) { value = o }
                     }
                 }
@@ -43,7 +43,7 @@ struct AssetSourcePicker: View {
                 Spacer()
                 if let s = selected {
                     Button { withAnimation(MSAnimation.snappy) { selected = nil } } label: {
-                        Text("Clear · \(s.name)").font(MSFont.caption(11)).foregroundStyle(MSColor.text2).lineLimit(1)
+                        Text("Retirer · \(s.name)").font(MSFont.caption(11)).foregroundStyle(MSColor.text2).lineLimit(1)
                     }
                 }
             }
@@ -55,7 +55,7 @@ struct AssetSourcePicker: View {
                     } label: {
                         VStack(spacing: 4) {
                             Image(systemName: "plus").font(.system(size: 16, weight: .semibold))
-                            Text("Upload").font(MSFont.caption(10))
+                            Text("Importer").font(MSFont.caption(10))
                         }
                         .foregroundStyle(MSColor.text2)
                         .frame(width: 64, height: 76)
@@ -101,16 +101,16 @@ struct ImageOptionsForm: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             if full {
-                AssetSourcePicker(label: "Product", selected: $session.productAsset, onUpload: onUpload)
+                AssetSourcePicker(label: "Produit", selected: $session.productAsset, onUpload: onUpload)
                 MSTextEditor(label: "Prompt", placeholder: StudioOptions.promptPlaceholder, text: $session.prompt, minHeight: 90)
             }
             OptionChips(label: "Style", options: StudioOptions.styles, value: $session.style)
-            OptionChips(label: "Aspect ratio", options: StudioOptions.ratios, value: $session.ratio)
-            OptionChips(label: "Background", options: StudioOptions.backgrounds, value: $session.background)
-            OptionChips(label: "Lighting", options: StudioOptions.lighting, value: $session.lighting)
-            OptionChips(label: "Camera", options: StudioOptions.cameras, value: $session.camera)
+            OptionChips(label: "Format", options: StudioOptions.ratios, value: $session.ratio)
+            OptionChips(label: "Arrière-plan", options: StudioOptions.backgrounds, value: $session.background)
+            OptionChips(label: "Éclairage", options: StudioOptions.lighting, value: $session.lighting)
+            OptionChips(label: "Cadrage", options: StudioOptions.cameras, value: $session.camera)
             OptionChips(label: "Composition", options: StudioOptions.compositions, value: $session.composition)
-            OptionChips(label: "Model", options: StudioOptions.models, value: $session.model)
+            OptionChips(label: "Modèle", options: StudioOptions.models, value: $session.model)
         }
     }
 }
@@ -125,11 +125,11 @@ struct VideoOptionsForm: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             if full {
-                AssetSourcePicker(label: "Source image", selected: $session.sourceAsset, onUpload: onUpload)
-                MSTextEditor(label: "Concept", placeholder: "Slow orbit around the serum bottle on wet marble, soft morning light...", text: $session.concept, minHeight: 90)
+                AssetSourcePicker(label: "Image source", selected: $session.sourceAsset, onUpload: onUpload)
+                MSTextEditor(label: "Concept", placeholder: "Orbite lente autour du flacon de sérum sur marbre mouillé, douce lumière du matin...", text: $session.concept, minHeight: 90)
             }
             VStack(alignment: .leading, spacing: 8) {
-                Text("DURATION").font(MSFont.caption(11)).tracking(0.6).foregroundStyle(MSColor.muted)
+                Text("DURÉE").font(MSFont.caption(11)).tracking(0.6).foregroundStyle(MSColor.muted)
                 HStack(spacing: 8) {
                     ForEach(StudioOptions.videoDurations, id: \.self) { d in
                         MSChip(title: "\(d)s", icon: "timer", selected: d == session.duration) {
@@ -138,10 +138,10 @@ struct VideoOptionsForm: View {
                     }
                 }
             }
-            OptionChips(label: "Aspect ratio", options: StudioOptions.ratios, value: $session.ratio)
-            OptionChips(label: "Camera movement", options: StudioOptions.videoCameras, value: $session.camera)
+            OptionChips(label: "Format", options: StudioOptions.ratios, value: $session.ratio)
+            OptionChips(label: "Mouvement de caméra", options: StudioOptions.videoCameras, value: $session.camera)
             OptionChips(label: "Style", options: StudioOptions.videoStyles, value: $session.style)
-            OptionChips(label: "Model", options: StudioOptions.videoModels, value: $session.model)
+            OptionChips(label: "Modèle", options: StudioOptions.videoModels, value: $session.model)
         }
     }
 }
@@ -153,10 +153,10 @@ struct UGCOptionsForm: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            OptionChips(label: "Location", options: StudioOptions.ugcLocations, value: $session.location)
-            OptionChips(label: "Tone", options: StudioOptions.ugcTones, value: $session.tone)
+            OptionChips(label: "Lieu", options: StudioOptions.ugcLocations, value: $session.location)
+            OptionChips(label: "Ton", options: StudioOptions.ugcTones, value: $session.tone)
             VStack(alignment: .leading, spacing: 8) {
-                Text("DURATION").font(MSFont.caption(11)).tracking(0.6).foregroundStyle(MSColor.muted)
+                Text("DURÉE").font(MSFont.caption(11)).tracking(0.6).foregroundStyle(MSColor.muted)
                 HStack(spacing: 8) {
                     ForEach(StudioOptions.ugcDurations, id: \.self) { d in
                         MSChip(title: "\(d)s", icon: "timer", selected: d == session.duration) {
@@ -165,8 +165,8 @@ struct UGCOptionsForm: View {
                     }
                 }
             }
-            OptionChips(label: "Aspect ratio", options: StudioOptions.ratios, value: $session.ratio)
-            OptionChips(label: "Model", options: StudioOptions.ugcModels, value: $session.model)
+            OptionChips(label: "Format", options: StudioOptions.ratios, value: $session.ratio)
+            OptionChips(label: "Modèle", options: StudioOptions.ugcModels, value: $session.model)
         }
     }
 }
@@ -175,8 +175,8 @@ struct UGCOptionsForm: View {
 
 /// "Creating your visual..." animated placeholder shown in place of the canvas / gallery.
 struct CreatingVisualView: View {
-    var title: String = "Creating your visual..."
-    var subtitle: String = "Composing scene, lighting and product"
+    var title: String = "Création de votre visuel..."
+    var subtitle: String = "Composition de la scène, de l'éclairage et du produit"
     var aspect: CGFloat = 0.8
     @State private var phase: CGFloat = -1
     @State private var pulse = false

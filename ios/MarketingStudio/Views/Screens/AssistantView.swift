@@ -20,11 +20,11 @@ struct AssistantView: View {
     }
 
     private let suggestions: [(title: String, icon: String, route: AppRoute)] = [
-        ("Generate Campaign", "flag", .campaignBuilder),
-        ("Generate Product Shoot", "camera", .productShoot),
-        ("Generate UGC", "person.wave.2", .ugcCreator),
-        ("Write Ad Copy", "text.quote", .copywriter),
-        ("Generate Video", "video", .videoGenerator),
+        ("Générer une campagne", "flag", .campaignBuilder),
+        ("Générer un shooting produit", "camera", .productShoot),
+        ("Générer un UGC", "person.wave.2", .ugcCreator),
+        ("Rédiger un texte publicitaire", "text.quote", .copywriter),
+        ("Générer une vidéo", "video", .videoGenerator),
     ]
 
     var body: some View {
@@ -49,7 +49,7 @@ struct AssistantView: View {
             composer
         }
         .msScreen()
-        .navigationTitle("AI Assistant")
+        .navigationTitle("Assistant IA")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { if !embedded { MSTopBarItems() } }
         .onAppear { if messages.isEmpty { seed() } }
@@ -61,8 +61,8 @@ struct AssistantView: View {
             HStack(spacing: 10) {
                 assistantAvatar(size: 30)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("AI Assistant").msHeadline(16)
-                    Text("Knows your brand: \(store.brand.name) · \(store.brand.voice.tone)").msCaption()
+                    Text("Assistant IA").msHeadline(16)
+                    Text("Connaît votre marque : \(store.brand.name) · \(store.brand.voice.tone)").msCaption()
                 }
                 Spacer()
             }
@@ -76,8 +76,8 @@ struct AssistantView: View {
         HStack(alignment: .top, spacing: 10) {
             assistantAvatar(size: 28)
             VStack(alignment: .leading, spacing: 4) {
-                Text("What are we making today?").msHeadline(15)
-                Text("I can build a full campaign, shoot your product, script a UGC ad, write copy or animate a still. Pick an action below or just describe it.").msBody(13)
+                Text("Que créons-nous aujourd'hui ?").msHeadline(15)
+                Text("Je peux créer une campagne complète, photographier votre produit, scénariser une pub UGC, rédiger vos textes ou animer une image. Choisissez une action ci-dessous ou décrivez simplement votre besoin.").msBody(13)
             }
         }
         .padding(.bottom, 4)
@@ -141,7 +141,7 @@ struct AssistantView: View {
 
     private var composer: some View {
         HStack(spacing: 8) {
-            TextField("Ask for anything...", text: $draft, axis: .vertical)
+            TextField("Demandez ce que vous voulez...", text: $draft, axis: .vertical)
                 .lineLimit(1...4)
                 .font(MSFont.body(14))
                 .foregroundStyle(MSColor.text)
@@ -182,7 +182,7 @@ struct AssistantView: View {
     // MARK: Logic
 
     private func seed() {
-        messages = [AssistantMessage(text: "Working on \(store.currentProject?.name ?? "your project"). Want product shots, a UGC script, or the full campaign?", fromUser: false)]
+        messages = [AssistantMessage(text: "Je travaille sur \(store.currentProject?.name ?? "votre projet"). Vous voulez des photos produit, un script UGC ou la campagne complète ?", fromUser: false)]
     }
 
     private func send(_ text: String, thenRoute route: AppRoute? = nil) {
@@ -193,7 +193,7 @@ struct AssistantView: View {
         Task {
             withAnimation(MSAnimation.gentle) { typing = true }
             let reply = await MockAPI.assistantReply(to: t, store: store)
-            let final = route.map { "On it. Opening \(routeTitle($0)) with your brand settings loaded." } ?? reply
+            let final = route.map { "C'est parti. J'ouvre \(routeTitle($0)) avec les paramètres de votre marque." } ?? reply
             withAnimation(MSAnimation.snappy) {
                 typing = false
                 messages.append(AssistantMessage(text: final, fromUser: false))
@@ -211,12 +211,12 @@ struct AssistantView: View {
 
     private func routeTitle(_ r: AppRoute) -> String {
         switch r {
-        case .campaignBuilder: return "Campaign Builder"
-        case .productShoot: return "AI Product Shoot"
-        case .ugcCreator: return "UGC Creator"
-        case .copywriter: return "Copywriter"
-        case .videoGenerator: return "Video Generator"
-        default: return "the tool"
+        case .campaignBuilder: return "le Créateur de campagne"
+        case .productShoot: return "le Shooting produit IA"
+        case .ugcCreator: return "le Créateur UGC"
+        case .copywriter: return "le Rédacteur"
+        case .videoGenerator: return "le Générateur vidéo"
+        default: return "l'outil"
         }
     }
 

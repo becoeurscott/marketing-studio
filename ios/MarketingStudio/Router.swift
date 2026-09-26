@@ -7,11 +7,11 @@ enum AppTab: String, CaseIterable, Identifiable, Codable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .home: return "Home"
+        case .home: return "Accueil"
         case .studio: return "Studio"
-        case .projects: return "Projects"
-        case .assets: return "Assets"
-        case .more: return "More"
+        case .projects: return "Projets"
+        case .assets: return "Ressources"
+        case .more: return "Plus"
         }
     }
     var icon: String {

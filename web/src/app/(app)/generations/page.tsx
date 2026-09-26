@@ -4,6 +4,7 @@ import { ExternalLink, FileText, History, Images, Layers, RefreshCw, Video } fro
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { statusLabel } from "@/components/campaigns/platform";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Drawer";
@@ -18,9 +19,9 @@ type Filter = "all" | GenerationType;
 
 const TYPE_META: Record<GenerationType, { label: string; icon: typeof Images; studio: string }> = {
   image: { label: "Image", icon: Images, studio: "/studio/image" },
-  video: { label: "Video", icon: Video, studio: "/studio/video" },
-  copy: { label: "Copy", icon: FileText, studio: "/studio/copy" },
-  ad: { label: "Ad", icon: Layers, studio: "/studio/ads" },
+  video: { label: "Vidéo", icon: Video, studio: "/studio/video" },
+  copy: { label: "Texte", icon: FileText, studio: "/studio/copy" },
+  ad: { label: "Publicité", icon: Layers, studio: "/studio/ads" },
 };
 
 export default function GenerationsPage() {
@@ -42,28 +43,28 @@ export default function GenerationsPage() {
     return generations.filter((g) => filter === "all" || g.type === filter).filter((g) => !needle || g.prompt.toLowerCase().includes(needle));
   }, [generations, filter, q]);
 
-  const projectName = (id: string | null) => projects.find((p) => p.id === id)?.name ?? "No project";
+  const projectName = (id: string | null) => projects.find((p) => p.id === id)?.name ?? "Aucun projet";
   const open = generations.find((g) => g.id === openId) ?? null;
   const openAsset = open ? assets.find((a) => a.projectId === open.projectId && (open.type === "video" ? a.type === "video" : a.type === "image")) : null;
 
   return (
     <>
-      <PageHeader title="Generation history" description="Every image, video, copy and ad generation, with the prompt that made it." />
+      <PageHeader title="Historique des générations" description="Toutes vos générations d'images, de vidéos, de textes et de pubs, avec le prompt utilisé." />
 
       {generations.length === 0 ? (
-        <EmptyState icon={History} title="No generations yet" description="Your generation history will show up here with prompts and results." cta={{ label: "Open Studio", href: "/studio" }} />
+        <EmptyState icon={History} title="Aucune génération pour l'instant" description="Votre historique de générations apparaîtra ici, avec les prompts et les résultats." cta={{ label: "Ouvrir le Studio", href: "/studio" }} />
       ) : (
         <>
           <div className="flex flex-col md:flex-row md:items-center gap-3 mb-5">
-            <SearchBar value={q} onChange={setQ} placeholder="Search prompts…" className="md:w-72" />
+            <SearchBar value={q} onChange={setQ} placeholder="Rechercher un prompt…" className="md:w-72" />
             <FilterBar
               className="flex-1"
               options={[
-                { value: "all", label: "All", count: counts.all },
+                { value: "all", label: "Toutes", count: counts.all },
                 { value: "image", label: "Images", count: counts.image },
-                { value: "video", label: "Videos", count: counts.video },
-                { value: "copy", label: "Copy", count: counts.copy },
-                { value: "ad", label: "Ads", count: counts.ad },
+                { value: "video", label: "Vidéos", count: counts.video },
+                { value: "copy", label: "Textes", count: counts.copy },
+                { value: "ad", label: "Pubs", count: counts.ad },
               ]}
               value={filter}
               onChange={setFilter}
@@ -71,7 +72,7 @@ export default function GenerationsPage() {
           </div>
 
           {list.length === 0 ? (
-            <EmptyState compact icon={History} title="No matches" description="Try a different type or search term." cta={{ label: "Clear", onClick: () => { setFilter("all"); setQ(""); } }} />
+            <EmptyState compact icon={History} title="Aucun résultat" description="Essayez un autre type ou un autre terme de recherche." cta={{ label: "Effacer", onClick: () => { setFilter("all"); setQ(""); } }} />
           ) : (
             <div className="rounded-lg border border-border bg-card divide-y divide-border">
               {list.map((g) => <Row key={g.id} g={g} projectName={projectName(g.projectId)} onClick={() => setOpenId(g.id)} active={openId === g.id} />)}
@@ -80,7 +81,7 @@ export default function GenerationsPage() {
         </>
       )}
 
-      <Drawer open={Boolean(open)} onClose={() => setOpenId(null)} title="Generation" width={440}>
+      <Drawer open={Boolean(open)} onClose={() => setOpenId(null)} title="Génération" width={440}>
         {open && (
           <div className="space-y-5">
             {open.thumbnails.length > 0 ? (
@@ -88,7 +89,7 @@ export default function GenerationsPage() {
                 {open.thumbnails.map((t, i) => <img key={i} src={t} alt="" className="w-full aspect-[4/5] object-cover rounded-md border border-border" />)}
               </div>
             ) : (
-              <div className="rounded-md border border-border bg-surface p-4 text-[13px] text-text2"><FileText className="size-4 mb-2 text-muted" />Text generation — open the Copywriter to regenerate.</div>
+              <div className="rounded-md border border-border bg-surface p-4 text-[13px] text-text2"><FileText className="size-4 mb-2 text-muted" />Génération de texte — ouvrez le rédacteur pour la relancer.</div>
             )}
             <div>
               <p className="text-[12px] text-muted mb-1">Prompt</p>
@@ -96,18 +97,18 @@ export default function GenerationsPage() {
             </div>
             <dl className="grid grid-cols-2 gap-3 text-[13px]">
               <div><dt className="text-muted">Type</dt><dd className="mt-0.5">{TYPE_META[open.type].label}</dd></div>
-              <div><dt className="text-muted">Status</dt><dd className="mt-0.5"><Badge tone={statusTone(open.status)} dot className="capitalize">{open.status}</Badge></dd></div>
-              <div><dt className="text-muted">Project</dt><dd className="mt-0.5 truncate">{projectName(open.projectId)}</dd></div>
-              <div><dt className="text-muted">Credits</dt><dd className="mt-0.5">{open.creditsUsed}</dd></div>
+              <div><dt className="text-muted">Statut</dt><dd className="mt-0.5"><Badge tone={statusTone(open.status)} dot>{statusLabel(open.status)}</Badge></dd></div>
+              <div><dt className="text-muted">Projet</dt><dd className="mt-0.5 truncate">{projectName(open.projectId)}</dd></div>
+              <div><dt className="text-muted">Crédits</dt><dd className="mt-0.5">{open.creditsUsed}</dd></div>
               <div><dt className="text-muted">Date</dt><dd className="mt-0.5">{formatDate(open.createdAt)}</dd></div>
               {Object.entries(open.params).filter(([, v]) => v !== "").map(([k, v]) => (
                 <div key={k}><dt className="text-muted capitalize">{k}</dt><dd className="mt-0.5">{String(v)}</dd></div>
               ))}
             </dl>
             <div className="flex flex-col gap-2 pt-2">
-              <Link href={`${TYPE_META[open.type].studio}?prompt=${encodeURIComponent(open.prompt)}`}><Button fullWidth leftIcon={<RefreshCw className="size-4" />}>Rerun in Studio</Button></Link>
-              {openAsset && <Link href={`/assets/${openAsset.id}`}><Button fullWidth variant="secondary" leftIcon={<ExternalLink className="size-4" />}>Open asset</Button></Link>}
-              {open.projectId && <Link href={`/projects/${open.projectId}`}><Button fullWidth variant="ghost">View project</Button></Link>}
+              <Link href={`${TYPE_META[open.type].studio}?prompt=${encodeURIComponent(open.prompt)}`}><Button fullWidth leftIcon={<RefreshCw className="size-4" />}>Relancer dans le Studio</Button></Link>
+              {openAsset && <Link href={`/assets/${openAsset.id}`}><Button fullWidth variant="secondary" leftIcon={<ExternalLink className="size-4" />}>Ouvrir la ressource</Button></Link>}
+              {open.projectId && <Link href={`/projects/${open.projectId}`}><Button fullWidth variant="ghost">Voir le projet</Button></Link>}
             </div>
           </div>
         )}
@@ -129,10 +130,10 @@ function Row({ g, projectName, onClick, active }: { g: Generation; projectName: 
           <span className="inline-flex items-center gap-1 text-text2"><Icon className="size-3.5" /> {TYPE_META[g.type].label}</span>
           <span>·</span><span className="truncate max-w-40">{projectName}</span>
           <span>·</span><span>{timeAgo(g.createdAt)}</span>
-          <span className="hidden sm:inline">·</span><span className="hidden sm:inline">{g.creditsUsed} credits</span>
+          <span className="hidden sm:inline">·</span><span className="hidden sm:inline">{g.creditsUsed} crédits</span>
         </div>
       </div>
-      <Badge tone={statusTone(g.status)} dot className="capitalize shrink-0">{g.status}</Badge>
+      <Badge tone={statusTone(g.status)} dot className="shrink-0">{statusLabel(g.status)}</Badge>
     </button>
   );
 }

@@ -5,15 +5,15 @@ struct ProjectsView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
-    @State private var filter = "All"
+    @State private var filter = "Tous"
     @State private var query = ""
 
     private var filtered: [Project] {
         store.projects
             .filter { p in
                 switch filter {
-                case "Active": return p.status == .active
-                case "Archived": return p.status == .archived
+                case "Actifs": return p.status == .active
+                case "Archivés": return p.status == .archived
                 default: return true
                 }
             }
@@ -24,16 +24,16 @@ struct ProjectsView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
-                Text("Projects").msTitle(30).padding(.horizontal, MSSpacing.gutter).padding(.bottom, 4)
-                SearchBar(placeholder: "Search projects", text: $query)
+                Text("Projets").msTitle(30).padding(.horizontal, MSSpacing.gutter).padding(.bottom, 4)
+                SearchBar(placeholder: "Rechercher des projets", text: $query)
                     .padding(.horizontal, MSSpacing.gutter)
-                ChipRow(options: ["All", "Active", "Archived"], selection: $filter)
+                ChipRow(options: ["Tous", "Actifs", "Archivés"], selection: $filter)
                 if filtered.isEmpty {
                     EmptyStateView(
                         icon: query.isEmpty ? "folder.badge.plus" : "magnifyingglass",
-                        title: query.isEmpty ? (filter == "Archived" ? "No archived projects" : "No projects yet") : "No matches",
-                        message: query.isEmpty ? "Projects keep your assets, generations and campaigns together." : "Try a different name or clear the search.",
-                        ctaTitle: query.isEmpty ? "New project" : "Clear search",
+                        title: query.isEmpty ? (filter == "Archivés" ? "Aucun projet archivé" : "Aucun projet pour l'instant") : "Aucun résultat",
+                        message: query.isEmpty ? "Les projets regroupent vos visuels, générations et campagnes." : "Essayez un autre nom ou effacez la recherche.",
+                        ctaTitle: query.isEmpty ? "Nouveau projet" : "Effacer la recherche",
                         ctaIcon: query.isEmpty ? "plus" : nil
                     ) {
                         if query.isEmpty { router.present(.newProject) } else { query = "" }
@@ -79,13 +79,13 @@ struct ProjectCard: View {
                     .aspectRatio(1.35, contentMode: .fit)
                     .overlay(alignment: .topTrailing) {
                         if project.status == .archived {
-                            MSBadge(text: "Archived", tone: .neutral).padding(8)
+                            MSBadge(text: "Archivé", tone: .neutral).padding(8)
                         }
                     }
                 VStack(alignment: .leading, spacing: 4) {
                     Text(project.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(2).multilineTextAlignment(.leading)
-                    Text("\(store.assets(in: project.id).count) assets").msCaption()
-                    Text("Created \(project.createdAt.shortString)").msCaption()
+                    Text("\(store.assets(in: project.id).count) visuels").msCaption()
+                    Text("Créé le \(project.createdAt.shortString)").msCaption()
                 }
             }
             .padding(10)
@@ -105,27 +105,27 @@ struct ProjectMenu: View {
     var onDeleted: (() -> Void)? = nil
 
     var body: some View {
-        Button { router.present(.editProject(id: project.id)) } label: { Label("Rename", systemImage: "pencil") }
+        Button { router.present(.editProject(id: project.id)) } label: { Label("Renommer", systemImage: "pencil") }
         Button {
             if let copy = store.duplicateProject(project.id) {
-                router.toast("Duplicated as \(copy.name)", style: .success)
+                router.toast("Dupliqué sous « \(copy.name) »", style: .success)
             }
-        } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
+        } label: { Label("Dupliquer", systemImage: "plus.square.on.square") }
         Button {
             if project.status == .archived {
                 store.unarchiveProject(project.id)
-                router.toast("Project restored", style: .success)
+                router.toast("Projet restauré", style: .success)
             } else {
                 store.archiveProject(project.id)
-                router.toast("Project archived")
+                router.toast("Projet archivé")
             }
         } label: {
-            Label(project.status == .archived ? "Unarchive" : "Archive", systemImage: project.status == .archived ? "tray.and.arrow.up" : "archivebox")
+            Label(project.status == .archived ? "Désarchiver" : "Archiver", systemImage: project.status == .archived ? "tray.and.arrow.up" : "archivebox")
         }
         Button(role: .destructive) {
             store.deleteProject(project.id)
-            router.toast("Project deleted", style: .warning)
+            router.toast("Projet supprimé", style: .warning)
             onDeleted?()
-        } label: { Label("Delete", systemImage: "trash") }
+        } label: { Label("Supprimer", systemImage: "trash") }
     }
 }

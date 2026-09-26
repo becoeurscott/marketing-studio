@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
  * the primary Generate action.
  */
 export function StudioControls({
-  title = "Settings",
+  title = "Paramètres",
   controls,
   generateLabel,
   generateIcon: Icon,
@@ -35,7 +35,7 @@ export function StudioControls({
   const generate = (
     <Button fullWidth size="lg" loading={loading} disabled={disabled} leftIcon={Icon ? <Icon className="size-4" /> : undefined} onClick={() => { setOpen(false); onGenerate(); }}>
       <span className="truncate">{generateLabel}</span>
-      {typeof cost === "number" && <span className="text-white/70 text-[13px] font-normal shrink-0">· {cost} cr</span>}
+      {typeof cost === "number" && <span className="text-white/70 text-[13px] font-normal shrink-0">· {cost} cr.</span>}
     </Button>
   );
   return (
@@ -50,7 +50,7 @@ export function StudioControls({
 
       {/* Mobile / tablet floating bar */}
       <div className="lg:hidden fixed z-40 left-4 right-4 bottom-[4.25rem] md:bottom-6 flex items-center gap-2 p-2 rounded-xl bg-elevated/95 backdrop-blur border border-border-strong shadow-float">
-        <Button variant="secondary" size="lg" leftIcon={<SlidersHorizontal className="size-4" />} onClick={() => setOpen(true)} className="shrink-0" aria-label="Settings"><span className="hidden sm:inline">Settings</span></Button>
+        <Button variant="secondary" size="lg" leftIcon={<SlidersHorizontal className="size-4" />} onClick={() => setOpen(true)} className="shrink-0" aria-label="Paramètres"><span className="hidden sm:inline">Paramètres</span></Button>
         <div className="flex-1 min-w-0">{generate}</div>
       </div>
       <BottomSheet open={open} onClose={() => setOpen(false)} title={title}>

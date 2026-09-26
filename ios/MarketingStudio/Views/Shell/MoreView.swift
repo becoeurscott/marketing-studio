@@ -15,35 +15,35 @@ struct MoreView: View {
 
     private var sections: [(String, [Row])] {
         [
-            ("Create", [
-                Row(title: "Campaigns", icon: "flag", route: .campaigns, badge: "\(store.campaigns.count)"),
-                Row(title: "Templates", icon: "rectangle.on.rectangle", route: .templates),
-                Row(title: "Brand Kit", icon: "paintpalette", route: .brandKit),
-                Row(title: "Creators", icon: "person.2", route: .creators),
+            ("Créer", [
+                Row(title: "Campagnes", icon: "flag", route: .campaigns, badge: "\(store.campaigns.count)"),
+                Row(title: "Modèles", icon: "rectangle.on.rectangle", route: .templates),
+                Row(title: "Kit de marque", icon: "paintpalette", route: .brandKit),
+                Row(title: "Créateurs", icon: "person.2", route: .creators),
             ]),
-            ("Tools", [
-                Row(title: "Image Generator", icon: "photo.on.rectangle.angled", route: .imageGenerator),
-                Row(title: "Video Generator", icon: "video", route: .videoGenerator),
-                Row(title: "UGC Creator", icon: "person.crop.rectangle", route: .ugcCreator),
-                Row(title: "Product Shoot", icon: "camera", route: .productShoot),
-                Row(title: "Ad Creator", icon: "megaphone", route: .adCreator),
-                Row(title: "Copywriter", icon: "text.alignleft", route: .copywriter),
-                Row(title: "Hook Generator", icon: "quote.opening", route: .hookGenerator),
-                Row(title: "AI Assistant", icon: "bubble.left.and.text.bubble.right", route: .assistant),
+            ("Outils", [
+                Row(title: "Générateur d'images", icon: "photo.on.rectangle.angled", route: .imageGenerator),
+                Row(title: "Générateur de vidéos", icon: "video", route: .videoGenerator),
+                Row(title: "Créateur UGC", icon: "person.crop.rectangle", route: .ugcCreator),
+                Row(title: "Shooting produit", icon: "camera", route: .productShoot),
+                Row(title: "Créateur de pubs", icon: "megaphone", route: .adCreator),
+                Row(title: "Rédaction", icon: "text.alignleft", route: .copywriter),
+                Row(title: "Générateur d'accroches", icon: "quote.opening", route: .hookGenerator),
+                Row(title: "Assistant IA", icon: "bubble.left.and.text.bubble.right", route: .assistant),
             ]),
-            ("Library", [
+            ("Bibliothèque", [
                 Row(title: "Generations", icon: "clock.arrow.circlepath", route: .generations, badge: "\(store.generations.count)"),
-                Row(title: "Favorites", icon: "heart", route: .favorites),
-                Row(title: "Export Center", icon: "square.and.arrow.down", route: .exportCenter),
+                Row(title: "Favoris", icon: "heart", route: .favorites),
+                Row(title: "Centre d'export", icon: "square.and.arrow.down", route: .exportCenter),
             ]),
-            ("Account", [
-                Row(title: "Credits", icon: "bolt", route: .credits, badge: store.credits.formatted()),
-                Row(title: "Pricing", icon: "creditcard", route: .pricing, badge: store.plan.title),
+            ("Compte", [
+                Row(title: "Crédits", icon: "bolt", route: .credits, badge: store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))),
+                Row(title: "Tarifs", icon: "creditcard", route: .pricing, badge: store.plan.title),
                 Row(title: "Notifications", icon: "bell", route: .notifications, badge: store.unreadNotificationCount > 0 ? "\(store.unreadNotificationCount)" : nil),
-                Row(title: "Workspace", icon: "building.2", route: .workspace),
-                Row(title: "Profile", icon: "person.crop.circle", route: .profile),
-                Row(title: "Settings", icon: "gearshape", route: .settings),
-                Row(title: "Help", icon: "questionmark.circle", route: .help),
+                Row(title: "Espace de travail", icon: "building.2", route: .workspace),
+                Row(title: "Profil", icon: "person.crop.circle", route: .profile),
+                Row(title: "Réglages", icon: "gearshape", route: .settings),
+                Row(title: "Aide", icon: "questionmark.circle", route: .help),
             ]),
         ]
     }
@@ -51,7 +51,7 @@ struct MoreView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Text("More").msTitle(30).frame(maxWidth: .infinity, alignment: .leading)
+                Text("Plus").msTitle(30).frame(maxWidth: .infinity, alignment: .leading)
                 profileCard
                 ForEach(sections, id: \.0) { title, rows in
                     VStack(alignment: .leading, spacing: 8) {

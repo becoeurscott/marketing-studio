@@ -5,8 +5,8 @@ struct FavoritesView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
-    @State private var section = "All"
-    private static let sections = ["All"] + FavoriteKind.allCases.map { $0.title }
+    @State private var section = "Tout"
+    private static let sections = ["Tout"] + FavoriteKind.allCases.map { $0.title }
 
     private var assets: [Asset] { store.favoriteIds(.asset).compactMap { store.asset($0) } }
     private var templates: [Template] { store.favoriteIds(.template).compactMap { store.template($0) } }
@@ -14,30 +14,31 @@ struct FavoritesView: View {
     private var creators: [Creator] { store.favoriteIds(.creator).compactMap { store.creator($0) } }
     private var total: Int { assets.count + templates.count + prompts.count + creators.count }
 
-    private func shows(_ k: FavoriteKind) -> Bool { section == "All" || section == k.title }
+    private var selectedKind: FavoriteKind? { FavoriteKind.allCases.first { $0.title == section } }
+    private func shows(_ k: FavoriteKind) -> Bool { selectedKind == nil || selectedKind == k }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Favorites").msTitle(30)
-                    Text("\(total) saved item\(total == 1 ? "" : "s")").msBody(14)
+                    Text("Favoris").msTitle(30)
+                    Text("\(total) élément\(total > 1 ? "s" : "") enregistré\(total > 1 ? "s" : "")").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
                 ChipRow(options: Self.sections, selection: $section)
 
-                if total == 0 || (section != "All" && sectionCount == 0) {
+                if total == 0 || (selectedKind != nil && sectionCount == 0) {
                     EmptyStateView(
                         icon: "heart",
-                        title: section == "All" ? "Nothing saved yet" : "No saved \(section.lowercased())",
-                        message: "Tap the heart on any asset, template, prompt or creator to keep it here for quick access.",
-                        ctaTitle: "Browse \(section == "All" || section == "Assets" ? "assets" : section.lowercased())",
+                        title: selectedKind == nil ? "Rien d'enregistré pour l'instant" : "Aucun élément enregistré ici",
+                        message: "Touchez le cœur sur un visuel, un modèle, un prompt ou un créateur pour le retrouver ici rapidement.",
+                        ctaTitle: "Parcourir",
                         ctaIcon: "arrow.right"
                     ) {
-                        switch section {
-                        case "Templates": router.push(.templates)
-                        case "Prompts": router.push(.generations)
-                        case "Creators": router.push(.creators)
+                        switch selectedKind {
+                        case .template: router.push(.templates)
+                        case .prompt: router.push(.generations)
+                        case .creator: router.push(.creators)
                         default: router.push(.assets)
                         }
                     }
@@ -53,24 +54,24 @@ struct FavoritesView: View {
             .animation(MSAnimation.gentle, value: section)
         }
         .msScreen()
-        .navigationTitle("Favorites")
+        .navigationTitle("Favoris")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
     }
 
     private var sectionCount: Int {
-        switch section {
-        case "Assets": return assets.count
-        case "Templates": return templates.count
-        case "Prompts": return prompts.count
-        case "Creators": return creators.count
+        switch selectedKind {
+        case .asset: return assets.count
+        case .template: return templates.count
+        case .prompt: return prompts.count
+        case .creator: return creators.count
         default: return total
         }
     }
 
     private var assetsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Assets", subtitle: "\(assets.count)", actionTitle: "Library") { router.push(.assets) }
+            SectionHeader(title: "Visuels", subtitle: "\(assets.count)", actionTitle: "Bibliothèque") { router.push(.assets) }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                 ForEach(assets) { a in
                     AssetCell(asset: a) { router.push(.assetDetail(id: a.id)) }
@@ -83,13 +84,13 @@ struct FavoritesView: View {
 
     private var templatesSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Templates", subtitle: "\(templates.count)", actionTitle: "All") { router.push(.templates) }
+            SectionHeader(title: "Modèles", subtitle: "\(templates.count)", actionTitle: "Tout") { router.push(.templates) }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(templates) { t in
                         TemplateCardCompact(template: t) { router.push(.templateDetail(id: t.id)) }
                             .contextMenu {
-                                Button { store.toggleFavorite(.template, t.id) } label: { Label("Remove from favorites", systemImage: "heart.slash") }
+                                Button { store.toggleFavorite(.template, t.id) } label: { Label("Retirer des favoris", systemImage: "heart.slash") }
                             }
                     }
                 }
@@ -100,7 +101,7 @@ struct FavoritesView: View {
 
     private var promptsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Prompts", subtitle: "\(prompts.count)", actionTitle: "History") { router.push(.generations) }
+            SectionHeader(title: "Prompts", subtitle: "\(prompts.count)", actionTitle: "Historique") { router.push(.generations) }
             VStack(spacing: 8) {
                 ForEach(prompts) { g in
                     MSCard(padding: 12, action: { router.push(.generations) }) {
@@ -114,12 +115,12 @@ struct FavoritesView: View {
                             Spacer()
                             Button {
                                 UIPasteboard.general.string = g.prompt
-                                router.toast("Prompt copied", style: .success, icon: "doc.on.doc")
+                                router.toast("Prompt copié", style: .success, icon: "doc.on.doc")
                             } label: { Image(systemName: "doc.on.doc").font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.text2) }
                         }
                     }
                     .contextMenu {
-                        Button { store.toggleFavorite(.prompt, g.id) } label: { Label("Remove from favorites", systemImage: "heart.slash") }
+                        Button { store.toggleFavorite(.prompt, g.id) } label: { Label("Retirer des favoris", systemImage: "heart.slash") }
                     }
                 }
             }
@@ -129,7 +130,7 @@ struct FavoritesView: View {
 
     private var creatorsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Creators", subtitle: "\(creators.count)", actionTitle: "All") { router.push(.creators) }
+            SectionHeader(title: "Créateurs", subtitle: "\(creators.count)", actionTitle: "Tout") { router.push(.creators) }
             VStack(spacing: 8) {
                 ForEach(creators) { c in
                     MSCard(padding: 12, action: { router.push(.ugcCreator) }) {

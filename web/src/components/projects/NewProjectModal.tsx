@@ -20,7 +20,7 @@ export interface ProjectFormModalProps {
 
 export function ProjectFormModal({ open, onClose, project }: ProjectFormModalProps) {
   return (
-    <Modal open={open} onClose={onClose} title={project ? "Edit project" : "New project"} description={project ? undefined : "A project groups assets, generations and campaigns."}>
+    <Modal open={open} onClose={onClose} title={project ? "Modifier le projet" : "Nouveau projet"} description={project ? undefined : "Un projet regroupe des ressources, des générations et des campagnes."}>
       {/* Keyed so the form resets each time it opens or the target project changes. */}
       <ProjectForm key={`${open}-${project?.id ?? "new"}`} project={project} onClose={onClose} />
     </Modal>
@@ -42,14 +42,14 @@ function ProjectForm({ project, onClose }: { project?: Project | null; onClose: 
 
   const submit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!name.trim()) { setError("Give your project a name."); return; }
+    if (!name.trim()) { setError("Donnez un nom à votre projet."); return; }
     if (project) {
       updateProject(project.id, { name: name.trim(), description: description.trim(), brandId });
-      toast.success("Project updated");
+      toast.success("Projet mis à jour");
       onClose();
     } else {
       const p = addProject({ name: name.trim(), description: description.trim(), brandId });
-      toast.success("Project created", p.name);
+      toast.success("Projet créé", p.name);
       onClose();
       router.push(`/projects/${p.id}`);
     }
@@ -57,12 +57,12 @@ function ProjectForm({ project, onClose }: { project?: Project | null; onClose: 
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <Input label="Name" name="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Luma Glow Summer Launch" error={error} autoFocus />
-      <Textarea label="Description" name="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What is this project for?" />
-      <Select label="Brand" name="brand" value={brandId} onChange={(e) => setBrandId(e.target.value)} options={brands.map((b) => ({ value: b.id, label: b.name }))} />
+      <Input label="Nom" name="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Lancement d'été Luma Glow" error={error} autoFocus />
+      <Textarea label="Description" name="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="À quoi sert ce projet ?" />
+      <Select label="Marque" name="brand" value={brandId} onChange={(e) => setBrandId(e.target.value)} options={brands.map((b) => ({ value: b.id, label: b.name }))} />
       <div className="flex items-center justify-end gap-2 pt-2">
-        <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-        <Button type="submit">{project ? "Save" : "Create project"}</Button>
+        <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
+        <Button type="submit">{project ? "Enregistrer" : "Créer le projet"}</Button>
       </div>
     </form>
   );

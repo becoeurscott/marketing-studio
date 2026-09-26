@@ -14,6 +14,8 @@ import { templates } from "@/data/templates";
 import { trendingFormats } from "@/data/analytics";
 import { useStore } from "@/lib/store";
 import { cn, formatNumber, greetingForHour, timeAgo } from "@/lib/utils";
+import { AD_FORMAT_LABELS, GENERATION_TYPE_LABELS, labelOf } from "@/lib/labels";
+import { platformLabel } from "@/components/library/TemplateCard";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 
 const modeIcon: Record<string, typeof Wand2> = { image: Images, video: Video, ugc: Users, "product-shoot": Camera, ads: Megaphone, copy: PenLine };
@@ -36,18 +38,18 @@ export default function HomePage() {
   const featuredTemplates = templates.filter((t) => t.popular).slice(0, 6);
 
   const stats = [
-    { label: "Projects", value: active.length, icon: FolderKanban, href: "/projects" },
-    { label: "Assets", value: assets.length, icon: Images, href: "/assets" },
-    { label: "Campaigns", value: campaigns.length, icon: Megaphone, href: "/campaigns" },
-    { label: "Credits", value: credits, icon: Sparkles, href: "/credits", accent: true },
+    { label: "Projets", value: active.length, icon: FolderKanban, href: "/projects" },
+    { label: "Ressources", value: assets.length, icon: Images, href: "/assets" },
+    { label: "Campagnes", value: campaigns.length, icon: Megaphone, href: "/campaigns" },
+    { label: "Crédits", value: credits, icon: Sparkles, href: "/credits", accent: true },
   ];
 
   return (
     <>
       <PageHeader
         title={`${greeting}, ${user.name.split(" ")[0]}.`}
-        description="What are we creating today?"
-        actions={<Button size="lg" leftIcon={<Wand2 className="size-4" />} onClick={() => router.push("/studio")}>Create something</Button>}
+        description="Que créons-nous aujourd’hui ?"
+        actions={<Button size="lg" leftIcon={<Wand2 className="size-4" />} onClick={() => router.push("/studio")}>Créer quelque chose</Button>}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
@@ -68,17 +70,17 @@ export default function HomePage() {
         ))}
       </div>
 
-      <Section title="Recent projects" action={<Link href="/projects" className="text-[13px] text-text2 hover:text-text flex items-center gap-1">View all <ArrowRight className="size-3.5" /></Link>}>
+      <Section title="Projets récents" action={<Link href="/projects" className="text-[13px] text-text2 hover:text-text flex items-center gap-1">Tout voir <ArrowRight className="size-3.5" /></Link>}>
         {recentProjects.length ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {recentProjects.map((p) => <ProjectCard key={p.id} project={p} assetCount={assets.filter((a) => a.projectId === p.id).length} />)}
           </div>
         ) : (
-          <EmptyState compact icon={FolderKanban} title="No projects yet" description="Create a project to organize assets, generations and campaigns." cta={{ label: "New project", href: "/projects" }} />
+          <EmptyState compact icon={FolderKanban} title="Aucun projet pour le moment" description="Créez un projet pour organiser vos ressources, générations et campagnes." cta={{ label: "Nouveau projet", href: "/projects" }} />
         )}
       </Section>
 
-      <Section title="Continue creating" description="Pick up where you left off.">
+      <Section title="Reprendre la création" description="Reprenez là où vous vous êtes arrêté.">
         {continueItems.length ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {continueItems.map((g) => (
@@ -86,22 +88,22 @@ export default function HomePage() {
                 <div className="relative aspect-[16/10] bg-elevated overflow-hidden">
                   <img src={g.thumbnails[0]} alt="" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  <Badge tone="accent" className="absolute top-3 left-3 capitalize">{g.type}</Badge>
+                  <Badge tone="accent" className="absolute top-3 left-3">{labelOf(GENERATION_TYPE_LABELS, g.type)}</Badge>
                   <span className="absolute bottom-3 left-3 right-3 text-[13px] text-white line-clamp-2">{g.prompt}</span>
                 </div>
                 <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-xs text-muted">{timeAgo(g.createdAt)} · {g.creditsUsed} credits</span>
-                  <span className="text-[13px] font-medium text-highlight flex items-center gap-1">Resume <ArrowRight className="size-3.5" /></span>
+                  <span className="text-xs text-muted">{timeAgo(g.createdAt)} · {g.creditsUsed} crédits</span>
+                  <span className="text-[13px] font-medium text-highlight flex items-center gap-1">Reprendre <ArrowRight className="size-3.5" /></span>
                 </div>
               </Card>
             ))}
           </div>
         ) : (
-          <EmptyState compact icon={Wand2} title="Nothing in progress" description="Start a generation and it will show up here." cta={{ label: "Open Studio", href: "/studio" }} />
+          <EmptyState compact icon={Wand2} title="Rien en cours" description="Lancez une génération : elle apparaîtra ici." cta={{ label: "Ouvrir le Studio", href: "/studio" }} />
         )}
       </Section>
 
-      <Section title="Templates" description="Start from a proven format." action={<Link href="/templates" className="text-[13px] text-text2 hover:text-text flex items-center gap-1">Browse all <ArrowRight className="size-3.5" /></Link>}>
+      <Section title="Modèles" description="Partez d’un format qui a fait ses preuves." action={<Link href="/templates" className="text-[13px] text-text2 hover:text-text flex items-center gap-1">Tout parcourir <ArrowRight className="size-3.5" /></Link>}>
         <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 pb-1 snap-x">
           {featuredTemplates.map((t) => (
             <Link key={t.id} href={`/templates/${t.id}`} className="snap-start shrink-0 w-[160px] md:w-[190px] group">
@@ -110,13 +112,13 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <span className="absolute bottom-2.5 left-2.5 right-2.5 text-[13px] font-medium text-white leading-tight">{t.title}</span>
               </div>
-              <p className="text-[11px] text-muted mt-1.5 capitalize">{t.platform} · {t.format}</p>
+              <p className="text-[11px] text-muted mt-1.5">{platformLabel(t.platform)} · {labelOf(AD_FORMAT_LABELS, t.format)}</p>
             </Link>
           ))}
         </div>
       </Section>
 
-      <Section title="Trending formats" description="What's working across the studio this week.">
+      <Section title="Formats tendance" description="Ce qui fonctionne le mieux sur le studio cette semaine.">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
           {trendingFormats.map((f) => {
             const Icon = modeIcon[f.mode] ?? Wand2;
@@ -136,7 +138,7 @@ export default function HomePage() {
         </div>
       </Section>
 
-      <Section title="Recent assets" action={<Link href="/assets" className="text-[13px] text-text2 hover:text-text flex items-center gap-1">Open library <ArrowRight className="size-3.5" /></Link>}>
+      <Section title="Ressources récentes" action={<Link href="/assets" className="text-[13px] text-text2 hover:text-text flex items-center gap-1">Ouvrir la bibliothèque <ArrowRight className="size-3.5" /></Link>}>
         {recentAssets.length ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3">
             {recentAssets.map((a) => (
@@ -150,7 +152,7 @@ export default function HomePage() {
             ))}
           </div>
         ) : (
-          <EmptyState compact icon={Images} title="No assets yet" description="Generated and uploaded files land here." cta={{ label: "Generate an image", href: "/studio/image" }} />
+          <EmptyState compact icon={Images} title="Aucune ressource pour le moment" description="Vos fichiers générés et importés arrivent ici." cta={{ label: "Générer une image", href: "/studio/image" }} />
         )}
       </Section>
     </>

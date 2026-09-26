@@ -7,20 +7,20 @@ const projectIds = [
 ];
 
 const imageNames = [
-  "Serum hero — marble", "Serum on beach towel", "Serum with citrus", "Bathroom shelf still life",
-  "Golden hour packshot", "Studio white packshot", "Hand holding serum", "Serum drop macro",
-  "Lifestyle morning routine", "Flatlay with linen", "Neon studio shot", "Editorial portrait with product",
-  "Cold brew pour", "Latte art close-up", "Coffee bag on counter", "Espresso crema macro",
-  "Runner at dawn", "Gym floor shot", "Sprint motion blur", "Track lane overhead",
-  "Watch on wrist — cuff", "Watch macro dial", "Watch on leather", "Watch box unboxing",
-  "Gift set overhead", "Ribbon and box", "Snow window still", "Candle and serum",
-  "SPF bottle on sand", "Sunscreen swatch", "Pool edge product", "Sunglasses and serum",
+  "Sérum hero — marbre", "Sérum sur serviette de plage", "Sérum et agrumes", "Nature morte étagère salle de bain",
+  "Packshot heure dorée", "Packshot studio fond blanc", "Main tenant le sérum", "Macro goutte de sérum",
+  "Routine matinale lifestyle", "Flatlay sur lin", "Photo studio néon", "Portrait éditorial avec produit",
+  "Versement de cold brew", "Gros plan latte art", "Sachet de café sur comptoir", "Macro crema d'espresso",
+  "Coureur à l'aube", "Plan salle de sport", "Sprint en flou de mouvement", "Couloir de piste vu du dessus",
+  "Montre au poignet — manchette", "Macro cadran de montre", "Montre sur cuir", "Déballage de l'écrin",
+  "Coffret cadeau vu du dessus", "Ruban et boîte", "Nature morte fenêtre enneigée", "Bougie et sérum",
+  "Flacon SPF sur le sable", "Texture crème solaire", "Produit au bord de la piscine", "Lunettes de soleil et sérum",
 ];
 
 const videoNames = [
-  "UGC — Maya morning routine", "UGC — Jordan gym bag", "UGC — Sofia GRWM", "UGC — Marcus review",
-  "Product reel — slow orbit", "Product reel — push in", "Cold brew 15s spot", "Founder story cut 1",
-  "Founder story cut 2", "Watch cinematic 10s", "Fitness hype 9:16", "Serum drop loop",
+  "UGC — Routine matinale de Maya", "UGC — Sac de sport de Jordan", "UGC — GRWM de Sofia", "UGC — Avis de Marcus",
+  "Reel produit — orbite lente", "Reel produit — travelling avant", "Spot cold brew 15 s", "Histoire du fondateur — montage 1",
+  "Histoire du fondateur — montage 2", "Montre cinématique 10 s", "Fitness énergique 9:16", "Boucle goutte de sérum",
 ];
 
 function make(i: number, type: AssetType, name: string, opts: Partial<Asset> = {}): Asset {
@@ -48,9 +48,9 @@ function make(i: number, type: AssetType, name: string, opts: Partial<Asset> = {
 
 const images = imageNames.map((n, i) => make(i, "image", n));
 const videos = videoNames.map((n, i) => make(i + 100, "video", n));
-const audio = ["Upbeat pop bed", "Soft piano loop", "Lo-fi morning", "Cinematic rise"].map((n, i) => make(i + 200, "audio", n, { thumbnail: img(`audio-${i}`, 800, 800), url: img(`audio-${i}`, 800, 800) }));
-const logos = ["Luma wordmark", "Luma icon", "Urban Coffee logo"].map((n, i) => make(i + 300, "logo", n, { projectId: null, thumbnail: img(`logo-${i}`, 800, 800) }));
-const brandAssets = ["Brand palette", "Type specimen", "Packaging dieline"].map((n, i) => make(i + 400, "brand", n, { projectId: null, thumbnail: img(`brand-${i}`, 800, 800) }));
-const exportsList = ["Summer launch — IG carousel.zip", "UGC ads — TikTok.mp4", "Campaign deck.pdf", "Watch reel — 4K.mp4"].map((n, i) => make(i + 500, "export", n, { thumbnail: img(`export-${i}`, 800, 1000) }));
+const audio = ["Fond pop entraînant", "Boucle piano douce", "Matin lo-fi", "Montée cinématique"].map((n, i) => make(i + 200, "audio", n, { thumbnail: img(`audio-${i}`, 800, 800), url: img(`audio-${i}`, 800, 800) }));
+const logos = ["Logotype Luma", "Icône Luma", "Logo Urban Coffee"].map((n, i) => make(i + 300, "logo", n, { projectId: null, thumbnail: img(`logo-${i}`, 800, 800) }));
+const brandAssets = ["Palette de marque", "Spécimen typographique", "Gabarit d'emballage"].map((n, i) => make(i + 400, "brand", n, { projectId: null, thumbnail: img(`brand-${i}`, 800, 800) }));
+const exportsList = ["Lancement été — carrousel IG.zip", "Pubs UGC — TikTok.mp4", "Présentation campagne.pdf", "Reel montre — 4K.mp4"].map((n, i) => make(i + 500, "export", n, { thumbnail: img(`export-${i}`, 800, 1000) }));
 
 export const assets: Asset[] = [...images, ...videos, ...audio, ...logos, ...brandAssets, ...exportsList];

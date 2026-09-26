@@ -11,7 +11,7 @@ import type { Asset } from "@/lib/types";
 
 export function RenameAssetModal({ asset, onClose }: { asset: Asset | null; onClose: () => void }) {
   return (
-    <Modal open={Boolean(asset)} onClose={onClose} title="Rename asset" size="sm">
+    <Modal open={Boolean(asset)} onClose={onClose} title="Renommer la ressource" size="sm">
       {asset && <RenameForm key={asset.id} asset={asset} onClose={onClose} />}
     </Modal>
   );
@@ -24,20 +24,20 @@ function RenameForm({ asset, onClose }: { asset: Asset; onClose: () => void }) {
   const save = () => {
     if (!name.trim()) return;
     updateAsset(asset.id, { name: name.trim() });
-    toast.success("Renamed", name.trim());
+    toast.success("Ressource renommée", name.trim());
     onClose();
   };
   return (
     <form onSubmit={(e) => { e.preventDefault(); save(); }} className="space-y-4">
-      <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
-      <div className="flex justify-end gap-2"><Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button type="submit" disabled={!name.trim()}>Save</Button></div>
+      <Input label="Nom" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+      <div className="flex justify-end gap-2"><Button type="button" variant="ghost" onClick={onClose}>Annuler</Button><Button type="submit" disabled={!name.trim()}>Enregistrer</Button></div>
     </form>
   );
 }
 
 export function MoveAssetModal({ assets, onClose }: { assets: Asset[]; onClose: () => void }) {
   return (
-    <Modal open={assets.length > 0} onClose={onClose} title={assets.length === 1 ? "Move to project" : `Move ${assets.length} assets`} size="sm">
+    <Modal open={assets.length > 0} onClose={onClose} title={assets.length === 1 ? "Déplacer vers un projet" : `Déplacer ${assets.length} ressources`} size="sm">
       {assets.length > 0 && <MoveForm key={assets.map((a) => a.id).join(",")} assets={assets} onClose={onClose} />}
     </Modal>
   );
@@ -51,13 +51,13 @@ function MoveForm({ assets, onClose }: { assets: Asset[]; onClose: () => void })
   const save = () => {
     for (const a of assets) updateAsset(a.id, { projectId: projectId || null });
     const p = projects.find((x) => x.id === projectId);
-    toast.success("Moved", p ? `${assets.length === 1 ? assets[0].name : `${assets.length} assets`} → ${p.name}` : "Removed from project");
+    toast.success("Ressource déplacée", p ? `${assets.length === 1 ? assets[0].name : `${assets.length} ressources`} → ${p.name}` : "Retirée du projet");
     onClose();
   };
   return (
     <div className="space-y-4">
-      <Select label="Project" value={projectId} onChange={(e) => setProjectId(e.target.value)} options={[{ value: "", label: "No project" }, ...projects.map((p) => ({ value: p.id, label: p.name }))]} />
-      <div className="flex justify-end gap-2"><Button variant="ghost" onClick={onClose}>Cancel</Button><Button onClick={save}>Move</Button></div>
+      <Select label="Projet" value={projectId} onChange={(e) => setProjectId(e.target.value)} options={[{ value: "", label: "Aucun projet" }, ...projects.map((p) => ({ value: p.id, label: p.name }))]} />
+      <div className="flex justify-end gap-2"><Button variant="ghost" onClick={onClose}>Annuler</Button><Button onClick={save}>Déplacer</Button></div>
     </div>
   );
 }
@@ -70,11 +70,11 @@ export function DeleteAssetsModal({ assets, onClose, onDeleted }: { assets: Asse
     <Modal
       open={n > 0}
       onClose={onClose}
-      title={n === 1 ? "Delete asset?" : `Delete ${n} assets?`}
+      title={n === 1 ? "Supprimer la ressource ?" : `Supprimer ${n} ressources ?`}
       size="sm"
-      footer={<><Button variant="ghost" onClick={onClose}>Cancel</Button><Button variant="danger" onClick={() => { assets.forEach((a) => deleteAsset(a.id)); toast.info(n === 1 ? "Asset deleted" : `${n} assets deleted`); onClose(); onDeleted?.(); }}>Delete</Button></>}
+      footer={<><Button variant="ghost" onClick={onClose}>Annuler</Button><Button variant="danger" onClick={() => { assets.forEach((a) => deleteAsset(a.id)); toast.info(n === 1 ? "Ressource supprimée" : `${n} ressources supprimées`); onClose(); onDeleted?.(); }}>Supprimer</Button></>}
     >
-      <p className="text-sm text-text2">{n === 1 ? assets[0].name : "These assets"} will be removed from your library and any campaigns. This can&apos;t be undone in the prototype.</p>
+      <p className="text-sm text-text2">{n === 1 ? `« ${assets[0].name} » sera supprimée` : "Ces ressources seront supprimées"} de votre bibliothèque et de toutes les campagnes. Cette action est irréversible dans le prototype.</p>
     </Modal>
   );
 }

@@ -17,15 +17,15 @@ import { PLATFORMS, type CampaignFormat, type CampaignObjective, type Platform }
 import { cn } from "@/lib/utils";
 import { CAMPAIGN_FORMATS, OBJECTIVES, PlatformIcon, formatLabel, objectiveLabel, platformLabel } from "./platform";
 
-const STEPS = ["Objective", "Audience", "Platforms", "Formats", "Review"] as const;
+const STEPS = ["Objectif", "Audience", "Plateformes", "Formats", "Récapitulatif"] as const;
 const BUILDER_PLATFORMS: Platform[] = ["instagram", "tiktok", "facebook", "youtube"];
 const AUDIENCE_CHIPS = [
-  "Women and men 20–35 interested in skincare",
-  "Gen Z, TikTok-first, value-driven",
-  "Existing customers, 25–40",
-  "Gift shoppers 25–45",
-  "Urban professionals 25–45",
-  "Luxury shoppers, men 30–50",
+  "Femmes et hommes de 20 à 35 ans intéressés par le soin de la peau",
+  "Génération Z, sur TikTok avant tout, sensible aux valeurs",
+  "Clients existants, 25–40 ans",
+  "Acheteurs de cadeaux, 25–45 ans",
+  "Actifs urbains, 25–45 ans",
+  "Acheteurs de luxe, hommes de 30 à 50 ans",
 ];
 
 export function CampaignBuilder() {
@@ -33,7 +33,7 @@ export function CampaignBuilder() {
   const toast = useToast();
   const projects = useStore((s) => s.projects);
   const currentProjectId = useStore((s) => s.currentProjectId);
-  const brandName = useStore((s) => s.brands.find((b) => b.id === s.currentBrandId)?.name ?? "your brand");
+  const brandName = useStore((s) => s.brands.find((b) => b.id === s.currentBrandId)?.name ?? "votre marque");
 
   const activeProjects = projects.filter((p) => p.status === "active");
   const [step, setStep] = useState(0);
@@ -60,25 +60,25 @@ export function CampaignBuilder() {
     if (name.trim()) return;
     const proj = projects.find((p) => p.id === projectId);
     const stem = proj ? proj.name.split(" ").slice(0, 2).join(" ") : brandName;
-    setName(`${stem} ${objective ? objectiveLabel(objective) : "Campaign"}`);
+    setName(`${stem} ${objective ? objectiveLabel(objective) : "Campagne"}`);
   };
 
   const generate = async () => {
     if (!objective) return;
     setError(null);
-    setProgress({ label: "Starting", pct: 0 });
+    setProgress({ label: "Démarrage", pct: 0 });
     try {
       const campaign = await createCampaign(
         { name: name.trim(), projectId, objective, audience: audience.trim(), platforms, formats },
         (label, pct) => setProgress({ label, pct }),
       );
-      toast.success("Campaign ready", `${campaign.name} was generated.`);
+      toast.success("Campagne prête", `${campaign.name} a été générée.`);
       router.push(`/campaigns/${campaign.id}`);
     } catch (e) {
-      const msg = e instanceof ApiError ? e.message : "Something went wrong.";
+      const msg = e instanceof ApiError ? e.message : "Une erreur est survenue.";
       setError(msg);
       setProgress(null);
-      toast.error("Something went wrong.", msg);
+      toast.error("Une erreur est survenue.", msg);
     }
   };
 
@@ -88,10 +88,10 @@ export function CampaignBuilder() {
         <div className="size-14 mx-auto rounded-2xl bg-accent/15 border border-accent/30 flex items-center justify-center mb-5">
           <Sparkles className="size-6 text-highlight animate-pulse" />
         </div>
-        <h2 className="text-xl font-semibold tracking-tight">Building {name.trim()}</h2>
+        <h2 className="text-xl font-semibold tracking-tight">Création de {name.trim()}</h2>
         <p className="text-sm text-text2 mt-1">{progress.label}…</p>
         <ProgressBar value={progress.pct} className="mt-6 max-w-sm mx-auto" />
-        <p className="text-xs text-muted mt-6">Generating creatives, ad variations, copy and a starter calendar.</p>
+        <p className="text-xs text-muted mt-6">Génération des visuels, des variantes publicitaires, des textes et d’un premier calendrier.</p>
       </Card>
     );
   }
@@ -124,7 +124,7 @@ export function CampaignBuilder() {
 
       <Card className="p-5 md:p-8">
         {step === 0 && (
-          <StepShell title="What's the objective?" description="This shapes the creatives, copy tone and CTA we generate.">
+          <StepShell title="Quel est votre objectif ?" description="Il oriente les visuels, le ton des textes et le CTA que nous générons.">
             <div className="grid sm:grid-cols-2 gap-3">
               {OBJECTIVES.map((o) => (
                 <OptionCard key={o.id} selected={objective === o.id} onClick={() => setObjective(o.id)} title={o.label} description={o.description} />
@@ -134,8 +134,8 @@ export function CampaignBuilder() {
         )}
 
         {step === 1 && (
-          <StepShell title="Who is this for?" description="Describe the audience in a sentence, or start from a suggestion.">
-            <Textarea value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="e.g. Women and men 20–35 who want a simple, effective skincare routine" rows={3} />
+          <StepShell title="À qui s'adresse-t-elle ?" description="Décrivez votre audience en une phrase, ou partez d'une suggestion.">
+            <Textarea value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="ex. Femmes et hommes de 20 à 35 ans qui veulent une routine de soin simple et efficace" rows={3} />
             <div className="flex flex-wrap gap-2 mt-3">
               {AUDIENCE_CHIPS.map((c) => (
                 <Chip key={c} size="sm" label={c} selected={audience === c} onClick={() => setAudience(c)} />
@@ -145,18 +145,18 @@ export function CampaignBuilder() {
         )}
 
         {step === 2 && (
-          <StepShell title="Where will it run?" description="Pick every platform you want creatives sized and written for.">
+          <StepShell title="Où sera-t-elle diffusée ?" description="Choisissez toutes les plateformes pour lesquelles adapter vos visuels et vos textes.">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {BUILDER_PLATFORMS.map((p) => (
                 <OptionCard key={p} selected={platforms.includes(p)} onClick={() => setPlatforms(toggle(platforms, p))} title={platformLabel(p)} icon={<PlatformIcon platform={p} className="size-5" />} center />
               ))}
             </div>
-            <p className="text-xs text-muted mt-3">{PLATFORMS.length - BUILDER_PLATFORMS.length} more platforms are available from the Ad creator.</p>
+            <p className="text-xs text-muted mt-3">{PLATFORMS.length - BUILDER_PLATFORMS.length} autres plateformes sont disponibles dans le créateur de pubs.</p>
           </StepShell>
         )}
 
         {step === 3 && (
-          <StepShell title="Which creative formats?" description="We'll generate a set for each format you choose.">
+          <StepShell title="Quels formats créatifs ?" description="Nous générerons une série pour chaque format choisi.">
             <div className="grid sm:grid-cols-2 gap-3">
               {CAMPAIGN_FORMATS.map((f) => (
                 <OptionCard key={f.id} selected={formats.includes(f.id)} onClick={() => setFormats(toggle(formats, f.id))} title={f.label} description={f.description} />
@@ -166,15 +166,15 @@ export function CampaignBuilder() {
         )}
 
         {step === 4 && objective && (
-          <StepShell title="Review and generate" description="Name the campaign and confirm the brief.">
+          <StepShell title="Vérifiez et générez" description="Nommez la campagne et confirmez le brief.">
             <div className="grid sm:grid-cols-2 gap-4 mb-5">
-              <Input label="Campaign name" value={name} onChange={(e) => setName(e.target.value)} onFocus={suggestedName} placeholder="Luma Glow Summer Launch" autoFocus />
-              <Select label="Project" value={projectId} onChange={(e) => setProjectId(e.target.value)} options={activeProjects.map((p) => ({ value: p.id, label: p.name }))} placeholder="Choose a project" />
+              <Input label="Nom de la campagne" value={name} onChange={(e) => setName(e.target.value)} onFocus={suggestedName} placeholder="Lancement d'été Luma Glow" autoFocus />
+              <Select label="Projet" value={projectId} onChange={(e) => setProjectId(e.target.value)} options={activeProjects.map((p) => ({ value: p.id, label: p.name }))} placeholder="Choisissez un projet" />
             </div>
             <dl className="divide-y divide-border rounded-lg border border-border bg-surface/50">
-              <ReviewRow label="Objective" onEdit={() => setStep(0)}>{objectiveLabel(objective)}</ReviewRow>
+              <ReviewRow label="Objectif" onEdit={() => setStep(0)}>{objectiveLabel(objective)}</ReviewRow>
               <ReviewRow label="Audience" onEdit={() => setStep(1)}>{audience}</ReviewRow>
-              <ReviewRow label="Platforms" onEdit={() => setStep(2)}>
+              <ReviewRow label="Plateformes" onEdit={() => setStep(2)}>
                 <span className="flex flex-wrap gap-1.5">{platforms.map((p) => <span key={p} className="inline-flex items-center gap-1 text-[12px] bg-elevated border border-border rounded-full px-2 py-0.5"><PlatformIcon platform={p} className="size-3" />{platformLabel(p)}</span>)}</span>
               </ReviewRow>
               <ReviewRow label="Formats" onEdit={() => setStep(3)}>{formats.map(formatLabel).join(", ")}</ReviewRow>
@@ -185,12 +185,12 @@ export function CampaignBuilder() {
 
         <div className="flex items-center justify-between gap-3 mt-8 pt-5 border-t border-border">
           <Button variant="ghost" leftIcon={<ArrowLeft className="size-4" />} onClick={() => (step === 0 ? router.push("/campaigns") : setStep(step - 1))}>
-            {step === 0 ? "Cancel" : "Back"}
+            {step === 0 ? "Annuler" : "Retour"}
           </Button>
           {step < STEPS.length - 1 ? (
-            <Button rightIcon={<ArrowRight className="size-4" />} disabled={!canNext} onClick={() => { if (step === 3) suggestedName(); setStep(step + 1); }}>Continue</Button>
+            <Button rightIcon={<ArrowRight className="size-4" />} disabled={!canNext} onClick={() => { if (step === 3) suggestedName(); setStep(step + 1); }}>Continuer</Button>
           ) : (
-            <Button leftIcon={<Sparkles className="size-4" />} disabled={!canNext} onClick={generate}>Generate campaign</Button>
+            <Button leftIcon={<Sparkles className="size-4" />} disabled={!canNext} onClick={generate}>Générer la campagne</Button>
           )}
         </div>
       </Card>
@@ -232,9 +232,9 @@ function OptionCard({ selected, onClick, title, description, icon, center }: { s
 function ReviewRow({ label, children, onEdit }: { label: string; children: React.ReactNode; onEdit: () => void }) {
   return (
     <div className="flex items-start gap-4 px-4 py-3">
-      <dt className="w-24 shrink-0 text-[13px] text-muted">{label}</dt>
+      <dt className="w-28 shrink-0 text-[13px] text-muted">{label}</dt>
       <dd className="flex-1 text-sm text-text min-w-0">{children}</dd>
-      <button type="button" onClick={onEdit} className="text-[12px] text-text2 hover:text-text">Edit</button>
+      <button type="button" onClick={onEdit} className="text-[12px] text-text2 hover:text-text">Modifier</button>
     </div>
   );
 }

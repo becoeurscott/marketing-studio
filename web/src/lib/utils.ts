@@ -38,25 +38,25 @@ export function avatar(n: number): string {
 }
 
 export function formatDate(iso: string, opts?: Intl.DateTimeFormatOptions): string {
-  return new Date(iso).toLocaleDateString("en-US", opts ?? { month: "short", day: "numeric", year: "numeric" });
+  return new Date(iso).toLocaleDateString("fr-FR", opts ?? { day: "numeric", month: "short", year: "numeric" });
 }
 
 export function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
+  if (m < 1) return "à l’instant";
+  if (m < 60) return `il y a ${m} min`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
+  if (h < 24) return `il y a ${h} h`;
   const d = Math.floor(h / 24);
-  if (d < 7) return `${d}d ago`;
+  if (d < 7) return `il y a ${d} j`;
   const w = Math.floor(d / 7);
-  if (w < 5) return `${w}w ago`;
-  return formatDate(iso, { month: "short", day: "numeric" });
+  if (w < 5) return `il y a ${w} sem.`;
+  return formatDate(iso, { day: "numeric", month: "short" });
 }
 
 export function formatNumber(n: number): string {
-  return new Intl.NumberFormat("en-US").format(n);
+  return new Intl.NumberFormat("fr-FR").format(n);
 }
 
 export function daysAgo(days: number, hour = 10): string {
@@ -68,8 +68,8 @@ export function daysAgo(days: number, hour = 10): string {
 }
 
 export function greetingForHour(hour: number): string {
-  if (hour < 5) return "Good night";
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+  if (hour < 5) return "Bonsoir";
+  if (hour < 12) return "Bonjour";
+  if (hour < 18) return "Bon après-midi";
+  return "Bonsoir";
 }

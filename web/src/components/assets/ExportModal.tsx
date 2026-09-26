@@ -18,16 +18,18 @@ type Quality = ExportParams["quality"];
 type Scope = "selected" | "campaign";
 
 const FORMATS: { id: Format; label: string; icon: typeof FileImage; hint: string }[] = [
-  { id: "png", label: "PNG", icon: FileImage, hint: "Lossless, transparent" },
-  { id: "jpg", label: "JPG", icon: FileImage, hint: "Small, web-ready" },
-  { id: "mp4", label: "MP4", icon: FileVideo, hint: "Video, H.264" },
-  { id: "pdf", label: "PDF", icon: FileText, hint: "Print or deck" },
+  { id: "png", label: "PNG", icon: FileImage, hint: "Sans perte, transparence" },
+  { id: "jpg", label: "JPG", icon: FileImage, hint: "Léger, prêt pour le web" },
+  { id: "mp4", label: "MP4", icon: FileVideo, hint: "Vidéo, H.264" },
+  { id: "pdf", label: "PDF", icon: FileText, hint: "Impression ou présentation" },
 ];
 const QUALITIES: { id: Quality; label: string; hint: string }[] = [
-  { id: "standard", label: "Standard", hint: "1x · fast" },
-  { id: "high", label: "High", hint: "2x · recommended" },
-  { id: "maximum", label: "Maximum", hint: "4x · largest file" },
+  { id: "standard", label: "Standard", hint: "1x · rapide" },
+  { id: "high", label: "Haute", hint: "2x · recommandé" },
+  { id: "maximum", label: "Maximale", hint: "4x · fichier le plus lourd" },
 ];
+const qualityLabel = (q: Quality) => QUALITIES.find((x) => x.id === q)?.label ?? q;
+const itemCount = (n: number) => `${n} élément${n > 1 ? "s" : ""}`;
 
 export interface ExportModalProps {
   open: boolean;
@@ -42,7 +44,7 @@ export interface ExportModalProps {
 /** Export Center (SPEC §35). Reused by the assets grid, campaign workspace and /assets/export. */
 export function ExportModal({ open, onClose, assetIds = [], campaignId, onComplete }: ExportModalProps) {
   return (
-    <Modal open={open} onClose={onClose} title="Export center" description="Choose a format and quality. Exports are packaged as a new asset." size="lg">
+    <Modal open={open} onClose={onClose} title="Centre d'export" description="Choisissez un format et une qualité. Chaque export est enregistré comme nouvelle ressource." size="lg">
       <ExportForm key={`${open}-${campaignId ?? ""}-${assetIds.join(",")}`} assetIds={assetIds} campaignId={campaignId} onClose={onClose} onComplete={onComplete} />
     </Modal>
   );
@@ -67,15 +69,15 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
 
   const run = async () => {
     if (ids.length === 0) return;
-    setProgress({ pct: 0, label: "Preparing" });
+    setProgress({ pct: 0, label: "Préparation" });
     try {
       const asset = await exportAssets({ assetIds: ids, format, quality, campaignId: scope === "campaign" ? pickedCampaign : undefined }, (pct, label) => setProgress({ pct, label }));
       setDone(asset);
       onComplete?.(asset);
-      toast.success("Export complete", `${asset.name} was added to your assets.`);
+      toast.success("Export terminé", `${asset.name} a été ajouté à vos ressources.`);
     } catch (e) {
       setProgress(null);
-      toast.error("Something went wrong.", e instanceof Error ? e.message : undefined);
+      toast.error("Une erreur est survenue.", e instanceof Error ? e.message : undefined);
     }
   };
 
@@ -83,11 +85,11 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
     return (
       <div className="text-center py-6">
         <CheckCircle2 className="size-12 text-success mx-auto" />
-        <h3 className="text-lg font-semibold mt-3">Export ready</h3>
-        <p className="text-sm text-text2 mt-1">{done.name} · {ids.length} item{ids.length === 1 ? "" : "s"} · {format.toUpperCase()} · {quality}</p>
+        <h3 className="text-lg font-semibold mt-3">Export prêt</h3>
+        <p className="text-sm text-text2 mt-1">{done.name} · {itemCount(ids.length)} · {format.toUpperCase()} · {qualityLabel(quality)}</p>
         <div className="flex items-center justify-center gap-2 mt-6">
-          <Button leftIcon={<Download className="size-4" />} onClick={() => toast.info("Download started", done.name)}>Download</Button>
-          <Link href={`/assets/${done.id}`}><Button variant="secondary" onClick={onClose}>View in assets</Button></Link>
+          <Button leftIcon={<Download className="size-4" />} onClick={() => toast.info("Téléchargement lancé", done.name)}>Télécharger</Button>
+          <Link href={`/assets/${done.id}`}><Button variant="secondary" onClick={onClose}>Voir dans les ressources</Button></Link>
         </div>
       </div>
     );
@@ -99,7 +101,7 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
         <Package className="size-8 text-highlight mx-auto animate-pulse" />
         <p className="text-sm font-medium mt-3">{progress.label}…</p>
         <ProgressBar value={progress.pct} className="mt-4" />
-        <p className="text-xs text-muted mt-3">{ids.length} item{ids.length === 1 ? "" : "s"} · {format.toUpperCase()} · {quality}</p>
+        <p className="text-xs text-muted mt-3">{itemCount(ids.length)} · {format.toUpperCase()} · {qualityLabel(quality)}</p>
       </div>
     );
   }
@@ -108,13 +110,13 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
     <div className="space-y-6">
       {/* Scope */}
       <div>
-        <p className="text-[13px] font-medium text-text2 mb-2">What to export</p>
+        <p className="text-[13px] font-medium text-text2 mb-2">Que souhaitez-vous exporter ?</p>
         <div className="grid sm:grid-cols-2 gap-2">
-          <ScopeCard selected={scope === "selected"} onClick={() => setScope("selected")} title="Export selected" hint={`${assetIds.length} asset${assetIds.length === 1 ? "" : "s"} selected`} disabled={assetIds.length === 0} />
-          <ScopeCard selected={scope === "campaign"} onClick={() => setScope("campaign")} title="Export campaign" hint={campaign ? `${campaign.assetIds.length} assets in ${campaign.name}` : "No campaign"} disabled={campaigns.length === 0} />
+          <ScopeCard selected={scope === "selected"} onClick={() => setScope("selected")} title="Exporter la sélection" hint={`${assetIds.length} ressource${assetIds.length > 1 ? "s" : ""} sélectionnée${assetIds.length > 1 ? "s" : ""}`} disabled={assetIds.length === 0} />
+          <ScopeCard selected={scope === "campaign"} onClick={() => setScope("campaign")} title="Exporter la campagne" hint={campaign ? `${campaign.assetIds.length} ressources dans ${campaign.name}` : "Aucune campagne"} disabled={campaigns.length === 0} />
         </div>
         {scope === "campaign" && !campaignId && (
-          <Select className="mt-2" compact aria-label="Campaign" value={pickedCampaign} onChange={(e) => setPickedCampaign(e.target.value)} options={campaigns.map((c) => ({ value: c.id, label: c.name }))} />
+          <Select className="mt-2" compact aria-label="Campagne" value={pickedCampaign} onChange={(e) => setPickedCampaign(e.target.value)} options={campaigns.map((c) => ({ value: c.id, label: c.name }))} />
         )}
       </div>
 
@@ -130,12 +132,12 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
             </button>
           ))}
         </div>
-        {hasVideo && format !== "mp4" && <p className="text-xs text-warning mt-2">Videos in this selection will be exported as poster frames. Choose MP4 to keep motion.</p>}
+        {hasVideo && format !== "mp4" && <p className="text-xs text-warning mt-2">Les vidéos de cette sélection seront exportées en image fixe. Choisissez MP4 pour conserver l’animation.</p>}
       </div>
 
       {/* Quality */}
       <div>
-        <p className="text-[13px] font-medium text-text2 mb-2">Quality</p>
+        <p className="text-[13px] font-medium text-text2 mb-2">Qualité</p>
         <div className="grid grid-cols-3 gap-2">
           {QUALITIES.map((q) => (
             <button key={q.id} type="button" onClick={() => setQuality(q.id)} aria-pressed={quality === q.id} className={cn("rounded-lg border p-3 text-left transition-colors", quality === q.id ? "border-accent bg-accent/10" : "border-border-strong bg-surface hover:border-white/25")}>
@@ -149,7 +151,7 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
       {/* Preview strip */}
       {picked.length > 0 && (
         <div>
-          <p className="text-[13px] font-medium text-text2 mb-2">Included · {picked.length}</p>
+          <p className="text-[13px] font-medium text-text2 mb-2">Inclus · {picked.length}</p>
           <div className="flex gap-2 overflow-x-auto no-scrollbar">
             {picked.slice(0, 12).map((a) => <img key={a.id} src={a.thumbnail} alt="" className="size-14 rounded-md object-cover border border-border shrink-0" />)}
             {picked.length > 12 && <span className="size-14 rounded-md bg-elevated border border-border text-xs text-text2 flex items-center justify-center shrink-0">+{picked.length - 12}</span>}
@@ -158,8 +160,8 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
       )}
 
       <div className={cn("flex items-center justify-end gap-2", !embedded && "pt-2")}>
-        {onClose && <Button variant="ghost" onClick={onClose}>Cancel</Button>}
-        <Button leftIcon={<Download className="size-4" />} disabled={ids.length === 0} onClick={run}>Export {ids.length > 0 ? `${ids.length} item${ids.length === 1 ? "" : "s"}` : ""}</Button>
+        {onClose && <Button variant="ghost" onClick={onClose}>Annuler</Button>}
+        <Button leftIcon={<Download className="size-4" />} disabled={ids.length === 0} onClick={run}>Exporter {ids.length > 0 ? itemCount(ids.length) : ""}</Button>
       </div>
     </div>
   );

@@ -70,20 +70,20 @@ struct AssetActionsMenu: View {
     var onDelete: (() -> Void)? = nil
 
     var body: some View {
-        Button { router.push(.assetDetail(id: asset.id)) } label: { Label("Preview", systemImage: "eye") }
-        Button { router.toast("Downloading \(asset.name)", style: .success, icon: "arrow.down.circle") } label: { Label("Download", systemImage: "arrow.down.circle") }
-        if let onRename { Button(action: onRename) { Label("Rename", systemImage: "pencil") } }
-        if let onMove { Button(action: onMove) { Label("Move to project", systemImage: "folder") } }
+        Button { router.push(.assetDetail(id: asset.id)) } label: { Label("Aperçu", systemImage: "eye") }
+        Button { router.toast("Téléchargement de \(asset.name)", style: .success, icon: "arrow.down.circle") } label: { Label("Télécharger", systemImage: "arrow.down.circle") }
+        if let onRename { Button(action: onRename) { Label("Renommer", systemImage: "pencil") } }
+        if let onMove { Button(action: onMove) { Label("Déplacer vers un projet", systemImage: "folder") } }
         Button { store.toggleFavorite(.asset, asset.id) } label: {
-            Label(asset.favorite ? "Unfavorite" : "Favorite", systemImage: asset.favorite ? "heart.slash" : "heart")
+            Label(asset.favorite ? "Retirer des favoris" : "Ajouter aux favoris", systemImage: asset.favorite ? "heart.slash" : "heart")
         }
-        Button { router.present(.exportAssets(ids: [asset.id])) } label: { Label("Export", systemImage: "square.and.arrow.up") }
+        Button { router.present(.exportAssets(ids: [asset.id])) } label: { Label("Exporter", systemImage: "square.and.arrow.up") }
         Button(role: .destructive) {
             if let onDelete { onDelete() } else {
                 store.deleteAsset(asset.id)
-                router.toast("Asset deleted", style: .warning)
+                router.toast("Ressource supprimée", style: .warning)
             }
-        } label: { Label("Delete", systemImage: "trash") }
+        } label: { Label("Supprimer", systemImage: "trash") }
     }
 }
 
@@ -97,13 +97,13 @@ struct RenameAssetSheet: View {
     @State private var name = ""
 
     var body: some View {
-        BottomSheetContainer(title: "Rename asset") {
+        BottomSheetContainer(title: "Renommer la ressource") {
             VStack(spacing: 14) {
-                MSTextField(label: "Name", placeholder: "Asset name", text: $name, icon: "photo")
+                MSTextField(label: "Nom", placeholder: "Nom de la ressource", text: $name, icon: "photo")
                 Spacer(minLength: 0)
-                MSButton(title: "Save", icon: "checkmark", isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty) {
+                MSButton(title: "Enregistrer", icon: "checkmark", isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty) {
                     store.renameAsset(asset.id, to: name.trimmingCharacters(in: .whitespaces))
-                    router.toast("Renamed", style: .success)
+                    router.toast("Renommé", style: .success)
                     onDone()
                 }
             }
@@ -123,10 +123,10 @@ struct MoveAssetSheet: View {
     @EnvironmentObject private var router: Router
 
     var body: some View {
-        BottomSheetContainer(title: "Move to project", subtitle: asset.name) {
+        BottomSheetContainer(title: "Déplacer vers un projet", subtitle: asset.name) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 8) {
-                    projectRow(nil, name: "No project", thumb: nil)
+                    projectRow(nil, name: "Aucun projet", thumb: nil)
                     ForEach(store.activeProjects) { p in
                         projectRow(p.id, name: p.name, thumb: p.thumbnailURL)
                     }
@@ -141,7 +141,7 @@ struct MoveAssetSheet: View {
         let current = asset.projectId == id
         return MSCard(padding: 10, action: {
             store.moveAsset(asset.id, to: id)
-            router.toast("Moved to \(name)", style: .success)
+            router.toast("Déplacé vers \(name)", style: .success)
             onDone()
         }) {
             HStack(spacing: 12) {
@@ -168,11 +168,11 @@ struct UseInCampaignSheet: View {
     @EnvironmentObject private var router: Router
 
     var body: some View {
-        BottomSheetContainer(title: "Use in campaign", subtitle: "\(assetIds.count) asset\(assetIds.count == 1 ? "" : "s")") {
+        BottomSheetContainer(title: "Utiliser dans une campagne", subtitle: "\(assetIds.count) ressource\(assetIds.count == 1 ? "" : "s")") {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 8) {
                     if store.campaigns.isEmpty {
-                        EmptyStateView(icon: "flag", title: "No campaigns", message: "Build a campaign first, then add assets to it.", ctaTitle: "New campaign", ctaIcon: "plus") {
+                        EmptyStateView(icon: "flag", title: "Aucune campagne", message: "Créez d'abord une campagne, puis ajoutez-y des ressources.", ctaTitle: "Nouvelle campagne", ctaIcon: "plus") {
                             onDone()
                             router.push(.campaignBuilder)
                         }
@@ -182,7 +182,7 @@ struct UseInCampaignSheet: View {
                         MSCard(padding: 10, action: {
                             store.addAssets(assetIds, toCampaign: c.id)
                             MSHaptic.success()
-                            router.toast("Added to \(c.name)", style: .success)
+                            router.toast("Ajouté à \(c.name)", style: .success)
                             onDone()
                         }) {
                             HStack(spacing: 12) {
@@ -190,10 +190,10 @@ struct UseInCampaignSheet: View {
                                     .frame(width: 36, height: 36).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(c.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
-                                    Text("\(c.assetIds.count) assets").msCaption()
+                                    Text("\(c.assetIds.count) ressources").msCaption()
                                 }
                                 Spacer()
-                                if already { MSBadge(text: "Added", tone: .success, icon: "checkmark") } else { MSBadge(text: c.status.title, tone: MSBadge.tone(for: c.status)) }
+                                if already { MSBadge(text: "Ajouté", tone: .success, icon: "checkmark") } else { MSBadge(text: c.status.title, tone: MSBadge.tone(for: c.status)) }
                             }
                         }
                     }
@@ -229,12 +229,12 @@ struct AssetPickerSheet: View {
     }
 
     var body: some View {
-        BottomSheetContainer(title: title, subtitle: multiple ? "\(selected.count) selected" : nil) {
+        BottomSheetContainer(title: title, subtitle: multiple ? "\(selected.count) sélectionné\(selected.count > 1 ? "s" : "")" : nil) {
             VStack(spacing: 12) {
-                SearchBar(placeholder: "Search assets", text: $query).padding(.horizontal, MSSpacing.gutter)
+                SearchBar(placeholder: "Rechercher des ressources", text: $query).padding(.horizontal, MSSpacing.gutter)
                 ScrollView(showsIndicators: false) {
                     if ordered.isEmpty {
-                        EmptyStateView(icon: "photo.on.rectangle", title: "No assets", message: "Nothing matches this search.")
+                        EmptyStateView(icon: "photo.on.rectangle", title: "Aucune ressource", message: "Aucun résultat pour cette recherche.")
                     } else {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                             ForEach(ordered) { a in
@@ -256,7 +256,7 @@ struct AssetPickerSheet: View {
             }
             .overlay(alignment: .bottom) {
                 if multiple {
-                    MSButton(title: selected.isEmpty ? "Select assets" : "Add \(selected.count)", icon: "checkmark", isDisabled: selected.isEmpty) {
+                    MSButton(title: selected.isEmpty ? "Sélectionner des ressources" : "Ajouter \(selected.count)", icon: "checkmark", isDisabled: selected.isEmpty) {
                         onPick(Array(selected))
                         dismiss()
                     }

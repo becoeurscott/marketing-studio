@@ -31,7 +31,7 @@ struct ImageResultsView: View {
             if let r = session.selected {
                 ImageEditorView(imageURL: r.url, ratio: session.ratio) { tool in
                     session.applyEdit(tool: tool, store: store)
-                    router.toast("\(tool) applied", style: .success, icon: "wand.and.stars")
+                    router.toast("\(StudioOptions.label(tool)) appliqué", style: .success, icon: "wand.and.stars")
                 }
             }
         }
@@ -60,7 +60,7 @@ struct ImageResultsView: View {
                         .frame(maxHeight: 460)
                         .onTapGesture { fullscreen = FullscreenImageItem(url: r.url, aspect: aspect) }
                     HStack(spacing: 6) {
-                        MSBadge(text: "\(session.style)", tone: .neutral)
+                        MSBadge(text: StudioOptions.label(session.style), tone: .neutral)
                         MSBadge(text: session.ratio, tone: .neutral)
                         if r.upscaled { MSBadge(text: "2×", tone: .accent, icon: "arrow.up.left.and.arrow.down.right") }
                     }
@@ -125,21 +125,21 @@ struct ImageResultsView: View {
     private var actions: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 6) {
-                action("Download", "arrow.down.to.line") {
-                    router.toast("Saved to Photos", style: .success, icon: "checkmark.circle.fill")
+                action("Télécharger", "arrow.down.to.line") {
+                    router.toast("Enregistré dans Photos", style: .success, icon: "checkmark.circle.fill")
                 }
                 let fav = session.selected.map { store.isFavorite(.asset, $0.assetId) } ?? false
-                action(fav ? "Favorited" : "Favorite", fav ? "heart.fill" : "heart", tint: fav ? MSColor.danger : nil) {
+                action(fav ? "En favori" : "Favori", fav ? "heart.fill" : "heart", tint: fav ? MSColor.danger : nil) {
                     guard let r = session.selected else { return }
                     store.toggleFavorite(.asset, r.assetId)
-                    router.toast(fav ? "Removed from favorites" : "Added to favorites", style: .info, icon: "heart")
+                    router.toast(fav ? "Retiré des favoris" : "Ajouté aux favoris", style: .info, icon: "heart")
                 }
-                action("Edit", "slider.horizontal.3") { showEditor = true }
-                action(session.busyAction == "upscale" ? "Upscaling" : "Upscale", "arrow.up.left.and.arrow.down.right", loading: session.busyAction == "upscale") {
+                action("Modifier", "slider.horizontal.3") { showEditor = true }
+                action(session.busyAction == "upscale" ? "Agrandissement" : "Agrandir", "arrow.up.left.and.arrow.down.right", loading: session.busyAction == "upscale") {
                     Task { await session.upscaleSelected(store: store, router: router) }
                 }
-                action("Regenerate", "arrow.clockwise") { onRegenerate() }
-                action("Use in Campaign", "flag") { showCampaignPicker = true }
+                action("Régénérer", "arrow.clockwise") { onRegenerate() }
+                action("Utiliser dans une campagne", "flag") { showCampaignPicker = true }
             }
             .padding(.horizontal, 2)
         }
@@ -178,9 +178,9 @@ struct StudioUseInCampaignSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        BottomSheetContainer(title: "Use in campaign", subtitle: "Add this visual to a campaign's asset set.") {
+        BottomSheetContainer(title: "Utiliser dans une campagne", subtitle: "Ajoutez ce visuel aux ressources d'une campagne.") {
             if store.campaigns.isEmpty {
-                EmptyStateView(icon: "flag", title: "No campaigns yet", message: "Build a campaign and the asset will be waiting for you.", ctaTitle: "Create campaign") {
+                EmptyStateView(icon: "flag", title: "Aucune campagne pour l'instant", message: "Créez une campagne et ce visuel vous y attendra.", ctaTitle: "Créer une campagne") {
                     dismiss()
                     router.push(.campaignBuilder)
                 }
@@ -192,7 +192,7 @@ struct StudioUseInCampaignSheet: View {
                             Button {
                                 MSHaptic.success()
                                 store.addAssets([assetId], toCampaign: c.id)
-                                router.toast("Added to \(c.name)", style: .success, icon: "flag.fill")
+                                router.toast("Ajouté à \(c.name)", style: .success, icon: "flag.fill")
                                 dismiss()
                             } label: {
                                 HStack(spacing: 12) {
@@ -203,11 +203,11 @@ struct StudioUseInCampaignSheet: View {
                                         .background(MSColor.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(c.name).msHeadline(15).lineLimit(1)
-                                        Text("\(c.assetIds.count) assets · \(c.platforms.map { $0.title }.joined(separator: ", "))").msCaption().lineLimit(1)
+                                        Text("\(c.assetIds.count) ressources · \(c.platforms.map { $0.title }.joined(separator: ", "))").msCaption().lineLimit(1)
                                     }
                                     Spacer()
                                     if already {
-                                        MSBadge(text: "Added", tone: .success, icon: "checkmark")
+                                        MSBadge(text: "Ajouté", tone: .success, icon: "checkmark")
                                     } else {
                                         Image(systemName: "plus.circle").foregroundStyle(MSColor.text2)
                                     }

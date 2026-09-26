@@ -18,19 +18,19 @@ struct GenerationErrorView: View {
                         .font(.system(size: 26, weight: .medium))
                         .foregroundStyle(MSColor.warning)
                 }
-                Text("Not enough credits").msHeadline(18)
-                Text("This needs \(needed) credits and you have \(store.credits). Top up to keep creating.")
+                Text("Crédits insuffisants").msHeadline(18)
+                Text("Cette génération nécessite \(needed) crédits et vous en avez \(store.credits). Rechargez pour continuer à créer.")
                     .msBody(14)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
                 HStack(spacing: 10) {
-                    MSButton(title: "Get credits", icon: "bolt.fill", style: .primary, size: .compact, fullWidth: false) {
+                    MSButton(title: "Obtenir des crédits", icon: "bolt.fill", style: .primary, size: .compact, fullWidth: false) {
                         router.push(.credits, on: .more)
                     }
                     if let back {
-                        MSButton(title: "Back to Studio", style: .secondary, size: .compact, fullWidth: false, action: back)
+                        MSButton(title: "Retour au Studio", style: .secondary, size: .compact, fullWidth: false, action: back)
                     } else {
-                        MSButton(title: "Try Again", style: .secondary, size: .compact, fullWidth: false, action: retry)
+                        MSButton(title: "Réessayer", style: .secondary, size: .compact, fullWidth: false, action: retry)
                     }
                 }
             }
@@ -38,7 +38,7 @@ struct GenerationErrorView: View {
             .frame(maxWidth: .infinity)
         case .generic(let message):
             VStack(spacing: 6) {
-                ErrorStateView(message: "Something went wrong.", retry: retry, back: back)
+                ErrorStateView(message: "Une erreur est survenue.", retry: retry, back: back)
                 if !message.isEmpty {
                     Text(message).msCaption().multilineTextAlignment(.center).padding(.horizontal, 24).padding(.top, -28)
                 }

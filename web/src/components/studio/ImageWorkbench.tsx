@@ -19,15 +19,15 @@ export function ImageWorkbench({ gen, dense, className }: { gen: ImageGenerator;
 
   const download = (r: ImageResult) => {
     const a = gen.ensureAsset(r);
-    toast.toast({ title: "Download started", description: `${a.name}.png · 1600×2000`, tone: "success", action: { label: "Open", onClick: () => window.open(r.url, "_blank", "noopener") } });
+    toast.toast({ title: "Téléchargement lancé", description: `${a.name}.png · 1600×2000`, tone: "success", action: { label: "Ouvrir", onClick: () => window.open(r.url, "_blank", "noopener") } });
   };
   const favorite = (r: ImageResult) => {
     const { asset, favorited } = gen.favorite(r);
-    toast.info(favorited ? "Added to favorites" : "Removed from favorites", asset.name);
+    toast.info(favorited ? "Ajouté aux favoris" : "Retiré des favoris", asset.name);
   };
   const upscale = async (r: ImageResult) => {
     const ok = await gen.upscale(r);
-    if (ok) toast.success("Upscaled to 2400×3000", "15 credits used");
+    if (ok) toast.success("Agrandi en 2400×3000", "15 crédits utilisés");
   };
 
   return (
@@ -48,7 +48,7 @@ export function ImageWorkbench({ gen, dense, className }: { gen: ImageGenerator;
         onRegenerate={() => void gen.generate()}
         onUseInCampaign={setCampaignFor}
       />
-      <ImageEditor open={!!editing} onClose={() => setEditing(null)} result={editing} onApply={(next) => { if (editing) gen.replaceResult(editing.id, next); toast.success("Edits saved", "The result was updated."); }} />
+      <ImageEditor open={!!editing} onClose={() => setEditing(null)} result={editing} onApply={(next) => { if (editing) gen.replaceResult(editing.id, next); toast.success("Modifications enregistrées", "Le résultat a été mis à jour."); }} />
       <CampaignPicker open={!!campaignFor} onClose={() => setCampaignFor(null)} getAsset={() => (campaignFor ? gen.ensureAsset(campaignFor) : null)} />
     </>
   );

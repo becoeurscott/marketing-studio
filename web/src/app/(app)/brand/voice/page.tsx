@@ -3,6 +3,7 @@
 import { ArrowLeft, Check, MessageSquareQuote, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { toneLabel } from "@/components/account/BrandEditModal";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -17,38 +18,40 @@ import type { Brand, BrandTone } from "@/lib/types";
 
 const TONES: BrandTone[] = ["Luxury", "Friendly", "Bold", "Playful", "Professional"];
 const TONE_HINT: Record<BrandTone, string> = {
-  Luxury: "Elevated, restrained, sensory.",
-  Friendly: "Warm, conversational, first-person.",
-  Bold: "Punchy, direct, high-contrast claims.",
-  Playful: "Light, witty, a little cheeky.",
-  Professional: "Clear, credible, benefit-first.",
+  Luxury: "Raffiné, sobre, sensoriel.",
+  Friendly: "Chaleureux, conversationnel, proche.",
+  Bold: "Percutant, direct, promesses fortes.",
+  Playful: "Léger, spirituel, un brin espiègle.",
+  Professional: "Clair, crédible, axé sur les bénéfices.",
 };
+
+const cap = (v: string) => v.charAt(0).toUpperCase() + v.slice(1);
 
 /** Deterministic mock copy that reflects tone + writing style; the real API would use the voice as a system prompt. */
 function sampleCopy(brand: Brand, tone: BrandTone, style: string, keywords: string[], avoid: string[]) {
   const name = brand.name;
-  const product = brand.industry === "Food & Beverage" ? "our new roast" : brand.industry === "Fashion" ? "the new drop" : "our new serum";
-  const kw = keywords[0] ? keywords[0] : "everyday";
+  const product = brand.industry === "Food & Beverage" ? "notre nouvelle torréfaction" : brand.industry === "Fashion" ? "la nouvelle collection" : "notre nouveau sérum";
+  const kw = keywords[0] ? keywords[0] : "au quotidien";
   const kw2 = keywords[1] ? keywords[1] : "simple";
-  const short = /short/i.test(style);
+  const short = /short|court/i.test(style);
   const noExcl = avoid.some((a) => /exclamation/i.test(a)) || tone === "Luxury" || tone === "Professional";
-  const end = noExcl ? "." : "!";
+  const end = noExcl ? "." : "\u00a0!";
 
   const caption: Record<BrandTone, string> = {
-    Luxury: `${name}. ${product.charAt(0).toUpperCase() + product.slice(1)} arrives quietly, the way the best things do${end} A ${kw} ritual, refined.`,
-    Friendly: `Okay, ${product} is finally here${end} We kept it ${kw2}: two drops, ${kw} results, zero fuss. Tell us what you think.`,
-    Bold: `${product.charAt(0).toUpperCase() + product.slice(1)} is here${end} ${kw.charAt(0).toUpperCase() + kw.slice(1)} results. No shortcuts. No excuses${end}`,
-    Playful: `Plot twist: ${product} just dropped${end} Your ${kw} routine is about to get a lot more fun${end}`,
-    Professional: `Introducing ${product} from ${name}. Formulated for ${kw} use, designed to be ${kw2}. Available now.`,
+    Luxury: `${name}. ${cap(product)} arrive en toute discrétion, comme les plus belles choses${end} Un rituel ${kw}, sublimé.`,
+    Friendly: `Ça y est, ${product} est enfin là${end} On a fait ${kw2} : deux gouttes, des résultats ${kw}, zéro prise de tête. Dites-nous ce que vous en pensez.`,
+    Bold: `${cap(product)} est là${end} Des résultats ${kw}. Sans raccourci. Sans excuse${end}`,
+    Playful: `Rebondissement : ${product} vient de sortir${end} Votre routine ${kw} va devenir bien plus fun${end}`,
+    Professional: `Découvrez ${product} signé ${name}. Conçu pour un usage ${kw}, pensé pour rester ${kw2}. Disponible dès maintenant.`,
   };
   const headline: Record<BrandTone, string> = {
-    Luxury: `Quietly ${kw}.`,
-    Friendly: `Your ${kw} just got easier${end}`,
-    Bold: `${kw2.charAt(0).toUpperCase() + kw2.slice(1)}. ${kw.charAt(0).toUpperCase() + kw.slice(1)}. Done${end}`,
-    Playful: `Say hello to ${kw} mode${end}`,
-    Professional: `${kw.charAt(0).toUpperCase() + kw.slice(1)} performance, ${kw2} routine.`,
+    Luxury: `Simplement ${kw}.`,
+    Friendly: `${cap(kw)}, en toute simplicité${end}`,
+    Bold: `${cap(kw2)}. ${cap(kw)}. Point${end}`,
+    Playful: `Passez en mode ${kw}${end}`,
+    Professional: `Performance ${kw}, routine ${kw2}.`,
   };
-  const cta: Record<BrandTone, string> = { Luxury: "Discover the collection", Friendly: "Try it today", Bold: "Get yours now", Playful: "Treat yourself", Professional: "Shop now" };
+  const cta: Record<BrandTone, string> = { Luxury: "Découvrir la collection", Friendly: "Essayez-le dès aujourd’hui", Bold: "Je le veux", Playful: "Faites-vous plaisir", Professional: "Acheter maintenant" };
 
   let c = caption[tone];
   if (short) c = c.split(/(?<=[.!?])\s+/).slice(0, 2).join(" ");
@@ -63,12 +66,12 @@ export default function BrandVoicePage() {
   if (!brand) {
     return (
       <>
-        <PageHeader title="Brand voice" />
-        <EmptyState icon={MessageSquareQuote} title="No brand yet" description="Create a brand kit first, then define its voice." cta={{ label: "Go to Brand kit", href: "/brand" }} />
+        <PageHeader title="Ton de marque" />
+        <EmptyState icon={MessageSquareQuote} title="Aucune marque pour le moment" description="Créez d’abord un kit de marque, puis définissez son ton." cta={{ label: "Aller au kit de marque", href: "/brand" }} />
       </>
     );
   }
-  return <VoiceEditor key={brand.id} brand={brand} onSave={(patch) => { updateBrandVoice(brand.id, patch); toast.success("Voice saved", "Generated copy will use it from now on."); }} />;
+  return <VoiceEditor key={brand.id} brand={brand} onSave={(patch) => { updateBrandVoice(brand.id, patch); toast.success("Ton enregistré", "Vos textes générés l’utiliseront désormais."); }} />;
 }
 
 function VoiceEditor({ brand, onSave }: { brand: Brand; onSave: (patch: Brand["voice"]) => void }) {
@@ -87,27 +90,27 @@ function VoiceEditor({ brand, onSave }: { brand: Brand; onSave: (patch: Brand["v
   return (
     <>
       <PageHeader
-        eyebrow={<Link href="/brand" className="inline-flex items-center gap-1 text-[13px] text-text2 hover:text-text"><ArrowLeft className="size-3.5" /> Brand kit</Link>}
-        title="Brand voice"
-        description={`How ${brand.name} sounds in every caption, ad and script.`}
-        actions={<Button leftIcon={<Check className="size-4" />} disabled={!dirty} onClick={() => onSave({ tone, writingStyle: style.trim(), keywords: kwList, avoid: avoidList })}>Save voice</Button>}
+        eyebrow={<Link href="/brand" className="inline-flex items-center gap-1 text-[13px] text-text2 hover:text-text"><ArrowLeft className="size-3.5" /> Kit de marque</Link>}
+        title="Ton de marque"
+        description={`La façon dont ${brand.name} s’exprime dans chaque légende, publicité et script.`}
+        actions={<Button leftIcon={<Check className="size-4" />} disabled={!dirty} onClick={() => onSave({ tone, writingStyle: style.trim(), keywords: kwList, avoid: avoidList })}>Enregistrer le ton</Button>}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-6">
         <div className="space-y-5">
           <Card>
-            <h3 className="text-[15px] font-semibold mb-1">Tone</h3>
-            <p className="text-[13px] text-text2 mb-3">Pick the overall personality.</p>
-            <ChipGroup options={TONES.map((t) => ({ value: t, label: t }))} value={tone} onChange={setTone} />
+            <h3 className="text-[15px] font-semibold mb-1">Ton</h3>
+            <p className="text-[13px] text-text2 mb-3">Choisissez la personnalité globale.</p>
+            <ChipGroup options={TONES.map((t) => ({ value: t, label: toneLabel(t) }))} value={tone} onChange={setTone} />
             <p className="text-[13px] text-muted mt-3">{TONE_HINT[tone]}</p>
           </Card>
 
           <Card>
-            <h3 className="text-[15px] font-semibold mb-1">Writing style</h3>
-            <p className="text-[13px] text-text2 mb-3">Rules the copywriter follows. Be specific.</p>
-            <Textarea name="style" value={style} onChange={(e) => setStyle(e.target.value)} placeholder="Short sentences. Confident. Never overly formal." rows={4} />
+            <h3 className="text-[15px] font-semibold mb-1">Style d’écriture</h3>
+            <p className="text-[13px] text-text2 mb-3">Les règles que suit le rédacteur. Soyez précis.</p>
+            <Textarea name="style" value={style} onChange={(e) => setStyle(e.target.value)} placeholder="Phrases courtes. Ton assuré. Jamais trop formel." rows={4} />
             <div className="flex flex-wrap gap-1.5 mt-3">
-              {["Short sentences.", "Confident.", "Never overly formal.", "Lead with the benefit.", "Use 'you'.", "No jargon."].map((s) => (
+              {["Phrases courtes.", "Ton assuré.", "Jamais trop formel.", "Commencer par le bénéfice.", "Vouvoyer le lecteur.", "Pas de jargon."].map((s) => (
                 <button key={s} type="button" onClick={() => setStyle((v) => (v.includes(s) ? v : `${v.trim()} ${s}`.trim()))} className="text-[12px] px-2.5 h-7 rounded-full border border-border-strong text-text2 hover:text-text hover:border-white/25">
                   + {s}
                 </button>
@@ -117,8 +120,8 @@ function VoiceEditor({ brand, onSave }: { brand: Brand; onSave: (patch: Brand["v
 
           <Card>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Keywords to use" name="keywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} hint="Comma separated" placeholder="glow, everyday, clean" />
-              <Input label="Words to avoid" name="avoid" value={avoid} onChange={(e) => setAvoid(e.target.value)} hint="Comma separated" placeholder="miracle, anti-aging" />
+              <Input label="Mots-clés à utiliser" name="keywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} hint="Séparés par des virgules" placeholder="éclat, quotidien, naturel" />
+              <Input label="Mots à éviter" name="avoid" value={avoid} onChange={(e) => setAvoid(e.target.value)} hint="Séparés par des virgules" placeholder="miracle, anti-âge" />
             </div>
             <div className="flex flex-wrap gap-1.5 mt-3">
               {kwList.map((k) => <Badge key={`k-${k}`} tone="success">{k}</Badge>)}
@@ -132,18 +135,18 @@ function VoiceEditor({ brand, onSave }: { brand: Brand; onSave: (patch: Brand["v
             <div className="flex items-center justify-between gap-3 mb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="size-4 text-highlight" />
-                <h3 className="text-[15px] font-semibold">Live preview</h3>
+                <h3 className="text-[15px] font-semibold">Aperçu en direct</h3>
               </div>
-              <Button size="sm" variant="ghost" leftIcon={<RefreshCw className="size-4" />} onClick={() => setSeed((s) => s + 1)}>Regenerate</Button>
+              <Button size="sm" variant="ghost" leftIcon={<RefreshCw className="size-4" />} onClick={() => setSeed((s) => s + 1)}>Régénérer</Button>
             </div>
-            <p className="text-[12px] text-muted mb-4">Sample copy written in the {tone.toLowerCase()} voice. Updates as you type.</p>
+            <p className="text-[12px] text-muted mb-4">Exemple de texte rédigé avec le ton « {toneLabel(tone).toLowerCase()} ». Mis à jour pendant la saisie.</p>
             <div className="space-y-3">
               <div className="rounded-md bg-surface border border-border p-3">
-                <p className="text-[11px] uppercase tracking-wide text-muted mb-1">Headline</p>
+                <p className="text-[11px] uppercase tracking-wide text-muted mb-1">Titre</p>
                 <p className="text-lg font-bold tracking-tight" style={{ fontFamily: brand.fonts.heading }}>{sample.headline}</p>
               </div>
               <div className="rounded-md bg-surface border border-border p-3">
-                <p className="text-[11px] uppercase tracking-wide text-muted mb-1">Instagram caption</p>
+                <p className="text-[11px] uppercase tracking-wide text-muted mb-1">Légende Instagram</p>
                 <p className="text-sm text-text2 leading-relaxed" style={{ fontFamily: brand.fonts.body }}>{sample.caption}</p>
               </div>
               <div className="rounded-md bg-surface border border-border p-3 flex items-center justify-between gap-3">
@@ -152,7 +155,7 @@ function VoiceEditor({ brand, onSave }: { brand: Brand; onSave: (patch: Brand["v
               </div>
             </div>
           </Card>
-          <p className="text-[12px] text-muted px-1">The Copywriter and Ad creator read this voice automatically. Save to apply.</p>
+          <p className="text-[12px] text-muted px-1">Le Rédacteur et le Créateur de publicités utilisent ce ton automatiquement. Enregistrez pour l’appliquer.</p>
         </div>
       </div>
     </>

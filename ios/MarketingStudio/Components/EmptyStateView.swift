@@ -38,7 +38,7 @@ struct EmptyStateView: View {
 
 /// Generic error state (SPEC §45).
 struct ErrorStateView: View {
-    var message: String = "Something went wrong."
+    var message: String = "Une erreur s'est produite."
     var retry: () -> Void
     var back: (() -> Void)? = nil
 
@@ -49,9 +49,9 @@ struct ErrorStateView: View {
                 .foregroundStyle(MSColor.warning)
             Text(message).msHeadline(17)
             HStack(spacing: 10) {
-                MSButton(title: "Try Again", style: .primary, size: .compact, fullWidth: false, action: retry)
+                MSButton(title: "Réessayer", style: .primary, size: .compact, fullWidth: false, action: retry)
                 if let back {
-                    MSButton(title: "Back to Studio", style: .secondary, size: .compact, fullWidth: false, action: back)
+                    MSButton(title: "Retour au Studio", style: .secondary, size: .compact, fullWidth: false, action: back)
                 }
             }
         }

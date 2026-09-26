@@ -11,8 +11,8 @@ struct PricingView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Plans").msTitle(30)
-                    Text("Every plan includes the full studio. Pick the volume that fits your output.").msBody(14)
+                    Text("Forfaits").msTitle(30)
+                    Text("Chaque forfait inclut le studio complet. Choisissez le volume adapté à votre production.").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
@@ -29,8 +29,8 @@ struct PricingView: View {
 
                 MSCard {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("All plans include").msHeadline(15)
-                        ForEach(["Image, video, UGC and ad generation", "Copywriter and hook generator", "Campaign builder and content calendar", "Export in PNG, JPG, MP4 and PDF", "Cancel anytime"], id: \.self) { f in
+                        Text("Tous les forfaits incluent").msHeadline(15)
+                        ForEach(["Génération d'images, de vidéos, d'UGC et de publicités", "Rédacteur IA et générateur d'accroches", "Créateur de campagnes et calendrier éditorial", "Export en PNG, JPG, MP4 et PDF", "Résiliable à tout moment"], id: \.self) { f in
                             HStack(spacing: 8) {
                                 Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(MSColor.success)
                                 Text(f).msBody(14)
@@ -40,7 +40,7 @@ struct PricingView: View {
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                Text("Prototype: no card is charged. Upgrading switches your plan and adds the plan's monthly credits.")
+                Text("Prototype : aucune carte n'est débitée. Changer de forfait l'active immédiatement et ajoute ses crédits mensuels.")
                     .msCaption()
                     .padding(.horizontal, MSSpacing.gutter)
             }
@@ -48,15 +48,15 @@ struct PricingView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Pricing")
+        .navigationTitle("Tarifs")
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private var billingToggle: some View {
         HStack(spacing: 10) {
-            SegmentedTabs(tabs: ["Monthly", "Yearly"], selection: Binding(get: { yearly ? 1 : 0 }, set: { yearly = $0 == 1 }))
+            SegmentedTabs(tabs: ["Mensuel", "Annuel"], selection: Binding(get: { yearly ? 1 : 0 }, set: { yearly = $0 == 1 }))
                 .frame(maxWidth: 240)
-            if yearly { MSBadge(text: "Save 20%", tone: .success) }
+            if yearly { MSBadge(text: "Économisez 20 %", tone: .success) }
             Spacer()
         }
         .animation(MSAnimation.gentle, value: yearly)
@@ -68,10 +68,10 @@ extension Plan {
     func price(yearly: Bool) -> Int { yearly ? Int((Double(monthlyPrice) * 0.8).rounded()) : monthlyPrice }
     var tagline: String {
         switch self {
-        case .starter: return "For trying ideas and small shops"
-        case .creator: return "For creators posting every week"
-        case .studio: return "For brands running campaigns"
-        case .agency: return "For teams serving many clients"
+        case .starter: return "Pour tester des idées et les petites boutiques"
+        case .creator: return "Pour les créateurs qui publient chaque semaine"
+        case .studio: return "Pour les marques qui mènent des campagnes"
+        case .agency: return "Pour les équipes au service de nombreux clients"
         }
     }
     var icon: String {
@@ -110,14 +110,14 @@ struct PlanCard: View {
                     }
                 }
                 Spacer()
-                if current { MSBadge(text: "Current plan", tone: .success, icon: "checkmark") }
-                else if recommended { MSBadge(text: "Recommended", tone: .accent) }
+                if current { MSBadge(text: "Forfait actuel", tone: .success, icon: "checkmark") }
+                else if recommended { MSBadge(text: "Recommandé", tone: .accent) }
             }
             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("$\(plan.price(yearly: yearly))").font(.system(size: 34, weight: .bold, design: .rounded)).tracking(-1).foregroundStyle(MSColor.text)
+                Text("\(plan.price(yearly: yearly)) $").font(.system(size: 34, weight: .bold, design: .rounded)).tracking(-1).foregroundStyle(MSColor.text)
                     .contentTransition(.numericText())
-                Text("/ month").msBody(14)
-                if yearly { Text("billed yearly").msCaption() }
+                Text("/ mois").msBody(14)
+                if yearly { Text("facturé annuellement").msCaption() }
             }
             .animation(MSAnimation.snappy, value: yearly)
             VStack(alignment: .leading, spacing: 7) {
@@ -129,7 +129,7 @@ struct PlanCard: View {
                 }
             }
             MSButton(
-                title: current ? "Your plan" : (isDowngrade ? "Switch to \(plan.title)" : "Upgrade to \(plan.title)"),
+                title: current ? "Votre forfait" : (isDowngrade ? "Passer à \(plan.title)" : "Passer à \(plan.title)"),
                 icon: current ? "checkmark" : (isDowngrade ? "arrow.down" : "arrow.up"),
                 style: current ? .secondary : (recommended ? .primary : .secondary),
                 isDisabled: current,
@@ -160,7 +160,7 @@ struct UpgradeSheet: View {
     }
 
     var body: some View {
-        BottomSheetContainer(title: done ? nil : "Confirm your plan") {
+        BottomSheetContainer(title: done ? nil : "Confirmez votre forfait") {
             if done { success } else { confirm }
         }
     }
@@ -171,7 +171,7 @@ struct UpgradeSheet: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(Plan.allCases) { p in
-                            MSChip(title: "\(p.title) $\(p.monthlyPrice)", selected: selected == p) { selected = p }
+                            MSChip(title: "\(p.title) \(p.monthlyPrice) $", selected: selected == p) { selected = p }
                         }
                     }
                 }
@@ -185,26 +185,26 @@ struct UpgradeSheet: View {
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 0) {
-                            Text("$\(selected.price(yearly: yearly))").font(.system(size: 26, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
-                            Text("per month").msCaption()
+                            Text("\(selected.price(yearly: yearly)) $").font(.system(size: 26, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
+                            Text("par mois").msCaption()
                         }
                     }
                     Divider().overlay(MSColor.border)
-                    row("Current plan", store.plan.title)
-                    row("Credits added now", "+\(selected.monthlyCredits.formatted())")
-                    row("Billing", yearly ? "Yearly, $\(selected.price(yearly: true) * 12)" : "Monthly")
-                    row("Next charge", "Prototype: none")
+                    row("Forfait actuel", store.plan.title)
+                    row("Crédits ajoutés maintenant", "+\(selected.monthlyCredits.formatted(.number.locale(Locale(identifier: "fr_FR"))))")
+                    row("Facturation", yearly ? "Annuelle, \(selected.price(yearly: true) * 12) $" : "Mensuelle")
+                    row("Prochain prélèvement", "Prototype : aucun")
                 }
             }
             Toggle(isOn: $yearly) {
                 HStack(spacing: 8) {
-                    Text("Bill yearly").font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                    MSBadge(text: "Save 20%", tone: .success)
+                    Text("Facturation annuelle").font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                    MSBadge(text: "Économisez 20 %", tone: .success)
                 }
             }
             .tint(MSColor.accent)
             Spacer(minLength: 0)
-            MSButton(title: working ? "Updating plan" : (selected == store.plan ? "Already on \(selected.title)" : "Confirm \(selected.title)"), icon: working ? nil : "lock.fill", isLoading: working, isDisabled: selected == store.plan) {
+            MSButton(title: working ? "Mise à jour du forfait" : (selected == store.plan ? "Déjà sur \(selected.title)" : "Confirmer \(selected.title)"), icon: working ? nil : "lock.fill", isLoading: working, isDisabled: selected == store.plan) {
                 working = true
                 Task {
                     try? await Task.sleep(for: .seconds(1.3))
@@ -213,7 +213,7 @@ struct UpgradeSheet: View {
                     withAnimation(MSAnimation.snappy) { working = false; done = true }
                 }
             }
-            MSButton(title: "Not now", style: .ghost) { router.dismissSheet() }
+            MSButton(title: "Pas maintenant", style: .ghost) { router.dismissSheet() }
         }
         .padding(.horizontal, MSSpacing.gutter)
         .padding(.bottom, 16)
@@ -226,8 +226,8 @@ struct UpgradeSheet: View {
                 Image(systemName: selected.icon).font(.system(size: 36, weight: .semibold)).foregroundStyle(MSColor.highlight)
             }
             .padding(.top, 24)
-            Text("Welcome to \(selected.title)").msTitle(28)
-            Text("\(selected.monthlyCredits.formatted()) credits were added. Your balance is \(store.credits.formatted()).")
+            Text("Bienvenue dans \(selected.title)").msTitle(28)
+            Text("\(selected.monthlyCredits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits ont été ajoutés. Votre solde est de \(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))).")
                 .msBody(15).multilineTextAlignment(.center)
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(selected.features.prefix(3), id: \.self) { f in
@@ -239,11 +239,11 @@ struct UpgradeSheet: View {
             }
             .msCard()
             Spacer(minLength: 0)
-            MSButton(title: "Start creating", icon: "sparkles") {
+            MSButton(title: "Commencer à créer", icon: "sparkles") {
                 router.dismissSheet()
                 router.select(.studio)
             }
-            MSButton(title: "Done", style: .ghost) { router.dismissSheet() }
+            MSButton(title: "Terminé", style: .ghost) { router.dismissSheet() }
         }
         .padding(.horizontal, MSSpacing.gutter)
         .padding(.bottom, 16)
@@ -279,8 +279,8 @@ struct PaywallSheet: View {
                 }
                 .padding(.top, 8)
                 VStack(spacing: 6) {
-                    Text("\(feature) is locked").msTitle(24).multilineTextAlignment(.center)
-                    Text("Your \(store.plan.title) plan has reached its limit for this. Upgrade to \(suggested.title) to keep going.")
+                    Text("\(feature) est verrouillé").msTitle(24).multilineTextAlignment(.center)
+                    Text("Votre forfait \(store.plan.title) a atteint sa limite pour cette fonctionnalité. Passez à \(suggested.title) pour continuer.")
                         .msBody(14).multilineTextAlignment(.center)
                 }
                 MSCard {
@@ -288,7 +288,7 @@ struct PaywallSheet: View {
                         HStack {
                             Text(suggested.title).msHeadline(16)
                             Spacer()
-                            Text("$\(suggested.monthlyPrice)/mo").font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                            Text("\(suggested.monthlyPrice) $/mois").font(MSFont.control(14)).foregroundStyle(MSColor.text)
                         }
                         ForEach(suggested.features.prefix(3), id: \.self) { f in
                             HStack(spacing: 8) {
@@ -299,11 +299,11 @@ struct PaywallSheet: View {
                     }
                 }
                 Spacer(minLength: 0)
-                MSButton(title: "Upgrade to \(suggested.title)", icon: "arrow.up") {
+                MSButton(title: "Passer à \(suggested.title)", icon: "arrow.up") {
                     router.present(.upgrade(plan: suggested))
                 }
-                MSButton(title: "Buy credits instead", icon: "bolt", style: .secondary) { router.present(.buyCredits) }
-                MSButton(title: "See all plans", style: .ghost) {
+                MSButton(title: "Acheter des crédits à la place", icon: "bolt", style: .secondary) { router.present(.buyCredits) }
+                MSButton(title: "Voir tous les forfaits", style: .ghost) {
                     router.dismissSheet()
                     router.push(.pricing, on: .more)
                 }

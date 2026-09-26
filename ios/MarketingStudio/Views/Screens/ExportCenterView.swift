@@ -32,21 +32,21 @@ struct ExportCenterView: View {
     var body: some View {
         Group {
             if inSheet {
-                BottomSheetContainer(title: "Export Center", subtitle: "Choose a format and quality.") {
+                BottomSheetContainer(title: "Centre d'export", subtitle: "Choisissez un format et une qualité.") {
                     ScrollView(showsIndicators: false) { body_.padding(.bottom, 24) }
                 }
             } else {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Export Center").msTitle(30)
-                        Text("Download assets and campaigns in any format.").msBody(14)
+                        Text("Centre d'export").msTitle(30)
+                        Text("Téléchargez vos visuels et campagnes dans tous les formats.").msBody(14)
                     }
                     .padding(.horizontal, MSSpacing.gutter)
                     .padding(.bottom, 10)
                     body_.padding(.bottom, 40)
                 }
                 .msScreen()
-                .navigationTitle("Export Center")
+                .navigationTitle("Centre d'export")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { MSTopBarItems() }
             }
@@ -56,7 +56,7 @@ struct ExportCenterView: View {
             if campaignId == nil { campaignId = store.campaigns.first?.id }
         }
         .msSheet(isPresented: $picking, detents: [.large]) {
-            AssetPickerSheet(title: "Select assets", preferredIds: [], multiple: true, initial: selectedIds) { selectedIds = $0 }
+            AssetPickerSheet(title: "Sélectionner des visuels", preferredIds: [], multiple: true, initial: selectedIds) { selectedIds = $0 }
         }
     }
 
@@ -74,7 +74,7 @@ struct ExportCenterView: View {
 
     private var form: some View {
         VStack(alignment: .leading, spacing: 18) {
-            SegmentedTabs(tabs: ["Export selected", "Export campaign"], selection: $scope)
+            SegmentedTabs(tabs: ["Exporter la sélection", "Exporter une campagne"], selection: $scope)
                 .padding(.horizontal, MSSpacing.gutter)
 
             if scope == 0 { selectedScope } else { campaignScope }
@@ -90,10 +90,10 @@ struct ExportCenterView: View {
             .padding(.horizontal, MSSpacing.gutter)
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Quality").msCaption(color: MSColor.text2)
+                Text("Qualité").msCaption(color: MSColor.text2)
                 HStack(spacing: 8) {
                     ForEach(ExportQuality.allCases) { q in
-                        MSChip(title: q.rawValue, selected: quality == q) { quality = q }
+                        MSChip(title: q.label, selected: quality == q) { quality = q }
                     }
                 }
                 Text(qualityHint).msCaption()
@@ -103,8 +103,8 @@ struct ExportCenterView: View {
             MSCard(padding: 12) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("\(ids.count) file\(ids.count == 1 ? "" : "s") · \(format.rawValue) · \(quality.rawValue)").font(MSFont.control(14)).foregroundStyle(MSColor.text)
-                        Text(String(format: "About %.1f MB", estimatedMB)).msCaption()
+                        Text("\(ids.count) fichier\(ids.count == 1 ? "" : "s") · \(format.rawValue) · \(quality.label)").font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                        Text("Environ \(estimatedMB.formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "fr_FR")))) Mo").msCaption()
                     }
                     Spacer()
                     Image(systemName: "shippingbox").foregroundStyle(MSColor.text2)
@@ -112,7 +112,7 @@ struct ExportCenterView: View {
             }
             .padding(.horizontal, MSSpacing.gutter)
 
-            MSButton(title: "Export \(ids.count) file\(ids.count == 1 ? "" : "s")", icon: "square.and.arrow.down", isDisabled: ids.isEmpty) { export() }
+            MSButton(title: "Exporter \(ids.count) fichier\(ids.count == 1 ? "" : "s")", icon: "square.and.arrow.down", isDisabled: ids.isEmpty) { export() }
                 .padding(.horizontal, MSSpacing.gutter)
         }
     }
@@ -120,14 +120,14 @@ struct ExportCenterView: View {
     private var selectedScope: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("\(selectedIds.count) asset\(selectedIds.count == 1 ? "" : "s") selected").msHeadline(15)
+                Text("\(selectedIds.count) visuel\(selectedIds.count == 1 ? "" : "s") sélectionné\(selectedIds.count == 1 ? "" : "s")").msHeadline(15)
                 Spacer()
-                Button(selectedIds.isEmpty ? "Choose assets" : "Change") { picking = true }
+                Button(selectedIds.isEmpty ? "Choisir des visuels" : "Modifier") { picking = true }
                     .font(MSFont.control(13)).foregroundStyle(MSColor.highlight)
             }
             .padding(.horizontal, MSSpacing.gutter)
             if selectedIds.isEmpty {
-                EmptyStateView(icon: "checkmark.rectangle.stack", title: "Nothing selected", message: "Pick assets from your library to export them together.", ctaTitle: "Choose assets", ctaIcon: "plus") { picking = true }
+                EmptyStateView(icon: "checkmark.rectangle.stack", title: "Aucune sélection", message: "Choisissez des visuels dans votre bibliothèque pour les exporter ensemble.", ctaTitle: "Choisir des visuels", ctaIcon: "plus") { picking = true }
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -151,9 +151,9 @@ struct ExportCenterView: View {
 
     private var campaignScope: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Campaign").msCaption(color: MSColor.text2).padding(.horizontal, MSSpacing.gutter)
+            Text("Campagne").msCaption(color: MSColor.text2).padding(.horizontal, MSSpacing.gutter)
             if store.campaigns.isEmpty {
-                EmptyStateView(icon: "flag", title: "No campaigns", message: "Build a campaign to export it as a package.", ctaTitle: "New campaign", ctaIcon: "plus") {
+                EmptyStateView(icon: "flag", title: "Aucune campagne", message: "Créez une campagne pour l'exporter en un seul package.", ctaTitle: "Nouvelle campagne", ctaIcon: "plus") {
                     if inSheet { router.dismissSheet() }
                     router.push(.campaignBuilder)
                 }
@@ -166,7 +166,7 @@ struct ExportCenterView: View {
                                 Image(systemName: on ? "checkmark.circle.fill" : "circle").foregroundStyle(on ? MSColor.accent : MSColor.muted)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(c.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
-                                    Text("\(c.assetIds.count) assets · \(c.variations.count) ads").msCaption()
+                                    Text("\(c.assetIds.count) visuels · \(c.variations.count) publicités").msCaption()
                                 }
                                 Spacer()
                                 MSBadge(text: c.status.title, tone: MSBadge.tone(for: c.status))
@@ -189,9 +189,9 @@ struct ExportCenterView: View {
 
     private var qualityHint: String {
         switch quality {
-        case .standard: return "Web-ready, smallest files."
-        case .high: return "Balanced for social platforms."
-        case .maximum: return "Full resolution for print and ads."
+        case .standard: return "Prêt pour le web, fichiers les plus légers."
+        case .high: return "Équilibré pour les réseaux sociaux."
+        case .maximum: return "Pleine résolution pour l'impression et la publicité."
         }
     }
 
@@ -209,8 +209,8 @@ struct ExportCenterView: View {
                 Text("\(Int(progress * 100))%").msHeadline(22).contentTransition(.numericText())
             }
             VStack(spacing: 4) {
-                Text(stepLabel.isEmpty ? "Preparing" : stepLabel).msHeadline(17)
-                Text("\(ids.count) files · \(format.rawValue) · \(quality.rawValue)").msCaption()
+                Text(stepLabel.isEmpty ? "Préparation" : stepLabel).msHeadline(17)
+                Text("\(ids.count) fichier\(ids.count == 1 ? "" : "s") · \(format.rawValue) · \(quality.label)").msCaption()
             }
             MSProgressBar(progress: progress, height: 6).padding(.horizontal, 40)
             ProgressIndicator(steps: MockAPI.exportSteps, currentStep: MockAPI.exportSteps.firstIndex(of: stepLabel) ?? 0)
@@ -230,30 +230,30 @@ struct ExportCenterView: View {
                 Image(systemName: "checkmark").font(.system(size: 34, weight: .bold)).foregroundStyle(MSColor.success)
             }
             VStack(spacing: 4) {
-                Text("Export complete").msHeadline(20)
+                Text("Export terminé").msHeadline(20)
                 Text(a.name).msBody(14).multilineTextAlignment(.center)
             }
             MSCard(padding: 12) {
                 HStack(spacing: 12) {
                     RemoteImage(url: a.imageURL, cornerRadius: 8).frame(width: 48, height: 48)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(String(format: "%.1f MB · %@", estimatedMB, format.rawValue)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
-                        Text("Saved to Exports").msCaption()
+                        Text("\(estimatedMB.formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "fr_FR")))) Mo · \(format.rawValue)").font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                        Text("Enregistré dans Exports").msCaption()
                     }
                     Spacer()
-                    MSBadge(text: "Ready", tone: .success)
+                    MSBadge(text: "Prêt", tone: .success)
                 }
             }
             .padding(.horizontal, MSSpacing.gutter)
             VStack(spacing: 10) {
-                MSButton(title: "Download", icon: "arrow.down.circle") {
-                    router.toast("Saved to Files", style: .success, icon: "arrow.down.circle")
+                MSButton(title: "Télécharger", icon: "arrow.down.circle") {
+                    router.toast("Enregistré dans Fichiers", style: .success, icon: "arrow.down.circle")
                 }
-                MSButton(title: "View in Assets", icon: "photo.on.rectangle", style: .secondary) {
+                MSButton(title: "Voir dans les visuels", icon: "photo.on.rectangle", style: .secondary) {
                     if inSheet { router.dismissSheet() }
                     router.push(.assetDetail(id: a.id), on: .assets)
                 }
-                MSButton(title: "Export another", style: .ghost) { withAnimation(MSAnimation.gentle) { result = nil; progress = 0 } }
+                MSButton(title: "Nouvel export", style: .ghost) { withAnimation(MSAnimation.gentle) { result = nil; progress = 0 } }
             }
             .padding(.horizontal, MSSpacing.gutter)
         }

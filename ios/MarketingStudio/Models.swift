@@ -18,7 +18,14 @@ struct User: Codable, Identifiable, Hashable {
 enum Plan: String, Codable, CaseIterable, Identifiable {
     case starter, creator, studio, agency
     var id: String { rawValue }
-    var title: String { rawValue.capitalized }
+    var title: String {
+        switch self {
+        case .starter: return "Starter"
+        case .creator: return "Créateur"
+        case .studio: return "Studio"
+        case .agency: return "Agence"
+        }
+    }
     var monthlyPrice: Int {
         switch self {
         case .starter: return 12
@@ -37,10 +44,10 @@ enum Plan: String, Codable, CaseIterable, Identifiable {
     }
     var features: [String] {
         switch self {
-        case .starter: return ["500 AI generations / mo", "3 projects", "1 brand kit", "2 campaigns", "5 video generations", "1 team member"]
-        case .creator: return ["1,500 AI generations / mo", "Unlimited projects", "3 brand kits", "10 campaigns", "30 video generations", "3 team members"]
-        case .studio: return ["4,000 AI generations / mo", "Unlimited projects", "10 brand kits", "Unlimited campaigns", "120 video generations", "10 team members"]
-        case .agency: return ["12,000 AI generations / mo", "Unlimited projects", "Unlimited brand kits", "Unlimited campaigns", "500 video generations", "Unlimited team members"]
+        case .starter: return ["500 générations IA / mois", "3 projets", "1 kit de marque", "2 campagnes", "5 générations vidéo", "1 membre d'équipe"]
+        case .creator: return ["1 500 générations IA / mois", "Projets illimités", "3 kits de marque", "10 campagnes", "30 générations vidéo", "3 membres d'équipe"]
+        case .studio: return ["4 000 générations IA / mois", "Projets illimités", "10 kits de marque", "Campagnes illimitées", "120 générations vidéo", "10 membres d'équipe"]
+        case .agency: return ["12 000 générations IA / mois", "Projets illimités", "Kits de marque illimités", "Campagnes illimitées", "500 générations vidéo", "Membres d'équipe illimités"]
         }
     }
 }
@@ -48,7 +55,14 @@ enum Plan: String, Codable, CaseIterable, Identifiable {
 enum MemberRole: String, Codable, CaseIterable, Identifiable {
     case owner, admin, editor, viewer
     var id: String { rawValue }
-    var title: String { rawValue.capitalized }
+    var title: String {
+        switch self {
+        case .owner: return "Propriétaire"
+        case .admin: return "Administrateur"
+        case .editor: return "Éditeur"
+        case .viewer: return "Lecteur"
+        }
+    }
 }
 
 struct WorkspaceMember: Codable, Identifiable, Hashable {
@@ -65,7 +79,7 @@ struct WorkspaceMember: Codable, Identifiable, Hashable {
 enum ProjectStatus: String, Codable, CaseIterable, Identifiable {
     case active, archived
     var id: String { rawValue }
-    var title: String { rawValue.capitalized }
+    var title: String { self == .active ? "Actif" : "Archivé" }
 }
 
 struct Project: Codable, Identifiable, Hashable {
@@ -87,10 +101,10 @@ enum AssetKind: String, Codable, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .image: return "Images"
-        case .video: return "Videos"
+        case .video: return "Vidéos"
         case .audio: return "Audio"
         case .logo: return "Logos"
-        case .brand: return "Brand assets"
+        case .brand: return "Éléments de marque"
         case .export: return "Exports"
         }
     }
@@ -125,7 +139,14 @@ struct Asset: Codable, Identifiable, Hashable {
 enum CampaignObjective: String, Codable, CaseIterable, Identifiable {
     case awareness, engagement, leads, sales
     var id: String { rawValue }
-    var title: String { rawValue.capitalized }
+    var title: String {
+        switch self {
+        case .awareness: return "Notoriété"
+        case .engagement: return "Engagement"
+        case .leads: return "Prospects"
+        case .sales: return "Ventes"
+        }
+    }
     var icon: String {
         switch self {
         case .awareness: return "megaphone"
@@ -166,11 +187,11 @@ enum ContentFormat: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .productPhotos: return "Product photos"
+        case .productPhotos: return "Photos produit"
         case .ugc: return "UGC"
-        case .videoAds: return "Video ads"
+        case .videoAds: return "Pubs vidéo"
         case .stories: return "Stories"
-        case .carousels: return "Carousels"
+        case .carousels: return "Carrousels"
         }
     }
 }
@@ -178,13 +199,27 @@ enum ContentFormat: String, Codable, CaseIterable, Identifiable {
 enum CampaignStatus: String, Codable, CaseIterable, Identifiable {
     case draft, ready, scheduled, live, completed
     var id: String { rawValue }
-    var title: String { rawValue.capitalized }
+    var title: String {
+        switch self {
+        case .draft: return "Brouillon"
+        case .ready: return "Prête"
+        case .scheduled: return "Programmée"
+        case .live: return "En ligne"
+        case .completed: return "Terminée"
+        }
+    }
 }
 
 enum CalendarStatus: String, Codable, CaseIterable, Identifiable {
     case draft, scheduled, published
     var id: String { rawValue }
-    var title: String { rawValue.capitalized }
+    var title: String {
+        switch self {
+        case .draft: return "Brouillon"
+        case .scheduled: return "Programmé"
+        case .published: return "Publié"
+        }
+    }
 }
 
 struct CalendarItem: Codable, Identifiable, Hashable {
@@ -229,15 +264,15 @@ enum TemplateCategory: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .productAds: return "Product Ads"
+        case .productAds: return "Pubs produit"
         case .ugc: return "UGC"
-        case .socialMedia: return "Social Media"
+        case .socialMedia: return "Réseaux sociaux"
         case .ecommerce: return "E-commerce"
-        case .fashion: return "Fashion"
-        case .beauty: return "Beauty"
-        case .food: return "Food"
-        case .technology: return "Technology"
-        case .realEstate: return "Real Estate"
+        case .fashion: return "Mode"
+        case .beauty: return "Beauté"
+        case .food: return "Alimentation"
+        case .technology: return "Technologie"
+        case .realEstate: return "Immobilier"
         case .fitness: return "Fitness"
         }
     }
@@ -276,9 +311,9 @@ enum GenerationKind: String, Codable, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .image: return "Images"
-        case .video: return "Videos"
-        case .copy: return "Copy"
-        case .ad: return "Ads"
+        case .video: return "Vidéos"
+        case .copy: return "Textes"
+        case .ad: return "Pubs"
         }
     }
     var icon: String {
@@ -302,7 +337,14 @@ enum GenerationKind: String, Codable, CaseIterable, Identifiable {
 enum GenerationStatus: String, Codable, CaseIterable, Identifiable {
     case queued, processing, completed, failed
     var id: String { rawValue }
-    var title: String { rawValue.capitalized }
+    var title: String {
+        switch self {
+        case .queued: return "En file d'attente"
+        case .processing: return "En cours"
+        case .completed: return "Terminée"
+        case .failed: return "Échec"
+        }
+    }
 }
 
 struct Generation: Codable, Identifiable, Hashable {
@@ -418,10 +460,10 @@ enum FavoriteKind: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .asset: return "Assets"
-        case .template: return "Templates"
+        case .asset: return "Ressources"
+        case .template: return "Modèles"
         case .prompt: return "Prompts"
-        case .creator: return "Creators"
+        case .creator: return "Créateurs"
         }
     }
 }
@@ -440,11 +482,12 @@ extension Date {
 
     var relativeString: String {
         let f = RelativeDateTimeFormatter()
+        f.locale = Locale(identifier: "fr_FR")
         f.unitsStyle = .short
         return f.localizedString(for: self, relativeTo: Date())
     }
 
     var shortString: String {
-        formatted(.dateTime.month(.abbreviated).day())
+        formatted(.dateTime.month(.abbreviated).day().locale(Locale(identifier: "fr_FR")))
     }
 }

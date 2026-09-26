@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { useStore } from "@/lib/store";
 import { CREDIT_COSTS, IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { BACKGROUNDS, COMPOSITIONS, IMAGE_CAMERAS, LIGHTING, MODELS, PROMPT_PLACEHOLDER, type ImageParams, type ModelId } from "./constants";
+import { BACKGROUND_LABELS, BACKGROUNDS, COMPOSITION_LABELS, COMPOSITIONS, IMAGE_CAMERA_LABELS, IMAGE_CAMERAS, IMAGE_STYLE_LABELS, label, LIGHTING, LIGHTING_LABELS, MODELS, PROMPT_PLACEHOLDER, type ImageParams, type ModelId } from "./constants";
 import { ProductField, ProductPicker } from "./ProductPicker";
 
 export interface ImageCreatePanelProps {
@@ -36,7 +36,7 @@ export function ImageCreatePanel({ params, update, onGenerate, generating, hideG
   return (
     <div className={cn("flex flex-col gap-5", className)}>
       {templateName && (
-        <p className="text-xs text-highlight bg-accent/10 border border-accent/30 rounded-md px-3 py-2">Template applied: <span className="font-medium">{templateName}</span></p>
+        <p className="text-xs text-highlight bg-accent/10 border border-accent/30 rounded-md px-3 py-2">Modèle appliqué : <span className="font-medium">{templateName}</span></p>
       )}
 
       <ProductField asset={product} onChange={() => setPickerOpen(true)} onClear={() => update("productAssetId", null)} />
@@ -49,16 +49,16 @@ export function ImageCreatePanel({ params, update, onGenerate, generating, hideG
         onChange={(e) => update("prompt", e.target.value)}
         placeholder={PROMPT_PLACEHOLDER}
         rows={4}
-        hint="Describe the scene, mood and what should stand out."
+        hint="Décrivez la scène, l'ambiance et ce qui doit ressortir."
       />
 
       <div className="flex flex-col gap-1.5">
         <span className="text-[13px] font-medium text-text2">Style</span>
-        <ChipGroup<ImageStyle> size="sm" options={IMAGE_STYLES.map((s) => ({ value: s, label: s }))} value={params.style} onChange={(v) => update("style", v)} />
+        <ChipGroup<ImageStyle> size="sm" options={IMAGE_STYLES.map((s) => ({ value: s, label: label(IMAGE_STYLE_LABELS, s) }))} value={params.style} onChange={(v) => update("style", v)} />
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-[13px] font-medium text-text2">Aspect ratio</span>
+        <span className="text-[13px] font-medium text-text2">Format d’image</span>
         <div role="radiogroup" className="grid grid-cols-5 gap-1.5">
           {RATIOS.map((r) => {
             const sel = r === params.ratio;
@@ -72,27 +72,27 @@ export function ImageCreatePanel({ params, update, onGenerate, generating, hideG
         </div>
       </div>
 
-      <Select label="Model" name="model" value={params.model} onChange={(e) => update("model", e.target.value as ModelId)} options={MODELS.map((m) => ({ value: m.id, label: `${m.label} · ${m.hint}` }))} />
+      <Select label="Modèle" name="model" value={params.model} onChange={(e) => update("model", e.target.value as ModelId)} options={MODELS.map((m) => ({ value: m.id, label: `${m.label} · ${m.hint}` }))} />
 
       <div>
         <button onClick={() => setAdvanced((v) => !v)} className="flex items-center gap-1.5 text-[13px] font-medium text-text2 hover:text-text" aria-expanded={advanced}>
-          <ChevronDown className={cn("size-4 transition-transform", advanced && "rotate-180")} /> Settings
-          <span className="text-muted font-normal">· background, lighting, camera, composition</span>
+          <ChevronDown className={cn("size-4 transition-transform", advanced && "rotate-180")} /> Paramètres
+          <span className="text-muted font-normal">· arrière-plan, éclairage, cadrage, composition</span>
         </button>
         {advanced && (
           <div className="mt-3 grid grid-cols-1 gap-4">
-            <Select label="Background" name="background" value={params.background} onChange={(e) => update("background", e.target.value as ImageParams["background"])} options={BACKGROUNDS.map((v) => ({ value: v, label: v }))} compact />
+            <Select label="Arrière-plan" name="background" value={params.background} onChange={(e) => update("background", e.target.value as ImageParams["background"])} options={BACKGROUNDS.map((v) => ({ value: v, label: BACKGROUND_LABELS[v] }))} compact />
             <div className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-text2">Lighting</span>
-              <ChipGroup<ImageParams["lighting"]> size="sm" options={LIGHTING.map((v) => ({ value: v, label: v }))} value={params.lighting} onChange={(v) => update("lighting", v)} />
+              <span className="text-[13px] font-medium text-text2">Éclairage</span>
+              <ChipGroup<ImageParams["lighting"]> size="sm" options={LIGHTING.map((v) => ({ value: v, label: label(LIGHTING_LABELS, v) }))} value={params.lighting} onChange={(v) => update("lighting", v)} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-text2">Camera</span>
-              <ChipGroup<ImageParams["camera"]> size="sm" options={IMAGE_CAMERAS.map((v) => ({ value: v, label: v }))} value={params.camera} onChange={(v) => update("camera", v)} />
+              <span className="text-[13px] font-medium text-text2">Cadrage</span>
+              <ChipGroup<ImageParams["camera"]> size="sm" options={IMAGE_CAMERAS.map((v) => ({ value: v, label: label(IMAGE_CAMERA_LABELS, v) }))} value={params.camera} onChange={(v) => update("camera", v)} />
             </div>
             <div className="flex flex-col gap-1.5">
               <span className="text-[13px] font-medium text-text2">Composition</span>
-              <ChipGroup<ImageParams["composition"]> size="sm" options={COMPOSITIONS.map((v) => ({ value: v, label: v }))} value={params.composition} onChange={(v) => update("composition", v)} />
+              <ChipGroup<ImageParams["composition"]> size="sm" options={COMPOSITIONS.map((v) => ({ value: v, label: COMPOSITION_LABELS[v] }))} value={params.composition} onChange={(v) => update("composition", v)} />
             </div>
           </div>
         )}
@@ -101,9 +101,9 @@ export function ImageCreatePanel({ params, update, onGenerate, generating, hideG
       {!hideGenerate && (
         <div className="sticky bottom-0 -mx-4 px-4 py-3 bg-surface/95 backdrop-blur border-t border-border lg:mt-auto">
           <Button fullWidth size="lg" onClick={onGenerate} loading={generating} disabled={!canGenerate} leftIcon={<Sparkles className="size-4" />}>
-            {generating ? "Creating…" : `Generate · ${CREDIT_COSTS.image} credits`}
+            {generating ? "Création…" : `Générer · ${CREDIT_COSTS.image} crédits`}
           </Button>
-          {!canGenerate && <p className="text-xs text-muted text-center mt-2">Add a prompt or a product to start.</p>}
+          {!canGenerate && <p className="text-xs text-muted text-center mt-2">Ajoutez un prompt ou un produit pour commencer.</p>}
         </div>
       )}
     </div>

@@ -16,6 +16,15 @@ struct BrandVoiceView: View {
     private let tones = ["Luxury", "Friendly", "Bold", "Playful", "Professional", "Minimal", "Urgent"]
     private let toneIcons = ["Luxury": "crown", "Friendly": "hand.wave", "Bold": "bolt", "Playful": "face.smiling", "Professional": "briefcase", "Minimal": "circle", "Urgent": "timer"]
 
+    private let toneLabels = ["Luxury": "Luxe", "Friendly": "Chaleureux", "Bold": "Audacieux", "Playful": "Ludique", "Professional": "Professionnel", "Minimal": "Minimaliste", "Urgent": "Urgent"]
+    private func toneLabel(_ t: String) -> String { toneLabels[t] ?? t }
+    private var toneBinding: Binding<Set<String>> {
+        Binding(
+            get: { Set(tone.map { toneLabel($0) }) },
+            set: { new in tone = Set(new.map { label in toneLabels.first(where: { $0.value == label })?.key ?? label }) }
+        )
+    }
+
     private var currentTone: String { tone.first ?? store.brand.voice.tone }
     private var isDirty: Bool {
         let v = store.brand.voice
@@ -26,44 +35,44 @@ struct BrandVoiceView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Brand Voice").msTitle(30)
-                    Text("Used every time the Copywriter, Hook Generator and Ad Creator write for \(store.brand.name).").msBody(14)
+                    Text("Voix de marque").msTitle(30)
+                    Text("Utilisée chaque fois que le Rédacteur, le Générateur d'accroches et le Créateur de pubs écrivent pour \(store.brand.name).").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Tone").msHeadline(15)
-                    ChipGroup(options: tones, selection: $tone, mode: .single, icons: toneIcons, allowDeselect: false)
+                    Text("Ton").msHeadline(15)
+                    ChipGroup(options: tones.map { toneLabel($0) }, selection: toneBinding, mode: .single, icons: Dictionary(uniqueKeysWithValues: toneIcons.map { (toneLabel($0.key), $0.value) }), allowDeselect: false)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Writing style").msHeadline(15)
-                    MSTextEditor(placeholder: "Short sentences. Confident. Never overly formal.", text: $style, minHeight: 96)
-                    Text("Describe rhythm, attitude and what to avoid. The AI follows this literally.").msCaption()
+                    Text("Style d'écriture").msHeadline(15)
+                    MSTextEditor(placeholder: "Phrases courtes. Assurées. Jamais trop formelles.", text: $style, minHeight: 96)
+                    Text("Décrivez le rythme, l'attitude et ce qu'il faut éviter. L'IA suit ces consignes à la lettre.").msCaption()
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
                 VStack(alignment: .leading, spacing: 12) {
-                    MSTextField(label: "Keywords to use", placeholder: "glow, clean, everyday", text: $keywords, icon: "text.badge.checkmark", autocapitalization: .never)
-                    MSTextField(label: "Words to avoid", placeholder: "miracle, cheap", text: $avoid, icon: "text.badge.xmark", autocapitalization: .never)
+                    MSTextField(label: "Mots-clés à utiliser", placeholder: "éclat, pur, quotidien", text: $keywords, icon: "text.badge.checkmark", autocapitalization: .never)
+                    MSTextField(label: "Mots à éviter", placeholder: "miracle, pas cher", text: $avoid, icon: "text.badge.xmark", autocapitalization: .never)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                SectionHeader(title: "Sample copy", subtitle: "Generated with this voice", actionTitle: regenerating ? nil : "Regenerate") { regenerate() }
+                SectionHeader(title: "Exemple de texte", subtitle: "Généré avec cette voix", actionTitle: regenerating ? nil : "Régénérer") { regenerate() }
                 sampleCard.padding(.horizontal, MSSpacing.gutter)
             }
             .padding(.top, 4)
             .padding(.bottom, 110)
         }
         .msScreen()
-        .navigationTitle("Brand Voice")
+        .navigationTitle("Voix de marque")
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
-            MSButton(title: isDirty ? "Save voice" : "Saved", icon: isDirty ? "checkmark" : "checkmark.circle.fill", isDisabled: !isDirty) {
+            MSButton(title: isDirty ? "Enregistrer la voix" : "Enregistrée", icon: isDirty ? "checkmark" : "checkmark.circle.fill", isDisabled: !isDirty) {
                 store.updateBrandVoice(BrandVoice(tone: currentTone, writingStyle: style.trimmingCharacters(in: .whitespacesAndNewlines), keywords: parsed(keywords), avoid: parsed(avoid)))
                 MSHaptic.success()
-                router.toast("Brand voice saved", style: .success)
+                router.toast("Voix de marque enregistrée", style: .success)
             }
             .padding(.horizontal, MSSpacing.gutter)
             .padding(.vertical, 12)
@@ -84,8 +93,8 @@ struct BrandVoiceView: View {
         MSCard {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    MSBadge(text: currentTone, tone: .accent)
-                    MSBadge(text: "Instagram caption", tone: .neutral)
+                    MSBadge(text: toneLabel(currentTone), tone: .accent)
+                    MSBadge(text: "Légende Instagram", tone: .neutral)
                     Spacer()
                     Image(systemName: "sparkles").foregroundStyle(MSColor.highlight).font(.system(size: 12, weight: .semibold))
                 }
@@ -102,11 +111,11 @@ struct BrandVoiceView: View {
                 }
                 Divider().overlay(MSColor.border)
                 HStack(spacing: 8) {
-                    MSButton(title: "Copy", icon: "doc.on.doc", style: .secondary, size: .compact, fullWidth: false) {
+                    MSButton(title: "Copier", icon: "doc.on.doc", style: .secondary, size: .compact, fullWidth: false) {
                         UIPasteboard.general.string = sample
-                        router.toast("Copied to clipboard", style: .success)
+                        router.toast("Copié dans le presse-papiers", style: .success)
                     }
-                    MSButton(title: "Open Copywriter", icon: "text.alignleft", style: .ghost, size: .compact, fullWidth: false) {
+                    MSButton(title: "Ouvrir le Rédacteur", icon: "text.alignleft", style: .ghost, size: .compact, fullWidth: false) {
                         router.push(.copywriter, on: .studio)
                     }
                 }
@@ -126,35 +135,35 @@ struct BrandVoiceView: View {
 
     private var sample: String {
         let brand = store.brand.name
-        let kw = parsed(keywords).first ?? "glow"
+        let kw = parsed(keywords).first ?? "éclat"
         let samples: [String: [String]] = [
             "Luxury": [
-                "\(brand). One serum. Real \(kw). Nothing you don't need.",
-                "Made for mornings that matter. \(brand) brings the \(kw) back, quietly.",
+                "\(brand). Un sérum. Un vrai \(kw). Rien de superflu.",
+                "Pensé pour les matins qui comptent. \(brand) ramène l'\(kw), en toute discrétion.",
             ],
             "Friendly": [
-                "Meet your new morning ritual. \(brand) makes \(kw) easy, every single day.",
-                "Hey, skin. We brought \(kw). \(brand) is here to help.",
+                "Voici votre nouveau rituel du matin. Avec \(brand), l'\(kw) devient simple, chaque jour.",
+                "Coucou la peau. On vous apporte de l'\(kw). \(brand) est là pour vous.",
             ],
             "Bold": [
-                "Stop settling. \(brand) delivers \(kw) you can actually see.",
-                "\(kw.capitalized). Loud and clear. That's \(brand).",
+                "Fini les compromis. \(brand) vous offre un \(kw) qui se voit vraiment.",
+                "\(kw.capitalized). Haut et fort. C'est ça, \(brand).",
             ],
             "Playful": [
-                "Warning: \(brand) may cause excessive \(kw). Side effects include compliments.",
-                "Your skin called. It wants \(brand). And a little \(kw).",
+                "Attention : \(brand) peut provoquer un excès d'\(kw). Effets secondaires : des compliments.",
+                "Votre peau a appelé. Elle veut \(brand). Et un peu d'\(kw).",
             ],
             "Professional": [
-                "\(brand) is formulated for consistent \(kw) with daily use. Results in 4 weeks.",
-                "Clinically minded. Clearly simple. \(brand) for everyday \(kw).",
+                "\(brand) est formulé pour un \(kw) durable avec un usage quotidien. Résultats en 4 semaines.",
+                "Une approche clinique. Une simplicité évidente. \(brand) pour un \(kw) au quotidien.",
             ],
             "Minimal": [
                 "\(brand). \(kw.capitalized).",
-                "Less routine. More \(kw). \(brand).",
+                "Moins de routine. Plus d'\(kw). \(brand).",
             ],
             "Urgent": [
-                "Launch pricing ends Sunday. Get your \(kw) with \(brand) before it's gone.",
-                "48 hours left. \(brand) at 20% off. Your \(kw) can't wait.",
+                "Le prix de lancement se termine dimanche. Profitez de l'\(kw) avec \(brand) avant qu'il ne soit trop tard.",
+                "Plus que 48 heures. \(brand) à -20 %. Votre \(kw) n'attend pas.",
             ],
         ]
         let list = samples[currentTone] ?? samples["Friendly"]!

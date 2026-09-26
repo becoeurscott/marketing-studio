@@ -7,20 +7,20 @@ struct UGCCreatorView: View {
 
     var initialScript: String? = nil
 
-    static let defaultScript = "Create a 15-second TikTok-style video introducing this product."
-    static let locations = ["Bathroom", "Bedroom", "Kitchen", "Living room", "Outdoors", "Gym", "Car", "Office", "Studio"]
-    static let tones = ["Excited", "Casual", "Professional", "Funny", "Luxury", "Authentic"]
+    static let defaultScript = "Créez une vidéo de 15 secondes façon TikTok qui présente ce produit."
+    static let locations = ["Salle de bain", "Chambre", "Cuisine", "Salon", "Extérieur", "Salle de sport", "Voiture", "Bureau", "Studio"]
+    static let tones = ["Enthousiaste", "Décontracté", "Professionnel", "Drôle", "Luxe", "Authentique"]
     static let durations = [15, 30, 60]
     static let cost = GenerationKind.video.creditCost
-    static let steps = ["Casting creator", "Reading script...", "Building scene 1...", "Adding motion...", "Rendering...", "Finalizing..."]
+    static let steps = ["Choix du créateur", "Lecture du script...", "Création de la scène 1...", "Ajout du mouvement...", "Rendu en cours...", "Finalisation..."]
 
     private enum Phase: Equatable { case idle, generating(step: Int, label: String), done, failed(String) }
 
     @State private var productId: String?
     @State private var creatorId: String = "creator_maya"
     @State private var script: String = UGCCreatorView.defaultScript
-    @State private var location: String = "Bathroom"
-    @State private var tone: Set<String> = ["Authentic"]
+    @State private var location: String = "Salle de bain"
+    @State private var tone: Set<String> = ["Authentique"]
     @State private var duration = 15
     @State private var phase: Phase = .idle
     @State private var result: GeneratedVideo?
@@ -45,8 +45,8 @@ struct UGCCreatorView: View {
                     scriptSection
                     optionsSection
                     previewSection
-                    CreditCostRow(cost: Self.cost, label: "\(duration)s UGC video")
-                    MSButton(title: result == nil ? "Generate UGC Video" : "Generate Another", icon: "sparkles", isLoading: isGenerating, isDisabled: script.trimmingCharacters(in: .whitespaces).isEmpty) {
+                    CreditCostRow(cost: Self.cost, label: "Vidéo UGC de \(duration) s")
+                    MSButton(title: result == nil ? "Générer la vidéo UGC" : "En générer une autre", icon: "sparkles", isLoading: isGenerating, isDisabled: script.trimmingCharacters(in: .whitespaces).isEmpty) {
                         generate()
                     }
                     .padding(.horizontal, MSSpacing.gutter)
@@ -59,7 +59,7 @@ struct UGCCreatorView: View {
             }
         }
         .msScreen()
-        .navigationTitle("UGC Creator")
+        .navigationTitle("Créateur UGC")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .onAppear { if let initialScript, !initialScript.isEmpty { script = initialScript } }
@@ -74,8 +74,8 @@ struct UGCCreatorView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("UGC Creator").msTitle(26)
-            Text("Cast an AI creator, hand them a script and get a short-form video.").msBody(14)
+            Text("Créateur UGC").msTitle(26)
+            Text("Choisissez un créateur IA, donnez-lui un script et obtenez une vidéo courte.").msBody(14)
         }
         .padding(.horizontal, MSSpacing.gutter)
     }
@@ -92,13 +92,13 @@ struct UGCCreatorView: View {
     }
 
     private var productSection: some View {
-        CreativeSection(title: "Product", subtitle: "Pick from your assets or upload a new photo") {
+        CreativeSection(title: "Produit", subtitle: "Choisissez parmi vos ressources ou importez une nouvelle photo") {
             ProductPicker(selectedId: $productId) { router.present(.uploadProduct) }
         }
     }
 
     private var creatorSection: some View {
-        CreativeSection(title: "Creator", subtitle: "All creators are fictional AI personas") {
+        CreativeSection(title: "Créateur", subtitle: "Tous les créateurs sont des personnages IA fictifs") {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(store.creators) { c in
@@ -118,26 +118,26 @@ struct UGCCreatorView: View {
         CreativeSection(title: "Script") {
             MSTextEditor(placeholder: Self.defaultScript, text: $script, minHeight: 96)
             HStack(spacing: 8) {
-                ResultAction(title: "Write with Copywriter", icon: "text.alignleft") { router.push(.copywriter) }
-                ResultAction(title: "Hooks", icon: "bolt") { router.push(.hookGenerator) }
+                ResultAction(title: "Rédiger avec le Copywriter", icon: "text.alignleft") { router.push(.copywriter) }
+                ResultAction(title: "Accroches", icon: "bolt") { router.push(.hookGenerator) }
                 Spacer()
-                Text("\(script.count) chars").msCaption()
+                Text("\(script.count) caractères").msCaption()
             }
         }
     }
 
     private var optionsSection: some View {
         VStack(alignment: .leading, spacing: 18) {
-            CreativeSection(title: "Location") {
+            CreativeSection(title: "Lieu") {
                 ChipRow(options: Self.locations, selection: $location).padding(.horizontal, -MSSpacing.gutter)
             }
-            CreativeSection(title: "Tone") {
+            CreativeSection(title: "Ton") {
                 ChipGroup(options: Self.tones, selection: $tone, allowDeselect: false)
             }
-            CreativeSection(title: "Duration") {
+            CreativeSection(title: "Durée") {
                 HStack(spacing: 8) {
                     ForEach(Self.durations, id: \.self) { d in
-                        MSChip(title: "\(d)s", icon: "timer", selected: duration == d) {
+                        MSChip(title: "\(d) s", icon: "timer", selected: duration == d) {
                             MSHaptic.tap(); withAnimation(MSAnimation.snappy) { duration = d }
                         }
                     }
@@ -147,7 +147,7 @@ struct UGCCreatorView: View {
     }
 
     private var previewSection: some View {
-        CreativeSection(title: "Preview", subtitle: "What the creator will receive") {
+        CreativeSection(title: "Aperçu", subtitle: "Ce que le créateur recevra") {
             HStack(alignment: .top, spacing: 12) {
                 ZStack(alignment: .bottomLeading) {
                     RemoteImage(url: creator?.avatarURL, cornerRadius: 12)
@@ -159,15 +159,15 @@ struct UGCCreatorView: View {
                 }
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
-                        Text(creator?.name ?? "Creator").msHeadline(15)
+                        Text(creator?.name ?? "Créateur").msHeadline(15)
                         Text("· \(creator?.style ?? "")").msCaption()
                     }
-                    Text(product?.name ?? "No product selected").msCaption(color: MSColor.text2).lineLimit(1)
+                    Text(product?.name ?? "Aucun produit sélectionné").msCaption(color: MSColor.text2).lineLimit(1)
                     Text("\u{201C}\(script)\u{201D}").msBody(13).lineLimit(3)
                     HStack(spacing: 6) {
-                        MSBadge(text: tone.first ?? "Authentic", tone: .accent)
+                        MSBadge(text: tone.first ?? "Authentique", tone: .accent)
                         MSBadge(text: location)
-                        MSBadge(text: "\(duration)s")
+                        MSBadge(text: "\(duration) s")
                     }
                 }
                 Spacer(minLength: 0)
@@ -181,11 +181,11 @@ struct UGCCreatorView: View {
     private func resultCard(_ video: GeneratedVideo) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Your UGC video").msHeadline(16)
+                Text("Votre vidéo UGC").msHeadline(16)
                 Spacer()
-                MSBadge(text: "Ready", tone: .success, icon: "checkmark")
+                MSBadge(text: "Prête", tone: .success, icon: "checkmark")
             }
-            PlatformPreviewFrame(ratio: 9 / 16, label: "9:16 · \(video.duration)s · \(creator?.name ?? "") · \(tone.first ?? "")") {
+            PlatformPreviewFrame(ratio: 9 / 16, label: "9:16 · \(video.duration) s · \(creator?.name ?? "") · \(tone.first ?? "")") {
                 ZStack {
                     RemoteImage(url: video.posterURL)
                     LinearGradient(colors: [.clear, .black.opacity(0.55)], startPoint: .center, endPoint: .bottom)
@@ -217,12 +217,12 @@ struct UGCCreatorView: View {
             .frame(maxWidth: 260)
             .frame(maxWidth: .infinity)
             HStack(spacing: 8) {
-                ResultAction(title: savedAssetId == nil ? "Save to assets" : "Saved", icon: savedAssetId == nil ? "square.and.arrow.down" : "checkmark", tint: savedAssetId == nil ? MSColor.text : MSColor.success) { save(video) }
-                ResultAction(title: "Use in Campaign", icon: "flag") {
+                ResultAction(title: savedAssetId == nil ? "Enregistrer dans les ressources" : "Enregistrée", icon: savedAssetId == nil ? "square.and.arrow.down" : "checkmark", tint: savedAssetId == nil ? MSColor.text : MSColor.success) { save(video) }
+                ResultAction(title: "Utiliser dans une campagne", icon: "flag") {
                     if savedAssetId == nil { save(video, quiet: true) }
                     campaignPicker = true
                 }
-                ResultAction(title: "Regenerate", icon: "arrow.clockwise") { generate() }
+                ResultAction(title: "Régénérer", icon: "arrow.clockwise") { generate() }
             }
         }
         .msCard()
@@ -238,7 +238,7 @@ struct UGCCreatorView: View {
         savedAssetId = nil
         withAnimation(MSAnimation.gentle) { phase = .generating(step: 0, label: Self.steps[0]); result = nil }
         scrollTarget = "progress"
-        let params = UGCParams(productAssetId: productId, creatorId: creatorId, script: script, location: location, tone: tone.first ?? "Authentic", duration: duration, projectId: store.currentProjectId)
+        let params = UGCParams(productAssetId: productId, creatorId: creatorId, script: script, location: location, tone: tone.first ?? "Authentique", duration: duration, projectId: store.currentProjectId)
         Task {
             do {
                 var idx = -1
@@ -249,7 +249,7 @@ struct UGCCreatorView: View {
                 MSHaptic.success()
                 withAnimation(MSAnimation.snappy) { result = video; phase = .done }
                 scrollTarget = "result"
-                router.toast("UGC video ready", style: .success, icon: "sparkles")
+                router.toast("Vidéo UGC prête", style: .success, icon: "sparkles")
             } catch {
                 MSHaptic.warning()
                 lastError = error
@@ -261,9 +261,9 @@ struct UGCCreatorView: View {
 
     private func save(_ video: GeneratedVideo, quiet: Bool = false) {
         guard savedAssetId == nil else { return }
-        let a = store.addAsset(name: "UGC · \(creator?.name ?? "Creator") · \(tone.first ?? "")", kind: .video, imageURL: video.posterURL, projectId: store.currentProjectId, tags: ["ugc", (tone.first ?? "").lowercased()], durationSeconds: video.duration)
+        let a = store.addAsset(name: "UGC · \(creator?.name ?? "Créateur") · \(tone.first ?? "")", kind: .video, imageURL: video.posterURL, projectId: store.currentProjectId, tags: ["ugc", (tone.first ?? "").lowercased()], durationSeconds: video.duration)
         savedAssetId = a.id
-        if !quiet { MSHaptic.success(); router.toast("Saved to assets", style: .success) }
+        if !quiet { MSHaptic.success(); router.toast("Enregistrée dans les ressources", style: .success) }
     }
 }
 
@@ -285,7 +285,7 @@ struct CreatorPickCard: View {
                         }
                     }
                 Text(creator.name).font(MSFont.control(13)).foregroundStyle(selected ? MSColor.text : MSColor.text2)
-                Text("\(creator.age) · \(creator.style)").msCaption().lineLimit(1)
+                Text("\(creator.age) ans · \(creator.style)").msCaption().lineLimit(1)
             }
             .frame(width: 96, alignment: .leading)
         }

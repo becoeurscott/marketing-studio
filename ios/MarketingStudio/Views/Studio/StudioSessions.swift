@@ -24,23 +24,52 @@ enum StudioOptions {
 
     /// Fictional model catalogs shown in the composer's model sheet.
     static let imageModels: [StudioModel] = [
-        StudioModel(name: "Lumen 2.5", tagline: "Best overall quality for product visuals", icon: "sparkle", speed: "~20s"),
-        StudioModel(name: "Lumen 2.5 Flash", tagline: "Fast drafts, same look", icon: "bolt", speed: "~6s"),
-        StudioModel(name: "Verity XL", tagline: "Photoreal skin, fabric and glass", icon: "camera.aperture", speed: "~35s"),
-        StudioModel(name: "Atelier 1", tagline: "Editorial and illustrated styles", icon: "paintpalette", speed: "~25s"),
+        StudioModel(name: "Lumen 2.5", tagline: "La meilleure qualité pour vos visuels produit", icon: "sparkle", speed: "~20s"),
+        StudioModel(name: "Lumen 2.5 Flash", tagline: "Brouillons rapides, même rendu", icon: "bolt", speed: "~6s"),
+        StudioModel(name: "Verity XL", tagline: "Peau, tissu et verre photoréalistes", icon: "camera.aperture", speed: "~35s"),
+        StudioModel(name: "Atelier 1", tagline: "Styles éditoriaux et illustrés", icon: "paintpalette", speed: "~25s"),
     ]
     static let motionModels: [StudioModel] = [
-        StudioModel(name: "Kinetic 3", tagline: "Smooth camera moves, stable products", icon: "sparkle", speed: "~60s"),
-        StudioModel(name: "Kinetic 3 Turbo", tagline: "Quick previews at lower detail", icon: "bolt", speed: "~20s"),
-        StudioModel(name: "Drift 1.5", tagline: "Cinematic depth and lighting", icon: "film", speed: "~90s"),
+        StudioModel(name: "Kinetic 3", tagline: "Mouvements de caméra fluides, produits stables", icon: "sparkle", speed: "~60s"),
+        StudioModel(name: "Kinetic 3 Turbo", tagline: "Aperçus rapides, moins détaillés", icon: "bolt", speed: "~20s"),
+        StudioModel(name: "Drift 1.5", tagline: "Profondeur et éclairage cinématographiques", icon: "film", speed: "~90s"),
     ]
     static let personaModels: [StudioModel] = [
-        StudioModel(name: "Persona 2", tagline: "Natural creators, lip-synced script", icon: "sparkle", speed: "~70s"),
-        StudioModel(name: "Persona 2 Pro", tagline: "Higher fidelity faces and hands", icon: "person.crop.rectangle", speed: "~2m"),
-        StudioModel(name: "Kinetic 3", tagline: "Motion-first, lighter on dialogue", icon: "film", speed: "~60s"),
+        StudioModel(name: "Persona 2", tagline: "Créateurs naturels, script synchronisé aux lèvres", icon: "sparkle", speed: "~70s"),
+        StudioModel(name: "Persona 2 Pro", tagline: "Visages et mains plus fidèles", icon: "person.crop.rectangle", speed: "~2m"),
+        StudioModel(name: "Kinetic 3", tagline: "Priorité au mouvement, moins de dialogue", icon: "film", speed: "~60s"),
     ]
 
-    static let promptPlaceholder = "Create a luxury product advertisement for this perfume..."
+    static let promptPlaceholder = "Créez une publicité produit de luxe pour ce parfum..."
+
+    /// French display label for an option value. Values themselves stay English (used in params/persistence).
+    static func label(_ value: String) -> String { frLabels[value] ?? value }
+
+    private static let frLabels: [String: String] = [
+        // Styles
+        "Product Photography": "Photo produit", "Luxury": "Luxe", "Minimal": "Minimaliste", "Street": "Urbain",
+        "Lifestyle": "Lifestyle", "Editorial": "Éditorial", "Cinematic": "Cinématique", "Studio": "Studio",
+        "Fashion": "Mode", "Food": "Culinaire", "Tech": "Tech", "Commercial": "Publicitaire", "Product demo": "Démo produit",
+        // Backgrounds
+        "White": "Blanc", "Gradient": "Dégradé", "Marble": "Marbre", "Wood": "Bois", "Outdoor": "Extérieur", "Transparent": "Transparent",
+        // Lighting
+        "Natural": "Naturel", "Golden hour": "Heure dorée", "Neon": "Néon", "Softbox": "Softbox", "Dramatic": "Dramatique",
+        // Cameras
+        "Close-up": "Gros plan", "Medium": "Plan moyen", "Wide": "Plan large", "Macro": "Macro",
+        "Slow zoom": "Zoom lent", "Orbit": "Orbite", "Handheld": "Caméra à l'épaule", "Push in": "Travelling avant",
+        "Pull out": "Travelling arrière", "Tracking": "Suivi", "Static": "Fixe",
+        // Compositions
+        "Centered": "Centrée", "Rule of thirds": "Règle des tiers", "Flat lay": "Flat lay", "Hero angle": "Angle héroïque", "Top-down": "Vue de dessus",
+        // UGC locations
+        "Bathroom": "Salle de bain", "Bedroom": "Chambre", "Kitchen": "Cuisine", "Living room": "Salon", "Outdoors": "Extérieur",
+        "Gym": "Salle de sport", "Car": "Voiture", "Office": "Bureau",
+        // UGC tones
+        "Excited": "Enthousiaste", "Casual": "Décontracté", "Professional": "Professionnel", "Funny": "Drôle", "Authentic": "Authentique",
+        // Editor tools
+        "Crop": "Recadrer", "Resize": "Redimensionner", "Remove Background": "Supprimer l'arrière-plan",
+        "Replace Background": "Remplacer l'arrière-plan", "Relight": "Rééclairer", "Retouch": "Retoucher",
+        "Add Text": "Ajouter du texte", "Add Logo": "Ajouter un logo", "Expand Image": "Agrandir l'image",
+    ]
 
     static func aspect(_ ratio: String) -> CGFloat {
         let parts = ratio.split(separator: ":").compactMap { Double($0) }
@@ -65,11 +94,11 @@ enum StudioMode: Int, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .image: return "Image"
-        case .video: return "Video"
+        case .video: return "Vidéo"
         case .ugc: return "UGC"
-        case .ads: return "Ads"
-        case .copy: return "Copy"
-        case .campaign: return "Campaign"
+        case .ads: return "Pubs"
+        case .copy: return "Textes"
+        case .campaign: return "Campagne"
         }
     }
     /// Modes that live on their own screens (built by other agents).
@@ -192,7 +221,7 @@ final class ImageGenSession: ObservableObject {
             selectedId = results.first?.id
             phase = .results
             MSHaptic.success()
-            router.toast("4 images ready", style: .success, icon: "sparkles")
+            router.toast("4 images prêtes", style: .success, icon: "sparkles")
         } catch {
             phase = .failed(GenerationFailure(error))
             MSHaptic.warning()
@@ -206,9 +235,9 @@ final class ImageGenSession: ObservableObject {
         do {
             let g = try await MockAPI.upscaleImage(url: r.url, store: store)
             let upURL = MockData.image("up-\(r.id.suffix(6))", w: 1600, h: 2000)
-            let asset = store.addAsset(name: "Upscaled 2× · \(store.asset(r.assetId)?.name ?? "image")", kind: .image, imageURL: upURL, projectId: store.currentProjectId, tags: ["upscaled"])
+            let asset = store.addAsset(name: "Agrandie 2× · \(store.asset(r.assetId)?.name ?? "image")", kind: .image, imageURL: upURL, projectId: store.currentProjectId, tags: ["upscaled"])
             replace(r.id, with: ImageResult(id: r.id, url: upURL, assetId: asset.id, generationId: g.generationId, upscaled: true))
-            router.toast("Upscaled to 2× (3200 × 4000)", style: .success, icon: "arrow.up.left.and.arrow.down.right")
+            router.toast("Agrandie en 2× (3200 × 4000)", style: .success, icon: "arrow.up.left.and.arrow.down.right")
         } catch {
             router.toast(error.localizedDescription, style: .error)
         }
@@ -218,7 +247,7 @@ final class ImageGenSession: ObservableObject {
     func applyEdit(tool: String, store: AppStore) {
         guard let r = selected else { return }
         let url = MockData.image("edit-\(tool.prefix(4).lowercased())-\(r.id.suffix(6))")
-        let asset = store.addAsset(name: "\(tool) · \(store.asset(r.assetId)?.name ?? "image")", kind: .image, imageURL: url, projectId: store.currentProjectId, tags: ["edited", tool])
+        let asset = store.addAsset(name: "\(StudioOptions.label(tool)) · \(store.asset(r.assetId)?.name ?? "image")", kind: .image, imageURL: url, projectId: store.currentProjectId, tags: ["edited", tool])
         replace(r.id, with: ImageResult(id: r.id, url: url, assetId: asset.id, generationId: r.generationId))
     }
 
@@ -287,11 +316,11 @@ final class VideoGenSession: ObservableObject {
                 let idx = MockAPI.videoSteps.firstIndex(of: step) ?? 0
                 withAnimation(MSAnimation.gentle) { self.phase = .generating(step: idx) }
             }
-            let asset = store.addAsset(name: "\(style) video · \(duration)s", kind: .video, imageURL: v.posterURL, projectId: store.currentProjectId, tags: [style, ratio, "generated"], durationSeconds: v.duration)
+            let asset = store.addAsset(name: "Vidéo \(StudioOptions.label(style)) · \(duration)s", kind: .video, imageURL: v.posterURL, projectId: store.currentProjectId, tags: [style, ratio, "generated"], durationSeconds: v.duration)
             result = VideoResult(id: v.id, posterURL: v.posterURL, duration: v.duration, assetId: asset.id, ratio: ratio)
             phase = .result
             MSHaptic.success()
-            router.toast("Video rendered", style: .success, icon: "video.fill")
+            router.toast("Vidéo générée", style: .success, icon: "video.fill")
         } catch {
             phase = .failed(GenerationFailure(error))
             MSHaptic.warning()
@@ -318,7 +347,7 @@ final class UGCGenSession: ObservableObject {
     @Published private(set) var result: VideoResult?
 
     static let cost = GenerationKind.video.creditCost
-    static let steps = ["Casting creator", "Reading script...", "Building scene 1...", "Adding motion...", "Rendering...", "Finalizing..."]
+    static let steps = ["Choix du créateur", "Lecture du script...", "Création de la scène 1...", "Ajout du mouvement...", "Rendu...", "Finalisation..."]
 
     var isGenerating: Bool { if case .generating = phase { return true } else { return false } }
     var canGenerate: Bool { creator != nil }
@@ -347,11 +376,11 @@ final class UGCGenSession: ObservableObject {
                 idx = min(idx + 1, Self.steps.count - 1)
                 withAnimation(MSAnimation.gentle) { self.phase = .generating(step: idx) }
             }
-            let asset = store.addAsset(name: "UGC · \(creator.name) · \(tone)", kind: .video, imageURL: v.posterURL, projectId: store.currentProjectId, tags: ["ugc", tone.lowercased(), ratio], durationSeconds: v.duration)
+            let asset = store.addAsset(name: "UGC · \(creator.name) · \(StudioOptions.label(tone))", kind: .video, imageURL: v.posterURL, projectId: store.currentProjectId, tags: ["ugc", tone.lowercased(), ratio], durationSeconds: v.duration)
             result = VideoResult(id: v.id, posterURL: v.posterURL, duration: v.duration, assetId: asset.id, ratio: ratio)
             phase = .result
             MSHaptic.success()
-            router.toast("UGC video ready", style: .success, icon: "sparkles")
+            router.toast("Vidéo UGC prête", style: .success, icon: "sparkles")
         } catch {
             phase = .failed(GenerationFailure(error))
             MSHaptic.warning()

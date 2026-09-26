@@ -37,7 +37,7 @@ struct MockVideoPlayer: View {
                 }
                 VStack {
                     HStack {
-                        MSBadge(text: engine.remoteReady ? "Preview" : "Mock render", tone: .neutral, icon: "video")
+                        MSBadge(text: engine.remoteReady ? "Aperçu" : "Rendu simulé", tone: .neutral, icon: "video")
                         Spacer()
                         MSBadge(text: "\(duration)s · \(ratio)", tone: .neutral)
                     }

@@ -42,7 +42,7 @@ export function StepProgress({ steps, current, className }: { steps: readonly st
 /** Dots for wizard/onboarding steps. */
 export function StepDots({ total, current, className }: { total: number; current: number; className?: string }) {
   return (
-    <div className={cn("flex items-center gap-1.5", className)} aria-label={`Step ${current + 1} of ${total}`}>
+    <div className={cn("flex items-center gap-1.5", className)} aria-label={`Étape ${current + 1} sur ${total}`}>
       {Array.from({ length: total }).map((_, i) => (
         <motion.span key={i} className={cn("h-1.5 rounded-full", i <= current ? "bg-accent" : "bg-white/12")} animate={{ width: i === current ? 24 : 8 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} />
       ))}

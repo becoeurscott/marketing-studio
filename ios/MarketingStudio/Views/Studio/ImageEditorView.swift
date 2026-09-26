@@ -44,7 +44,7 @@ struct ImageEditorView: View {
             MSIconButton(icon: "xmark", size: 34) { dismiss() }
             Spacer()
             VStack(spacing: 1) {
-                Text("Image Editor").msHeadline(15)
+                Text("Éditeur d'image").msHeadline(15)
                 Text(tool).msCaption(color: MSColor.highlight)
             }
             Spacer()
@@ -66,7 +66,7 @@ struct ImageEditorView: View {
                     .padding(.horizontal, MSSpacing.gutter)
                 VStack(spacing: 10) {
                     ProgressView().tint(MSColor.highlight).scaleEffect(1.2)
-                    Text("Applying \(tool.lowercased())...").msHeadline(14)
+                    Text("Application : \(StudioOptions.label(tool).lowercased())...").msHeadline(14)
                 }
             }
         }
@@ -89,7 +89,7 @@ struct ImageEditorView: View {
                                 .background(on ? MSColor.accent.opacity(0.18) : MSColor.card, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                                 .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(on ? MSColor.accent : MSColor.border, lineWidth: 1))
                                 .foregroundStyle(on ? MSColor.highlight : MSColor.text)
-                            Text(name).font(MSFont.caption(10)).foregroundStyle(on ? MSColor.text : MSColor.muted).lineLimit(1)
+                            Text(StudioOptions.label(name)).font(MSFont.caption(10)).foregroundStyle(on ? MSColor.text : MSColor.muted).lineLimit(1)
                         }
                         .frame(width: 64)
                     }
@@ -105,12 +105,12 @@ struct ImageEditorView: View {
         VStack(alignment: .leading, spacing: 12) {
             MSTextField(placeholder: inspectorPlaceholder, text: $prompt, icon: "text.cursor")
             HStack {
-                Text("Strength").msCaption(color: MSColor.text2)
+                Text("Intensité").msCaption(color: MSColor.text2)
                 Slider(value: $strength, in: 0...1).tint(MSColor.accent)
                 Text("\(Int(strength * 100))%").font(MSFont.mono(12)).foregroundStyle(MSColor.text2).frame(width: 40, alignment: .trailing)
             }
             HStack(spacing: 6) {
-                Text("Ratio").msCaption(color: MSColor.text2)
+                Text("Format").msCaption(color: MSColor.text2)
                 ForEach(StudioOptions.ratios, id: \.self) { r in
                     MSChip(title: r, selected: r == selectedRatio) { withAnimation(MSAnimation.snappy) { selectedRatio = r } }
                 }
@@ -123,15 +123,15 @@ struct ImageEditorView: View {
 
     private var inspectorPlaceholder: String {
         switch tool {
-        case "Replace Background": return "Describe the new background..."
-        case "Add Text": return "Text to add, e.g. 20% off launch"
-        case "Relight": return "Lighting direction, e.g. warm from the left"
-        default: return "Describe the change (optional)"
+        case "Replace Background": return "Décrivez le nouvel arrière-plan..."
+        case "Add Text": return "Texte à ajouter, ex. -20 % pour le lancement"
+        case "Relight": return "Direction de la lumière, ex. chaude depuis la gauche"
+        default: return "Décrivez la modification (facultatif)"
         }
     }
 
     private var footer: some View {
-        MSButton(title: "Apply Changes", icon: "checkmark", isLoading: applying) {
+        MSButton(title: "Appliquer", icon: "checkmark", isLoading: applying) {
             applying = true
             Task {
                 try? await Task.sleep(for: .seconds(1.3))

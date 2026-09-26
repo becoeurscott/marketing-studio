@@ -17,39 +17,39 @@ struct SettingsView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 22) {
-                Text("Settings").msTitle(30).padding(.horizontal, MSSpacing.gutter)
+                Text("Réglages").msTitle(30).padding(.horizontal, MSSpacing.gutter)
 
-                section("Account") {
-                    navRow("Profile", subtitle: store.user.email, icon: "person.crop.circle") { router.push(.profile) }
+                section("Compte") {
+                    navRow("Profil", subtitle: store.user.email, icon: "person.crop.circle") { router.push(.profile) }
                     divider
-                    navRow("Workspace", subtitle: "\(store.members.count) members", icon: "building.2") { router.push(.workspace) }
+                    navRow("Espace de travail", subtitle: "\(store.members.count) membres", icon: "building.2") { router.push(.workspace) }
                 }
 
                 section("Notifications") {
-                    toggleRow("Push notifications", subtitle: "Generation and export updates", icon: "bell", isOn: pref(\.pushNotifications))
+                    toggleRow("Notifications push", subtitle: "Suivi des générations et des exports", icon: "bell", isOn: pref(\.pushNotifications))
                     divider
-                    toggleRow("Email digest", subtitle: "Weekly summary of activity", icon: "envelope", isOn: pref(\.emailDigest))
+                    toggleRow("Résumé par e-mail", subtitle: "Récapitulatif hebdomadaire de l’activité", icon: "envelope", isOn: pref(\.emailDigest))
                     divider
-                    toggleRow("Haptics", subtitle: "Feedback on taps and results", icon: "hand.tap", isOn: pref(\.haptics))
+                    toggleRow("Retour haptique", subtitle: "Vibrations lors des actions et des résultats", icon: "hand.tap", isOn: pref(\.haptics))
                 }
 
-                section("Appearance") {
+                section("Apparence") {
                     HStack(spacing: 12) {
                         icon("moon.fill")
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Theme").font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                            Text("Marketing Studio is dark only, tuned for creative work.").msCaption()
+                            Text("Thème").font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                            Text("Sokozia existe uniquement en mode sombre, pensé pour la création.").msCaption()
                         }
                         Spacer()
-                        MSBadge(text: "Dark", tone: .neutral)
+                        MSBadge(text: "Sombre", tone: .neutral)
                     }
                     .padding(.horizontal, 12).frame(minHeight: 56)
                     divider
                     HStack(spacing: 12) {
                         icon("paintbrush.pointed")
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Accent").font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                            Text("Used for primary actions and selection.").msCaption()
+                            Text("Couleur d’accent").font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                            Text("Utilisée pour les actions principales et la sélection.").msCaption()
                         }
                         Spacer()
                         HStack(spacing: 4) {
@@ -60,47 +60,47 @@ struct SettingsView: View {
                     }
                     .padding(.horizontal, 12).frame(minHeight: 56)
                     divider
-                    toggleRow("Reduce motion", subtitle: "Fewer animations", icon: "figure.walk.motion", isOn: pref(\.reduceMotion))
+                    toggleRow("Réduire les animations", subtitle: "Moins d’effets de mouvement", icon: "figure.walk.motion", isOn: pref(\.reduceMotion))
                 }
 
-                section("Studio defaults") {
-                    navRow("Aspect ratio", subtitle: store.preferences.defaultRatio, icon: "aspectratio") { showDefaults = true }
+                section("Préférences du Studio") {
+                    navRow("Format d’image", subtitle: store.preferences.defaultRatio, icon: "aspectratio") { showDefaults = true }
                     divider
-                    navRow("Model", subtitle: store.preferences.defaultModel, icon: "cpu") { showDefaults = true }
+                    navRow("Modèle", subtitle: store.preferences.defaultModel, icon: "cpu") { showDefaults = true }
                     divider
                     navRow("Style", subtitle: store.preferences.defaultStyle, icon: "wand.and.stars") { showDefaults = true }
                 }
 
-                section("Brand") {
-                    navRow("Brand kit", subtitle: store.brand.name, icon: "paintpalette") { router.push(.brandKit) }
+                section("Marque") {
+                    navRow("Kit de marque", subtitle: store.brand.name, icon: "paintpalette") { router.push(.brandKit) }
                     divider
-                    navRow("Brand voice", subtitle: "\(store.brand.voice.tone) tone", icon: "waveform.and.mic") { router.push(.brandVoice) }
+                    navRow("Ton de la marque", subtitle: "Ton \(store.brand.voice.tone)", icon: "waveform.and.mic") { router.push(.brandVoice) }
                 }
 
-                section("Subscription") {
-                    navRow("Plan", subtitle: "\(store.plan.title) · $\(store.plan.monthlyPrice)/mo", icon: "creditcard") { router.push(.pricing) }
+                section("Abonnement") {
+                    navRow("Forfait", subtitle: "\(store.plan.title) · \(store.plan.monthlyPrice) $/mois", icon: "creditcard") { router.push(.pricing) }
                     divider
-                    navRow("Credits", subtitle: "\(store.credits.formatted()) available", icon: "bolt") { router.push(.credits) }
+                    navRow("Crédits", subtitle: "\(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) disponibles", icon: "bolt") { router.push(.credits) }
                 }
 
-                section("Security") {
-                    toggleRow("Two-factor authentication", subtitle: twoFactor ? "Enabled via authenticator app" : "Protect your account", icon: "lock.shield", isOn: $twoFactor)
-                        .onChange(of: twoFactor) { _, on in router.toast(on ? "Two-factor enabled (mock)" : "Two-factor disabled", style: on ? .success : .info) }
+                section("Sécurité") {
+                    toggleRow("Double authentification", subtitle: twoFactor ? "Activée via une app d’authentification" : "Protégez votre compte", icon: "lock.shield", isOn: $twoFactor)
+                        .onChange(of: twoFactor) { _, on in router.toast(on ? "Double authentification activée (démo)" : "Double authentification désactivée", style: on ? .success : .info) }
                     divider
-                    navRow("Change password", subtitle: "Last changed 3 months ago", icon: "key") { router.toast("Password reset email sent (mock)", style: .success) }
+                    navRow("Changer le mot de passe", subtitle: "Modifié il y a 3 mois", icon: "key") { router.toast("E-mail de réinitialisation envoyé (démo)", style: .success) }
                     divider
-                    navRow("Active sessions", subtitle: "iPhone · Chrome on Mac", icon: "iphone") { showSessions = true }
+                    navRow("Sessions actives", subtitle: "iPhone · Chrome sur Mac", icon: "iphone") { showSessions = true }
                 }
 
-                section("Help") {
-                    navRow("Help center", subtitle: "FAQ and contact", icon: "questionmark.circle") { router.push(.help) }
+                section("Aide") {
+                    navRow("Centre d’aide", subtitle: "FAQ et contact", icon: "questionmark.circle") { router.push(.help) }
                     divider
-                    navRow("Send feedback", subtitle: "Tell us what to build next", icon: "bubble.left") { router.toast("Thanks, feedback noted (mock)", style: .success) }
+                    navRow("Envoyer un avis", subtitle: "Dites-nous quoi développer ensuite", icon: "bubble.left") { router.toast("Merci, avis bien reçu (démo)", style: .success) }
                 }
 
                 VStack(spacing: 10) {
-                    MSButton(title: "Reset demo data", icon: "arrow.counterclockwise", style: .danger) { confirmReset = true }
-                    Text("Marketing Studio \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0") · Prototype build").msCaption()
+                    MSButton(title: "Réinitialiser les données de démo", icon: "arrow.counterclockwise", style: .danger) { confirmReset = true }
+                    Text("Sokozia \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0") · Version prototype").msCaption()
                 }
                 .padding(.horizontal, MSSpacing.gutter)
                 .padding(.top, 6)
@@ -109,33 +109,33 @@ struct SettingsView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Settings")
+        .navigationTitle("Réglages")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .msSheet(isPresented: $showDefaults, detents: [.large]) { defaultsSheet }
         .msSheet(isPresented: $showSessions, detents: [.medium]) { sessionsSheet }
-        .confirmationDialog("Reset demo data?", isPresented: $confirmReset, titleVisibility: .visible) {
-            Button("Reset everything", role: .destructive) {
+        .confirmationDialog("Réinitialiser les données de démo ?", isPresented: $confirmReset, titleVisibility: .visible) {
+            Button("Tout réinitialiser", role: .destructive) {
                 store.resetAll()
                 router.popToRoot(on: .more)
                 router.select(.home)
             }
-            Button("Cancel", role: .cancel) {}
+            Button("Annuler", role: .cancel) {}
         } message: {
-            Text("Projects, assets, campaigns, credits and preferences return to the seeded demo and onboarding starts again.")
+            Text("Les projets, ressources, campagnes, crédits et préférences reviennent à la démo initiale et l’accueil recommence.")
         }
     }
 
     // MARK: Sheets
 
     private var defaultsSheet: some View {
-        BottomSheetContainer(title: "Studio defaults", subtitle: "Pre-filled on every new generation.") {
+        BottomSheetContainer(title: "Préférences du Studio", subtitle: "Pré-remplies à chaque nouvelle génération.") {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 18) {
-                    pickerGroup("Aspect ratio", ratios, pref(\.defaultRatio))
-                    pickerGroup("Model", models, pref(\.defaultModel))
+                    pickerGroup("Format d’image", ratios, pref(\.defaultRatio))
+                    pickerGroup("Modèle", models, pref(\.defaultModel))
                     pickerGroup("Style", styles, pref(\.defaultStyle))
-                    MSButton(title: "Done", icon: "checkmark") { showDefaults = false; router.toast("Defaults saved", style: .success) }
+                    MSButton(title: "Terminé", icon: "checkmark") { showDefaults = false; router.toast("Préférences enregistrées", style: .success) }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
                 .padding(.bottom, 24)
@@ -155,14 +155,14 @@ struct SettingsView: View {
     }
 
     private var sessionsSheet: some View {
-        BottomSheetContainer(title: "Active sessions") {
+        BottomSheetContainer(title: "Sessions actives") {
             VStack(spacing: 10) {
-                sessionRow("This iPhone", "Active now", icon: "iphone", current: true)
-                sessionRow("Chrome on Mac", "San Francisco · 2 hours ago", icon: "laptopcomputer", current: false)
+                sessionRow("Cet iPhone", "Actif maintenant", icon: "iphone", current: true)
+                sessionRow("Chrome sur Mac", "San Francisco · il y a 2 heures", icon: "laptopcomputer", current: false)
                 Spacer(minLength: 0)
-                MSButton(title: "Sign out other sessions", icon: "xmark.circle", style: .danger) {
+                MSButton(title: "Déconnecter les autres sessions", icon: "xmark.circle", style: .danger) {
                     showSessions = false
-                    router.toast("Other sessions signed out (mock)", style: .success)
+                    router.toast("Autres sessions déconnectées (démo)", style: .success)
                 }
             }
             .padding(.horizontal, MSSpacing.gutter)
@@ -179,7 +179,7 @@ struct SettingsView: View {
                     Text(subtitle).msCaption()
                 }
                 Spacer()
-                if current { MSBadge(text: "Current", tone: .success) }
+                if current { MSBadge(text: "Actuelle", tone: .success) }
             }
         }
     }
@@ -195,7 +195,7 @@ struct SettingsView: View {
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title.uppercased()).font(.system(size: 11, weight: .semibold)).tracking(0.8).foregroundStyle(MSColor.muted).padding(.horizontal, 4)
+            Text(title.uppercased(with: Locale(identifier: "fr_FR"))).font(.system(size: 11, weight: .semibold)).tracking(0.8).foregroundStyle(MSColor.muted).padding(.horizontal, 4)
             VStack(spacing: 0) { content() }
                 .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))

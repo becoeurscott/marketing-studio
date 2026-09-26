@@ -239,7 +239,7 @@ final class AppStore: ObservableObject {
         guard let source = project(id) else { return nil }
         var copy = source
         copy.id = IDGen.make("proj")
-        copy.name = source.name + " (Copy)"
+        copy.name = source.name + " (copie)"
         copy.status = .active
         copy.createdAt = Date()
         copy.updatedAt = Date()
@@ -440,7 +440,7 @@ final class AppStore: ObservableObject {
             id: IDGen.make("brand"), name: name,
             logoURL: MockData.image("\(slug)-logo", w: 600, h: 600), iconURL: MockData.image("\(slug)-icon", w: 300, h: 300),
             colors: colors, fonts: fonts, website: website, description: description, industry: industry, audience: audience,
-            voice: BrandVoice(tone: "Friendly", writingStyle: "Clear and direct. Warm, never salesy.", keywords: [], avoid: []),
+            voice: BrandVoice(tone: "Friendly", writingStyle: "Clair et direct. Chaleureux, jamais commercial.", keywords: [], avoid: []),
             assetIds: []
         )
         if makeActive { otherBrands.insert(brand, at: 0); brand = b } else { otherBrands.append(b) }
@@ -473,7 +473,7 @@ final class AppStore: ObservableObject {
         credits -= amount
         transactions.insert(CreditTransaction(id: IDGen.make("tx"), amount: -amount, reason: reason, createdAt: Date()), at: 0)
         if credits < 100 {
-            pushNotification(kind: .creditsLow, title: "Credits running low", message: "You have \(credits) credits left. Top up to keep generating.")
+            pushNotification(kind: .creditsLow, title: "Crédits bientôt épuisés", message: "Il vous reste \(credits) crédits. Rechargez pour continuer à générer.")
         }
         return true
     }
@@ -482,7 +482,7 @@ final class AppStore: ObservableObject {
 
     func buyCredits(_ amount: Int, price: Int) {
         credits += amount
-        transactions.insert(CreditTransaction(id: IDGen.make("tx"), amount: amount, reason: "Purchased \(amount) credits ($\(price))", createdAt: Date()), at: 0)
+        transactions.insert(CreditTransaction(id: IDGen.make("tx"), amount: amount, reason: "Achat de \(amount) crédits (\(price) $)", createdAt: Date()), at: 0)
     }
 
     // MARK: - Notifications
@@ -526,7 +526,7 @@ final class AppStore: ObservableObject {
         plan = p
         user.plan = p
         credits += p.monthlyCredits
-        transactions.insert(CreditTransaction(id: IDGen.make("tx"), amount: p.monthlyCredits, reason: "\(p.title) plan credits", createdAt: Date()), at: 0)
+        transactions.insert(CreditTransaction(id: IDGen.make("tx"), amount: p.monthlyCredits, reason: "Crédits du forfait \(p.title)", createdAt: Date()), at: 0)
     }
 
     func updateUser(_ u: User) { user = u }

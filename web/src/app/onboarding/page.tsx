@@ -1,169 +1,171 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
+import { useCallback, useEffect, useState } from "react";
 import { StepDots } from "@/components/ui/ProgressIndicator";
+import { AccountScreen, PaywallScreen } from "@/components/onboarding/FinishScreens";
+import { AnalysisScreen, OpeningScreen, UploadScreen } from "@/components/onboarding/IntroScreens";
+import { BoldnessScreen, BrandScreen, GoalScreen, PlatformsScreen, StyleScreen } from "@/components/onboarding/QuestionScreens";
+import {
+  AdsScreen, CalendarScreen, CampaignCardScreen, CopyScreen, FormatsScreen, FullCampaignScreen,
+  GenerationScreen, PhotosScreen, UgcScreen, ValueScreen, WorkflowScreen,
+} from "@/components/onboarding/RevealScreens";
+import { SAMPLE_PRODUCT, type ProductInfo } from "@/components/onboarding/shared";
 import { useHydrated, useStore } from "@/lib/store";
-import type { OnboardingAnswers, Platform } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import type { CampaignObjective, PlanId } from "@/lib/types";
 
-type StepDef =
-  | { key: "creating" | "role" | "goal"; title: string; subtitle: string; options: string[]; multiple: false }
-  | { key: "wants" | "platforms"; title: string; subtitle: string; options: string[]; multiple: true };
+const STEPS = [
+  "opening", "upload", "analysis", "goal", "platforms", "style", "brand", "boldness", "generation",
+  "photos", "ugc", "ads", "copy", "campaign", "formats", "value", "workflow", "card", "calendar", "account", "paywall",
+] as const;
+type Step = (typeof STEPS)[number];
 
-const STEPS: StepDef[] = [
-  { key: "creating", title: "What are you creating?", subtitle: "We'll tailor your studio around it.", options: ["Product", "Brand", "Content", "Ads", "Campaigns", "Other"], multiple: false },
-  { key: "role", title: "What best describes you?", subtitle: "Helps us pick the right templates.", options: ["Founder", "Marketer", "Creator", "Agency", "Freelancer", "E-commerce seller"], multiple: false },
-  { key: "wants", title: "What do you want to create?", subtitle: "Pick as many as you like.", options: ["Images", "Videos", "Ads", "Social content", "Full campaigns"], multiple: true },
-  { key: "platforms", title: "Where will it live?", subtitle: "Choose your platforms.", options: ["Instagram", "TikTok", "Facebook", "YouTube", "Google", "Pinterest"], multiple: true },
-  { key: "goal", title: "What's your biggest goal?", subtitle: "One thing we should optimize for.", options: ["More sales", "More content", "Brand awareness", "Save time", "Scale marketing"], multiple: false },
-];
+/** Steps grouped for the progress dots (setup questions only). */
+const QUESTION_STEPS: Step[] = ["goal", "platforms", "style", "brand", "boldness"];
+
+const OBJECTIVE: Record<string, CampaignObjective> = { launch: "awareness", sell: "sales", social: "engagement", test: "engagement", auto: "sales" };
 
 export default function OnboardingPage() {
   const router = useRouter();
   const hydrated = useHydrated();
+  const reduce = useReducedMotion();
   const answers = useStore((s) => s.onboarding);
   const setAnswers = useStore((s) => s.setOnboardingAnswers);
   const complete = useStore((s) => s.completeOnboarding);
+  const createCampaign = useStore((s) => s.createCampaign);
+  const setPlan = useStore((s) => s.setPlan);
+  const projectId = useStore((s) => s.currentProjectId ?? s.projects[0]?.id ?? null);
   const done = useStore((s) => s.onboardingDone);
-  const user = useStore((s) => s.user);
-  const [step, setStep] = useState(0);
-  const [dir, setDir] = useState(1);
+
+  const [step, setStep] = useState<Step>("opening");
+  const [history, setHistory] = useState<Step[]>([]);
   const [finished, setFinished] = useState(false);
+  const [product, setProduct] = useState<ProductInfo>(SAMPLE_PRODUCT);
 
   useEffect(() => {
     if (hydrated && done && !finished) router.replace("/home");
   }, [hydrated, done, finished, router]);
 
-  const current = STEPS[step];
-  const value = answers[current.key];
-  const canContinue = current.multiple ? (value as string[]).length > 0 : !!value;
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [step]);
 
-  const select = (opt: string) => {
-    if (current.multiple) {
-      const list = value as string[];
-      const next = list.includes(opt) ? list.filter((x) => x !== opt) : [...list, opt];
-      setAnswers({ [current.key]: current.key === "platforms" ? (next.map((p) => p.toLowerCase()) as Platform[]) : next } as Partial<OnboardingAnswers>);
-    } else {
-      setAnswers({ [current.key]: opt } as Partial<OnboardingAnswers>);
+  const go = useCallback((to: Step) => {
+    setHistory((h) => [...h, step]);
+    setStep(to);
+  }, [step]);
+  const next = useCallback(() => {
+    const i = STEPS.indexOf(step);
+    if (i < STEPS.length - 1) go(STEPS[i + 1]);
+  }, [step, go]);
+  const back = () => {
+    setHistory((h) => {
+      const copy = [...h];
+      let prev = copy.pop();
+      if (prev === "generation") prev = copy.pop(); // never replay the build screen
+      if (prev) setStep(prev);
+      return copy;
+    });
+  };
+  const onGenerated = useCallback(() => setStep("photos"), []);
+
+  const saveProduct = (p: ProductInfo) => {
+    setProduct(p);
+    setAnswers({ product: { name: p.name, category: p.category, description: p.description, sample: p.sample } });
+  };
+
+  const finish = (plan: string) => {
+    setFinished(true);
+    setPlan((plan === "free" ? "starter" : plan) as PlanId);
+    let target = "/campaigns";
+    if (projectId) {
+      const c = createCampaign({
+        name: `Campagne · ${product.name}`,
+        projectId,
+        objective: OBJECTIVE[answers.goal ?? "auto"] ?? "sales",
+        audience: product.category,
+        platforms: answers.platforms.length ? answers.platforms : ["instagram", "tiktok"],
+        formats: ["product-photos", "ugc", "video-ads", "stories", "carousels"],
+      });
+      target = `/campaigns/${c.id}`;
     }
+    complete();
+    router.push(target);
   };
-  const isSelected = (opt: string) =>
-    current.multiple ? (value as string[]).map((v) => v.toLowerCase()).includes(opt.toLowerCase()) : value === opt;
-
-  const next = () => {
-    if (step < STEPS.length - 1) { setDir(1); setStep(step + 1); }
-    else { setFinished(true); complete(); }
-  };
-  const back = () => { if (step > 0) { setDir(-1); setStep(step - 1); } };
 
   if (!hydrated) return <div className="min-h-dvh bg-bg" />;
 
+  const qIndex = QUESTION_STEPS.indexOf(step);
+  const canGoBack = history.length > 0 && step !== "generation" && step !== "analysis";
+
+  const screen = (() => {
+    switch (step) {
+      case "opening": return <OpeningScreen onStart={next} onLogin={() => router.push("/home")} />;
+      case "upload": return <UploadScreen onPick={(p) => { saveProduct(p); go("analysis"); }} />;
+      case "analysis": return <AnalysisScreen product={product} onChange={saveProduct} onConfirm={next} />;
+      case "goal": return <GoalScreen value={answers.goal} onChange={(v) => setAnswers({ goal: v })} onNext={next} />;
+      case "platforms": return <PlatformsScreen value={answers.platforms} onChange={(v) => setAnswers({ platforms: v })} onNext={next} />;
+      case "style": return <StyleScreen product={product} value={answers.style ?? null} onChange={(v) => setAnswers({ style: v })} onNext={next} />;
+      case "brand": return <BrandScreen value={!!answers.brandKit} onChange={(v) => setAnswers({ brandKit: v })} onNext={next} />;
+      case "boldness": return <BoldnessScreen value={answers.boldness ?? null} onChange={(v) => setAnswers({ boldness: v })} onNext={next} />;
+      case "generation": return <GenerationScreen product={product} onDone={onGenerated} />;
+      case "photos": return <PhotosScreen product={product} onNext={next} />;
+      case "ugc": return <UgcScreen product={product} onNext={next} />;
+      case "ads": return <AdsScreen product={product} onNext={next} />;
+      case "copy": return <CopyScreen product={product} onNext={next} />;
+      case "campaign": return <FullCampaignScreen product={product} onNext={next} />;
+      case "formats": return <FormatsScreen product={product} onNext={next} />;
+      case "value": return <ValueScreen product={product} onNext={next} />;
+      case "workflow": return <WorkflowScreen onNext={next} />;
+      case "card": return <CampaignCardScreen product={product} platformsCount={answers.platforms.length} onNext={next} />;
+      case "calendar": return <CalendarScreen product={product} onNext={next} />;
+      case "account": return <AccountScreen product={product} onNext={next} />;
+      case "paywall": return <PaywallScreen product={product} onFinish={finish} />;
+    }
+  })();
+
   return (
-    <div className="min-h-dvh bg-bg flex flex-col">
-      {/* Ambient glow */}
+    <div className="min-h-dvh bg-bg flex flex-col overflow-x-hidden">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 size-[640px] rounded-full bg-accent2/20 blur-[140px]" />
       </div>
 
-      <header className="relative flex items-center justify-between h-16 px-5 md:px-8">
-        <div className="flex items-center gap-2.5">
+      <header className="relative z-10 flex items-center justify-between h-14 md:h-16 px-4 md:px-8">
+        <div className="w-10">
+          {canGoBack && (
+            <button type="button" onClick={back} aria-label="Retour" className="size-9 rounded-full flex items-center justify-center text-text2 hover:text-text hover:bg-white/5">
+              <ArrowLeft className="size-5" />
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
           <span className="size-7 rounded-md bg-gradient-to-br from-accent to-accent2 flex items-center justify-center shadow-glow">
             <Sparkles className="size-4 text-white" />
           </span>
-          <span className="text-[15px] font-semibold tracking-tight">Marketing Studio</span>
+          <span className="text-[15px] font-semibold tracking-tight">Sokozia</span>
         </div>
-        {!finished && <span className="text-xs text-muted">Step {step + 1} of {STEPS.length}</span>}
+        <div className="w-10 flex justify-end">
+          {qIndex >= 0 && <StepDots total={QUESTION_STEPS.length} current={qIndex} className="hidden sm:flex" />}
+        </div>
       </header>
+      {qIndex >= 0 && <StepDots total={QUESTION_STEPS.length} current={qIndex} className="sm:hidden justify-center relative z-10" />}
 
-      <main className="relative flex-1 flex flex-col items-center justify-center px-5 pb-32">
-        <AnimatePresence mode="wait" custom={dir}>
-          {finished ? (
-            <motion.div
-              key="done"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="text-center max-w-md"
-            >
-              <motion.div
-                className="mx-auto size-16 rounded-2xl bg-gradient-to-br from-accent to-accent2 flex items-center justify-center shadow-glow mb-6"
-                initial={{ rotate: -8, scale: 0.8 }}
-                animate={{ rotate: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.1 }}
-              >
-                <Check className="size-8 text-white" />
-              </motion.div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Your studio is ready.</h1>
-              <p className="text-text2 mt-3">
-                {user.name.split(" ")[0]}, we set up templates for {answers.wants.slice(0, 2).join(" and ").toLowerCase() || "your work"} on {answers.platforms.slice(0, 2).map((p) => p[0].toUpperCase() + p.slice(1)).join(" and ") || "your platforms"}.
-              </p>
-              <Button size="lg" className="mt-8" rightIcon={<ArrowRight className="size-4" />} onClick={() => router.replace("/home")}>
-                Enter the studio
-              </Button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={current.key}
-              custom={dir}
-              initial={{ opacity: 0, x: dir * 32 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: dir * -32 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
-              className="w-full max-w-xl"
-            >
-              <StepDots total={STEPS.length} current={step} className="mb-8" />
-              <h1 className="text-3xl md:text-[40px] font-bold tracking-tight leading-[1.05]">{current.title}</h1>
-              <p className="text-text2 mt-2">{current.subtitle}</p>
-
-              <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                {current.options.map((opt, i) => {
-                  const selected = isSelected(opt);
-                  return (
-                    <motion.button
-                      key={opt}
-                      type="button"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.04 * i }}
-                      onClick={() => select(opt)}
-                      aria-pressed={selected}
-                      className={cn(
-                        "h-14 rounded-lg border text-sm font-medium transition-all text-left px-4 flex items-center justify-between",
-                        selected ? "bg-accent/15 border-accent/60 text-text shadow-glow" : "bg-card border-border-strong text-text2 hover:text-text hover:border-white/25",
-                      )}
-                    >
-                      {opt}
-                      {selected && <Check className="size-4 text-highlight" />}
-                    </motion.button>
-                  );
-                })}
-              </div>
-
-              {current.multiple && (value as string[]).length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {(value as string[]).map((v) => <Chip key={v} size="sm" selected label={v[0].toUpperCase() + v.slice(1)} onClick={() => select(v)} />)}
-                </div>
-              )}
-            </motion.div>
-          )}
+      <main className="relative flex-1 flex flex-col items-center justify-center px-5 py-6 md:py-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            className="w-full flex justify-center"
+            initial={reduce ? { opacity: 0 } : { opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, x: -24 }}
+            transition={{ duration: reduce ? 0.1 : 0.25 }}
+          >
+            {screen}
+          </motion.div>
         </AnimatePresence>
       </main>
-
-      {!finished && (
-        <footer className="fixed bottom-0 inset-x-0 z-10 p-4 md:px-8 md:py-6 bg-gradient-to-t from-bg via-bg/90 to-transparent pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
-            <Button variant="ghost" onClick={back} disabled={step === 0} leftIcon={<ArrowLeft className="size-4" />}>Back</Button>
-            <Button onClick={next} disabled={!canContinue} rightIcon={<ArrowRight className="size-4" />} size="lg">
-              {step === STEPS.length - 1 ? "Finish" : "Continue"}
-            </Button>
-          </div>
-        </footer>
-      )}
     </div>
   );
 }

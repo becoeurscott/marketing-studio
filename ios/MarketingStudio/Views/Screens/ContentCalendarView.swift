@@ -21,11 +21,11 @@ struct ContentCalendarView: View {
             if let campaign {
                 content(campaign)
             } else {
-                EmptyStateView(icon: "calendar.badge.exclamationmark", title: "Campaign not found", message: "It may have been deleted.", ctaTitle: "Back") { router.pop() }
+                EmptyStateView(icon: "calendar.badge.exclamationmark", title: "Campagne introuvable", message: "Elle a peut-être été supprimée.", ctaTitle: "Retour") { router.pop() }
                     .msScreen()
             }
         }
-        .navigationTitle("Content Calendar")
+        .navigationTitle("Calendrier de contenu")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -51,7 +51,7 @@ struct ContentCalendarView: View {
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                SegmentedTabs(tabs: ["Week", "Month"], selection: $mode)
+                SegmentedTabs(tabs: ["Semaine", "Mois"], selection: $mode)
                     .padding(.horizontal, MSSpacing.gutter)
 
                 periodHeader
@@ -88,8 +88,8 @@ struct ContentCalendarView: View {
             MSIconButton(icon: "chevron.left", size: 30) { shift(-1) }
             Spacer()
             VStack(spacing: 2) {
-                Text(mode == 0 ? weekTitle : anchor.formatted(.dateTime.month(.wide).year())).msHeadline(16)
-                Button("Today") {
+                Text(mode == 0 ? weekTitle : anchor.formatted(Date.FormatStyle(locale: Locale(identifier: "fr_FR")).month(.wide).year())).msHeadline(16)
+                Button("Aujourd'hui") {
                     withAnimation(MSAnimation.snappy) { anchor = Date(); selectedDay = cal.startOfDay(for: Date()) }
                 }
                 .font(MSFont.control(12)).foregroundStyle(MSColor.highlight)
@@ -114,7 +114,8 @@ struct ContentCalendarView: View {
 
     private var weekTitle: String {
         guard let f = weekDays.first, let l = weekDays.last else { return "" }
-        return "\(f.shortString) – \(l.shortString)"
+        let fs = Date.FormatStyle(locale: Locale(identifier: "fr_FR")).day().month(.abbreviated)
+        return "\(f.formatted(fs)) – \(l.formatted(fs))"
     }
 
     private func items(on day: Date) -> [CalendarItem] { items.filter { cal.isDate($0.date, inSameDayAs: day) } }
@@ -131,7 +132,7 @@ struct ContentCalendarView: View {
                     withAnimation(MSAnimation.snappy) { selectedDay = cal.startOfDay(for: day) }
                 } label: {
                     VStack(spacing: 6) {
-                        Text(day.formatted(.dateTime.weekday(.narrow))).msCaption()
+                        Text(day.formatted(Date.FormatStyle(locale: Locale(identifier: "fr_FR")).weekday(.narrow))).msCaption()
                         Text(day.formatted(.dateTime.day()))
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundStyle(selected ? .white : MSColor.text)
@@ -169,9 +170,9 @@ struct ContentCalendarView: View {
     private var monthGrid: some View {
         VStack(spacing: 6) {
             HStack {
-                ForEach(cal.shortWeekdaySymbols.indices, id: \.self) { i in
+                ForEach(0..<7, id: \.self) { i in
                     let idx = (i + cal.firstWeekday - 1) % 7
-                    Text(String(cal.shortWeekdaySymbols[idx].prefix(1))).msCaption().frame(maxWidth: .infinity)
+                    Text(["D", "L", "M", "M", "J", "V", "S"][idx]).msCaption().frame(maxWidth: .infinity)
                 }
             }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
@@ -213,17 +214,17 @@ struct ContentCalendarView: View {
     private var dayList: some View {
         let dayItems = items(on: selectedDay)
         return VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: selectedDay.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()), subtitle: dayItems.isEmpty ? "Nothing planned" : "\(dayItems.count) item\(dayItems.count == 1 ? "" : "s")", actionTitle: "Add") {
+            SectionHeader(title: selectedDay.formatted(Date.FormatStyle(locale: Locale(identifier: "fr_FR")).weekday(.wide).day().month(.abbreviated)), subtitle: dayItems.isEmpty ? "Rien de prévu" : "\(dayItems.count) élément\(dayItems.count == 1 ? "" : "s")", actionTitle: "Ajouter") {
                 adding = true
             }
             if dayItems.isEmpty {
                 if items.isEmpty {
-                    EmptyStateView(icon: "calendar.badge.plus", title: "Empty calendar", message: "Plan posts by day, platform and format. Nothing is published for real.", ctaTitle: "Schedule content", ctaIcon: "plus") { adding = true }
+                    EmptyStateView(icon: "calendar.badge.plus", title: "Calendrier vide", message: "Planifiez vos publications par jour, plateforme et format. Rien n'est réellement publié.", ctaTitle: "Planifier du contenu", ctaIcon: "plus") { adding = true }
                 } else {
                     MSCard(padding: 14) {
                         HStack(spacing: 10) {
                             Image(systemName: "sparkles").foregroundStyle(MSColor.muted)
-                            Text("Free day. Add a story or a retargeting post here.").msBody(14)
+                            Text("Journée libre. Ajoutez ici une story ou une publication de reciblage.").msBody(14)
                             Spacer()
                         }
                     }
@@ -238,9 +239,9 @@ struct ContentCalendarView: View {
                                     Button {
                                         var copy = item; copy.status = s
                                         store.updateCalendarItem(copy, in: campaignId)
-                                    } label: { Label("Mark \(s.title.lowercased())", systemImage: item.status == s ? "checkmark" : "circle") }
+                                    } label: { Label("Marquer comme \(s.title.lowercased())", systemImage: item.status == s ? "checkmark" : "circle") }
                                 }
-                                Button(role: .destructive) { store.removeCalendarItem(item.id, from: campaignId) } label: { Label("Remove", systemImage: "trash") }
+                                Button(role: .destructive) { store.removeCalendarItem(item.id, from: campaignId) } label: { Label("Supprimer", systemImage: "trash") }
                             }
                     }
                 }
@@ -248,7 +249,7 @@ struct ContentCalendarView: View {
             }
 
             if !items.isEmpty {
-                SectionHeader(title: "All planned content", subtitle: "\(items.count) items")
+                SectionHeader(title: "Tout le contenu planifié", subtitle: "\(items.count) élément\(items.count == 1 ? "" : "s")")
                 VStack(spacing: 8) {
                     ForEach(items) { item in
                         CalendarItemRow(item: item) { editingItem = item }

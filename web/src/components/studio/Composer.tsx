@@ -41,9 +41,9 @@ type Segment = { kind: "text"; text: string } | { kind: "slot"; slot: "product" 
 
 /** Mode-specific sentence templates. Chips render in place of slots; free text follows. */
 const TEMPLATES: Record<ComposeMode, { segments: Segment[]; placeholder: string }> = {
-  image: { segments: [{ kind: "text", text: "Create an image of" }, { kind: "slot", slot: "product" }], placeholder: "in a sunlit studio, soft shadows…" },
-  video: { segments: [{ kind: "text", text: "Create a video where" }, { kind: "slot", slot: "product" }], placeholder: "slowly rotates on wet marble…" },
-  ugc: { segments: [{ kind: "text", text: "Create UGC video where" }, { kind: "slot", slot: "creator" }, { kind: "text", text: "enjoys the product" }, { kind: "slot", slot: "product" }], placeholder: "in her morning routine…" },
+  image: { segments: [{ kind: "text", text: "Créer une image de" }, { kind: "slot", slot: "product" }], placeholder: "dans un studio ensoleillé, ombres douces…" },
+  video: { segments: [{ kind: "text", text: "Créer une vidéo où" }, { kind: "slot", slot: "product" }], placeholder: "tourne lentement sur du marbre mouillé…" },
+  ugc: { segments: [{ kind: "text", text: "Créer une vidéo UGC où" }, { kind: "slot", slot: "creator" }, { kind: "text", text: "profite du produit" }, { kind: "slot", slot: "product" }], placeholder: "pendant sa routine du matin…" },
 };
 
 const COST: Record<ComposeMode, number> = { image: CREDIT_COSTS.image, video: CREDIT_COSTS.video, ugc: CREDIT_COSTS.ugc };
@@ -89,9 +89,9 @@ export function Composer(p: ComposerProps) {
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {product && <MediaSlot label={product.name} src={product.thumbnail} icon={null} onClick={() => setProductPicker(true)} onClear={() => p.onProduct(null)} />}
           {wantsCreator && (
-            <MediaSlot label={creator ? creator.name : "Add creator"} src={creator?.avatarUrl} icon={<UserRound className="size-6 text-white/45" />} onClick={() => setCreatorPicker(true)} onClear={creator ? () => p.onCreator?.(null) : undefined} />
+            <MediaSlot label={creator ? creator.name : "Ajouter un créateur"} src={creator?.avatarUrl} icon={<UserRound className="size-6 text-white/45" />} onClick={() => setCreatorPicker(true)} onClear={creator ? () => p.onCreator?.(null) : undefined} />
           )}
-          <button onClick={addMedia} onDragOver={(e) => e.preventDefault()} onDrop={onDrop} disabled={uploading} className="relative size-[84px] shrink-0 rounded-[18px] border border-dashed border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30 flex items-center justify-center transition-colors" aria-label="Add media">
+          <button onClick={addMedia} onDragOver={(e) => e.preventDefault()} onDrop={onDrop} disabled={uploading} className="relative size-[84px] shrink-0 rounded-[18px] border border-dashed border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30 flex items-center justify-center transition-colors" aria-label="Ajouter un média">
             {uploading ? <span className="text-[11px] text-white/70 tabular-nums">{progress ?? 0}%</span> : <ImageIcon className="size-6 text-white/45" />}
           </button>
           {p.templateName && (
@@ -128,16 +128,16 @@ export function Composer(p: ComposerProps) {
           <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
           <ModelPill value={p.model} onChange={p.onModel} mode={p.mode} />
           {p.duration && p.onDuration && (
-            <Pill onClick={() => p.onDuration?.(DURATIONS[(DURATIONS.indexOf(p.duration!) + 1) % DURATIONS.length])} label="Duration"><Clock className="size-4" />{p.duration}s</Pill>
+            <Pill onClick={() => p.onDuration?.(DURATIONS[(DURATIONS.indexOf(p.duration!) + 1) % DURATIONS.length])} label="Durée"><Clock className="size-4" />{p.duration}s</Pill>
           )}
-          <Pill onClick={() => p.onRatio(RATIOS[(RATIOS.indexOf(p.ratio) + 1) % RATIOS.length])} label="Aspect ratio"><Scan className="size-4" />{p.ratio}</Pill>
-          <Pill onClick={p.onMore} label="More options" active={p.moreActive} className="px-2.5"><SlidersHorizontal className="size-4" /></Pill>
+          <Pill onClick={() => p.onRatio(RATIOS[(RATIOS.indexOf(p.ratio) + 1) % RATIOS.length])} label="Format d'image"><Scan className="size-4" />{p.ratio}</Pill>
+          <Pill onClick={p.onMore} label="Plus d'options" active={p.moreActive} className="px-2.5"><SlidersHorizontal className="size-4" /></Pill>
           </div>
           <button
             onClick={p.onGenerate}
             disabled={!canGenerate}
             className={cn("shrink-0 h-10 md:h-11 px-3.5 md:px-4 rounded-full bg-accent text-white font-bold text-[15px] inline-flex items-center gap-2 shadow-[0_8px_24px_-6px_rgba(168,85,247,0.7)] transition-[transform,opacity,background] hover:bg-highlight active:scale-95 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed", p.generating && "animate-pulse")}
-            aria-label={`Generate · ${COST[p.mode]} credits`}
+            aria-label={`Générer · ${COST[p.mode]} crédits`}
           >
             <SendHorizontal className="size-[18px]" />
             <span className="tabular-nums">{COST[p.mode]}</span>
@@ -160,7 +160,7 @@ function MediaSlot({ label, src, icon, onClick, onClear }: { label: string; src?
         {src ? <img src={src} alt="" className="size-full object-cover" /> : icon}
       </button>
       {onClear && (
-        <button onClick={onClear} className="absolute -top-1.5 -right-1.5 size-6 rounded-full bg-black border border-white/20 text-white/80 hover:text-white flex items-center justify-center shadow-card" aria-label={`Remove ${label}`}>
+        <button onClick={onClear} className="absolute -top-1.5 -right-1.5 size-6 rounded-full bg-black border border-white/20 text-white/80 hover:text-white flex items-center justify-center shadow-card" aria-label={`Retirer ${label}`}>
           <X className="size-3.5" />
         </button>
       )}
@@ -168,15 +168,21 @@ function MediaSlot({ label, src, icon, onClick, onClear }: { label: string; src?
   );
 }
 
+const SLOT_LABELS: Record<"product" | "creator", { noun: string; change: string; choose: string }> = {
+  product: { noun: "produit", change: "Changer le produit", choose: "Choisir un produit" },
+  creator: { noun: "créateur", change: "Changer le créateur", choose: "Choisir un créateur" },
+};
+
 function InlineChip({ name, src, empty, onClick }: { name?: string; src?: string; empty: "product" | "creator"; onClick: () => void }) {
+  const l = SLOT_LABELS[empty];
   return (
     <button
       onClick={onClick}
       className={cn("inline-flex items-center gap-1.5 h-7 rounded-full pl-1 pr-2.5 align-middle text-[13px] font-medium transition-colors", name ? "bg-white/10 border border-white/10 text-white hover:bg-white/15" : "border border-dashed border-white/25 text-white/60 hover:text-white hover:border-white/40")}
-      aria-label={name ? `Change ${empty}: ${name}` : `Choose ${empty}`}
+      aria-label={name ? `${l.change} : ${name}` : l.choose}
     >
       {src ? <img src={src} alt="" className="size-5 rounded-full object-cover" /> : <span className="size-5 rounded-full bg-white/10 flex items-center justify-center"><Plus className="size-3" /></span>}
-      <span className="max-w-[7.5rem] truncate">{name ?? empty}</span>
+      <span className="max-w-[7.5rem] truncate">{name ?? l.noun}</span>
     </button>
   );
 }
@@ -234,7 +240,7 @@ function ModelPill({ value, onChange, mode }: { value: ModelId; onChange: (m: Mo
   const cur = MODELS.find((m) => m.id === value) ?? MODELS[0];
   return (
     <div ref={ref} className="relative shrink-0">
-      <Pill onClick={toggle} label={`Model: ${cur.label}`} className="pl-1.5">
+      <Pill onClick={toggle} label={`Modèle : ${cur.label}`} className="pl-1.5">
         <span className="size-7 md:size-8 rounded-full bg-accent flex items-center justify-center"><Sparkles className="size-4 text-white" /></span>
         {cur.label}
         <ChevronDown className={cn("size-3.5 text-white/50 transition-transform", open && "rotate-180")} />
@@ -255,7 +261,7 @@ function ModelPill({ value, onChange, mode }: { value: ModelId; onChange: (m: Mo
                 <li key={m.id}>
                   <button role="option" aria-selected={sel} onClick={() => { onChange(m.id); setOpen(false); }} className={cn("w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-white/8", sel && "bg-white/8")}>
                     <span className="flex-1 min-w-0">
-                      <span className="block text-[13px] font-medium text-white truncate">{m.label}{recommended && <span className="ml-1.5 text-[10px] text-highlight font-semibold">RECOMMENDED</span>}</span>
+                      <span className="block text-[13px] font-medium text-white truncate">{m.label}{recommended && <span className="ml-1.5 text-[10px] text-highlight font-semibold">RECOMMANDÉ</span>}</span>
                       <span className="block text-[11px] text-white/50 truncate">{m.hint}</span>
                     </span>
                     {sel && <Check className="size-4 text-highlight shrink-0" />}

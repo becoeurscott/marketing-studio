@@ -46,22 +46,22 @@ enum BrandField: String, Identifiable, CaseIterable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .name: return "Brand name"
-        case .website: return "Website"
+        case .name: return "Nom de la marque"
+        case .website: return "Site web"
         case .description: return "Description"
-        case .industry: return "Industry"
-        case .audience: return "Target audience"
-        case .fonts: return "Fonts"
+        case .industry: return "Secteur"
+        case .audience: return "Public cible"
+        case .fonts: return "Polices"
         }
     }
     var placeholder: String {
         switch self {
-        case .name: return "e.g. Luma Skin"
+        case .name: return "ex. Luma Skin"
         case .website: return "https://"
-        case .description: return "What does the brand sell and stand for?"
-        case .industry: return "e.g. Beauty, Coffee, Fitness"
-        case .audience: return "Who is this for?"
-        case .fonts: return "Comma-separated, e.g. Inter, Playfair Display"
+        case .description: return "Que vend la marque et quelles sont ses valeurs ?"
+        case .industry: return "ex. Beauté, Café, Fitness"
+        case .audience: return "À qui s'adresse-t-elle ?"
+        case .fonts: return "Séparées par des virgules, ex. Inter, Playfair Display"
         }
     }
     var multiline: Bool { self == .description || self == .audience }
@@ -74,7 +74,7 @@ struct BrandFieldEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var value = ""
 
-    private let industries = ["Beauty", "Fashion", "Food", "Technology", "Fitness", "Real Estate", "Coffee", "Home", "Finance", "Travel"]
+    private let industries = ["Beauté", "Mode", "Alimentation", "Technologie", "Fitness", "Immobilier", "Café", "Maison", "Finance", "Voyage"]
 
     var body: some View {
         BottomSheetContainer(title: field.title) {
@@ -94,7 +94,7 @@ struct BrandFieldEditSheet: View {
                     }
                 }
                 Spacer(minLength: 0)
-                MSButton(title: "Save", icon: "checkmark", isDisabled: value.trimmingCharacters(in: .whitespaces).isEmpty) {
+                MSButton(title: "Enregistrer", icon: "checkmark", isDisabled: value.trimmingCharacters(in: .whitespaces).isEmpty) {
                     var b = store.brand
                     let v = value.trimmingCharacters(in: .whitespacesAndNewlines)
                     switch field {
@@ -106,7 +106,7 @@ struct BrandFieldEditSheet: View {
                     case .fonts: b.fonts = v.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
                     }
                     store.updateBrand(b)
-                    router.toast("\(field.title) updated", style: .success)
+                    router.toast("\(field.title) mis à jour", style: .success)
                     dismiss()
                 }
             }
@@ -138,10 +138,10 @@ struct BrandPaletteSheet: View {
     @State private var hexInput = ""
 
     var body: some View {
-        BottomSheetContainer(title: "Color palette", subtitle: "Up to 6 colors. Tap a swatch to remove it.") {
+        BottomSheetContainer(title: "Palette de couleurs", subtitle: "Jusqu'à 6 couleurs. Touchez une pastille pour la retirer.") {
             VStack(alignment: .leading, spacing: 18) {
                 if colors.isEmpty {
-                    Text("No colors yet. Add your first one below.").msBody(14)
+                    Text("Aucune couleur pour l'instant. Ajoutez la première ci-dessous.").msBody(14)
                 } else {
                     FlowLayout(spacing: 12) {
                         ForEach(Array(colors.enumerated()), id: \.offset) { i, hex in
@@ -166,21 +166,21 @@ struct BrandPaletteSheet: View {
                             .labelsHidden()
                             .frame(width: 44, height: 44)
                         MSTextField(placeholder: "#A855F7", text: $hexInput, icon: "number", autocapitalization: .characters)
-                        MSButton(title: "Add", icon: "plus", style: .secondary, size: .compact, isDisabled: colors.count >= 6, fullWidth: false) {
+                        MSButton(title: "Ajouter", icon: "plus", style: .secondary, size: .compact, isDisabled: colors.count >= 6, fullWidth: false) {
                             let hex = hexInput.isEmpty ? picked.hexString : normalized(hexInput)
-                            guard let hex else { router.toast("Enter a valid hex like #A855F7", style: .warning); return }
+                            guard let hex else { router.toast("Saisissez un code hexadécimal valide, ex. #A855F7", style: .warning); return }
                             withAnimation(MSAnimation.snappy) { colors.append(hex) }
                             hexInput = ""
                         }
                     }
-                    Text("Pick with the color wheel or type a hex value.").msCaption()
+                    Text("Choisissez avec la roue chromatique ou saisissez une valeur hexadécimale.").msCaption()
                 }
                 Spacer(minLength: 0)
-                MSButton(title: "Save palette", icon: "checkmark") {
+                MSButton(title: "Enregistrer la palette", icon: "checkmark") {
                     var b = store.brand
                     b.colors = colors
                     store.updateBrand(b)
-                    router.toast("Palette saved", style: .success)
+                    router.toast("Palette enregistrée", style: .success)
                     dismiss()
                 }
             }
@@ -205,30 +205,30 @@ struct NewBrandSheet: View {
     @EnvironmentObject private var router: Router
 
     @State private var name = ""
-    @State private var industry = "Beauty"
+    @State private var industry = "Beauté"
     @State private var website = ""
     @State private var description = ""
     @State private var palette: [String] = ["#A855F7", "#111111", "#FFFFFF"]
     @State private var picked: Color = MSColor.accent
     @State private var makeActive = true
 
-    private let industries = ["Beauty", "Fashion", "Food", "Technology", "Fitness", "Real Estate", "Coffee", "Home"]
+    private let industries = ["Beauté", "Mode", "Alimentation", "Technologie", "Fitness", "Immobilier", "Café", "Maison"]
 
     var body: some View {
-        BottomSheetContainer(title: "New brand kit", subtitle: "Each brand keeps its own colors, fonts and voice.") {
+        BottomSheetContainer(title: "Nouveau kit de marque", subtitle: "Chaque marque conserve ses propres couleurs, polices et voix.") {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
-                    MSTextField(label: "Name", placeholder: "e.g. Urban Coffee", text: $name, icon: "paintpalette", autocapitalization: .words)
+                    MSTextField(label: "Nom", placeholder: "ex. Urban Coffee", text: $name, icon: "paintpalette", autocapitalization: .words)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Industry").msCaption(color: MSColor.text2)
+                        Text("Secteur").msCaption(color: MSColor.text2)
                         FlowLayout(spacing: 8) {
                             ForEach(industries, id: \.self) { i in
                                 MSChip(title: i, selected: industry == i) { industry = i }
                             }
                         }
                     }
-                    MSTextField(label: "Website", placeholder: "https://", text: $website, icon: "globe", keyboard: .URL, autocapitalization: .never)
-                    MSTextEditor(label: "Description", placeholder: "What does this brand sell?", text: $description, minHeight: 80)
+                    MSTextField(label: "Site web", placeholder: "https://", text: $website, icon: "globe", keyboard: .URL, autocapitalization: .never)
+                    MSTextEditor(label: "Description", placeholder: "Que vend cette marque ?", text: $description, minHeight: 80)
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Palette").msCaption(color: MSColor.text2)
                         HStack(spacing: 10) {
@@ -248,15 +248,15 @@ struct NewBrandSheet: View {
                     }
                     Toggle(isOn: $makeActive) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Make active brand").font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                            Text("New generations will use this brand kit.").msCaption()
+                            Text("Définir comme marque active").font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                            Text("Les nouvelles générations utiliseront ce kit de marque.").msCaption()
                         }
                     }
                     .tint(MSColor.accent)
-                    MSButton(title: "Create brand", icon: "plus", isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty) {
+                    MSButton(title: "Créer la marque", icon: "plus", isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty) {
                         let b = store.addBrand(name: name.trimmingCharacters(in: .whitespaces), industry: industry, colors: palette, fonts: ["Inter"], website: website, description: description, makeActive: makeActive)
                         router.dismissSheet()
-                        router.toast("\(b.name) created", style: .success)
+                        router.toast("\(b.name) créée", style: .success)
                     }
                     .padding(.top, 4)
                 }

@@ -72,9 +72,9 @@ struct StudioComposer: View {
     }
     private var detailsPlaceholder: String {
         switch mode {
-        case .video: return "Add motion notes, mood or pacing..."
-        case .ugc: return "Add a script or talking points..."
-        default: return "Add details, mood or lighting..."
+        case .video: return "Ajoutez des notes de mouvement, d'ambiance ou de rythme..."
+        case .ugc: return "Ajoutez un script ou des points clés..."
+        default: return "Ajoutez des détails, une ambiance ou un éclairage..."
         }
     }
 
@@ -101,11 +101,11 @@ struct StudioComposer: View {
 
     private var slots: some View {
         HStack(spacing: 10) {
-            MediaSlot(url: product?.imageURL, title: mode == .video ? "Source" : "Product", icon: "shippingbox", onTap: openProduct) {
+            MediaSlot(url: product?.imageURL, title: mode == .video ? "Source" : "Produit", icon: "shippingbox", onTap: openProduct) {
                 clearProduct()
             }
             if mode == .ugc {
-                MediaSlot(url: ugc.creator?.avatarURL, title: "Creator", icon: "person.crop.square", onTap: openCreator) {
+                MediaSlot(url: ugc.creator?.avatarURL, title: "Créateur", icon: "person.crop.square", onTap: openCreator) {
                     withAnimation(MSAnimation.snappy) { ugc.creator = nil }
                 }
                 .transition(.scale(scale: 0.8).combined(with: .opacity))
@@ -114,7 +114,7 @@ struct StudioComposer: View {
                 MediaSlot.placeholder(icon: "photo.on.rectangle.angled", title: nil, dashed: true)
             }
             .buttonStyle(MSPressStyle())
-            .accessibilityLabel("Add media from Photos")
+            .accessibilityLabel("Ajouter un média depuis Photos")
             Spacer(minLength: 0)
         }
     }
@@ -163,9 +163,9 @@ struct StudioComposer: View {
 
     private var tokens: [Token] {
         switch mode {
-        case .video: return [.text("Animate"), .product, .text("with a"), .camera, .text("move,"), .style, .text("style")]
-        case .ugc: return [.text("Create UGC video where"), .creator, .text("enjoys the product"), .product]
-        default: return [.text("Create a"), .style, .text("product shot of"), .product]
+        case .video: return [.text("Animer"), .product, .text("avec un mouvement"), .camera, .text(", style"), .style]
+        case .ugc: return [.text("Créer une vidéo UGC où"), .creator, .text("apprécie le produit"), .product]
+        default: return [.text("Créer une photo produit"), .style, .text("de"), .product]
         }
     }
 
@@ -191,7 +191,7 @@ struct StudioComposer: View {
                 MSHaptic.tap()
                 openProduct()
             } label: {
-                PromptChip(imageURL: product?.imageURL, icon: "shippingbox", text: product?.name ?? "product", filled: product != nil)
+                PromptChip(imageURL: product?.imageURL, icon: "shippingbox", text: product?.name ?? "produit", filled: product != nil)
             }
             .buttonStyle(MSPressStyle())
         case .creator:
@@ -199,7 +199,7 @@ struct StudioComposer: View {
                 MSHaptic.tap()
                 openCreator()
             } label: {
-                PromptChip(imageURL: ugc.creator?.avatarURL, icon: "person", text: ugc.creator?.name ?? "creator", filled: ugc.creator != nil, circular: true)
+                PromptChip(imageURL: ugc.creator?.avatarURL, icon: "person", text: ugc.creator?.name ?? "créateur", filled: ugc.creator != nil, circular: true)
             }
             .buttonStyle(MSPressStyle())
         case .style:
@@ -207,11 +207,11 @@ struct StudioComposer: View {
             optionMenu(options: mode == .video ? StudioOptions.videoStyles : StudioOptions.styles, value: value) { v in
                 if mode == .video { video.style = v } else { image.style = v }
             } label: {
-                PromptChip(imageURL: nil, icon: "paintbrush", text: value, filled: true)
+                PromptChip(imageURL: nil, icon: "paintbrush", text: StudioOptions.label(value), filled: true)
             }
         case .camera:
             optionMenu(options: StudioOptions.videoCameras, value: video.camera) { video.camera = $0 } label: {
-                PromptChip(imageURL: nil, icon: "camera", text: video.camera, filled: true)
+                PromptChip(imageURL: nil, icon: "camera", text: StudioOptions.label(video.camera), filled: true)
             }
         }
     }
@@ -223,7 +223,7 @@ struct StudioComposer: View {
                     MSHaptic.tap()
                     withAnimation(MSAnimation.snappy) { set(o) }
                 } label: {
-                    if o == value { Label(o, systemImage: "checkmark") } else { Text(o) }
+                    if o == value { Label(StudioOptions.label(o), systemImage: "checkmark") } else { Text(StudioOptions.label(o)) }
                 }
             }
         } label: {
@@ -252,7 +252,7 @@ struct StudioComposer: View {
                         controlPillLabel(icon: "viewfinder", text: ratio.wrappedValue)
                     }
                     controlPill(icon: "slider.horizontal.3", text: nil, action: onMore)
-                        .accessibilityLabel("More options")
+                        .accessibilityLabel("Plus d'options")
                 }
             }
             .mask(
@@ -324,7 +324,7 @@ struct StudioComposer: View {
         }
         .buttonStyle(MSPressStyle())
         .disabled(!canGenerate || busy)
-        .accessibilityLabel("Generate for \(cost) credits")
+        .accessibilityLabel("Générer pour \(cost) crédits")
     }
 }
 
@@ -369,7 +369,7 @@ struct MediaSlot: View {
                 }
                 .buttonStyle(.plain)
                 .padding(5)
-                .accessibilityLabel("Clear \(title)")
+                .accessibilityLabel("Retirer \(title)")
             }
         }
         .accessibilityLabel(title)
@@ -432,7 +432,7 @@ struct ModelPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        BottomSheetContainer(title: "Model", subtitle: "All models are simulated in this prototype.") {
+        BottomSheetContainer(title: "Modèle", subtitle: "Tous les modèles sont simulés dans ce prototype.") {
             VStack(spacing: 8) {
                 ForEach(models) { m in
                     let on = m.name == selection
@@ -476,7 +476,7 @@ struct CreatorPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        BottomSheetContainer(title: "Creator", subtitle: "All creators are fictional AI personas.") {
+        BottomSheetContainer(title: "Créateur", subtitle: "Tous les créateurs sont des personnages IA fictifs.") {
             ScrollView(showsIndicators: false) {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 10)], spacing: 14) {
                     ForEach(store.creators) { c in

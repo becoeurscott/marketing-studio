@@ -23,10 +23,16 @@ struct AssetsView: View {
     enum SortOrder: String, CaseIterable, Identifiable {
         case newest = "Newest", oldest = "Oldest", nameAZ = "Name A–Z", favoritesFirst = "Favorites first"
         var id: String { rawValue }
+        var label: String {
+            switch self { case .newest: return "Plus récentes"; case .oldest: return "Plus anciennes"; case .nameAZ: return "Nom A–Z"; case .favoritesFirst: return "Favoris d'abord" }
+        }
     }
     enum DateFilter: String, CaseIterable, Identifiable {
         case any = "Any time", week = "Last 7 days", month = "Last 30 days", quarter = "Last 90 days"
         var id: String { rawValue }
+        var label: String {
+            switch self { case .any: return "Toutes dates"; case .week: return "7 derniers jours"; case .month: return "30 derniers jours"; case .quarter: return "90 derniers jours" }
+        }
         var days: Double? {
             switch self { case .any: return nil; case .week: return 7; case .month: return 30; case .quarter: return 90 }
         }
@@ -60,13 +66,13 @@ struct AssetsView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Assets").msTitle(30)
-                    Text("\(store.assets.count) files · \(store.assets.filter { $0.favorite }.count) favorites").msBody(14)
+                    Text("Ressources").msTitle(30)
+                    Text("\(store.assets.count) fichiers · \(store.assets.filter { $0.favorite }.count) favoris").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
                 HStack(spacing: 8) {
-                    SearchBar(placeholder: "Search assets", text: $query)
+                    SearchBar(placeholder: "Rechercher des ressources", text: $query)
                     Button { showFilters = true } label: {
                         ZStack(alignment: .topTrailing) {
                             Image(systemName: "line.3.horizontal.decrease")
@@ -88,16 +94,16 @@ struct AssetsView: View {
                 ChipRow(options: Self.typeTabs, selection: $typeTab)
 
                 HStack {
-                    Text("\(filtered.count) result\(filtered.count == 1 ? "" : "s")").msCaption()
+                    Text("\(filtered.count) résultat\(filtered.count == 1 ? "" : "s")").msCaption()
                     Spacer()
                     Menu {
-                        Picker("Sort", selection: $sort) {
-                            ForEach(SortOrder.allCases) { s in Text(s.rawValue).tag(s) }
+                        Picker("Trier", selection: $sort) {
+                            ForEach(SortOrder.allCases) { s in Text(s.label).tag(s) }
                         }
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "arrow.up.arrow.down").font(.system(size: 11, weight: .bold))
-                            Text(sort.rawValue)
+                            Text(sort.label)
                         }
                         .font(MSFont.control(13)).foregroundStyle(MSColor.text2)
                     }
@@ -135,7 +141,7 @@ struct AssetsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button(selecting ? "Done" : "Select") {
+                Button(selecting ? "Terminé" : "Sélectionner") {
                     withAnimation(MSAnimation.snappy) { selecting.toggle(); if !selecting { selected.removeAll() } }
                 }
                 .font(MSFont.control(14)).foregroundStyle(MSColor.text)
@@ -146,12 +152,12 @@ struct AssetsView: View {
         .msSheet(isPresented: $showFilters, detents: [.medium, .large]) { filterSheet }
         .msSheet(item: $renaming, detents: [.medium]) { a in RenameAssetSheet(asset: a) { renaming = nil } }
         .msSheet(item: $moving, detents: [.medium, .large]) { a in MoveAssetSheet(asset: a) { moving = nil } }
-        .confirmationDialog("Delete \(deleting?.name ?? "asset")?", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
-            Button("Delete", role: .destructive) {
-                if let d = deleting { store.deleteAsset(d.id); router.toast("Asset deleted", style: .warning) }
+        .confirmationDialog("Supprimer \(deleting?.name ?? "la ressource") ?", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
+            Button("Supprimer", role: .destructive) {
+                if let d = deleting { store.deleteAsset(d.id); router.toast("Ressource supprimée", style: .warning) }
                 deleting = nil
             }
-        } message: { Text("This removes it from every project and campaign.") }
+        } message: { Text("Elle sera retirée de tous les projets et campagnes.") }
     }
 
     // MARK: Pieces
@@ -160,9 +166,9 @@ struct AssetsView: View {
         let searching = !query.isEmpty || activeFilterCount > 0
         return EmptyStateView(
             icon: searching ? "magnifyingglass" : (typeTab == "All" ? "photo.on.rectangle.angled" : (AssetKind.allCases.first { $0.title == typeTab }?.icon ?? "photo")),
-            title: searching ? "No matches" : (typeTab == "All" ? "Your library is empty" : "No \(typeTab.lowercased()) yet"),
-            message: searching ? "Try another search or clear the filters." : "Everything you generate, upload or export lands here.",
-            ctaTitle: searching ? "Clear filters" : "Generate something",
+            title: searching ? "Aucun résultat" : (typeTab == "All" ? "Votre bibliothèque est vide" : "Aucun élément « \(typeTab.lowercased()) » pour l'instant"),
+            message: searching ? "Essayez une autre recherche ou effacez les filtres." : "Tout ce que vous générez, importez ou exportez arrive ici.",
+            ctaTitle: searching ? "Effacer les filtres" : "Générer quelque chose",
             ctaIcon: searching ? nil : "sparkles"
         ) {
             if searching { query = ""; dateFilter = .any; projectFilter = nil; favoritesOnly = false } else { router.push(.studio) }
@@ -172,8 +178,8 @@ struct AssetsView: View {
     private var selectionBar: some View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(selected.count) selected").font(MSFont.control(14)).foregroundStyle(MSColor.text)
-                Button(selected.count == filtered.count ? "Deselect all" : "Select all") {
+                Text("\(selected.count) sélectionné(s)").font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                Button(selected.count == filtered.count ? "Tout désélectionner" : "Tout sélectionner") {
                     if selected.count == filtered.count { selected.removeAll() } else { selected = Set(filtered.map { $0.id }) }
                 }
                 .font(MSFont.control(12)).foregroundStyle(MSColor.highlight)
@@ -181,10 +187,10 @@ struct AssetsView: View {
             Spacer()
             MSIconButton(icon: "heart", size: 38) {
                 for id in selected where !(store.asset(id)?.favorite ?? true) { store.toggleFavorite(.asset, id) }
-                router.toast("Added to favorites", style: .success)
+                router.toast("Ajouté aux favoris", style: .success)
             }
             .disabled(selected.isEmpty)
-            MSButton(title: "Export selected", icon: "square.and.arrow.up", size: .compact, isDisabled: selected.isEmpty, fullWidth: false) {
+            MSButton(title: "Exporter la sélection", icon: "square.and.arrow.up", size: .compact, isDisabled: selected.isEmpty, fullWidth: false) {
                 router.present(.exportAssets(ids: Array(selected)))
             }
         }
@@ -197,20 +203,20 @@ struct AssetsView: View {
     }
 
     private var filterSheet: some View {
-        BottomSheetContainer(title: "Filters", subtitle: "Narrow the library by date, project or favorites.") {
+        BottomSheetContainer(title: "Filtres", subtitle: "Affinez la bibliothèque par date, projet ou favoris.") {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 18) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Date").msCaption(color: MSColor.text2)
                         FlowLayout(spacing: 8) {
-                            ForEach(DateFilter.allCases) { d in MSChip(title: d.rawValue, selected: dateFilter == d) { dateFilter = d } }
+                            ForEach(DateFilter.allCases) { d in MSChip(title: d.label, selected: dateFilter == d) { dateFilter = d } }
                         }
                     }
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Project").msCaption(color: MSColor.text2)
+                        Text("Projet").msCaption(color: MSColor.text2)
                         FlowLayout(spacing: 8) {
-                            MSChip(title: "Any", selected: projectFilter == nil) { projectFilter = nil }
-                            MSChip(title: "Unassigned", selected: projectFilter == "none") { projectFilter = "none" }
+                            MSChip(title: "Tous", selected: projectFilter == nil) { projectFilter = nil }
+                            MSChip(title: "Non assignés", selected: projectFilter == "none") { projectFilter = "none" }
                             ForEach(store.projects) { p in
                                 MSChip(title: p.name, selected: projectFilter == p.id) { projectFilter = p.id }
                             }
@@ -219,15 +225,15 @@ struct AssetsView: View {
                     Toggle(isOn: $favoritesOnly) {
                         HStack(spacing: 8) {
                             Image(systemName: "heart").foregroundStyle(MSColor.text2)
-                            Text("Favorites only").font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                            Text("Favoris uniquement").font(MSFont.control(14)).foregroundStyle(MSColor.text)
                         }
                     }
                     .tint(MSColor.accent)
                     .msCard(padding: 12)
 
                     HStack(spacing: 10) {
-                        MSButton(title: "Reset", style: .secondary) { dateFilter = .any; projectFilter = nil; favoritesOnly = false }
-                        MSButton(title: "Show \(filtered.count)", icon: "checkmark") { showFilters = false }
+                        MSButton(title: "Réinitialiser", style: .secondary) { dateFilter = .any; projectFilter = nil; favoritesOnly = false }
+                        MSButton(title: "Afficher \(filtered.count)", icon: "checkmark") { showFilters = false }
                     }
                 }
                 .padding(.horizontal, MSSpacing.gutter)

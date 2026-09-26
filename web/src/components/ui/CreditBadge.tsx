@@ -16,7 +16,7 @@ export function CreditBadge({ className, compact }: { className?: string; compac
         low ? "border-warning/40 bg-warning/10 text-warning" : "border-border-strong bg-surface text-text hover:border-white/25",
         className,
       )}
-      title={`${formatNumber(credits)} credits`}
+      title={`${formatNumber(credits)} crédits`}
     >
       <Sparkles className={cn("size-3.5", low ? "text-warning" : "text-highlight")} />
       {!compact && <span>{formatNumber(credits)}</span>}

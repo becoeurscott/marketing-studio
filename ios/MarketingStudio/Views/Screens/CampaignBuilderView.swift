@@ -16,11 +16,13 @@ struct CampaignBuilderView: View {
     @State private var progressStep = 0
     @State private var errorMessage: String? = nil
 
-    private static let steps = ["Objective", "Audience", "Platforms", "Formats", "Review"]
+    private static let steps = ["Objectif", "Audience", "Plateformes", "Formats", "Récapitulatif"]
     private static let generationSteps = ["Analysing objective", "Selecting formats", "Generating creatives", "Writing copy", "Building calendar"]
+    /// French display labels for `generationSteps` (the English keys match MockAPI progress labels).
+    private static let generationStepLabels = ["Analyse de l'objectif", "Sélection des formats", "Génération des visuels", "Rédaction des textes", "Création du calendrier"]
     private static let audienceChips = [
-        "Women 20–35, skincare-curious", "Men 25–40, premium buyers", "Gen Z creators", "Parents 30–45",
-        "Fitness beginners", "Remote workers", "Gift shoppers", "Past customers",
+        "Femmes 20–35 ans, curieuses de soins", "Hommes 25–40 ans, acheteurs premium", "Créateurs Gen Z", "Parents 30–45 ans",
+        "Débutants en fitness", "Télétravailleurs", "Acheteurs de cadeaux", "Anciens clients",
     ]
     /// Matches MockAPI.createCampaign (60) plus the ad set it generates internally.
     private static let campaignCost = 60 + GenerationKind.ad.creditCost
@@ -47,11 +49,11 @@ struct CampaignBuilderView: View {
             }
         }
         .msScreen()
-        .navigationTitle("Campaign Builder")
+        .navigationTitle("Créateur de campagne")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { ToolbarItem(placement: .topBarTrailing) { CreditBadge() } }
         .onAppear {
-            if name.isEmpty, let p = store.currentProject { name = "\(p.name) campaign" }
+            if name.isEmpty, let p = store.currentProject { name = "Campagne \(p.name)" }
         }
     }
 
@@ -92,7 +94,7 @@ struct CampaignBuilderView: View {
                 }
             }
             HStack {
-                Text("Step \(step + 1) of \(Self.steps.count)").msCaption()
+                Text("Étape \(step + 1) sur \(Self.steps.count)").msCaption()
                 Spacer()
                 Text(Self.steps[step]).msCaption(color: MSColor.text2)
             }
@@ -105,16 +107,16 @@ struct CampaignBuilderView: View {
     private var footer: some View {
         HStack(spacing: 10) {
             if step > 0 {
-                MSButton(title: "Back", icon: "chevron.left", style: .secondary, fullWidth: false) {
+                MSButton(title: "Retour", icon: "chevron.left", style: .secondary, fullWidth: false) {
                     withAnimation(MSAnimation.snappy) { step -= 1 }
                 }
             }
             if step < Self.steps.count - 1 {
-                MSButton(title: "Continue", icon: "chevron.right", isDisabled: !canContinue) {
+                MSButton(title: "Continuer", icon: "chevron.right", isDisabled: !canContinue) {
                     withAnimation(MSAnimation.snappy) { step += 1 }
                 }
             } else {
-                MSButton(title: "Generate campaign · \(Self.campaignCost)", icon: "sparkles", isDisabled: !canContinue) { generate() }
+                MSButton(title: "Générer la campagne · \(Self.campaignCost)", icon: "sparkles", isDisabled: !canContinue) { generate() }
             }
         }
         .padding(.horizontal, MSSpacing.gutter)
@@ -134,7 +136,7 @@ struct CampaignBuilderView: View {
 
     private var objectiveStep: some View {
         VStack(alignment: .leading, spacing: 16) {
-            stepTitle("What is the goal?", "Your objective shapes the formats, copy and calendar we generate.")
+            stepTitle("Quel est votre objectif ?", "Votre objectif détermine les formats, les textes et le calendrier générés.")
             VStack(spacing: 10) {
                 ForEach(CampaignObjective.allCases) { o in
                     Button {
@@ -167,19 +169,19 @@ struct CampaignBuilderView: View {
 
     private func objectiveHint(_ o: CampaignObjective) -> String {
         switch o {
-        case .awareness: return "Reach new people with bold visuals"
-        case .engagement: return "Spark saves, shares and comments"
-        case .leads: return "Collect sign-ups and inquiries"
-        case .sales: return "Drive purchases with offers and proof"
+        case .awareness: return "Touchez de nouvelles personnes avec des visuels percutants"
+        case .engagement: return "Suscitez enregistrements, partages et commentaires"
+        case .leads: return "Recueillez inscriptions et demandes"
+        case .sales: return "Générez des ventes avec des offres et des preuves"
         }
     }
 
     private var audienceStep: some View {
         VStack(alignment: .leading, spacing: 16) {
-            stepTitle("Who is it for?", "Describe your audience or pick a suggestion.")
-            MSTextEditor(label: "Target audience", placeholder: "e.g. Women and men 20–35 who want simpler skincare", text: $audience, minHeight: 100)
+            stepTitle("À qui s'adresse-t-elle ?", "Décrivez votre audience ou choisissez une suggestion.")
+            MSTextEditor(label: "Audience cible", placeholder: "ex. Femmes et hommes de 20 à 35 ans qui veulent des soins plus simples", text: $audience, minHeight: 100)
             VStack(alignment: .leading, spacing: 8) {
-                Text("Suggested").msCaption(color: MSColor.text2)
+                Text("Suggestions").msCaption(color: MSColor.text2)
                 FlowLayout(spacing: 8) {
                     ForEach(Self.audienceChips, id: \.self) { chip in
                         MSChip(title: chip, selected: audience == chip) { audience = chip }
@@ -191,11 +193,11 @@ struct CampaignBuilderView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "paintpalette").foregroundStyle(MSColor.text2)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("From \(store.brand.name) brand kit").font(MSFont.control(13)).foregroundStyle(MSColor.text)
+                            Text("Depuis le kit de marque \(store.brand.name)").font(MSFont.control(13)).foregroundStyle(MSColor.text)
                             Text(store.brand.audience).msCaption().lineLimit(2)
                         }
                         Spacer()
-                        Button("Use") { audience = store.brand.audience }
+                        Button("Utiliser") { audience = store.brand.audience }
                             .font(MSFont.control(13)).foregroundStyle(MSColor.highlight)
                     }
                 }
@@ -205,7 +207,7 @@ struct CampaignBuilderView: View {
 
     private var platformsStep: some View {
         VStack(alignment: .leading, spacing: 16) {
-            stepTitle("Where will it run?", "Pick one or more platforms. Formats adapt to each.")
+            stepTitle("Où sera-t-elle diffusée ?", "Choisissez une ou plusieurs plateformes. Les formats s'adaptent à chacune.")
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                 ForEach(SocialPlatform.allCases) { p in
                     let on = platforms.contains(p)
@@ -236,7 +238,7 @@ struct CampaignBuilderView: View {
 
     private var formatsStep: some View {
         VStack(alignment: .leading, spacing: 16) {
-            stepTitle("Creative formats", "We generate a set of assets for every format you choose.")
+            stepTitle("Formats créatifs", "Nous générons une série de visuels pour chaque format choisi.")
             VStack(spacing: 10) {
                 ForEach(ContentFormat.allCases) { f in
                     let on = formats.contains(f)
@@ -279,34 +281,34 @@ struct CampaignBuilderView: View {
 
     private func formatHint(_ f: ContentFormat) -> String {
         switch f {
-        case .productPhotos: return "Studio and lifestyle shots"
-        case .ugc: return "Creator-style talking videos"
-        case .videoAds: return "Short motion ads, 5–15s"
-        case .stories: return "Vertical 9:16 sequences"
-        case .carousels: return "Multi-slide posts"
+        case .productPhotos: return "Photos studio et lifestyle"
+        case .ugc: return "Vidéos face caméra façon créateur"
+        case .videoAds: return "Pubs animées courtes, 5–15 s"
+        case .stories: return "Séquences verticales 9:16"
+        case .carousels: return "Publications à plusieurs slides"
         }
     }
 
     private var reviewStep: some View {
         VStack(alignment: .leading, spacing: 16) {
-            stepTitle("Review", "Name the campaign and generate creatives, copy and a calendar.")
-            MSTextField(label: "Campaign name", placeholder: "e.g. Luma Glow Summer Launch", text: $name, icon: "flag")
+            stepTitle("Récapitulatif", "Nommez la campagne puis générez visuels, textes et calendrier.")
+            MSTextField(label: "Nom de la campagne", placeholder: "ex. Lancement d'été Luma Glow", text: $name, icon: "flag")
             VStack(spacing: 8) {
-                reviewRow("Objective", objective?.title ?? "—", icon: objective?.icon ?? "target") { withAnimation(MSAnimation.snappy) { step = 0 } }
+                reviewRow("Objectif", objective?.title ?? "—", icon: objective?.icon ?? "target") { withAnimation(MSAnimation.snappy) { step = 0 } }
                 reviewRow("Audience", audience, icon: "person.2") { withAnimation(MSAnimation.snappy) { step = 1 } }
-                reviewRow("Platforms", platforms.isEmpty ? "—" : SocialPlatform.allCases.filter { platforms.contains($0) }.map { $0.title }.joined(separator: ", "), icon: "square.grid.2x2") { withAnimation(MSAnimation.snappy) { step = 2 } }
+                reviewRow("Plateformes", platforms.isEmpty ? "—" : SocialPlatform.allCases.filter { platforms.contains($0) }.map { $0.title }.joined(separator: ", "), icon: "square.grid.2x2") { withAnimation(MSAnimation.snappy) { step = 2 } }
                 reviewRow("Formats", formats.isEmpty ? "—" : ContentFormat.allCases.filter { formats.contains($0) }.map { $0.title }.joined(separator: ", "), icon: "rectangle.stack") { withAnimation(MSAnimation.snappy) { step = 3 } }
-                reviewRow("Project", store.currentProject?.name ?? "No project", icon: "folder", action: nil)
+                reviewRow("Projet", store.currentProject?.name ?? "Aucun projet", icon: "folder", action: nil)
             }
             MSCard(padding: 12) {
                 HStack(spacing: 10) {
                     Image(systemName: "bolt.fill").foregroundStyle(MSColor.highlight)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("\(Self.campaignCost) credits").font(MSFont.control(14)).foregroundStyle(MSColor.text)
-                        Text("6 creatives, 4 ad variations, 5 calendar slots").msCaption()
+                        Text("\(Self.campaignCost) crédits").font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                        Text("6 visuels, 4 variantes de pub, 5 créneaux au calendrier").msCaption()
                     }
                     Spacer()
-                    Text("\(store.credits) left").msCaption(color: store.canAfford(Self.campaignCost) ? MSColor.text2 : MSColor.danger)
+                    Text("\(store.credits) restants").msCaption(color: store.canAfford(Self.campaignCost) ? MSColor.text2 : MSColor.danger)
                 }
             }
         }
@@ -341,10 +343,10 @@ struct CampaignBuilderView: View {
                 Image(systemName: "sparkles").font(.system(size: 28, weight: .semibold)).foregroundStyle(MSColor.highlight)
             }
             VStack(spacing: 6) {
-                Text("Building \(name)").msHeadline(20).multilineTextAlignment(.center)
-                Text("Creatives, ad variations and a content calendar.").msBody(14).multilineTextAlignment(.center)
+                Text("Création de « \(name) »").msHeadline(20).multilineTextAlignment(.center)
+                Text("Visuels, variantes de pub et calendrier de contenu.").msBody(14).multilineTextAlignment(.center)
             }
-            ProgressIndicator(steps: Self.generationSteps, currentStep: progressStep)
+            ProgressIndicator(steps: Self.generationStepLabels, currentStep: progressStep)
                 .msCard()
                 .padding(.horizontal, MSSpacing.gutter)
             Spacer()
@@ -373,7 +375,7 @@ struct CampaignBuilderView: View {
                 progressStep = Self.generationSteps.count
                 try? await Task.sleep(for: .milliseconds(350))
                 MSHaptic.success()
-                router.toast("Campaign ready", style: .success)
+                router.toast("Campagne prête", style: .success)
                 router.pop()
                 router.push(.campaignDetail(id: campaign.id))
             } catch {

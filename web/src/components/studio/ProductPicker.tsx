@@ -21,16 +21,16 @@ export function useProductUpload(onUploaded: (asset: Asset) => void) {
     async (file: File | null) => {
       if (!file) return;
       if (!file.type.startsWith("image/")) {
-        toast.error("Unsupported file", "Drop a PNG, JPG or WebP product photo.");
+        toast.error("Fichier non pris en charge", "Déposez une photo produit PNG, JPG ou WebP.");
         return;
       }
       setProgress(0);
       try {
         const asset = await uploadProduct({ name: file.name, size: file.size, projectId: currentProjectId }, setProgress);
-        toast.success("Product uploaded", asset.name);
+        toast.success("Produit importé", asset.name);
         onUploaded(asset);
       } catch (err) {
-        toast.error("Something went wrong.", err instanceof Error ? err.message : undefined);
+        toast.error("Une erreur est survenue.", err instanceof Error ? err.message : undefined);
       } finally {
         setProgress(null);
       }
@@ -49,7 +49,7 @@ export function useDropzone(onFile: (file: File | null) => void) {
   const onDrop = (e: DragEvent) => { e.preventDefault(); setDragging(false); onFile(e.dataTransfer.files?.[0] ?? null); };
   const open = () => inputRef.current?.click();
   const input = (
-    <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={(e) => { onFile(e.target.files?.[0] ?? null); e.target.value = ""; }} aria-label="Upload product image" />
+    <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={(e) => { onFile(e.target.files?.[0] ?? null); e.target.value = ""; }} aria-label="Importer une image produit" />
   );
   return { dragging, handlers: { onDragOver, onDragLeave, onDrop }, open, input };
 }
@@ -63,7 +63,7 @@ export function ProductPicker({ open, onClose, onPick, selectedId }: { open: boo
   const dz = useDropzone(upload);
 
   return (
-    <Modal open={open} onClose={onClose} title="Choose a product" description="Upload a photo or pick one from your assets." size="lg">
+    <Modal open={open} onClose={onClose} title="Choisir un produit" description="Importez une photo ou choisissez-en une dans vos ressources." size="lg">
       <div
         {...dz.handlers}
         className={cn("rounded-lg border border-dashed p-5 flex flex-col sm:flex-row items-center gap-4 transition-colors mb-5", dz.dragging ? "border-accent bg-accent/10" : "border-border-strong bg-surface/60")}
@@ -71,14 +71,14 @@ export function ProductPicker({ open, onClose, onPick, selectedId }: { open: boo
         {dz.input}
         <div className="size-11 rounded-lg bg-elevated border border-border flex items-center justify-center shrink-0"><Upload className="size-5 text-highlight" /></div>
         <div className="flex-1 min-w-0 text-center sm:text-left">
-          <p className="text-sm font-medium">Drop product image here</p>
-          <p className="text-xs text-muted">PNG, JPG or WebP · up to 20 MB</p>
-          {uploading && <ProgressBar value={progress ?? 0} label="Uploading" className="mt-2" />}
+          <p className="text-sm font-medium">Déposez l’image produit ici</p>
+          <p className="text-xs text-muted">PNG, JPG ou WebP · jusqu’à 20 Mo</p>
+          {uploading && <ProgressBar value={progress ?? 0} label="Import en cours" className="mt-2" />}
         </div>
-        <Button variant="secondary" size="sm" onClick={dz.open} loading={uploading} leftIcon={<ImagePlus className="size-4" />}>Browse files</Button>
+        <Button variant="secondary" size="sm" onClick={dz.open} loading={uploading} leftIcon={<ImagePlus className="size-4" />}>Parcourir</Button>
       </div>
 
-      <p className="text-[13px] font-medium text-text2 mb-2">From your assets</p>
+      <p className="text-[13px] font-medium text-text2 mb-2">Depuis vos ressources</p>
       {images.length ? (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {images.map((a) => {
@@ -92,28 +92,28 @@ export function ProductPicker({ open, onClose, onPick, selectedId }: { open: boo
           })}
         </div>
       ) : (
-        <p className="text-sm text-muted">No image assets yet. Upload one above.</p>
+        <p className="text-sm text-muted">Aucune image pour l’instant. Importez-en une ci-dessus.</p>
       )}
     </Modal>
   );
 }
 
 /** Compact product thumbnail + change/clear controls used inside Create panels. */
-export function ProductField({ asset, onChange, onClear, label = "Product" }: { asset: Asset | null; onChange: () => void; onClear?: () => void; label?: string }) {
+export function ProductField({ asset, onChange, onClear, label = "Produit" }: { asset: Asset | null; onChange: () => void; onClear?: () => void; label?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-[13px] font-medium text-text2">{label}</span>
       <div className="flex items-center gap-3 rounded-md border border-border-strong bg-surface p-2">
-        <button onClick={onChange} className="size-12 rounded-sm overflow-hidden bg-elevated border border-border flex items-center justify-center shrink-0" aria-label="Change product">
+        <button onClick={onChange} className="size-12 rounded-sm overflow-hidden bg-elevated border border-border flex items-center justify-center shrink-0" aria-label="Changer le produit">
           {asset ? <img src={asset.thumbnail} alt="" className="size-full object-cover" /> : <ImagePlus className="size-5 text-muted" />}
         </button>
         <div className="min-w-0 flex-1">
-          <p className="text-sm truncate">{asset ? asset.name : "No product selected"}</p>
-          <p className="text-xs text-muted">{asset ? `${asset.width ?? "—"}×${asset.height ?? "—"}` : "Optional — generate from prompt only"}</p>
+          <p className="text-sm truncate">{asset ? asset.name : "Aucun produit sélectionné"}</p>
+          <p className="text-xs text-muted">{asset ? `${asset.width ?? "—"}×${asset.height ?? "—"}` : "Facultatif — génération à partir du prompt seul"}</p>
         </div>
         <div className="flex items-center gap-1">
-          {asset && onClear && <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>}
-          <Button size="sm" variant="secondary" onClick={onChange}>{asset ? "Change" : "Add"}</Button>
+          {asset && onClear && <Button size="sm" variant="ghost" onClick={onClear}>Retirer</Button>}
+          <Button size="sm" variant="secondary" onClick={onChange}>{asset ? "Changer" : "Ajouter"}</Button>
         </div>
       </div>
     </div>

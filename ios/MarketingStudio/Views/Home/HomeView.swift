@@ -9,10 +9,10 @@ struct HomeView: View {
         let hour = Calendar.current.component(.hour, from: Date())
         let firstName = store.user.name.split(separator: " ").first.map(String.init) ?? store.user.name
         switch hour {
-        case 5..<12: return "Good morning, \(firstName)."
-        case 12..<17: return "Good afternoon, \(firstName)."
-        case 17..<22: return "Good evening, \(firstName)."
-        default: return "Still creating, \(firstName)?"
+        case 5..<12: return "Bonjour, \(firstName)."
+        case 12..<17: return "Bon après-midi, \(firstName)."
+        case 17..<22: return "Bonsoir, \(firstName)."
+        default: return "Toujours en pleine création, \(firstName) ?"
         }
     }
 
@@ -41,7 +41,7 @@ struct HomeView: View {
     private var brandMark: some View {
         HStack(spacing: 8) {
             RoundedRectangle(cornerRadius: 6, style: .continuous).fill(MSColor.accentGradient).frame(width: 20, height: 20)
-            Text("Marketing Studio").font(.system(size: 14, weight: .semibold, design: .rounded)).foregroundStyle(MSColor.text2)
+            Text("Sokozia").font(.system(size: 14, weight: .semibold, design: .rounded)).foregroundStyle(MSColor.text2)
         }
         .padding(.horizontal, MSSpacing.gutter)
         .padding(.bottom, -12)
@@ -51,9 +51,9 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(greeting).msTitle(30)
-                Text("What are we creating today?").msBody(16)
+                Text("Qu'allons-nous créer aujourd'hui ?").msBody(16)
             }
-            MSButton(title: "Create something", icon: "sparkles") {
+            MSButton(title: "Créer quelque chose", icon: "sparkles") {
                 router.select(.studio)
             }
         }
@@ -62,19 +62,19 @@ struct HomeView: View {
 
     private var stats: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
-            StatTile(label: "Projects", value: "\(store.activeProjects.count)", icon: "folder") { router.select(.projects) }
-            StatTile(label: "Assets", value: "\(store.assets.count)", icon: "photo.on.rectangle") { router.select(.assets) }
-            StatTile(label: "Campaigns", value: "\(store.campaigns.count)", icon: "flag") { router.push(.campaigns) }
-            StatTile(label: "Credits", value: store.credits.formatted(), icon: "bolt", tint: MSColor.highlight) { router.push(.credits) }
+            StatTile(label: "Projets", value: "\(store.activeProjects.count)", icon: "folder") { router.select(.projects) }
+            StatTile(label: "Visuels", value: "\(store.assets.count)", icon: "photo.on.rectangle") { router.select(.assets) }
+            StatTile(label: "Campagnes", value: "\(store.campaigns.count)", icon: "flag") { router.push(.campaigns) }
+            StatTile(label: "Crédits", value: store.credits.formatted(), icon: "bolt", tint: MSColor.highlight) { router.push(.credits) }
         }
         .padding(.horizontal, MSSpacing.gutter)
     }
 
     private var recentProjects: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Recent projects", actionTitle: "All") { router.select(.projects) }
+            SectionHeader(title: "Projets récents", actionTitle: "Tout") { router.select(.projects) }
             if store.activeProjects.isEmpty {
-                EmptyStateView(icon: "folder.badge.plus", title: "No projects yet", message: "Create a project to organise assets and campaigns.", ctaTitle: "New project") {
+                EmptyStateView(icon: "folder.badge.plus", title: "Aucun projet pour l'instant", message: "Créez un projet pour organiser vos visuels et campagnes.", ctaTitle: "Nouveau projet") {
                     router.present(.newProject)
                 }
             } else {
@@ -95,9 +95,9 @@ struct HomeView: View {
     private var continueCreating: some View {
         let gens = store.recentGenerations.filter { $0.status != .failed }.prefix(3)
         return VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Continue creating", subtitle: "Pick up where you left off", actionTitle: "History") { router.push(.generations) }
+            SectionHeader(title: "Continuer à créer", subtitle: "Reprenez là où vous en étiez", actionTitle: "Historique") { router.push(.generations) }
             if gens.isEmpty {
-                EmptyStateView(icon: "sparkles", title: "Nothing in progress", message: "Generate an image, video or copy and it shows up here.", ctaTitle: "Open Studio") { router.select(.studio) }
+                EmptyStateView(icon: "sparkles", title: "Rien en cours", message: "Générez une image, une vidéo ou un texte et il apparaîtra ici.", ctaTitle: "Ouvrir le Studio") { router.select(.studio) }
             } else {
                 VStack(spacing: 8) {
                     ForEach(Array(gens)) { gen in
@@ -122,7 +122,7 @@ struct HomeView: View {
 
     private var templatesRow: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Templates", actionTitle: "Browse") { router.push(.templates) }
+            SectionHeader(title: "Modèles", actionTitle: "Parcourir") { router.push(.templates) }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(store.templates.prefix(8)) { tpl in
@@ -136,7 +136,7 @@ struct HomeView: View {
 
     private var trendingFormats: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Trending formats")
+            SectionHeader(title: "Formats tendance")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(Array(MockData.trendingFormats.enumerated()), id: \.offset) { _, f in
@@ -167,10 +167,10 @@ struct HomeView: View {
 
     private var recentAssets: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Recent assets", actionTitle: "Library") { router.select(.assets) }
+            SectionHeader(title: "Visuels récents", actionTitle: "Bibliothèque") { router.select(.assets) }
             let items = store.recentAssets.filter { $0.kind == .image || $0.kind == .video }.prefix(6)
             if items.isEmpty {
-                EmptyStateView(icon: "photo.on.rectangle", title: "No assets yet", message: "Generated and uploaded files live here.", ctaTitle: "Upload product") { router.present(.uploadProduct) }
+                EmptyStateView(icon: "photo.on.rectangle", title: "Aucun visuel pour l'instant", message: "Vos fichiers générés et importés sont rangés ici.", ctaTitle: "Importer un produit") { router.present(.uploadProduct) }
             } else {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                     ForEach(Array(items)) { asset in
@@ -197,7 +197,7 @@ struct ProjectCardCompact: View {
                     .frame(width: 200, height: 120)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(project.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
-                    Text("\(store.assets(in: project.id).count) assets · \(project.updatedAt.relativeString)").msCaption()
+                    Text("\(store.assets(in: project.id).count) visuels · \(project.updatedAt.relativeString)").msCaption()
                 }
             }
             .padding(10)

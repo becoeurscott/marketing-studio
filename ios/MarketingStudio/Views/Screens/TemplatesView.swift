@@ -5,15 +5,15 @@ struct TemplatesView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
-    @State private var category = "All"
+    @State private var category = "Tous"
     @State private var query = ""
     @State private var loading = true
 
-    private var categories: [String] { ["All"] + TemplateCategory.allCases.map { $0.title } }
+    private var categories: [String] { ["Tous"] + TemplateCategory.allCases.map { $0.title } }
 
     private var filtered: [Template] {
         store.templates
-            .filter { category == "All" || $0.category.title == category }
+            .filter { category == "Tous" || $0.category.title == category }
             .filter {
                 query.isEmpty
                 || $0.title.localizedCaseInsensitiveContains(query)
@@ -27,11 +27,11 @@ struct TemplatesView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Templates").msTitle(30)
-                    Text("\(store.templates.count) ready-to-run presets. Pick one and generate in seconds.").msBody(14)
+                    Text("Modèles").msTitle(30)
+                    Text("\(store.templates.count) préréglages prêts à l’emploi. Choisissez-en un et générez en quelques secondes.").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
-                SearchBar(placeholder: "Search templates, formats, platforms", text: $query)
+                SearchBar(placeholder: "Rechercher modèles, formats, plateformes", text: $query)
                     .padding(.horizontal, MSSpacing.gutter)
                 ChipRow(options: categories, selection: $category)
 
@@ -40,11 +40,11 @@ struct TemplatesView: View {
                 } else if filtered.isEmpty {
                     EmptyStateView(
                         icon: "rectangle.on.rectangle",
-                        title: "No templates found",
-                        message: query.isEmpty ? "Nothing in \(category) yet. Try another category." : "No template matches \"\(query)\".",
-                        ctaTitle: query.isEmpty ? "Show all" : "Clear search"
+                        title: "Aucun modèle trouvé",
+                        message: query.isEmpty ? "Rien dans \(category) pour le moment. Essayez une autre catégorie." : "Aucun modèle ne correspond à « \(query) ».",
+                        ctaTitle: query.isEmpty ? "Tout afficher" : "Effacer la recherche"
                     ) {
-                        withAnimation(MSAnimation.snappy) { query = ""; category = "All" }
+                        withAnimation(MSAnimation.snappy) { query = ""; category = "Tous" }
                     }
                 } else {
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
@@ -62,7 +62,7 @@ struct TemplatesView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Templates")
+        .navigationTitle("Modèles")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .task {
@@ -94,7 +94,7 @@ struct TemplateCard: View {
                         Button {
                             MSHaptic.tap()
                             store.toggleFavorite(.template, template.id)
-                            router.toast(isFav ? "Removed from favorites" : "Added to favorites", style: .success, icon: isFav ? "heart" : "heart.fill")
+                            router.toast(isFav ? "Retiré des favoris" : "Ajouté aux favoris", style: .success, icon: isFav ? "heart" : "heart.fill")
                         } label: {
                             Image(systemName: isFav ? "heart.fill" : "heart")
                                 .font(.system(size: 13, weight: .semibold))

@@ -6,17 +6,28 @@ struct AdCreatorView: View {
     @EnvironmentObject private var router: Router
 
     static let formats = ["Image", "Video", "Carousel", "Story", "Reel", "Short"]
-    static let ctas = ["Shop Now", "Learn More", "Sign Up", "Get Offer", "Try Free", "Book Now"]
+    static let ctas = ["Acheter", "En savoir plus", "S'inscrire", "Profiter de l'offre", "Essai gratuit", "Réserver"]
+    static func formatLabel(_ f: String) -> String {
+        switch f {
+        case "Image": return "Image"
+        case "Video": return "Vidéo"
+        case "Carousel": return "Carrousel"
+        case "Story": return "Story"
+        case "Reel": return "Reel"
+        case "Short": return "Short"
+        default: return f
+        }
+    }
     static let cost = GenerationKind.ad.creditCost
 
     private enum Phase: Equatable { case idle, generating, done, failed }
 
     @State private var platform: SocialPlatform = .tiktok
     @State private var format = "Image"
-    @State private var product = "Premium Watch"
-    @State private var offer = "20% launch discount"
-    @State private var audience = "Men 25–40"
-    @State private var cta: Set<String> = ["Shop Now"]
+    @State private var product = "Montre Premium"
+    @State private var offer = "-20 % de lancement"
+    @State private var audience = "Hommes 25–40 ans"
+    @State private var cta: Set<String> = ["Acheter"]
     @State private var phase: Phase = .idle
     @State private var variations: [AdVariation] = []
     @State private var savedIds: [String: String] = [:]
@@ -52,7 +63,7 @@ struct AdCreatorView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 22) {
                 header
-                CreativeSection(title: "Platform") {
+                CreativeSection(title: "Plateforme") {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(SocialPlatform.allCases) { p in
@@ -63,24 +74,24 @@ struct AdCreatorView: View {
                     }
                     .padding(.horizontal, -MSSpacing.gutter)
                 }
-                CreativeSection(title: "Format", subtitle: "Preview frame: \(ratioLabel) for \(platform.title) \(format)") {
+                CreativeSection(title: "Format", subtitle: "Cadre d'aperçu : \(ratioLabel) pour \(platform.title) \(Self.formatLabel(format))") {
                     FlowLayout(spacing: 8) {
                         ForEach(Self.formats, id: \.self) { f in
-                            MSChip(title: f, selected: format == f) { MSHaptic.tap(); withAnimation(MSAnimation.snappy) { format = f } }
+                            MSChip(title: Self.formatLabel(f), selected: format == f) { MSHaptic.tap(); withAnimation(MSAnimation.snappy) { format = f } }
                         }
                     }
                 }
                 VStack(spacing: 14) {
-                    MSTextField(label: "Product", placeholder: "e.g. Premium Watch", text: $product, icon: "shippingbox")
-                    MSTextField(label: "Offer", placeholder: "e.g. 20% launch discount", text: $offer, icon: "tag")
-                    MSTextField(label: "Target audience", placeholder: "e.g. Men 25–40", text: $audience, icon: "person.2")
+                    MSTextField(label: "Produit", placeholder: "ex. Montre Premium", text: $product, icon: "shippingbox")
+                    MSTextField(label: "Offre", placeholder: "ex. -20 % de lancement", text: $offer, icon: "tag")
+                    MSTextField(label: "Audience cible", placeholder: "ex. Hommes 25–40 ans", text: $audience, icon: "person.2")
                 }
                 .padding(.horizontal, MSSpacing.gutter)
-                CreativeSection(title: "Call to action") {
+                CreativeSection(title: "Appel à l'action") {
                     ChipGroup(options: Self.ctas, selection: $cta, allowDeselect: false)
                 }
-                CreditCostRow(cost: Self.cost, label: "4 ad variations")
-                MSButton(title: variations.isEmpty ? "Generate Ad" : "Generate New Set", icon: "sparkles", isLoading: phase == .generating, isDisabled: !canGenerate) { generate() }
+                CreditCostRow(cost: Self.cost, label: "4 variantes de pub")
+                MSButton(title: variations.isEmpty ? "Générer la pub" : "Générer une nouvelle série", icon: "sparkles", isLoading: phase == .generating, isDisabled: !canGenerate) { generate() }
                     .padding(.horizontal, MSSpacing.gutter)
                 resultsSection
             }
@@ -88,14 +99,14 @@ struct AdCreatorView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Ad Creator")
+        .navigationTitle("Créateur de pubs")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .msSheet(item: $editing, detents: [.large]) { v in
             AdVariationEditSheet(variation: v) { updated in
                 if let i = variations.firstIndex(where: { $0.id == updated.id }) { variations[i] = updated }
                 editing = nil
-                router.toast("\(updated.label) updated", style: .success)
+                router.toast("\(updated.label) mise à jour", style: .success)
             }
         }
         .msSheet(isPresented: $campaignPicker) {
@@ -105,8 +116,8 @@ struct AdCreatorView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Ad Creator").msTitle(26)
-            Text("Four ready-to-run creatives, sized for the placement you pick.").msBody(14)
+            Text("Créateur de pubs").msTitle(26)
+            Text("Quatre visuels prêts à diffuser, au format de l'emplacement choisi.").msBody(14)
         }
         .padding(.horizontal, MSSpacing.gutter)
     }
@@ -119,7 +130,7 @@ struct AdCreatorView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
                     ProgressView().tint(MSColor.accent)
-                    Text("Writing and designing 4 variations...").msHeadline(15)
+                    Text("Rédaction et conception de 4 variantes...").msHeadline(15)
                 }
                 ForEach(0..<2, id: \.self) { _ in
                     VStack(alignment: .leading, spacing: 10) {
@@ -135,7 +146,7 @@ struct AdCreatorView: View {
             if let lastError { CreativeErrorView(error: lastError, retry: generate, back: { router.popToRoot() }) }
         case .done:
             VStack(alignment: .leading, spacing: 12) {
-                SectionHeader(title: "Ad variations", subtitle: "\(platform.title) · \(format) · \(ratioLabel)", actionTitle: "Save all") { saveAll() }
+                SectionHeader(title: "Variantes de pub", subtitle: "\(platform.title) · \(Self.formatLabel(format)) · \(ratioLabel)", actionTitle: "Tout enregistrer") { saveAll() }
                 ForEach(variations) { v in
                     CreativeAdVariationCard(variation: v, ratio: previewRatio, saved: savedIds[v.id] != nil, exporting: exporting == v.id,
                                     onEdit: { editing = v }, onDuplicate: { duplicate(v) }, onSave: { save(v) }, onExport: { export(v) },
@@ -153,13 +164,13 @@ struct AdCreatorView: View {
         MSHaptic.tap()
         lastError = nil
         withAnimation(MSAnimation.gentle) { phase = .generating; variations = []; savedIds = [:] }
-        let p = AdParams(platform: platform, format: format, product: product, offer: offer, audience: audience, cta: cta.first ?? "Shop Now", projectId: store.currentProjectId)
+        let p = AdParams(platform: platform, format: format, product: product, offer: offer, audience: audience, cta: cta.first ?? "Acheter", projectId: store.currentProjectId)
         Task {
             do {
                 let vars = try await MockAPI.generateAds(p, store: store)
                 MSHaptic.success()
                 withAnimation(MSAnimation.snappy) { variations = vars; phase = .done }
-                router.toast("4 creatives ready", style: .success, icon: "sparkles")
+                router.toast("4 visuels prêts", style: .success, icon: "sparkles")
             } catch {
                 MSHaptic.warning()
                 lastError = error
@@ -171,11 +182,11 @@ struct AdCreatorView: View {
     private func duplicate(_ v: AdVariation) {
         var copy = v
         copy.id = IDGen.make("var")
-        copy.label = v.label + " (Copy)"
+        copy.label = v.label + " (copie)"
         withAnimation(MSAnimation.snappy) {
             if let i = variations.firstIndex(where: { $0.id == v.id }) { variations.insert(copy, at: i + 1) } else { variations.append(copy) }
         }
-        router.toast("Duplicated \(v.label)", style: .info)
+        router.toast("\(v.label) dupliquée", style: .info)
     }
 
     @discardableResult
@@ -184,14 +195,14 @@ struct AdCreatorView: View {
         let a = store.addAsset(name: "\(v.label) · \(product) · \(platform.title)", kind: .image, imageURL: v.visualURL, projectId: store.currentProjectId, tags: ["ad", platform.rawValue, format.lowercased()])
         store.addGeneration(kind: .ad, prompt: "\(v.label): \(v.headline)", thumbnails: [v.visualURL], projectId: store.currentProjectId, model: "Ads v1", credits: 0, resultText: "\(v.headline)\n\n\(v.primaryText)\n\nCTA: \(v.cta)")
         savedIds[v.id] = a.id
-        if !quiet { MSHaptic.success(); router.toast("\(v.label) saved to assets", style: .success) }
+        if !quiet { MSHaptic.success(); router.toast("\(v.label) enregistrée dans les ressources", style: .success) }
         return a.id
     }
 
     private func saveAll() {
         for v in variations { save(v, quiet: true) }
         MSHaptic.success()
-        router.toast("Saved \(variations.count) creatives", style: .success)
+        router.toast("\(variations.count) visuels enregistrés", style: .success)
     }
 
     private func export(_ v: AdVariation) {
@@ -204,7 +215,7 @@ struct AdCreatorView: View {
                     router.toast("\(v.label): \(step)", style: .info, icon: "square.and.arrow.up")
                 }
                 MSHaptic.success()
-                router.toast("\(v.label) exported", style: .success)
+                router.toast("\(v.label) exportée", style: .success)
             } catch {
                 router.toast(error.localizedDescription, style: .error)
             }
@@ -232,9 +243,9 @@ struct CreativeAdVariationCard: View {
                 MSBadge(text: variation.label, tone: .accent)
                 MSBadge(text: variation.platform.title, icon: variation.platform.icon)
                 Spacer()
-                if saved { MSBadge(text: "Saved", tone: .success, icon: "checkmark") }
+                if saved { MSBadge(text: "Enregistrée", tone: .success, icon: "checkmark") }
             }
-            PlatformPreviewFrame(ratio: ratio, label: "Visual") {
+            PlatformPreviewFrame(ratio: ratio, label: "Visuel") {
                 ZStack(alignment: .bottomLeading) {
                     RemoteImage(url: variation.visualURL)
                     LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .center, endPoint: .bottom)
@@ -251,17 +262,17 @@ struct CreativeAdVariationCard: View {
             .frame(maxHeight: ratio < 1 ? 300 : 260)
             .frame(maxWidth: .infinity, alignment: .leading)
             VStack(alignment: .leading, spacing: 6) {
-                labeled("Headline", variation.headline)
-                labeled("Primary text", variation.primaryText)
+                labeled("Titre", variation.headline)
+                labeled("Texte principal", variation.primaryText)
                 labeled("CTA", variation.cta)
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ResultAction(title: "Edit", icon: "pencil", action: onEdit)
-                    ResultAction(title: "Duplicate", icon: "plus.square.on.square", action: onDuplicate)
-                    ResultAction(title: saved ? "Saved" : "Save", icon: saved ? "checkmark" : "square.and.arrow.down", tint: saved ? MSColor.success : MSColor.text, action: onSave)
-                    ResultAction(title: exporting ? "Exporting..." : "Export", icon: "square.and.arrow.up", action: onExport)
-                    ResultAction(title: "Use in Campaign", icon: "flag", action: onUseInCampaign)
+                    ResultAction(title: "Modifier", icon: "pencil", action: onEdit)
+                    ResultAction(title: "Dupliquer", icon: "plus.square.on.square", action: onDuplicate)
+                    ResultAction(title: saved ? "Enregistrée" : "Enregistrer", icon: saved ? "checkmark" : "square.and.arrow.down", tint: saved ? MSColor.success : MSColor.text, action: onSave)
+                    ResultAction(title: exporting ? "Export..." : "Exporter", icon: "square.and.arrow.up", action: onExport)
+                    ResultAction(title: "Utiliser dans une campagne", icon: "flag", action: onUseInCampaign)
                 }
             }
         }
@@ -283,13 +294,13 @@ struct AdVariationEditSheet: View {
     var onSave: (AdVariation) -> Void
 
     var body: some View {
-        BottomSheetContainer(title: "Edit \(variation.label)", subtitle: "Changes apply to this variation only") {
+        BottomSheetContainer(title: "Modifier \(variation.label)", subtitle: "Les modifications s'appliquent uniquement à cette variante") {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 14) {
-                    MSTextField(label: "Headline", placeholder: "Headline", text: $variation.headline)
-                    MSTextEditor(label: "Primary text", placeholder: "Primary text", text: $variation.primaryText, minHeight: 100)
-                    MSTextField(label: "CTA", placeholder: "Shop Now", text: $variation.cta)
-                    MSButton(title: "Apply Changes", icon: "checkmark") { onSave(variation) }
+                    MSTextField(label: "Titre", placeholder: "Titre", text: $variation.headline)
+                    MSTextEditor(label: "Texte principal", placeholder: "Texte principal", text: $variation.primaryText, minHeight: 100)
+                    MSTextField(label: "CTA", placeholder: "Acheter", text: $variation.cta)
+                    MSButton(title: "Appliquer", icon: "checkmark") { onSave(variation) }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
                 .padding(.bottom, 30)

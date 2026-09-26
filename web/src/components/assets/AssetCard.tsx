@@ -26,7 +26,7 @@ export interface AssetCardProps {
 }
 
 export function assetTypeLabel(type: Asset["type"]): string {
-  return { image: "Image", video: "Video", audio: "Audio", logo: "Logo", brand: "Brand", export: "Export" }[type];
+  return { image: "Image", video: "Vidéo", audio: "Audio", logo: "Logo", brand: "Marque", export: "Export" }[type];
 }
 
 export function AssetCard({ asset, favorite, onToggleFavorite, selectable, selected, onSelect, onPreview, onDownload, onRename, onMove, onDelete, href, className }: AssetCardProps) {
@@ -62,7 +62,7 @@ export function AssetCard({ asset, favorite, onToggleFavorite, selectable, selec
         <span className="absolute inset-0 flex items-center justify-center bg-black/30"><Music className="size-8 text-white/80" /></span>
       )}
       <span className="absolute bottom-2 left-2 text-[10px] font-medium uppercase tracking-wide text-white/90 bg-black/50 backdrop-blur px-1.5 py-0.5 rounded">
-        {assetTypeLabel(asset.type)}{asset.durationSec ? ` · ${asset.durationSec}s` : ""}
+        {assetTypeLabel(asset.type)}{asset.durationSec ? ` · ${asset.durationSec} s` : ""}
       </span>
       {selectable && (
         <span className={cn("absolute top-2 left-2 size-5 rounded-md border flex items-center justify-center transition-colors", selected ? "bg-accent border-accent" : "bg-black/40 border-white/40")}>
@@ -84,14 +84,14 @@ export function AssetCard({ asset, favorite, onToggleFavorite, selectable, selec
       <div className="mt-2 flex items-start justify-between gap-2 min-w-0">
         <div className="min-w-0">
           <p className="text-[13px] font-medium truncate">{asset.name}</p>
-          <p className="text-[11px] text-muted truncate">{asset.width && asset.height ? `${asset.width}×${asset.height} · ` : ""}{Math.round(asset.sizeKb / 100) / 10} MB</p>
+          <p className="text-[11px] text-muted truncate">{asset.width && asset.height ? `${asset.width}×${asset.height} · ` : ""}{(Math.round(asset.sizeKb / 100) / 10).toLocaleString("fr-FR")} Mo</p>
         </div>
       </div>
 
       {/* Hover actions */}
       <div className={cn("absolute top-2 right-2 flex items-center gap-1 transition-opacity", favorite || menu ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100")}>
         <IconButton
-          label={favorite ? "Remove from favorites" : "Add to favorites"}
+          label={favorite ? "Retirer des favoris" : "Ajouter aux favoris"}
           size="sm"
           className={cn("bg-black/50 backdrop-blur hover:bg-black/70", favorite ? "text-danger" : "text-white")}
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(asset); }}
@@ -99,19 +99,19 @@ export function AssetCard({ asset, favorite, onToggleFavorite, selectable, selec
           <Heart className={cn(favorite && "fill-current")} />
         </IconButton>
         {hasMenu && (
-          <IconButton label="Asset actions" size="sm" className="bg-black/50 text-white backdrop-blur hover:bg-black/70" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenu((v) => !v); }}>
+          <IconButton label="Actions sur la ressource" size="sm" className="bg-black/50 text-white backdrop-blur hover:bg-black/70" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenu((v) => !v); }}>
             <MoreHorizontal />
           </IconButton>
         )}
       </div>
       {menu && (
-        <div className="absolute right-2 top-11 w-44 rounded-md bg-elevated border border-border-strong shadow-float py-1 z-20">
-          {item("Preview", Eye, onPreview)}
-          {item("Download", Download, onDownload)}
-          {item("Rename", Pencil, onRename)}
-          {item("Move to project", FolderInput, onMove)}
-          {item(favorite ? "Unfavorite" : "Favorite", Heart, onToggleFavorite)}
-          {item("Delete", Trash2, onDelete, true)}
+        <div className="absolute right-2 top-11 w-52 rounded-md bg-elevated border border-border-strong shadow-float py-1 z-20">
+          {item("Aperçu", Eye, onPreview)}
+          {item("Télécharger", Download, onDownload)}
+          {item("Renommer", Pencil, onRename)}
+          {item("Déplacer vers un projet", FolderInput, onMove)}
+          {item(favorite ? "Retirer des favoris" : "Ajouter aux favoris", Heart, onToggleFavorite)}
+          {item("Supprimer", Trash2, onDelete, true)}
         </div>
       )}
     </div>

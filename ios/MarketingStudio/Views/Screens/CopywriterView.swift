@@ -10,6 +10,22 @@ struct CopywriterView: View {
         ("TikTok Caption", "music.note"), ("Email", "envelope"), ("Headline", "textformat.size"),
         ("Hook", "bolt"), ("CTA", "hand.tap"), ("UGC Script", "person.wave.2"), ("Landing Page Copy", "doc.richtext"),
     ]
+    static let toolLabels: [String: String] = [
+        "Ad Copy": "Texte publicitaire", "Product Description": "Description produit", "Instagram Caption": "Légende Instagram",
+        "TikTok Caption": "Légende TikTok", "Email": "E-mail", "Headline": "Titre", "Hook": "Accroche", "CTA": "Appel à l'action",
+        "UGC Script": "Script UGC", "Landing Page Copy": "Texte de landing page",
+    ]
+    static let toneLabels: [String: String] = [
+        "Professional": "Professionnel", "Friendly": "Amical", "Luxury": "Luxe", "Bold": "Audacieux",
+        "Funny": "Drôle", "Minimal": "Minimaliste", "Urgent": "Urgent", "Authentic": "Authentique",
+    ]
+    static let goalLabels: [String: String] = [
+        "Sales": "Ventes", "Awareness": "Notoriété", "Engagement": "Engagement", "Leads": "Prospects", "Retention": "Fidélisation",
+    ]
+    static func toolLabel(_ t: String) -> String { toolLabels[t] ?? t }
+    static func toneLabel(_ t: String) -> String { toneLabels[t] ?? t }
+    /// Maps a French display label back to its internal (English) key.
+    private static func key(_ label: String, in map: [String: String]) -> String { map.first { $0.value == label }?.key ?? label }
     static let tones = ["Professional", "Friendly", "Luxury", "Bold", "Funny", "Minimal", "Urgent"]
     static let goals = ["Sales", "Awareness", "Engagement", "Leads", "Retention"]
     static let cost = GenerationKind.copy.creditCost
@@ -17,10 +33,10 @@ struct CopywriterView: View {
     private enum Phase: Equatable { case idle, generating, done, failed }
 
     @State private var tool = "Ad Copy"
-    @State private var product = "Luma Glow Serum"
-    @State private var audience = "Women and men 20–35"
-    @State private var tone: Set<String> = ["Professional"]
-    @State private var goal: Set<String> = ["Sales"]
+    @State private var product = "Sérum Luma Glow"
+    @State private var audience = "Femmes et hommes de 20 à 35 ans"
+    @State private var tone: Set<String> = ["Professionnel"]
+    @State private var goal: Set<String> = ["Ventes"]
     @State private var phase: Phase = .idle
     @State private var results: [CopyResult] = []
     @State private var savedIds: Set<String> = []
@@ -34,15 +50,15 @@ struct CopywriterView: View {
                 header
                 toolPicker
                 VStack(spacing: 14) {
-                    MSTextField(label: "Product", placeholder: "e.g. Luma Glow Serum", text: $product, icon: "shippingbox")
-                    MSTextField(label: "Audience", placeholder: "e.g. Women and men 20–35", text: $audience, icon: "person.2")
+                    MSTextField(label: "Produit", placeholder: "ex. Sérum Luma Glow", text: $product, icon: "shippingbox")
+                    MSTextField(label: "Audience", placeholder: "ex. Femmes et hommes de 20 à 35 ans", text: $audience, icon: "person.2")
                 }
                 .padding(.horizontal, MSSpacing.gutter)
-                CreativeSection(title: "Tone") { ChipGroup(options: Self.tones, selection: $tone, allowDeselect: false) }
-                CreativeSection(title: "Goal") { ChipGroup(options: Self.goals, selection: $goal, allowDeselect: false) }
+                CreativeSection(title: "Ton") { ChipGroup(options: Self.tones.map(Self.toneLabel), selection: $tone, allowDeselect: false) }
+                CreativeSection(title: "Objectif") { ChipGroup(options: Self.goals.map { Self.goalLabels[$0] ?? $0 }, selection: $goal, allowDeselect: false) }
                 brandVoiceCard
-                CreditCostRow(cost: Self.cost, label: tool)
-                MSButton(title: results.isEmpty ? "Generate" : "Generate Variation", icon: "sparkles", isLoading: phase == .generating, isDisabled: !canGenerate) { generate() }
+                CreditCostRow(cost: Self.cost, label: Self.toolLabel(tool))
+                MSButton(title: results.isEmpty ? "Générer" : "Générer une variante", icon: "sparkles", isLoading: phase == .generating, isDisabled: !canGenerate) { generate() }
                     .padding(.horizontal, MSSpacing.gutter)
                 resultsSection
                 if !store.copyResults.isEmpty && results.isEmpty && phase == .idle { recentSection }
@@ -51,7 +67,7 @@ struct CopywriterView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Copywriter")
+        .navigationTitle("Rédacteur")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
     }
@@ -60,14 +76,14 @@ struct CopywriterView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Copywriter").msTitle(26)
-            Text("On-brand copy for every placement, in your voice.").msBody(14)
+            Text("Rédacteur").msTitle(26)
+            Text("Des textes fidèles à votre marque pour chaque emplacement, avec votre ton.").msBody(14)
         }
         .padding(.horizontal, MSSpacing.gutter)
     }
 
     private var toolPicker: some View {
-        CreativeSection(title: "Tool") {
+        CreativeSection(title: "Outil") {
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
                 ForEach(Self.tools, id: \.name) { t in
                     let selected = tool == t.name
@@ -81,7 +97,7 @@ struct CopywriterView: View {
                                 .foregroundStyle(selected ? MSColor.text : MSColor.highlight)
                                 .frame(width: 28, height: 28)
                                 .background(selected ? MSColor.accent.opacity(0.35) : MSColor.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                            Text(t.name).font(MSFont.control(13)).foregroundStyle(MSColor.text).lineLimit(1)
+                            Text(Self.toolLabel(t.name)).font(MSFont.control(13)).foregroundStyle(MSColor.text).lineLimit(1)
                             Spacer(minLength: 0)
                         }
                         .padding(10)
@@ -104,8 +120,8 @@ struct CopywriterView: View {
                     .background(MSColor.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
-                        Text("Brand voice · \(store.brand.voice.tone)").font(MSFont.control(14)).foregroundStyle(MSColor.text)
-                        MSBadge(text: "Used in generated copy", tone: .success)
+                        Text("Ton de marque · \(store.brand.voice.tone)").font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                        MSBadge(text: "Utilisé dans les textes générés", tone: .success)
                     }
                     Text(store.brand.voice.writingStyle).msCaption().lineLimit(2)
                 }
@@ -126,7 +142,7 @@ struct CopywriterView: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     ProgressView().tint(MSColor.accent)
-                    Text("Writing \(tool.lowercased())...").msHeadline(15)
+                    Text("Rédaction : \(Self.toolLabel(tool).lowercased())...").msHeadline(15)
                 }
                 VStack(alignment: .leading, spacing: 8) {
                     SkeletonView().frame(height: 14).frame(maxWidth: 160)
@@ -142,7 +158,7 @@ struct CopywriterView: View {
             if let lastError { CreativeErrorView(error: lastError, retry: generate, back: { router.popToRoot() }) }
         case .done:
             VStack(alignment: .leading, spacing: 10) {
-                SectionHeader(title: "Results", subtitle: "\(results.count) variation\(results.count == 1 ? "" : "s") · \(tone.first ?? "")")
+                SectionHeader(title: "Résultats", subtitle: "\(results.count) variante\(results.count == 1 ? "" : "s") · \(tone.first ?? "")")
                 resultsList
             }
             .padding(.horizontal, MSSpacing.gutter)
@@ -161,18 +177,18 @@ struct CopywriterView: View {
 
     private var recentSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Recent copy", subtitle: "Saved from earlier sessions")
+            SectionHeader(title: "Textes récents", subtitle: "Enregistrés lors de sessions précédentes")
             ForEach(store.copyResults.prefix(3)) { r in
                 MSCard(padding: 12) {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
-                            MSBadge(text: r.tool, tone: .accent)
-                            MSBadge(text: r.tone)
+                            MSBadge(text: Self.toolLabel(r.tool), tone: .accent)
+                            MSBadge(text: Self.toneLabel(r.tone))
                             Spacer()
                             Text(r.createdAt.relativeString).msCaption()
                         }
                         Text(r.text).msBody(13).lineLimit(3)
-                        HStack { Spacer(); ResultAction(title: "Copy", icon: "doc.on.doc") { copy(r) } }
+                        HStack { Spacer(); ResultAction(title: "Copier", icon: "doc.on.doc") { copy(r) } }
                     }
                 }
             }
@@ -187,7 +203,7 @@ struct CopywriterView: View {
         MSHaptic.tap()
         lastError = nil
         withAnimation(MSAnimation.gentle) { phase = .generating }
-        let p = CopyParams(tool: tool, product: product, audience: audience, tone: tone.first ?? "Professional", goal: goal.first ?? "Sales")
+        let p = CopyParams(tool: tool, product: product, audience: audience, tone: Self.key(tone.first ?? "Professionnel", in: Self.toneLabels), goal: Self.key(goal.first ?? "Ventes", in: Self.goalLabels))
         Task {
             do {
                 let r = try await MockAPI.generateCopy(p, store: store)
@@ -205,15 +221,15 @@ struct CopywriterView: View {
     private func copy(_ r: CopyResult) {
         UIPasteboard.general.string = r.text
         MSHaptic.success()
-        router.toast("Copied to clipboard", style: .success, icon: "doc.on.doc")
+        router.toast("Copié dans le presse-papiers", style: .success, icon: "doc.on.doc")
     }
 
     private func save(_ r: CopyResult) {
-        guard !savedIds.contains(r.id) else { router.toast("Already saved", style: .info); return }
+        guard !savedIds.contains(r.id) else { router.toast("Déjà enregistré", style: .info); return }
         store.addCopyResult(tool: r.tool, tone: r.tone, text: r.text)
         savedIds.insert(r.id)
         MSHaptic.success()
-        router.toast("Saved to copy library", style: .success)
+        router.toast("Enregistré dans la bibliothèque de textes", style: .success)
     }
 }
 
@@ -231,26 +247,26 @@ struct CopyResultCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                MSBadge(text: "Variation \(index)", tone: .accent)
-                MSBadge(text: result.tone)
+                MSBadge(text: "Variante \(index)", tone: .accent)
+                MSBadge(text: CopywriterView.toneLabel(result.tone))
                 Spacer()
-                if saved { MSBadge(text: "Saved", tone: .success, icon: "checkmark") }
+                if saved { MSBadge(text: "Enregistré", tone: .success, icon: "checkmark") }
             }
             Text(result.text)
                 .msBody(15, color: MSColor.text)
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 6) {
-                Text("\(result.text.split(separator: " ").count) words").msCaption()
+                Text("\(result.text.split(separator: " ").count) mots").msCaption()
                 Text("·").msCaption()
-                Text(result.tool).msCaption()
+                Text(CopywriterView.toolLabel(result.tool)).msCaption()
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ResultAction(title: "Copy", icon: "doc.on.doc", action: onCopy)
-                    ResultAction(title: saved ? "Saved" : "Save", icon: saved ? "checkmark" : "bookmark", tint: saved ? MSColor.success : MSColor.text, action: onSave)
-                    ResultAction(title: "Regenerate", icon: "arrow.clockwise", action: onRegenerate)
-                    if let onUseInScript { ResultAction(title: "Use in Script", icon: "person.wave.2", action: onUseInScript) }
+                    ResultAction(title: "Copier", icon: "doc.on.doc", action: onCopy)
+                    ResultAction(title: saved ? "Enregistré" : "Enregistrer", icon: saved ? "checkmark" : "bookmark", tint: saved ? MSColor.success : MSColor.text, action: onSave)
+                    ResultAction(title: "Régénérer", icon: "arrow.clockwise", action: onRegenerate)
+                    if let onUseInScript { ResultAction(title: "Utiliser dans le script", icon: "person.wave.2", action: onUseInScript) }
                 }
             }
         }

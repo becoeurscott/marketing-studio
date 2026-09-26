@@ -13,7 +13,7 @@ struct CampaignDetailView: View {
     @State private var editingItem: CalendarItem? = nil
     @State private var addingItem = false
 
-    private static let tabs = ["Overview", "Assets", "Ads", "Videos", "Copy", "Calendar", "Analytics"]
+    private static let tabs = ["Aperçu", "Visuels", "Pubs", "Vidéos", "Textes", "Calendrier", "Statistiques"]
 
     private var campaign: Campaign? { store.campaign(campaignId) }
 
@@ -22,7 +22,7 @@ struct CampaignDetailView: View {
             if let campaign {
                 content(campaign)
             } else {
-                EmptyStateView(icon: "flag.slash", title: "Campaign not found", message: "It may have been deleted.", ctaTitle: "Back to campaigns") { router.pop() }
+                EmptyStateView(icon: "flag.slash", title: "Campagne introuvable", message: "Elle a peut-être été supprimée.", ctaTitle: "Retour aux campagnes") { router.pop() }
                     .msScreen()
             }
         }
@@ -37,9 +37,9 @@ struct CampaignDetailView: View {
                 Group {
                     switch tab {
                     case 0: overview(c)
-                    case 1: assetsGrid(c.assetIds.compactMap { store.asset($0) }, empty: ("No assets yet", "Generate more creatives to fill this campaign."))
+                    case 1: assetsGrid(c.assetIds.compactMap { store.asset($0) }, empty: ("Aucun visuel pour l'instant", "Générez d'autres visuels pour alimenter cette campagne."))
                     case 2: adsTab(c)
-                    case 3: assetsGrid(c.assetIds.compactMap { store.asset($0) }.filter { $0.kind == .video }, empty: ("No videos", "Video ads and UGC clips for this campaign show up here."))
+                    case 3: assetsGrid(c.assetIds.compactMap { store.asset($0) }.filter { $0.kind == .video }, empty: ("Aucune vidéo", "Les pubs vidéo et clips UGC de cette campagne apparaîtront ici."))
                     case 4: copyTab(c)
                     case 5: calendarTab(c)
                     default: analyticsTab(c)
@@ -56,30 +56,30 @@ struct CampaignDetailView: View {
                 Menu {
                     Menu {
                         ForEach(CampaignStatus.allCases) { s in
-                            Button { store.setCampaignStatus(c.id, s); router.toast("Marked \(s.title.lowercased())") } label: {
+                            Button { store.setCampaignStatus(c.id, s); router.toast("Statut : \(s.title.lowercased())") } label: {
                                 Label(s.title, systemImage: c.status == s ? "checkmark" : "")
                             }
                         }
-                    } label: { Label("Change status", systemImage: "flag") }
-                    Button { addingAssets = true } label: { Label("Add existing assets", systemImage: "plus.rectangle.on.rectangle") }
-                    Button { router.present(.exportAssets(ids: c.assetIds)) } label: { Label("Export campaign", systemImage: "square.and.arrow.up") }
-                    Button(role: .destructive) { confirmDelete = true } label: { Label("Delete campaign", systemImage: "trash") }
+                    } label: { Label("Changer le statut", systemImage: "flag") }
+                    Button { addingAssets = true } label: { Label("Ajouter des visuels existants", systemImage: "plus.rectangle.on.rectangle") }
+                    Button { router.present(.exportAssets(ids: c.assetIds)) } label: { Label("Exporter la campagne", systemImage: "square.and.arrow.up") }
+                    Button(role: .destructive) { confirmDelete = true } label: { Label("Supprimer la campagne", systemImage: "trash") }
                 } label: {
                     Image(systemName: "ellipsis.circle").font(.system(size: 16, weight: .semibold)).foregroundStyle(MSColor.text)
                 }
             }
         }
-        .confirmationDialog("Delete \(c.name)?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Delete campaign", role: .destructive) {
+        .confirmationDialog("Supprimer « \(c.name) » ?", isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("Supprimer la campagne", role: .destructive) {
                 store.deleteCampaign(c.id)
-                router.toast("Campaign deleted", style: .warning)
+                router.toast("Campagne supprimée", style: .warning)
                 router.pop()
             }
-        } message: { Text("Assets stay in your library. This cannot be undone.") }
+        } message: { Text("Les visuels restent dans votre bibliothèque. Cette action est irréversible.") }
         .msSheet(isPresented: $addingAssets, detents: [.large]) {
-            AssetPickerSheet(title: "Add to campaign", preferredIds: [], multiple: true, initial: [], excluded: Set(c.assetIds)) { ids in
+            AssetPickerSheet(title: "Ajouter à la campagne", preferredIds: [], multiple: true, initial: [], excluded: Set(c.assetIds)) { ids in
                 store.addAssets(ids, toCampaign: c.id)
-                router.toast("Added \(ids.count) asset\(ids.count == 1 ? "" : "s")", style: .success)
+                router.toast("\(ids.count) visuel\(ids.count > 1 ? "s" : "") ajouté\(ids.count > 1 ? "s" : "")", style: .success)
             }
         }
         .msSheet(item: $editingItem, detents: [.large]) { item in
@@ -97,12 +97,12 @@ struct CampaignDetailView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(c.name).msTitle(26)
-                    Text("\(c.objective.title) · Created \(c.createdAt.shortString)").msCaption()
+                    Text("\(c.objective.title) · Créée le \(c.createdAt.shortString)").msCaption()
                 }
                 Spacer()
                 Menu {
                     ForEach(CampaignStatus.allCases) { s in
-                        Button(s.title) { store.setCampaignStatus(c.id, s); router.toast("Marked \(s.title.lowercased())") }
+                        Button(s.title) { store.setCampaignStatus(c.id, s); router.toast("Statut : \(s.title.lowercased())") }
                     }
                 } label: {
                     HStack(spacing: 4) {
@@ -126,20 +126,20 @@ struct CampaignDetailView: View {
         let videos = assets.filter { $0.kind == .video }.count
         return VStack(alignment: .leading, spacing: 18) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                StatTile(label: "Assets", value: "\(assets.count)", icon: "photo.on.rectangle") { tab = 1 }
-                StatTile(label: "Ad variations", value: "\(c.variations.count)", icon: "rectangle.stack") { tab = 2 }
-                StatTile(label: "Videos", value: "\(videos)", icon: "video") { tab = 3 }
-                StatTile(label: "Scheduled", value: "\(c.calendarItems.filter { $0.status != .draft }.count)", icon: "calendar") { tab = 5 }
-                StatTile(label: "Platforms", value: "\(c.platforms.count)", icon: "square.grid.2x2")
+                StatTile(label: "Visuels", value: "\(assets.count)", icon: "photo.on.rectangle") { tab = 1 }
+                StatTile(label: "Variantes de pub", value: "\(c.variations.count)", icon: "rectangle.stack") { tab = 2 }
+                StatTile(label: "Vidéos", value: "\(videos)", icon: "video") { tab = 3 }
+                StatTile(label: "Planifiés", value: "\(c.calendarItems.filter { $0.status != .draft }.count)", icon: "calendar") { tab = 5 }
+                StatTile(label: "Plateformes", value: "\(c.platforms.count)", icon: "square.grid.2x2")
                 StatTile(label: "Formats", value: "\(c.formats.count)", icon: "square.on.square")
             }
             .padding(.horizontal, MSSpacing.gutter)
 
             VStack(alignment: .leading, spacing: 10) {
-                SectionHeader(title: "Quick actions")
+                SectionHeader(title: "Actions rapides")
                 HStack(spacing: 10) {
-                    MSButton(title: "Generate more", icon: "sparkles", size: .compact, isLoading: generatingMore) { generateMore(c) }
-                    MSButton(title: "Export campaign", icon: "square.and.arrow.up", style: .secondary, size: .compact) {
+                    MSButton(title: "Générer plus", icon: "sparkles", size: .compact, isLoading: generatingMore) { generateMore(c) }
+                    MSButton(title: "Exporter la campagne", icon: "square.and.arrow.up", style: .secondary, size: .compact) {
                         router.present(.exportAssets(ids: c.assetIds))
                     }
                 }
@@ -149,16 +149,16 @@ struct CampaignDetailView: View {
             VStack(alignment: .leading, spacing: 10) {
                 SectionHeader(title: "Brief")
                 VStack(spacing: 8) {
-                    briefRow("Objective", c.objective.title, icon: c.objective.icon)
+                    briefRow("Objectif", c.objective.title, icon: c.objective.icon)
                     briefRow("Audience", c.audience, icon: "person.2")
-                    briefRow("Platforms", c.platforms.map { $0.title }.joined(separator: ", "), icon: "square.grid.2x2")
+                    briefRow("Plateformes", c.platforms.map { $0.title }.joined(separator: ", "), icon: "square.grid.2x2")
                     briefRow("Formats", c.formats.map { $0.title }.joined(separator: ", "), icon: "rectangle.stack")
                     if let p = c.projectId.flatMap({ store.project($0) }) {
                         MSCard(padding: 12, action: { router.push(.projectDetail(id: p.id), on: .projects) }) {
                             HStack(spacing: 12) {
                                 RemoteImage(url: p.thumbnailURL, cornerRadius: 8).frame(width: 40, height: 40)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text("Project").msCaption()
+                                    Text("Projet").msCaption()
                                     Text(p.name).font(MSFont.control(14)).foregroundStyle(MSColor.text)
                                 }
                                 Spacer()
@@ -172,7 +172,7 @@ struct CampaignDetailView: View {
 
             if !assets.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
-                    SectionHeader(title: "Latest creatives", actionTitle: "All") { tab = 1 }
+                    SectionHeader(title: "Derniers visuels", actionTitle: "Tout voir") { tab = 1 }
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             ForEach(assets.prefix(8)) { a in
@@ -187,7 +187,7 @@ struct CampaignDetailView: View {
 
             if !c.calendarItems.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
-                    SectionHeader(title: "Up next", actionTitle: "Calendar") { tab = 5 }
+                    SectionHeader(title: "À venir", actionTitle: "Calendrier") { tab = 5 }
                     VStack(spacing: 8) {
                         ForEach(c.calendarItems.filter { $0.date >= Calendar.current.startOfDay(for: Date()) }.prefix(3)) { item in
                             CalendarItemRow(item: item) { editingItem = item }
@@ -216,7 +216,7 @@ struct CampaignDetailView: View {
     private func assetsGrid(_ assets: [Asset], empty: (String, String)) -> some View {
         Group {
             if assets.isEmpty {
-                EmptyStateView(icon: "photo.on.rectangle.angled", title: empty.0, message: empty.1, ctaTitle: "Generate more", ctaIcon: "sparkles") {
+                EmptyStateView(icon: "photo.on.rectangle.angled", title: empty.0, message: empty.1, ctaTitle: "Générer plus", ctaIcon: "sparkles") {
                     if let c = campaign { generateMore(c) }
                 }
             } else {
@@ -236,7 +236,7 @@ struct CampaignDetailView: View {
     private func adsTab(_ c: Campaign) -> some View {
         Group {
             if c.variations.isEmpty {
-                EmptyStateView(icon: "rectangle.stack", title: "No ad variations", message: "Generate Creative A–D with headline, primary text and CTA.", ctaTitle: "Open Ad Creator", ctaIcon: "sparkles") { router.push(.adCreator) }
+                EmptyStateView(icon: "rectangle.stack", title: "Aucune variante de pub", message: "Générez les visuels A à D avec titre, texte principal et appel à l'action.", ctaTitle: "Ouvrir le Créateur de pubs", ctaIcon: "sparkles") { router.push(.adCreator) }
             } else {
                 VStack(spacing: 12) {
                     ForEach(c.variations) { v in
@@ -254,7 +254,7 @@ struct CampaignDetailView: View {
         let copies = c.variations.map { ($0.label, $0.headline, $0.primaryText, $0.cta) }
         return Group {
             if copies.isEmpty {
-                EmptyStateView(icon: "text.alignleft", title: "No copy yet", message: "Headlines, captions and CTAs for this campaign live here.", ctaTitle: "Open Copywriter", ctaIcon: "pencil.line") { router.push(.copywriter) }
+                EmptyStateView(icon: "text.alignleft", title: "Aucun texte pour l'instant", message: "Les titres, légendes et appels à l'action de cette campagne se trouvent ici.", ctaTitle: "Ouvrir le Rédacteur", ctaIcon: "pencil.line") { router.push(.copywriter) }
             } else {
                 VStack(spacing: 10) {
                     ForEach(Array(copies.enumerated()), id: \.offset) { _, row in
@@ -265,7 +265,7 @@ struct CampaignDetailView: View {
                                     Spacer()
                                     Button {
                                         UIPasteboard.general.string = "\(row.1)\n\n\(row.2)\n\n\(row.3)"
-                                        router.toast("Copied", style: .success, icon: "doc.on.doc")
+                                        router.toast("Copié", style: .success, icon: "doc.on.doc")
                                     } label: {
                                         Image(systemName: "doc.on.doc").font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.text2)
                                     }
@@ -276,7 +276,7 @@ struct CampaignDetailView: View {
                             }
                         }
                     }
-                    MSButton(title: "Write more copy", icon: "pencil.line", style: .secondary, size: .compact) { router.push(.copywriter) }
+                    MSButton(title: "Rédiger d'autres textes", icon: "pencil.line", style: .secondary, size: .compact) { router.push(.copywriter) }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
             }
@@ -288,12 +288,12 @@ struct CampaignDetailView: View {
     private func calendarTab(_ c: Campaign) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
-                MSButton(title: "Open full calendar", icon: "calendar", size: .compact) { router.push(.contentCalendar(campaignId: c.id)) }
-                MSButton(title: "Add", icon: "plus", style: .secondary, size: .compact, fullWidth: false) { addingItem = true }
+                MSButton(title: "Ouvrir le calendrier complet", icon: "calendar", size: .compact) { router.push(.contentCalendar(campaignId: c.id)) }
+                MSButton(title: "Ajouter", icon: "plus", style: .secondary, size: .compact, fullWidth: false) { addingItem = true }
             }
             .padding(.horizontal, MSSpacing.gutter)
             if c.calendarItems.isEmpty {
-                EmptyStateView(icon: "calendar.badge.plus", title: "Nothing scheduled", message: "Plan posts by day, platform and format. No real publishing happens.", ctaTitle: "Schedule content", ctaIcon: "plus") { addingItem = true }
+                EmptyStateView(icon: "calendar.badge.plus", title: "Rien de planifié", message: "Planifiez vos publications par jour, plateforme et format. Aucune publication réelle n'a lieu.", ctaTitle: "Planifier du contenu", ctaIcon: "plus") { addingItem = true }
             } else {
                 VStack(spacing: 8) {
                     ForEach(c.calendarItems.sorted { $0.date < $1.date }) { item in
@@ -311,15 +311,15 @@ struct CampaignDetailView: View {
         let a = CampaignAnalytics(campaign: c)
         return VStack(alignment: .leading, spacing: 16) {
             if a.totalReach == 0 {
-                EmptyStateView(icon: "chart.bar.xaxis", title: "No data yet", message: "Analytics appear once the campaign is live. Mark it live to preview sample metrics.", ctaTitle: "Mark as live", ctaIcon: "dot.radiowaves.left.and.right") {
+                EmptyStateView(icon: "chart.bar.xaxis", title: "Pas encore de données", message: "Les statistiques apparaissent une fois la campagne en cours. Passez-la en cours pour voir des exemples de métriques.", ctaTitle: "Passer en cours", ctaIcon: "dot.radiowaves.left.and.right") {
                     store.setCampaignStatus(c.id, .live)
-                    router.toast("Campaign is live", style: .success)
+                    router.toast("La campagne est en cours", style: .success)
                 }
             } else {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                    StatTile(label: "Reach", value: a.totalReach.compactString, icon: "eye", tint: MSColor.highlight)
+                    StatTile(label: "Portée", value: a.totalReach.compactString, icon: "eye", tint: MSColor.highlight)
                     StatTile(label: "Engagement", value: a.totalEngagement.compactString, icon: "heart", tint: MSColor.success)
-                    StatTile(label: "Clicks", value: a.totalClicks.compactString, icon: "cursorarrow.click", tint: Color(hex: 0x60A5FA))
+                    StatTile(label: "Clics", value: a.totalClicks.compactString, icon: "cursorarrow.click", tint: Color(hex: 0x60A5FA))
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
@@ -327,17 +327,17 @@ struct CampaignDetailView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Reach · last 14 days").msHeadline(15)
-                                Text("Daily impressions across platforms").msCaption()
+                                Text("Portée · 14 derniers jours").msHeadline(15)
+                                Text("Impressions quotidiennes toutes plateformes").msCaption()
                             }
                             Spacer()
-                            MSBadge(text: "+\(Int.random(in: 8...24))%", tone: .success, icon: "arrow.up.right")
+                            MSBadge(text: "+\(Int.random(in: 8...24)) %", tone: .success, icon: "arrow.up.right")
                         }
                         MSBarChart(values: a.reach)
                         HStack {
-                            Text("14d ago").msCaption()
+                            Text("Il y a 14 j").msCaption()
                             Spacer()
-                            Text("Today").msCaption()
+                            Text("Aujourd'hui").msCaption()
                         }
                     }
                 }
@@ -353,8 +353,8 @@ struct CampaignDetailView: View {
                     }
                     MSCard(padding: 14) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("CTR").msCaption(color: MSColor.text2)
-                            Text(String(format: "%.1f%%", a.ctr)).msHeadline(20)
+                            Text("Taux de clic").msCaption(color: MSColor.text2)
+                            Text(String(format: "%.1f %%", locale: Locale(identifier: "fr_FR"), a.ctr)).msHeadline(20)
                             MSSparkline(values: a.clicks, tint: Color(hex: 0x60A5FA), height: 44)
                         }
                     }
@@ -363,7 +363,7 @@ struct CampaignDetailView: View {
 
                 MSCard {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Reach by platform").msHeadline(15)
+                        Text("Portée par plateforme").msHeadline(15)
                         let maxV = max(a.byPlatform.map { $0.1 }.max() ?? 1, 1)
                         ForEach(a.byPlatform, id: \.0) { p, v in
                             HStack(spacing: 10) {
@@ -393,11 +393,11 @@ struct CampaignDetailView: View {
         generatingMore = true
         Task {
             do {
-                let images = try await MockAPI.generateImage(ImageGenParams(prompt: "\(c.name) · \(c.formats.first?.title ?? "Product photos") for \(c.audience)", projectId: c.projectId), store: store)
-                let ids = images.map { store.addAsset(name: "\(c.name) creative", kind: .image, imageURL: $0.url, projectId: c.projectId, tags: ["campaign"]).id }
+                let images = try await MockAPI.generateImage(ImageGenParams(prompt: "\(c.name) · \(c.formats.first?.title ?? "Photos produit") pour \(c.audience)", projectId: c.projectId), store: store)
+                let ids = images.map { store.addAsset(name: "Visuel \(c.name)", kind: .image, imageURL: $0.url, projectId: c.projectId, tags: ["campaign"]).id }
                 store.addAssets(ids, toCampaign: c.id)
                 MSHaptic.success()
-                router.toast("4 new creatives added", style: .success)
+                router.toast("4 nouveaux visuels ajoutés", style: .success)
             } catch {
                 router.toast(error.localizedDescription, style: .error)
             }
@@ -417,8 +417,8 @@ struct CalendarItemRow: View {
         MSCard(padding: 10, action: action) {
             HStack(spacing: 12) {
                 VStack(spacing: 1) {
-                    Text(item.date.formatted(.dateTime.weekday(.abbreviated))).msCaption()
-                    Text(item.date.formatted(.dateTime.day())).msHeadline(18)
+                    Text(item.date.formatted(.dateTime.weekday(.abbreviated).locale(Locale(identifier: "fr_FR")))).msCaption()
+                    Text(item.date.formatted(.dateTime.day().locale(Locale(identifier: "fr_FR")))).msHeadline(18)
                 }
                 .frame(width: 42)
                 if let a = item.assetId.flatMap({ store.asset($0) }) {
@@ -468,9 +468,9 @@ struct AdVariationCard: View {
                             MSIconButton(icon: "pencil", size: 30) { router.push(.adCreator) }
                             MSIconButton(icon: "doc.on.doc", size: 30) {
                                 UIPasteboard.general.string = "\(variation.headline)\n\(variation.primaryText)\n\(variation.cta)"
-                                router.toast("Copy duplicated to clipboard", style: .success)
+                                router.toast("Texte copié dans le presse-papiers", style: .success)
                             }
-                            MSIconButton(icon: "square.and.arrow.up", size: 30) { router.toast("Exported \(variation.label)", style: .success) }
+                            MSIconButton(icon: "square.and.arrow.up", size: 30) { router.toast("\(variation.label) exporté", style: .success) }
                         }
                     }
                 }

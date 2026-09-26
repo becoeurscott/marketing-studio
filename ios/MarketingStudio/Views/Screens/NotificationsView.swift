@@ -5,11 +5,11 @@ struct NotificationsView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
-    @State private var filter = "All"
+    @State private var filter = "Toutes"
 
     private var visible: [AppNotification] {
         store.notifications
-            .filter { filter == "All" || (filter == "Unread" && !$0.read) }
+            .filter { filter == "Toutes" || (filter == "Non lues" && !$0.read) }
             .sorted { $0.createdAt > $1.createdAt }
     }
     private var today: [AppNotification] { visible.filter { Calendar.current.isDateInToday($0.createdAt) } }
@@ -21,32 +21,32 @@ struct NotificationsView: View {
                 HStack(alignment: .firstTextBaseline) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Notifications").msTitle(30)
-                        Text(store.unreadNotificationCount == 0 ? "You're all caught up." : "\(store.unreadNotificationCount) unread").msBody(14)
+                        Text(store.unreadNotificationCount == 0 ? "Vous êtes à jour." : "\(store.unreadNotificationCount) non lue\(store.unreadNotificationCount > 1 ? "s" : "")").msBody(14)
                     }
                     Spacer()
                     if store.unreadNotificationCount > 0 {
-                        MSButton(title: "Mark all read", icon: "checkmark.circle", style: .secondary, size: .compact, fullWidth: false) {
+                        MSButton(title: "Tout marquer comme lu", icon: "checkmark.circle", style: .secondary, size: .compact, fullWidth: false) {
                             withAnimation(MSAnimation.gentle) { store.markAllRead() }
-                            router.toast("All notifications read", style: .success)
+                            router.toast("Toutes les notifications sont lues", style: .success)
                         }
                     }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                ChipRow(options: ["All", "Unread"], selection: $filter)
+                ChipRow(options: ["Toutes", "Non lues"], selection: $filter)
 
                 if visible.isEmpty {
                     EmptyStateView(
                         icon: "bell.slash",
-                        title: filter == "Unread" ? "No unread notifications" : "No notifications yet",
-                        message: filter == "Unread" ? "New activity will show up here." : "Generations, exports and campaign updates will land here.",
-                        ctaTitle: filter == "Unread" ? "Show all" : "Open Studio"
+                        title: filter == "Non lues" ? "Aucune notification non lue" : "Aucune notification pour le moment",
+                        message: filter == "Non lues" ? "Les nouvelles activités apparaîtront ici." : "Vos générations, exports et mises à jour de campagne apparaîtront ici.",
+                        ctaTitle: filter == "Non lues" ? "Tout afficher" : "Ouvrir le Studio"
                     ) {
-                        if filter == "Unread" { filter = "All" } else { router.select(.studio) }
+                        if filter == "Non lues" { filter = "Toutes" } else { router.select(.studio) }
                     }
                 } else {
-                    if !today.isEmpty { group("Today", today) }
-                    if !earlier.isEmpty { group("Earlier", earlier) }
+                    if !today.isEmpty { group("Aujourd'hui", today) }
+                    if !earlier.isEmpty { group("Plus tôt", earlier) }
                 }
             }
             .padding(.top, 4)
@@ -59,16 +59,16 @@ struct NotificationsView: View {
 
     private func group(_ title: String, _ items: [AppNotification]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title.uppercased()).font(.system(size: 11, weight: .semibold)).tracking(0.8).foregroundStyle(MSColor.muted)
+            Text(title.uppercased(with: Locale(identifier: "fr_FR"))).font(.system(size: 11, weight: .semibold)).tracking(0.8).foregroundStyle(MSColor.muted)
                 .padding(.horizontal, MSSpacing.gutter + 4)
             VStack(spacing: 0) {
                 ForEach(Array(items.enumerated()), id: \.element.id) { i, n in
                     NotificationRow(notification: n) { open(n) }
                         .contextMenu {
-                            if !n.read { Button { store.markRead(n.id) } label: { Label("Mark as read", systemImage: "checkmark") } }
+                            if !n.read { Button { store.markRead(n.id) } label: { Label("Marquer comme lu", systemImage: "checkmark") } }
                             Button(role: .destructive) {
                                 withAnimation(MSAnimation.gentle) { store.deleteNotification(n.id) }
-                            } label: { Label("Delete", systemImage: "trash") }
+                            } label: { Label("Supprimer", systemImage: "trash") }
                         }
                     if i < items.count - 1 { Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 62) }
                 }

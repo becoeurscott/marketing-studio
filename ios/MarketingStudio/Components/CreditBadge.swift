@@ -14,7 +14,7 @@ struct CreditBadge: View {
                 Image(systemName: "bolt.fill")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(MSColor.highlight)
-                Text(store.credits.formatted())
+                Text(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR"))))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(MSColor.text)
                     .contentTransition(.numericText())

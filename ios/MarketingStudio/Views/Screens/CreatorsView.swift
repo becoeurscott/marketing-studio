@@ -23,8 +23,8 @@ struct CreatorsView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Creators").msTitle(30)
-                    Text("Fictional AI presenters for UGC videos. Pick a face, a style and a language.").msBody(14)
+                    Text("Créateurs").msTitle(30)
+                    Text("Des présentateurs IA fictifs pour vos vidéos UGC. Choisissez un visage, un style et une langue.").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
@@ -32,7 +32,7 @@ struct CreatorsView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(styles, id: \.self) { s in
-                                MSChip(title: s, selected: styleFilter == s) {
+                                MSChip(title: s == "All" ? "Tous" : s, selected: styleFilter == s) {
                                     withAnimation(MSAnimation.snappy) { styleFilter = s }
                                 }
                             }
@@ -46,7 +46,7 @@ struct CreatorsView: View {
                             LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing).frame(width: 24)
                         }
                     )
-                    MSChip(title: "Favorites", icon: onlyFavorites ? "heart.fill" : "heart", selected: onlyFavorites) {
+                    MSChip(title: "Favoris", icon: onlyFavorites ? "heart.fill" : "heart", selected: onlyFavorites) {
                         withAnimation(MSAnimation.snappy) { onlyFavorites.toggle() }
                     }
                     .padding(.trailing, MSSpacing.gutter)
@@ -55,9 +55,9 @@ struct CreatorsView: View {
                 if filtered.isEmpty {
                     EmptyStateView(
                         icon: onlyFavorites ? "heart" : "person.2",
-                        title: onlyFavorites ? "No favorite creators" : "No creators in \(styleFilter)",
-                        message: onlyFavorites ? "Tap the heart on a creator to keep them here." : "Try another style.",
-                        ctaTitle: "Show all"
+                        title: onlyFavorites ? "Aucun créateur favori" : "Aucun créateur dans \(styleFilter)",
+                        message: onlyFavorites ? "Touchez le cœur d'un créateur pour le retrouver ici." : "Essayez un autre style.",
+                        ctaTitle: "Tout afficher"
                     ) {
                         withAnimation(MSAnimation.snappy) { onlyFavorites = false; styleFilter = "All" }
                     }
@@ -75,7 +75,7 @@ struct CreatorsView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Creators")
+        .navigationTitle("Créateurs")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .msSheet(item: $selected, detents: [.large]) { c in CreatorDetailSheet(creator: c) }
@@ -143,7 +143,7 @@ struct CreatorDetailSheet: View {
                     RemoteImage(url: creator.avatarURL, cornerRadius: MSRadius.xl)
                         .aspectRatio(1, contentMode: .fit)
                         .overlay(alignment: .topTrailing) {
-                            MSBadge(text: "Fictional AI creator", tone: .neutral, icon: "sparkles").padding(12)
+                            MSBadge(text: "Créateur IA fictif", tone: .neutral, icon: "sparkles").padding(12)
                         }
                     HStack(alignment: .firstTextBaseline) {
                         Text(creator.name).msTitle(26)
@@ -156,12 +156,12 @@ struct CreatorDetailSheet: View {
                     Text(creator.bio).msBody(15).lineSpacing(3)
                     HStack(spacing: 0) {
                         stat("Style", creator.style)
-                        stat("Gender", creator.gender)
-                        stat("Age range", creator.ageRange)
+                        stat("Genre", creator.gender)
+                        stat("Tranche d'âge", creator.ageRange)
                     }
                     .msCard(padding: 14)
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Languages").msHeadline(15)
+                        Text("Langues").msHeadline(15)
                         FlowLayout(spacing: 8) {
                             ForEach(creator.languages, id: \.self) { l in
                                 MSBadge(text: l, tone: .neutral, icon: "globe")
@@ -169,17 +169,17 @@ struct CreatorDetailSheet: View {
                         }
                     }
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Best for").msHeadline(15)
+                        Text("Idéal pour").msHeadline(15)
                         FlowLayout(spacing: 8) {
-                            ForEach(["Product reviews", "Unboxing", "Testimonials", "How-to"], id: \.self) { t in
+                            ForEach(["Avis produit", "Déballage", "Témoignages", "Tutoriels"], id: \.self) { t in
                                 MSBadge(text: t, tone: .neutral)
                             }
                         }
                     }
-                    MSButton(title: "Use in UGC", icon: "video.fill") {
+                    MSButton(title: "Utiliser en UGC", icon: "video.fill") {
                         dismiss()
                         router.push(.ugcCreator, on: .studio)
-                        router.toast("\(creator.name) selected for UGC", style: .success)
+                        router.toast("\(creator.name) sélectionné(e) pour l'UGC", style: .success)
                     }
                     .padding(.top, 4)
                 }

@@ -16,8 +16,8 @@ struct BrandKitView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Brand Kit").msTitle(30)
-                    Text("Everything the AI needs to stay on brand.").msBody(14)
+                    Text("Kit de marque").msTitle(30)
+                    Text("Tout ce dont l'IA a besoin pour respecter votre marque.").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
@@ -25,25 +25,25 @@ struct BrandKitView: View {
 
                 brandCard.padding(.horizontal, MSSpacing.gutter)
 
-                SectionHeader(title: "Colors", actionTitle: "Edit") { showPalette = true }
+                SectionHeader(title: "Couleurs", actionTitle: "Modifier") { showPalette = true }
                 paletteRow
 
-                SectionHeader(title: "Fonts", actionTitle: "Edit") { editingField = .fonts }
+                SectionHeader(title: "Polices", actionTitle: "Modifier") { editingField = .fonts }
                 fontsRow.padding(.horizontal, MSSpacing.gutter)
 
-                SectionHeader(title: "Details")
+                SectionHeader(title: "Détails")
                 detailsList.padding(.horizontal, MSSpacing.gutter)
 
-                SectionHeader(title: "Brand assets", subtitle: "Primary logo, icon and product images", actionTitle: "Library") { router.push(.assets) }
+                SectionHeader(title: "Ressources de marque", subtitle: "Logo principal, icône et images produit", actionTitle: "Bibliothèque") { router.push(.assets) }
                 assetsRow
 
-                SectionHeader(title: "Voice", actionTitle: "Edit") { router.push(.brandVoice) }
+                SectionHeader(title: "Ton", actionTitle: "Modifier") { router.push(.brandVoice) }
                 MSCard(action: { router.push(.brandVoice) }) {
                     HStack(spacing: 12) {
                         Image(systemName: "waveform.and.mic").font(.system(size: 16, weight: .semibold)).foregroundStyle(MSColor.highlight)
                             .frame(width: 36, height: 36).background(MSColor.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("\(brand.voice.tone) tone").msHeadline(15)
+                            Text("Ton \(brand.voice.tone)").msHeadline(15)
                             Text(brand.voice.writingStyle).msCaption().lineLimit(2)
                         }
                         Spacer()
@@ -53,10 +53,10 @@ struct BrandKitView: View {
                 .padding(.horizontal, MSSpacing.gutter)
 
                 VStack(spacing: 10) {
-                    MSButton(title: "Add another brand", icon: "plus", style: .secondary) { router.present(.newBrand) }
-                    MSButton(title: "Delete \(brand.name)", icon: "trash", style: .danger, isDisabled: store.allBrands.count == 1) { confirmDelete = true }
+                    MSButton(title: "Ajouter une autre marque", icon: "plus", style: .secondary) { router.present(.newBrand) }
+                    MSButton(title: "Supprimer \(brand.name)", icon: "trash", style: .danger, isDisabled: store.allBrands.count == 1) { confirmDelete = true }
                     if store.allBrands.count == 1 {
-                        Text("You need at least one brand kit.").msCaption()
+                        Text("Vous devez avoir au moins un kit de marque.").msCaption()
                     }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
@@ -66,20 +66,20 @@ struct BrandKitView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle("Brand Kit")
+        .navigationTitle("Kit de marque")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .msSheet(item: $editingField, detents: [.medium]) { field in BrandFieldEditSheet(field: field) }
         .msSheet(isPresented: $showPalette, detents: [.medium, .large]) { BrandPaletteSheet() }
-        .confirmationDialog("Delete \(brand.name)?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Delete brand", role: .destructive) {
+        .confirmationDialog("Supprimer \(brand.name) ?", isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("Supprimer la marque", role: .destructive) {
                 let name = brand.name
                 store.deleteBrand(brand.id)
-                router.toast("\(name) deleted", style: .warning)
+                router.toast("\(name) supprimée", style: .warning)
             }
-            Button("Cancel", role: .cancel) {}
+            Button("Annuler", role: .cancel) {}
         } message: {
-            Text("Its palette, fonts and voice will be removed. Assets stay in your library.")
+            Text("Sa palette, ses polices et son ton seront supprimés. Les ressources restent dans votre bibliothèque.")
         }
     }
 
@@ -91,7 +91,7 @@ struct BrandKitView: View {
                 ForEach(store.allBrands) { b in
                     MSChip(title: b.name, icon: b.id == brand.id ? "checkmark" : nil, selected: b.id == brand.id) {
                         withAnimation(MSAnimation.snappy) { store.setActiveBrand(b.id) }
-                        if b.id != brand.id { router.toast("\(b.name) is now active", style: .success) }
+                        if b.id != brand.id { router.toast("\(b.name) est maintenant active", style: .success) }
                     }
                 }
             }
@@ -152,7 +152,7 @@ struct BrandKitView: View {
                             .strokeBorder(MSColor.borderStrong, style: StrokeStyle(lineWidth: 1, dash: [4]))
                             .frame(width: 56, height: 56)
                             .overlay(Image(systemName: "plus").foregroundStyle(MSColor.text2))
-                        Text("Add").msCaption()
+                        Text("Ajouter").msCaption()
                     }
                 }
                 .buttonStyle(MSPressStyle())
@@ -168,19 +168,19 @@ struct BrandKitView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Aa").font(.system(size: 26, weight: i == 0 ? .bold : .regular, design: i == 0 ? .default : .serif)).foregroundStyle(MSColor.text)
                         Text(font).font(MSFont.control(13)).foregroundStyle(MSColor.text).lineLimit(1)
-                        Text(i == 0 ? "Headings" : "Body").msCaption()
+                        Text(i == 0 ? "Titres" : "Texte").msCaption()
                     }
                 }
             }
             if brand.fonts.isEmpty {
-                MSCard(action: { editingField = .fonts }) { Text("Add fonts").msBody(14) }
+                MSCard(action: { editingField = .fonts }) { Text("Ajouter des polices").msBody(14) }
             }
         }
     }
 
     private var detailsList: some View {
         VStack(spacing: 0) {
-            detailRow(.website, brand.website.isEmpty ? "Add website" : brand.website, icon: "globe")
+            detailRow(.website, brand.website.isEmpty ? "Ajouter un site web" : brand.website, icon: "globe")
             divider
             detailRow(.industry, brand.industry, icon: "tag")
             divider
@@ -215,7 +215,7 @@ struct BrandKitView: View {
     private var assetsRow: some View {
         Group {
             if brandAssets.isEmpty {
-                EmptyStateView(icon: "seal", title: "No brand assets", message: "Upload a logo, icon and product images so generations match your brand.", ctaTitle: "Upload", ctaIcon: "square.and.arrow.up") {
+                EmptyStateView(icon: "seal", title: "Aucune ressource de marque", message: "Importez un logo, une icône et des images produit pour que les générations correspondent à votre marque.", ctaTitle: "Importer", ctaIcon: "square.and.arrow.up") {
                     router.present(.uploadProduct)
                 }
             } else {
@@ -225,7 +225,7 @@ struct BrandKitView: View {
                             Button { router.push(.assetDetail(id: a.id)) } label: {
                                 VStack(alignment: .leading, spacing: 6) {
                                     RemoteImage(url: a.imageURL, cornerRadius: 12).frame(width: 120, height: 120)
-                                    Text(i == 0 ? "Primary logo" : (i == 1 ? "Icon" : "Product image")).font(MSFont.control(12)).foregroundStyle(MSColor.text)
+                                    Text(i == 0 ? "Logo principal" : (i == 1 ? "Icône" : "Image produit")).font(MSFont.control(12)).foregroundStyle(MSColor.text)
                                     Text(a.name).msCaption().lineLimit(1)
                                 }
                                 .frame(width: 120, alignment: .leading)
@@ -238,7 +238,7 @@ struct BrandKitView: View {
                                 .frame(width: 120, height: 120)
                                 .overlay(VStack(spacing: 6) {
                                     Image(systemName: "plus").font(.system(size: 18, weight: .semibold))
-                                    Text("Upload").font(MSFont.control(12))
+                                    Text("Importer").font(MSFont.control(12))
                                 }.foregroundStyle(MSColor.text2))
                         }
                         .buttonStyle(MSPressStyle())
