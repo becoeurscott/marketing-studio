@@ -1,0 +1,8 @@
+public/showcase
+node_modules*
+.next*
+.claude
+.env*
+tsconfig.tsbuildinfo
+* [0-9]
+* [0-9].*
