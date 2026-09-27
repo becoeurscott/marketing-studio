@@ -1,4 +1,3 @@
-public/showcase
 node_modules*
 .next*
 .claude
