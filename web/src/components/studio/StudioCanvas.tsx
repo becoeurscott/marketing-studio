@@ -36,7 +36,7 @@ export function StudioCanvas({ media, onUploaded, onPickFromAssets, onStartFromP
   const content = overlay ? (
     <div className="flex-1 min-h-0 flex flex-col p-3 pt-14 md:p-4 [&>*]:flex-1">{overlay}</div>
   ) : media ? (
-    <div className="relative flex-1 min-h-[58dvh] md:min-h-[60dvh] flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_40%,rgba(168,85,247,0.10),transparent_60%)]">
+    <div className="relative flex-1 min-h-[58dvh] md:min-h-[60dvh] flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_40%,rgba(249,115,22,0.10),transparent_60%)]">
       <motion.img
         key={media.url}
         src={media.url}
@@ -59,7 +59,7 @@ export function StudioCanvas({ media, onUploaded, onPickFromAssets, onStartFromP
   ) : (
     <div
       {...dz.handlers}
-      className={cn("flex-1 min-h-0 flex flex-col items-center justify-center text-center p-6 pt-20 md:pt-6 transition-colors", dz.dragging ? "bg-accent/10" : "bg-[radial-gradient(circle_at_50%_30%,rgba(168,85,247,0.09),transparent_55%)]")}
+      className={cn("flex-1 min-h-0 flex flex-col items-center justify-center text-center p-6 pt-20 md:pt-6 transition-colors", dz.dragging ? "bg-accent/10" : "bg-[radial-gradient(circle_at_50%_30%,rgba(249,115,22,0.09),transparent_55%)]")}
     >
       {dz.input}
       <motion.div animate={dz.dragging ? { scale: 1.08 } : { scale: 1 }} className="size-16 rounded-2xl bg-elevated border border-border flex items-center justify-center mb-5 shadow-card">

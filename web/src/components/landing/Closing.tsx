@@ -145,7 +145,7 @@ export function Pricing() {
               <GlowCard
                 className={cn(
                   "h-full p-7 transition-transform duration-500 hover:-translate-y-1",
-                  p.popular && "border-accent/40 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.25),transparent_70%)]",
+                  p.popular && "border-accent/40 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.25),transparent_70%)]",
                 )}
               >
                 <div className="flex items-center justify-between">
@@ -173,7 +173,7 @@ export function Pricing() {
                   className={cn(
                     "mt-8 flex h-11 w-full items-center justify-center rounded-full text-sm font-medium transition-all duration-300",
                     p.popular
-                      ? "bg-gradient-to-b from-highlight to-accent2 text-white shadow-[0_8px_30px_rgba(168,85,247,0.4)] hover:shadow-[0_10px_40px_rgba(168,85,247,0.6)]"
+                      ? "bg-gradient-to-b from-highlight to-accent2 text-on-accent shadow-[0_8px_30px_rgba(249,115,22,0.4)] hover:shadow-[0_10px_40px_rgba(249,115,22,0.6)]"
                       : "border border-white/10 bg-white/[0.04] hover:bg-white/[0.08]",
                   )}
                 >
@@ -268,10 +268,10 @@ export function Platforms() {
         text="Chaque création sort au bon format pour chaque plateforme. Plus besoin de redimensionner à la main."
       />
       <Reveal className="relative mx-auto mt-16 size-[320px] sm:size-[440px]">
-        <div aria-hidden className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.35),transparent_65%)] blur-xl" />
+        <div aria-hidden className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(249,115,22,0.35),transparent_65%)] blur-xl" />
         <div className="absolute inset-[12%] rounded-full border border-white/10" />
         <div className="absolute inset-[30%] rounded-full border border-white/[0.06]" />
-        <div className="absolute inset-0 m-auto flex size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-highlight to-accent2 shadow-[0_0_60px_rgba(168,85,247,0.6)]">
+        <div className="absolute inset-0 m-auto flex size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-highlight via-accent to-green text-on-accent shadow-[0_0_60px_rgba(249,115,22,0.6)]">
           <span className="text-2xl font-semibold">S</span>
         </div>
         <div className="absolute inset-[12%] animate-[spin_40s_linear_infinite]">
@@ -303,7 +303,7 @@ export function FinalCta() {
         <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] border border-white/[0.08] bg-[#0b0910] px-6 py-20 text-center sm:py-28">
           <motion.div
             aria-hidden
-            className="absolute inset-0 bg-[repeating-linear-gradient(90deg,rgba(168,85,247,0)_0px,rgba(168,85,247,0.28)_22px,rgba(168,85,247,0)_44px)] [mask-image:radial-gradient(ellipse_at_bottom,black_20%,transparent_70%)]"
+            className="absolute inset-0 bg-[repeating-linear-gradient(90deg,rgba(249,115,22,0)_0px,rgba(249,115,22,0.28)_22px,rgba(249,115,22,0)_44px)] [mask-image:radial-gradient(ellipse_at_bottom,black_20%,transparent_70%)]"
             animate={{ backgroundPositionX: ["0px", "44px"] }}
             transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
           />

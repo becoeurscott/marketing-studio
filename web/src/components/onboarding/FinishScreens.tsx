@@ -57,7 +57,7 @@ export function PaywallScreen({ product, onFinish }: { product: ProductInfo; onF
           <button key={p.id} type="button" onClick={() => setPlan(p.id)} aria-pressed={plan === p.id}
             className={cn("relative text-left rounded-2xl border p-4 transition-all",
               plan === p.id ? "bg-accent/12 border-accent/70 shadow-glow" : "bg-surface border-border-strong hover:border-white/25")}>
-            {p.popular && <span className="absolute -top-2.5 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent">Populaire</span>}
+            {p.popular && <span className="absolute -top-2.5 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent text-on-accent">Populaire</span>}
             <p className="font-semibold">{p.name}</p>
             <p className="mt-1"><span className="text-2xl font-semibold">{money(p.priceXof)}</span><span className="text-xs text-muted">{p.per}</span></p>
             <ul className="mt-3 space-y-1.5">

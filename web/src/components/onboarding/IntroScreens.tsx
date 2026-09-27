@@ -48,7 +48,7 @@ export function OpeningScreen({ onStart, onLogin }: { onStart: () => void; onLog
           transition={{ delay: reduce ? 0 : 1.3 }}
           className="flex flex-col items-center gap-1.5"
         >
-          <div className="w-[52px] md:w-[96px] aspect-[3/4] rounded-xl bg-gradient-to-br from-accent to-accent2 shadow-glow flex items-center justify-center text-white text-lg md:text-2xl font-semibold">41</div>
+          <div className="w-[52px] md:w-[96px] aspect-[3/4] rounded-xl bg-gradient-to-br from-accent to-accent2 shadow-glow flex items-center justify-center text-on-accent text-lg md:text-2xl font-semibold">41</div>
           <span className="text-[10px] md:text-xs text-highlight">Campagne</span>
         </motion.div>
       </div>

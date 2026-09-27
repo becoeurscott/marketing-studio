@@ -23,7 +23,7 @@ export function Benefits() {
           {/* Vertical light stripes, drifting slowly. */}
           <motion.div
             aria-hidden
-            className="absolute inset-y-0 right-0 w-full lg:w-2/3 bg-[repeating-linear-gradient(90deg,rgba(168,85,247,0.0)_0px,rgba(168,85,247,0.22)_18px,rgba(168,85,247,0.0)_36px)] [mask-image:linear-gradient(to_left,black,transparent)]"
+            className="absolute inset-y-0 right-0 w-full lg:w-2/3 bg-[repeating-linear-gradient(90deg,rgba(249,115,22,0.0)_0px,rgba(249,115,22,0.22)_18px,rgba(249,115,22,0.0)_36px)] [mask-image:linear-gradient(to_left,black,transparent)]"
             animate={{ backgroundPositionX: ["0px", "36px"] }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           />
@@ -55,7 +55,7 @@ export function Benefits() {
                   className="rounded-2xl border border-white/10 bg-black/50 p-5 backdrop-blur-xl"
                 >
                   <span className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-highlight to-accent2">
-                    <Icon className="size-4 text-white" />
+                    <Icon className="size-4 text-on-accent" />
                   </span>
                   <h3 className="mt-6 text-lg font-medium">{title}</h3>
                   <p className="mt-1.5 text-sm text-text2 leading-relaxed">{text}</p>
@@ -222,7 +222,7 @@ function BeforeAfter() {
           <span className="absolute top-1/2 left-1/2 flex size-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[10px] text-black">↔</span>
         </div>
       </motion.div>
-      <span className="absolute top-3 right-3 rounded-full bg-accent px-2 py-0.5 text-[10px] text-white">Après</span>
+      <span className="absolute top-3 right-3 rounded-full bg-accent px-2 py-0.5 text-[10px] text-on-accent">Après</span>
       <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1.5">
         {["Décor", "Lumière", "Texte"].map((t, i) => (
           <motion.span
@@ -264,7 +264,7 @@ function PublishVisual() {
         <Send className="size-3 text-highlight" /> Programmé · Instagram, TikTok
       </motion.span>
       <motion.span
-        className="absolute bottom-4 right-4 flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[11px] text-white"
+        className="absolute bottom-4 right-4 flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[11px] text-on-accent"
         animate={{ scale: [1, 1.12, 1] }}
         transition={{ duration: 1.8, repeat: Infinity }}
       >
@@ -292,7 +292,7 @@ export function Process() {
         <div className="mt-16 grid gap-4 md:grid-cols-2">
           {STEPS.map((s, i) => (
             <Reveal key={s.n} delay={i * 0.1} className={s.wide ? "md:col-span-2" : ""}>
-              <GlowCard className="h-full p-2 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.12),transparent_70%)]">
+              <GlowCard className="h-full p-2 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.12),transparent_70%)]">
                 <div className={s.wide ? "h-64" : "h-60"}>{s.visual}</div>
                 <div className="p-4">
                   <span className="font-mono text-xs text-highlight">{s.n}</span>

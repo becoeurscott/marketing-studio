@@ -118,7 +118,7 @@ export function CalendarView({ campaign, compact }: { campaign: Campaign; compac
               )}
             >
               <div className="flex items-center justify-between">
-                <span className={cn("text-[12px] font-medium", isToday ? "h-6 min-w-6 px-1.5 rounded-full bg-accent text-white flex items-center justify-center whitespace-nowrap" : outside ? "text-muted" : "text-text2")}>
+                <span className={cn("text-[12px] font-medium", isToday ? "h-6 min-w-6 px-1.5 rounded-full bg-accent text-on-accent flex items-center justify-center whitespace-nowrap" : outside ? "text-muted" : "text-text2")}>
                   <span className="md:hidden">{view === "week" ? day.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" }) : day.getDate()}</span>
                   <span className="hidden md:inline">{day.getDate()}</span>
                 </span>

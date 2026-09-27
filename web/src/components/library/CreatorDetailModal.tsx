@@ -45,7 +45,7 @@ export function CreatorDetailModal({ creator, onClose }: { creator: Creator | nu
                 type="button"
                 aria-pressed={fav}
                 onClick={() => toggleFavorite("creator", creator.id)}
-                className={cn("size-9 rounded-full border flex items-center justify-center transition-colors", fav ? "bg-accent border-accent text-white" : "border-border-strong text-text2 hover:text-text")}
+                className={cn("size-9 rounded-full border flex items-center justify-center transition-colors", fav ? "bg-accent border-accent text-on-accent" : "border-border-strong text-text2 hover:text-text")}
                 aria-label={fav ? "Retirer des favoris" : "Ajouter aux favoris"}
               >
                 <Heart className={cn("size-4", fav && "fill-current")} />

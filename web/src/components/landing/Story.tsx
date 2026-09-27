@@ -89,8 +89,8 @@ function EngagementRing() {
           />
           <defs>
             <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#c084fc" />
-              <stop offset="100%" stopColor="#7c3aed" />
+              <stop offset="0%" stopColor="#FACC15" />
+              <stop offset="100%" stopColor="#EA580C" />
             </linearGradient>
           </defs>
         </svg>
@@ -120,7 +120,7 @@ function PostingDots() {
           <div key={d} className="flex flex-col items-center gap-2">
             <span className="text-[9px] text-muted">{d}</span>
             <motion.span
-              className={cn("size-7 sm:size-8 rounded-full border", active[i] ? "bg-gradient-to-br from-highlight to-accent2 border-transparent shadow-[0_0_14px_rgba(168,85,247,0.6)]" : "border-white/10 bg-white/[0.03]")}
+              className={cn("size-7 sm:size-8 rounded-full border", active[i] ? "bg-gradient-to-br from-highlight to-accent2 border-transparent shadow-[0_0_14px_rgba(249,115,22,0.6)]" : "border-white/10 bg-white/[0.03]")}
               initial={{ scale: 0, opacity: 0 }}
               animate={inView ? { scale: 1, opacity: 1 } : {}}
               transition={{ duration: 0.5, delay: 0.2 + i * 0.08, ease: EASE }}
@@ -174,7 +174,7 @@ export function Problem() {
           {PROBLEMS.map((p, i) => (
             <Reveal key={p.title} delay={i * 0.12}>
               <GlowCard className="h-full">
-                <div className="m-2 rounded-2xl border border-white/[0.06] bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.18),transparent_70%)] bg-black/40">
+                <div className="m-2 rounded-2xl border border-white/[0.06] bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.18),transparent_70%)] bg-black/40">
                   {p.visual}
                 </div>
                 <div className="px-5 pb-6 pt-3">
@@ -220,7 +220,7 @@ export function Solution() {
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {STATS.map((s, i) => (
             <Reveal key={s.label} delay={i * 0.1}>
-              <GlowCard className="h-full p-6 bg-[radial-gradient(ellipse_at_bottom,rgba(168,85,247,0.14),transparent_70%)]">
+              <GlowCard className="h-full p-6 bg-[radial-gradient(ellipse_at_bottom,rgba(249,115,22,0.14),transparent_70%)]">
                 <p className="text-sm text-text2">{s.label}</p>
                 <p className="mt-4 text-6xl font-light tracking-tight bg-gradient-to-b from-highlight to-accent2 bg-clip-text text-transparent">
                   <Counter to={s.to} suffix={s.suffix} />
@@ -256,7 +256,7 @@ export function Services() {
           {SERVICES.map(({ icon: Icon, title, accent, text }, i) => (
             <Reveal key={title} delay={i * 0.12}>
               <GlowCard className="group h-full p-8 text-center transition-colors duration-500 hover:border-accent/40">
-                <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.18),transparent_70%)]" />
+                <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[radial-gradient(ellipse_at_center,rgba(249,115,22,0.18),transparent_70%)]" />
                 <h3 className="relative text-2xl font-medium">
                   {title} <span className="text-highlight">{accent}</span>
                 </h3>
@@ -266,8 +266,8 @@ export function Services() {
                   transition={{ duration: 4, delay: i * 0.6, repeat: Infinity, ease: "easeInOut" }}
                 >
                   <div className="absolute inset-4 rounded-full bg-accent/40 blur-3xl transition-all duration-500 group-hover:bg-accent/60" />
-                  <div className="relative size-full rounded-[34%] border border-white/25 bg-gradient-to-br from-white/25 via-white/5 to-accent2/40 shadow-[inset_0_2px_0_rgba(255,255,255,0.35),inset_0_-10px_30px_rgba(124,58,237,0.5),0_30px_60px_rgba(0,0,0,0.5)] backdrop-blur-xl flex items-center justify-center transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3">
-                    <Icon className="size-16 text-white drop-shadow-[0_0_20px_rgba(192,132,252,0.9)]" strokeWidth={1.5} />
+                  <div className="relative size-full rounded-[34%] border border-white/25 bg-gradient-to-br from-white/25 via-white/5 to-accent2/40 shadow-[inset_0_2px_0_rgba(255,255,255,0.35),inset_0_-10px_30px_rgba(234,88,12,0.5),0_30px_60px_rgba(0,0,0,0.5)] backdrop-blur-xl flex items-center justify-center transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3">
+                    <Icon className="size-16 text-white drop-shadow-[0_0_20px_rgba(250,204,21,0.9)]" strokeWidth={1.5} />
                   </div>
                 </motion.div>
                 <p className="relative text-sm text-text2 leading-relaxed">{text}</p>

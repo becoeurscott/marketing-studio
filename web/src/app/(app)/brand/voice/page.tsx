@@ -151,7 +151,7 @@ function VoiceEditor({ brand, onSave }: { brand: Brand; onSave: (patch: Brand["v
               </div>
               <div className="rounded-md bg-surface border border-border p-3 flex items-center justify-between gap-3">
                 <p className="text-[11px] uppercase tracking-wide text-muted">CTA</p>
-                <span className="inline-flex h-8 px-3 items-center rounded-md bg-accent text-white text-[13px] font-medium">{sample.cta}</span>
+                <span className="inline-flex h-8 px-3 items-center rounded-md bg-accent text-on-accent text-[13px] font-medium">{sample.cta}</span>
               </div>
             </div>
           </Card>

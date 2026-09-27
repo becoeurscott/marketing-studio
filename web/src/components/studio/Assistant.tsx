@@ -46,7 +46,7 @@ export function AssistantButton({ className }: { className?: string }) {
         className={cn("fixed z-40 right-4 bottom-[calc(3.5rem+env(safe-area-inset-bottom)+7.5rem)] lg:bottom-6 h-11", inspectorCount > 0 ? "lg:right-[344px]" : "lg:right-6", " pl-3 pr-4 rounded-full bg-elevated border border-border-strong shadow-float inline-flex items-center gap-2 text-sm font-medium hover:border-accent/50", className)}
         aria-label="Ouvrir l'assistant IA"
       >
-        <span className="size-7 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center"><Sparkles className="size-4 text-white" /></span>
+        <span className="size-7 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center"><Sparkles className="size-4 text-on-accent" /></span>
         <span className="hidden sm:inline">Assistant IA</span>
       </motion.button>
       {desktop ? (
@@ -96,7 +96,7 @@ export function AssistantChat() {
       <div className="flex-1 overflow-y-auto flex flex-col gap-3 pr-1">
         {msgs.map((m) => (
           <div key={m.id} className={cn("flex flex-col gap-2", m.role === "user" ? "items-end" : "items-start")}>
-            <div className={cn("max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed", m.role === "user" ? "bg-accent text-white rounded-br-sm" : "bg-surface border border-border rounded-bl-sm")}>
+            <div className={cn("max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed", m.role === "user" ? "bg-accent text-on-accent rounded-br-sm" : "bg-surface border border-border rounded-bl-sm")}>
               {m.role === "assistant" && <Bot className="size-3.5 text-highlight inline mr-1.5 -mt-0.5" />}{m.text}
             </div>
             {m.actions && m.actions.length > 0 && (
@@ -117,7 +117,7 @@ export function AssistantChat() {
       </div>
       <form onSubmit={(e) => { e.preventDefault(); void send(input); }} className="mt-3 flex items-center gap-2 border-t border-border pt-3">
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Demandez une campagne, une vidéo, un texte…" className="flex-1 h-10 bg-surface border border-border-strong rounded-md px-3 text-sm placeholder:text-muted focus:border-accent focus:outline-none" />
-        <button type="submit" disabled={!input.trim() || typing} className="size-10 rounded-md bg-accent text-white flex items-center justify-center disabled:opacity-50" aria-label="Envoyer"><Send className="size-4" /></button>
+        <button type="submit" disabled={!input.trim() || typing} className="size-10 rounded-md bg-accent text-on-accent flex items-center justify-center disabled:opacity-50" aria-label="Envoyer"><Send className="size-4" /></button>
       </form>
     </div>
   );

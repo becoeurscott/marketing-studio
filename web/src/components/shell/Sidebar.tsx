@@ -29,8 +29,8 @@ export function Sidebar() {
     >
       {/* Logo */}
       <Link href="/home" className={cn("flex items-center h-14 border-b border-border shrink-0", collapsed ? "justify-center" : "px-4 gap-2.5")}>
-        <span className="size-7 rounded-md bg-gradient-to-br from-accent to-accent2 flex items-center justify-center shadow-glow">
-          <Sparkles className="size-4 text-white" />
+        <span className="size-7 rounded-md bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shadow-glow">
+          <Sparkles className="size-4 text-on-accent" />
         </span>
         {!collapsed && <span className="text-[15px] font-semibold tracking-tight">Sokozia</span>}
       </Link>

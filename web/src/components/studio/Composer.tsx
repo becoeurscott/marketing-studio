@@ -81,7 +81,7 @@ export function Composer(p: ComposerProps) {
         transition={{ type: "spring", stiffness: 380, damping: 32 }}
         className={cn(
           "rounded-[24px] bg-[#0b0b0b]/92 backdrop-blur-xl border border-white/10 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] text-white transition-[padding,box-shadow] duration-200",
-          focused ? "p-3.5 shadow-[0_28px_70px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(168,85,247,0.35)]" : "p-3",
+          focused ? "p-3.5 shadow-[0_28px_70px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(249,115,22,0.35)]" : "p-3",
           p.className,
         )}
       >
@@ -136,7 +136,7 @@ export function Composer(p: ComposerProps) {
           <button
             onClick={p.onGenerate}
             disabled={!canGenerate}
-            className={cn("shrink-0 h-10 md:h-11 px-3.5 md:px-4 rounded-full bg-accent text-white font-bold text-[15px] inline-flex items-center gap-2 shadow-[0_8px_24px_-6px_rgba(168,85,247,0.7)] transition-[transform,opacity,background] hover:bg-highlight active:scale-95 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed", p.generating && "animate-pulse")}
+            className={cn("shrink-0 h-10 md:h-11 px-3.5 md:px-4 rounded-full bg-accent text-on-accent font-bold text-[15px] inline-flex items-center gap-2 shadow-[0_8px_24px_-6px_rgba(249,115,22,0.7)] transition-[transform,opacity,background] hover:bg-highlight active:scale-95 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed", p.generating && "animate-pulse")}
             aria-label={`Générer · ${COST[p.mode]} crédits`}
           >
             <SendHorizontal className="size-[18px]" />
@@ -241,7 +241,7 @@ function ModelPill({ value, onChange, mode }: { value: ModelId; onChange: (m: Mo
   return (
     <div ref={ref} className="relative shrink-0">
       <Pill onClick={toggle} label={`Modèle : ${cur.label}`} className="pl-1.5">
-        <span className="size-7 md:size-8 rounded-full bg-accent flex items-center justify-center"><Sparkles className="size-4 text-white" /></span>
+        <span className="size-7 md:size-8 rounded-full bg-accent flex items-center justify-center"><Sparkles className="size-4 text-on-accent" /></span>
         {cur.label}
         <ChevronDown className={cn("size-3.5 text-white/50 transition-transform", open && "rotate-180")} />
       </Pill>

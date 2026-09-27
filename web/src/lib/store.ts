@@ -261,7 +261,7 @@ export const useStore = create<Store>()(
         const b: Brand = {
           id: uid("brand"),
           logoUrl: `https://picsum.photos/seed/${uid("logo")}/400/400`,
-          colors: ["#FFFFFF", "#1C1C1C", "#A855F7"],
+          colors: ["#FFFFFF", "#1C1C1C", "#F97316"],
           fonts: { heading: "Inter", body: "Inter" },
           website: "",
           description: "",

@@ -42,7 +42,7 @@ export function CreatorCard({ creator, onOpen, className }: { creator: Creator; 
         onClick={(e) => { e.stopPropagation(); toggleFavorite("creator", creator.id); }}
         className={cn(
           "absolute top-3 right-3 size-8 rounded-full flex items-center justify-center backdrop-blur transition-colors",
-          fav ? "bg-accent text-white" : "bg-black/50 text-white hover:bg-black/70",
+          fav ? "bg-accent text-on-accent" : "bg-black/50 text-on-accent hover:bg-black/70",
         )}
       >
         <Heart className={cn("size-4", fav && "fill-current")} />

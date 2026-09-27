@@ -69,8 +69,8 @@ export default function WorkspacePage() {
 
       <Card className="mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="size-14 rounded-xl bg-gradient-to-br from-accent to-accent2 flex items-center justify-center shrink-0">
-            <Building2 className="size-6 text-white" />
+          <div className="size-14 rounded-xl bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shrink-0">
+            <Building2 className="size-6 text-on-accent" />
           </div>
           <div className="flex-1 min-w-0">
             {editingName ? (

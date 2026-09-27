@@ -28,8 +28,8 @@ const NAV = [
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-[17px]">
-      <span className="size-8 rounded-lg bg-gradient-to-br from-highlight to-accent2 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.45)]">
-        <Sparkles className="size-4 text-white" />
+      <span className="size-8 rounded-lg bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.45)]">
+        <Sparkles className="size-4 text-on-accent" />
       </span>
       Sokozia
     </Link>
@@ -157,7 +157,7 @@ export function Hero() {
       <motion.div
         aria-hidden
         style={{ y: orbY, scale: orbScale }}
-        className="pointer-events-none absolute -top-[380px] left-1/2 -translate-x-[70%] size-[760px] rounded-full bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.9),rgba(124,58,237,0.45)_35%,transparent_68%)] blur-2xl opacity-70"
+        className="pointer-events-none absolute -top-[380px] left-1/2 -translate-x-[70%] size-[760px] rounded-full bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.9),rgba(234,88,12,0.45)_35%,transparent_68%)] blur-2xl opacity-70"
       />
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,transparent_30%,#070707_75%)]" />
       <Particles count={50} />
@@ -169,7 +169,7 @@ export function Hero() {
           transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
           className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-xs text-text2 backdrop-blur"
         >
-          <span className="size-1.5 rounded-full bg-highlight shadow-[0_0_8px_#c084fc]" />
+          <span className="size-1.5 rounded-full bg-green shadow-[0_0_8px_#16a34a]" />
           Le studio marketing IA des commerçants africains
         </motion.span>
 
@@ -237,7 +237,7 @@ export function Hero() {
       </motion.div>
 
       {/* Floor glow under the carousel. */}
-      <div aria-hidden className="pointer-events-none mx-auto mt-10 h-40 max-w-4xl bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.35),transparent_70%)]" />
+      <div aria-hidden className="pointer-events-none mx-auto mt-10 h-40 max-w-4xl bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.35),transparent_70%)]" />
     </section>
   );
 }

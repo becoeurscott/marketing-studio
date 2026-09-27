@@ -86,7 +86,7 @@ export function ProductPicker({ open, onClose, onPick, selectedId }: { open: boo
             return (
               <button key={a.id} onClick={() => pick(a)} className={cn("group relative aspect-square rounded-md overflow-hidden border transition-colors", sel ? "border-accent shadow-glow" : "border-border hover:border-white/25")} title={a.name}>
                 <img src={a.thumbnail} alt={a.name} className="size-full object-cover" loading="lazy" />
-                {sel && <span className="absolute top-1.5 right-1.5 size-5 rounded-full bg-accent flex items-center justify-center"><Check className="size-3 text-white" /></span>}
+                {sel && <span className="absolute top-1.5 right-1.5 size-5 rounded-full bg-accent flex items-center justify-center"><Check className="size-3 text-on-accent" /></span>}
               </button>
             );
           })}

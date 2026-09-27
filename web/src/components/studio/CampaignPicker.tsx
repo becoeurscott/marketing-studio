@@ -54,7 +54,7 @@ export function CampaignPicker({ open, onClose, getAsset }: { open: boolean; onC
             return (
               <li key={c.id}>
                 <button onClick={() => setPicked(c.id)} className={cn("w-full text-left flex items-center gap-3 rounded-md border px-3 py-2.5 transition-colors", sel ? "border-accent bg-accent/10" : "border-border bg-surface hover:border-white/20")} aria-pressed={sel}>
-                  <span className={cn("size-5 rounded-full border flex items-center justify-center shrink-0", sel ? "bg-accent border-accent" : "border-border-strong")}>{sel && <Check className="size-3 text-white" />}</span>
+                  <span className={cn("size-5 rounded-full border flex items-center justify-center shrink-0", sel ? "bg-accent border-accent" : "border-border-strong")}>{sel && <Check className="size-3 text-on-accent" />}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium truncate">{c.name}</span>
                     <span className="block text-xs text-muted">{c.assetIds.length} ressource{c.assetIds.length > 1 ? "s" : ""} · {c.platforms.join(", ")}</span>

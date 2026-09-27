@@ -182,7 +182,7 @@ export default function AdsPage() {
                         <div className={cn("relative rounded-md overflow-hidden bg-elevated", frame.ratio)}>
                           <img src={v.visual} alt={`Création ${v.label}`} className="size-full object-cover" />
                           {priceLabel && (
-                            <span className="absolute top-3 right-3 rotate-3 rounded-md bg-highlight px-2.5 py-1 text-sm font-extrabold text-white shadow-lg tabular-nums">{priceLabel}</span>
+                            <span className="absolute top-3 right-3 rotate-3 rounded-md bg-highlight px-2.5 py-1 text-sm font-extrabold text-on-accent shadow-lg tabular-nums">{priceLabel}</span>
                           )}
                           {["story", "reel", "short", "status", "flyer"].includes(format) && (
                             <div className="absolute bottom-3 left-3 right-3 text-white drop-shadow"><p className="text-sm font-bold leading-tight">{v.headline}</p></div>

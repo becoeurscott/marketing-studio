@@ -68,7 +68,7 @@ export function ProductPicker({ value, onChange, limit = 8, allowUpload = true }
           return (
             <button key={a.id} type="button" onClick={() => onChange(a)} title={a.name} className={cn("relative aspect-square rounded-md overflow-hidden border transition-all", selected ? "border-accent ring-2 ring-accent/40" : "border-border hover:border-white/25")}>
               <img src={a.thumbnail} alt={a.name} className="size-full object-cover" />
-              {selected && <span className="absolute top-1 right-1 size-4 rounded-full bg-accent text-white flex items-center justify-center"><Check className="size-3" /></span>}
+              {selected && <span className="absolute top-1 right-1 size-4 rounded-full bg-accent text-on-accent flex items-center justify-center"><Check className="size-3" /></span>}
             </button>
           );
         })}

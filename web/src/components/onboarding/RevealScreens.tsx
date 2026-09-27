@@ -44,7 +44,7 @@ export function GenerationScreen({ product, onDone }: { product: ProductInfo; on
           return (
             <li key={s} className={cn("flex items-center gap-3 text-[15px] transition-opacity", state === "todo" && "opacity-35")}>
               <span className={cn("size-6 rounded-full flex items-center justify-center shrink-0",
-                state === "done" ? "bg-accent text-white" : "bg-white/5")}>
+                state === "done" ? "bg-accent text-on-accent" : "bg-white/5")}>
                 {state === "done" && <Check className="size-3.5" />}
                 {state === "active" && <Loader2 className="size-3.5 animate-spin text-highlight" />}
               </span>
@@ -139,7 +139,7 @@ export function AdsScreen({ product, onNext }: RevealProps) {
               <p className="text-xs text-text2">{a.text}</p>
               <div className="flex items-center justify-between pt-1">
                 <span className="text-[11px] text-muted">{a.platforms}</span>
-                <span className="text-xs font-medium px-2.5 py-1 rounded-md bg-accent">{a.cta}</span>
+                <span className="text-xs font-medium px-2.5 py-1 rounded-md bg-accent text-on-accent">{a.cta}</span>
               </div>
             </div>
           </Appear>
@@ -296,7 +296,7 @@ export function WorkflowScreen({ onNext }: { onNext: () => void }) {
         <p className="text-xs uppercase tracking-wider text-highlight mb-3">Avec Sokozia</p>
         <div className="flex items-center justify-between gap-2 text-[11px] md:text-sm font-semibold">
           <span>UN PRODUIT</span><ArrowRight className="size-4 text-highlight shrink-0" />
-          <span className="px-2 py-1 rounded-md bg-accent">SOKOZIA</span><ArrowRight className="size-4 text-highlight shrink-0" />
+          <span className="px-2 py-1 rounded-md bg-accent text-on-accent font-semibold">SOKOZIA</span><ArrowRight className="size-4 text-highlight shrink-0" />
           <span className="text-right">CAMPAGNE COMPLÈTE</span>
         </div>
       </div>

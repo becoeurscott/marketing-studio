@@ -63,7 +63,7 @@ export default function StudioPage() {
     else if (vid.error) overlay = <StudioError code={vid.error.code} message={vid.error.message} onRetry={generate} />;
     else if (vid.result) overlay = <VideoPlayer result={vid.result} className="mx-auto" heightClass="h-[calc(100dvh-28rem)] md:h-[calc(100dvh-26.5rem)]" maxHeightClass="max-h-[calc(100dvh-28rem)] md:max-h-[calc(100dvh-26.5rem)]" />;
     else if (vid.source || (mode === "ugc" && vid.creator)) overlay = (
-      <div className="flex flex-col items-center justify-center text-center p-6 gap-4 bg-[radial-gradient(circle_at_50%_40%,rgba(168,85,247,0.10),transparent_60%)]">
+      <div className="flex flex-col items-center justify-center text-center p-6 gap-4 bg-[radial-gradient(circle_at_50%_40%,rgba(249,115,22,0.10),transparent_60%)]">
         <div className="flex items-end justify-center gap-3">
           {mode === "ugc" && vid.creator && <img src={vid.creator.avatarUrl} alt={vid.creator.name} className="size-28 md:size-40 rounded-2xl object-cover shadow-float border border-white/10" />}
           {vid.source && <img src={vid.source.thumbnail} alt={vid.source.name} className="max-h-[32vh] max-w-[60vw] rounded-2xl shadow-float object-contain border border-white/10" />}

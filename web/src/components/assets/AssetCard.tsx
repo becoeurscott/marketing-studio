@@ -66,7 +66,7 @@ export function AssetCard({ asset, favorite, onToggleFavorite, selectable, selec
       </span>
       {selectable && (
         <span className={cn("absolute top-2 left-2 size-5 rounded-md border flex items-center justify-center transition-colors", selected ? "bg-accent border-accent" : "bg-black/40 border-white/40")}>
-          {selected && <Check className="size-3 text-white" />}
+          {selected && <Check className="size-3 text-on-accent" />}
         </span>
       )}
     </div>

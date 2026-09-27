@@ -21,7 +21,7 @@ export function CreatorPicker({ open, onClose, onPick, selectedId }: { open: boo
                 <span className="block text-[11px] text-muted truncate">{c.style} · {c.ageRange}</span>
               </span>
               {c.featured && <span className="absolute top-1.5 left-1.5 size-5 rounded-full bg-black/60 backdrop-blur flex items-center justify-center"><Star className="size-3 text-warning" /></span>}
-              {sel && <span className="absolute top-1.5 right-1.5 size-5 rounded-full bg-accent flex items-center justify-center"><Check className="size-3 text-white" /></span>}
+              {sel && <span className="absolute top-1.5 right-1.5 size-5 rounded-full bg-accent flex items-center justify-center"><Check className="size-3 text-on-accent" /></span>}
             </button>
           );
         })}

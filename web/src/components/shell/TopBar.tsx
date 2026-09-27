@@ -28,8 +28,8 @@ export function TopBar() {
 
   return (
     <header className="sticky top-0 z-30 h-14 bg-bg/85 backdrop-blur-md border-b border-border flex items-center gap-3 px-4 md:px-6">
-      <Link href="/home" className="md:hidden size-7 rounded-md bg-gradient-to-br from-accent to-accent2 flex items-center justify-center shrink-0">
-        <Sparkles className="size-4 text-white" />
+      <Link href="/home" className="md:hidden size-7 rounded-md bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shrink-0">
+        <Sparkles className="size-4 text-on-accent" />
       </Link>
       <h1 className="text-[15px] md:text-base font-semibold tracking-tight truncate flex-1 md:flex-none">{title ?? titleForPath(path)}</h1>
 
@@ -43,13 +43,13 @@ export function TopBar() {
         <Link href="/notifications" className="relative inline-flex">
           <IconButton label="Notifications" active={path === "/notifications"}><Bell /></IconButton>
           {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-accent text-[10px] font-semibold text-white flex items-center justify-center">
+            <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-accent text-[10px] font-semibold text-on-accent flex items-center justify-center">
               {unread > 9 ? "9+" : unread}
             </span>
           )}
         </Link>
         <span className="hidden sm:inline-flex"><Button size="sm" leftIcon={<Plus className="size-4" />} onClick={() => router.push("/studio")}>Créer</Button></span>
-        <span className="inline-flex sm:hidden"><IconButton label="Créer" variant="solid" className="bg-accent text-white hover:bg-highlight" onClick={() => router.push("/studio")}><Plus /></IconButton></span>
+        <span className="inline-flex sm:hidden"><IconButton label="Créer" variant="solid" className="bg-accent text-on-accent hover:bg-highlight" onClick={() => router.push("/studio")}><Plus /></IconButton></span>
       </div>
 
       {mobileSearch && (

@@ -73,7 +73,7 @@ export function WhatsAppSection() {
                 <span className="text-xs font-medium">Awa Tissus · il y a 2 min</span>
               </div>
               <Creative data={status} bare className="aspect-[9/16] w-full" />
-              <span className="absolute right-3 top-16 rotate-3 rounded-md bg-highlight px-2.5 py-1 text-sm font-extrabold text-white shadow-lg">{status.price}</span>
+              <span className="absolute right-3 top-16 rotate-3 rounded-md bg-highlight px-2.5 py-1 text-sm font-extrabold text-on-accent shadow-lg">{status.price}</span>
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 pt-16">
                 <p className="text-sm font-semibold text-white">Nouvel arrivage wax hollandais 🔥</p>
                 <p className="mt-0.5 text-xs text-white/75">Livraison offerte cette semaine</p>
@@ -240,7 +240,7 @@ export function Trust() {
                   rel="noreferrer"
                   whileHover={{ scale: 1.03 }}
                   transition={{ duration: 0.3, ease: EASE }}
-                  className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-b from-highlight to-accent2 px-5 text-sm font-medium text-white"
+                  className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-b from-highlight to-accent2 px-5 text-sm font-medium text-on-accent"
                 >
                   Devenir ambassadeur
                 </motion.a>

@@ -22,7 +22,7 @@ export function CreatorCard({ creator, selected, onSelect, compact }: { creator:
         <p className="text-xs text-text2 truncate">{creator.age} · {creator.style}</p>
         {!compact && <p className="text-[11px] text-muted mt-1 line-clamp-2">{creator.bio}</p>}
       </div>
-      {selected && <span className="absolute top-2 right-2 size-5 rounded-full bg-accent text-white flex items-center justify-center"><Check className="size-3" /></span>}
+      {selected && <span className="absolute top-2 right-2 size-5 rounded-full bg-accent text-on-accent flex items-center justify-center"><Check className="size-3" /></span>}
     </button>
   );
 }

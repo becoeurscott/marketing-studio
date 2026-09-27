@@ -221,7 +221,7 @@ function OptionCard({ selected, onClick, title, description, icon, center }: { s
         selected ? "border-accent bg-accent/10" : "border-border-strong bg-surface hover:border-white/25",
       )}
     >
-      {selected && <span className="absolute top-2.5 right-2.5 size-4 rounded-full bg-accent flex items-center justify-center"><Check className="size-2.5 text-white" /></span>}
+      {selected && <span className="absolute top-2.5 right-2.5 size-4 rounded-full bg-accent flex items-center justify-center"><Check className="size-2.5 text-on-accent" /></span>}
       {icon && <span className={cn("text-text2", selected && "text-highlight")}>{icon}</span>}
       <span className="block text-sm font-semibold">{title}</span>
       {description && <span className="block text-[13px] text-text2 mt-1">{description}</span>}

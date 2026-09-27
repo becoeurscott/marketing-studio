@@ -53,7 +53,7 @@ export function ImageResults({ results, selectedId, onSelect, onDownload, onFavo
               <img src={r.thumbnail} alt={`Résultat ${i + 1}`} className="size-full object-cover" />
             </button>
             {sel && (
-              <span className="absolute top-2 left-2 h-6 px-2 rounded-full bg-accent text-white text-[11px] font-semibold inline-flex items-center gap-1"><Check className="size-3" /> Sélectionné</span>
+              <span className="absolute top-2 left-2 h-6 px-2 rounded-full bg-accent text-on-accent text-[11px] font-semibold inline-flex items-center gap-1"><Check className="size-3" /> Sélectionné</span>
             )}
             {busy && (
               <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 text-sm"><Loader2 className="size-5 animate-spin text-highlight" />Agrandissement…</div>

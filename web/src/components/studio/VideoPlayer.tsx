@@ -67,7 +67,7 @@ export function VideoPlayer({ result, className, heightClass = "h-[70vh]", maxHe
       <div className="flex items-center gap-2 px-3 py-2 bg-card border-t border-border">
         <IconButton size="sm" label={playing ? "Pause" : "Lire"} onClick={toggle}>{playing ? <Pause /> : <Play />}</IconButton>
         <span className="text-[11px] tabular-nums text-text2 w-8">{fmt(time)}</span>
-        <input type="range" min={0} max={duration} step={0.1} value={Math.min(time, duration)} onChange={(e) => seek(Number(e.target.value))} className="flex-1 accent-[#a855f7]" aria-label="Position de lecture" />
+        <input type="range" min={0} max={duration} step={0.1} value={Math.min(time, duration)} onChange={(e) => seek(Number(e.target.value))} className="flex-1 accent-[#F97316]" aria-label="Position de lecture" />
         <span className="text-[11px] tabular-nums text-text2 w-8 text-right">{fmt(duration)}</span>
         <IconButton size="sm" label={muted ? "Activer le son" : "Couper le son"} onClick={() => setMuted((m) => !m)}>{muted ? <VolumeX /> : <Volume2 />}</IconButton>
       </div>

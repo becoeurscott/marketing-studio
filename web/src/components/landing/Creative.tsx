@@ -76,7 +76,7 @@ function Product({ kind }: { kind: CreativeKind }) {
         <div className="flex items-end gap-[6%] w-full justify-center">
           {[0.82, 1, 0.82].map((scale, i) => (
             <div key={i} className="w-[24%] aspect-[1/2] rounded-[22%/11%] bg-gradient-to-b from-zinc-800 to-black border-2 border-white/30 shadow-[0_20px_40px_rgba(0,0,0,0.5)]" style={{ transform: `scale(${scale})` }}>
-              <div className="m-[10%] h-[80%] rounded-[16%/8%] bg-gradient-to-br from-sky-400 to-fuchsia-500 opacity-80" />
+              <div className="m-[10%] h-[80%] rounded-[16%/8%] bg-gradient-to-br from-highlight via-accent to-green opacity-80" />
             </div>
           ))}
         </div>
@@ -120,7 +120,7 @@ function Overlay({ data, compact }: { data: CreativeData; compact?: boolean }) {
       <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
         <span className="rounded-full bg-black/45 backdrop-blur px-2 py-0.5 text-[10px] font-medium text-white">{data.platform}</span>
         {data.price && !data.video && (
-          <span className="ml-auto rotate-3 rounded-md bg-highlight px-2 py-0.5 text-[11px] font-extrabold text-white shadow-lg">{data.price}</span>
+          <span className="ml-auto rotate-3 rounded-md bg-highlight px-2 py-0.5 text-[11px] font-extrabold text-on-accent shadow-lg">{data.price}</span>
         )}
         {data.video && (
           <span className="size-6 rounded-full bg-white/25 backdrop-blur flex items-center justify-center">

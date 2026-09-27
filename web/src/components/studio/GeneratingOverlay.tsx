@@ -15,7 +15,7 @@ export function GeneratingOverlay({ label = "Création de votre visuel…", hint
       {/* drifting glow */}
       <motion.div
         className="pointer-events-none absolute -inset-1/2 opacity-40"
-        style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.35), transparent 70%)" }}
+        style={{ background: "radial-gradient(closest-side, rgba(249,115,22,0.35), transparent 70%)" }}
         animate={{ x: ["-10%", "10%", "-10%"], y: ["-6%", "8%", "-6%"] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />

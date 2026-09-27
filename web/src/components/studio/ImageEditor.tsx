@@ -104,7 +104,7 @@ function EditorBody({ result, onApply, onClose }: { result: ImageResult; onApply
         <Textarea label="Prompt" name="edit-prompt" rows={3} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={tool === "Add Text" ? "Sublimez-vous. -20 %." : "Décrivez la modification…"} />
         <div className="flex flex-col gap-1.5">
           <label htmlFor="strength" className="flex justify-between text-[13px] font-medium text-text2"><span>Intensité</span><span className="text-muted">{strength} %</span></label>
-          <input id="strength" type="range" min={0} max={100} value={strength} onChange={(e) => setStrength(Number(e.target.value))} className="w-full accent-[#a855f7]" />
+          <input id="strength" type="range" min={0} max={100} value={strength} onChange={(e) => setStrength(Number(e.target.value))} className="w-full accent-[#F97316]" />
         </div>
         <Select label="Format d'image" name="edit-ratio" value={ratio} onChange={(e) => setRatio(e.target.value as AspectRatio)} options={RATIOS.map((r) => ({ value: r, label: r }))} compact />
         <div className="mt-auto flex flex-col gap-2 pt-2">

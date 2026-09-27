@@ -111,7 +111,7 @@ export function StyleScreen({ product, value, onChange, onNext }: { product: Pro
                 <p className="font-semibold tracking-wide">{s.label}</p>
                 <p className="text-[11px] text-white/75">{s.tags}</p>
               </div>
-              {value === s.value && <span className="absolute top-2 left-2 size-6 rounded-full bg-accent flex items-center justify-center"><Check className="size-3.5" /></span>}
+              {value === s.value && <span className="absolute top-2 left-2 size-6 rounded-full bg-accent text-on-accent flex items-center justify-center"><Check className="size-3.5" /></span>}
             </div>
           </OptionCard>
         ))}
@@ -156,7 +156,7 @@ export function BrandScreen({ value, onChange, onNext }: { value: boolean; onCha
             </div>
           ))}
           {shown >= BRAND_CHECKS.length && (
-            <div className="flex gap-2 pt-2">{["#a855f7", "#f5d0fe", "#111827", "#fde68a"].map((c) => <span key={c} className="size-7 rounded-full border border-white/20" style={{ background: c }} />)}</div>
+            <div className="flex gap-2 pt-2">{["#F97316", "#f5d0fe", "#111827", "#fde68a"].map((c) => <span key={c} className="size-7 rounded-full border border-white/20" style={{ background: c }} />)}</div>
           )}
         </div>
       )}
