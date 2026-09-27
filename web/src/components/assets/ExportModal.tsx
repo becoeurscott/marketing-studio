@@ -15,15 +15,22 @@ import { cn } from "@/lib/utils";
 
 type Format = ExportParams["format"];
 type Quality = ExportParams["quality"];
+type PrintSize = NonNullable<ExportParams["printSize"]>;
 type Scope = "selected" | "campaign";
 
 const FORMATS: { id: Format; label: string; icon: typeof FileImage; hint: string }[] = [
   { id: "png", label: "PNG", icon: FileImage, hint: "Sans perte, transparence" },
   { id: "jpg", label: "JPG", icon: FileImage, hint: "Léger, prêt pour le web" },
   { id: "mp4", label: "MP4", icon: FileVideo, hint: "Vidéo, H.264" },
-  { id: "pdf", label: "PDF", icon: FileText, hint: "Impression ou présentation" },
+  { id: "pdf", label: "PDF à imprimer", icon: FileText, hint: "Flyer, affiche, vitrine" },
+];
+const PRINT_SIZES: { id: PrintSize; label: string; hint: string }[] = [
+  { id: "A5", label: "A5", hint: "Flyer à distribuer" },
+  { id: "A4", label: "A4", hint: "Affiche vitrine" },
+  { id: "A3", label: "A3", hint: "Grande affiche, étal" },
 ];
 const QUALITIES: { id: Quality; label: string; hint: string }[] = [
+  { id: "light", label: "Légère", hint: "Data réduite · WhatsApp" },
   { id: "standard", label: "Standard", hint: "1x · rapide" },
   { id: "high", label: "Haute", hint: "2x · recommandé" },
   { id: "maximum", label: "Maximale", hint: "4x · fichier le plus lourd" },
@@ -55,8 +62,10 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
   const toast = useToast();
   const assets = useStore((s) => s.assets);
   const campaigns = useStore((s) => s.campaigns);
+  const lightByDefault = useStore((s) => s.preferences.lightVideos ?? true);
   const [format, setFormat] = useState<Format>("png");
-  const [quality, setQuality] = useState<Quality>("high");
+  const [quality, setQuality] = useState<Quality>(lightByDefault ? "light" : "high");
+  const [printSize, setPrintSize] = useState<PrintSize>("A4");
   const [scope, setScope] = useState<Scope>(campaignId ? "campaign" : "selected");
   const [pickedCampaign, setPickedCampaign] = useState<ID>(campaignId ?? campaigns[0]?.id ?? "");
   const [progress, setProgress] = useState<{ pct: number; label: string } | null>(null);
@@ -71,7 +80,7 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
     if (ids.length === 0) return;
     setProgress({ pct: 0, label: "Préparation" });
     try {
-      const asset = await exportAssets({ assetIds: ids, format, quality, campaignId: scope === "campaign" ? pickedCampaign : undefined }, (pct, label) => setProgress({ pct, label }));
+      const asset = await exportAssets({ assetIds: ids, format, quality, printSize: format === "pdf" ? printSize : undefined, campaignId: scope === "campaign" ? pickedCampaign : undefined }, (pct, label) => setProgress({ pct, label }));
       setDone(asset);
       onComplete?.(asset);
       toast.success("Export terminé", `${asset.name} a été ajouté à vos ressources.`);
@@ -135,10 +144,25 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
         {hasVideo && format !== "mp4" && <p className="text-xs text-warning mt-2">Les vidéos de cette sélection seront exportées en image fixe. Choisissez MP4 pour conserver l’animation.</p>}
       </div>
 
+      {format === "pdf" && (
+        <div>
+          <p className="text-[13px] font-medium text-text2 mb-2">Taille d’impression</p>
+          <div className="grid grid-cols-3 gap-2">
+            {PRINT_SIZES.map((p) => (
+              <button key={p.id} type="button" onClick={() => setPrintSize(p.id)} aria-pressed={printSize === p.id} className={cn("rounded-lg border p-3 text-left transition-colors", printSize === p.id ? "border-accent bg-accent/10" : "border-border-strong bg-surface hover:border-white/25")}>
+                <span className="block text-sm font-semibold">{p.label}</span>
+                <span className="block text-[11px] text-muted">{p.hint}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted mt-2">Marges de coupe et 300 dpi inclus : prêt pour l’imprimeur du quartier.</p>
+        </div>
+      )}
+
       {/* Quality */}
       <div>
         <p className="text-[13px] font-medium text-text2 mb-2">Qualité</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {QUALITIES.map((q) => (
             <button key={q.id} type="button" onClick={() => setQuality(q.id)} aria-pressed={quality === q.id} className={cn("rounded-lg border p-3 text-left transition-colors", quality === q.id ? "border-accent bg-accent/10" : "border-border-strong bg-surface hover:border-white/25")}>
               <span className="block text-sm font-semibold">{q.label}</span>

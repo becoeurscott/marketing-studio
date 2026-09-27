@@ -102,7 +102,7 @@ export function UgcScreen({ product, onNext }: RevealProps) {
         </div>
         <ProductBadge product={product} className="top-12 right-3" />
         <p className="absolute bottom-4 inset-x-4 text-sm font-medium leading-snug">
-          « Ok, je teste ce {product.sample ? "sérum" : "produit"} depuis une semaine… »
+          « Franchement, ce {product.sample ? "maillot" : "produit"}, je le porte depuis une semaine… »
         </p>
       </div>
       <p className="text-center text-xs text-muted mt-3">Concept UGC 15 s · TikTok / Reels</p>

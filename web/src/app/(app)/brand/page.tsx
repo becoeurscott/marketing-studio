@@ -112,6 +112,7 @@ export default function BrandPage() {
                         {brand.website.replace(/^https?:\/\//, "")} <ExternalLink className="size-3" />
                       </a>
                     ) : <p className="text-[13px] text-muted mt-0.5">Aucun site web</p>}
+                    <p className="text-[13px] text-text2 mt-0.5">WhatsApp : {brand.whatsapp || <span className="text-muted">à ajouter pour vos boutons de commande</span>}</p>
                   </div>
                   <IconButton label="Modifier l’identité" size="sm" variant="outline" onClick={() => setSection("identity")}><Pencil /></IconButton>
                 </div>
@@ -273,7 +274,7 @@ function NewBrandForm({ onClose, onCreate }: { onClose: () => void; onCreate: (n
       onSubmit={(e) => { e.preventDefault(); if (!name.trim()) { setError("Donnez un nom à la marque."); return; } onCreate(name.trim()); onClose(); }}
       className="space-y-4"
     >
-      <Input label="Nom de la marque" name="brandName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Luma Skin" error={error} autoFocus />
+      <Input label="Nom de la marque" name="brandName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Karité d'Or" error={error} autoFocus />
       <div className="flex items-center justify-end gap-2 pt-2">
         <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
         <Button type="submit">Créer la marque</Button>

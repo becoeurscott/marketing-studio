@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/Card";
 import type { CampaignAnalytics } from "@/lib/types";
+import { useMoney } from "@/components/account/PaymentMethodPicker";
 import { cn, formatNumber } from "@/lib/utils";
 
 export function StatTile({ label, value, sub, className }: { label: string; value: string; sub?: string; className?: string }) {
@@ -58,6 +59,7 @@ export function Sparkline({ data, height = 48, className, stroke = "stroke-highl
 }
 
 export function CampaignAnalyticsPanel({ analytics }: { analytics: CampaignAnalytics }) {
+  const money = useMoney();
   const labels = analytics.daily.map((d) => new Date(d.date).toLocaleDateString("fr-FR", { month: "short", day: "numeric" }));
   const engagement = analytics.daily.map((d) => Math.round(d.impressions * 0.06 + d.clicks * 0.4));
   return (
@@ -66,7 +68,7 @@ export function CampaignAnalyticsPanel({ analytics }: { analytics: CampaignAnaly
         <StatTile label="Portée" value={formatNumber(analytics.reach)} sub={`${formatNumber(analytics.impressions)} impressions`} />
         <StatTile label="Engagement" value={formatNumber(engagement.reduce((a, b) => a + b, 0))} sub="J'aime, enregistrements, commentaires" />
         <StatTile label="Clics" value={formatNumber(analytics.clicks)} sub={`${analytics.ctr.toLocaleString("fr-FR")} % de CTR`} />
-        <StatTile label="ROAS" value={`${analytics.roas.toLocaleString("fr-FR")}x`} sub={`${formatNumber(analytics.spend)} $ dépensés · ${formatNumber(analytics.conversions)} commandes`} />
+        <StatTile label="ROAS" value={`${analytics.roas.toLocaleString("fr-FR")}x`} sub={`${money(analytics.spend)} dépensés · ${formatNumber(analytics.conversions)} commandes`} />
       </div>
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">

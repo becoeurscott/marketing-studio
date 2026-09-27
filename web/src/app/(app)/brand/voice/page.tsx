@@ -30,7 +30,7 @@ const cap = (v: string) => v.charAt(0).toUpperCase() + v.slice(1);
 /** Deterministic mock copy that reflects tone + writing style; the real API would use the voice as a system prompt. */
 function sampleCopy(brand: Brand, tone: BrandTone, style: string, keywords: string[], avoid: string[]) {
   const name = brand.name;
-  const product = brand.industry === "Food & Beverage" ? "notre nouvelle torréfaction" : brand.industry === "Fashion" ? "la nouvelle collection" : "notre nouveau sérum";
+  const product = brand.industry === "Food & Beverage" ? "notre nouveau plat du jour" : brand.industry === "Fashion" ? "la nouvelle collection" : "notre nouveau beurre de karité";
   const kw = keywords[0] ? keywords[0] : "au quotidien";
   const kw2 = keywords[1] ? keywords[1] : "simple";
   const short = /short|court/i.test(style);

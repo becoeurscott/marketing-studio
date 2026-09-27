@@ -42,7 +42,7 @@ type Segment = { kind: "text"; text: string } | { kind: "slot"; slot: "product" 
 /** Mode-specific sentence templates. Chips render in place of slots; free text follows. */
 const TEMPLATES: Record<ComposeMode, { segments: Segment[]; placeholder: string }> = {
   image: { segments: [{ kind: "text", text: "Créer une image de" }, { kind: "slot", slot: "product" }], placeholder: "dans un studio ensoleillé, ombres douces…" },
-  video: { segments: [{ kind: "text", text: "Créer une vidéo où" }, { kind: "slot", slot: "product" }], placeholder: "tourne lentement sur du marbre mouillé…" },
+  video: { segments: [{ kind: "text", text: "Créer une vidéo où" }, { kind: "slot", slot: "product" }], placeholder: "tourne lentement sur un pagne wax, lumière du matin…" },
   ugc: { segments: [{ kind: "text", text: "Créer une vidéo UGC où" }, { kind: "slot", slot: "creator" }, { kind: "text", text: "profite du produit" }, { kind: "slot", slot: "product" }], placeholder: "pendant sa routine du matin…" },
 };
 

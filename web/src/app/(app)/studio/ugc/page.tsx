@@ -16,7 +16,8 @@ import { creators } from "@/data";
 import { generateUGC, VIDEO_STEPS, type VideoResult } from "@/lib/api";
 import { capitalize, useTemplatePreset } from "@/components/studio/useTemplatePreset";
 import { VIDEO_STEP_LABELS } from "@/components/studio/constants";
-import { useStore } from "@/lib/store";
+import { LANGUAGES, countryOf, languageLabel, type LanguageId } from "@/lib/market";
+import { selectCountry, useStore } from "@/lib/store";
 import { CREDIT_COSTS, type Asset } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +25,7 @@ const DEFAULT_SCRIPT = "Créez une vidéo de 15 secondes façon TikTok pour pré
 const TONES = ["Excited", "Casual", "Professional", "Funny", "Luxury", "Authentic"] as const;
 type UgcTone = (typeof TONES)[number];
 const TONE_LABELS: Record<UgcTone, string> = { Excited: "Enthousiaste", Casual: "Décontracté", Professional: "Professionnel", Funny: "Drôle", Luxury: "Luxe", Authentic: "Authentique" };
-const LOCATIONS = ["Salle de bain", "Cuisine", "Salon", "Chambre", "Extérieur", "Salle de sport", "Voiture", "Bureau", "Studio"];
+const LOCATIONS = ["Boutique", "Marché", "Maquis", "Salon de coiffure", "Cour familiale", "Salon", "Chambre", "Cuisine", "Rue", "Studio"];
 const DURATIONS = ["5", "10", "15"] as const;
 
 type Phase = { kind: "idle" } | { kind: "loading"; step: number } | { kind: "done"; result: VideoResult } | { kind: "error"; error: unknown };
@@ -38,6 +39,9 @@ function UGCPage() {
   const addAsset = useStore((s) => s.addAsset);
   const favoriteCreators = useStore((s) => s.favorites.creator);
   const { template, preset } = useTemplatePreset("ugc");
+  const country = countryOf(useStore(selectCountry));
+  const defaultLanguage = useStore((s) => s.preferences.language);
+  const [language, setLanguage] = useState<LanguageId>(preset?.language ?? defaultLanguage ?? country.languages[0]);
 
   const [productId, setProductId] = useState<string | null>(() => assets.find((a) => a.type === "image")?.id ?? null);
   const [creatorId, setCreatorId] = useState(creators[0].id);
@@ -53,7 +57,11 @@ function UGCPage() {
 
   const product = useMemo(() => assets.find((a) => a.id === productId) ?? null, [assets, productId]);
   const creator = creators.find((c) => c.id === creatorId) ?? creators[0];
-  const featured = useMemo(() => [...creators].sort((a, b) => Number(favoriteCreators.includes(b.id)) - Number(favoriteCreators.includes(a.id)) || Number(b.featured) - Number(a.featured)).slice(0, 8), [favoriteCreators]);
+  // Creators who speak the chosen language first, then favorites, then featured.
+  const featured = useMemo(() => {
+    const speaks = (c: (typeof creators)[number]) => Number(c.languages.includes(languageLabel(language)));
+    return [...creators].sort((a, b) => speaks(b) - speaks(a) || Number(favoriteCreators.includes(b.id)) - Number(favoriteCreators.includes(a.id)) || Number(b.featured) - Number(a.featured)).slice(0, 8);
+  }, [favoriteCreators, language]);
   const loading = phase.kind === "loading";
 
   async function generate() {
@@ -62,11 +70,11 @@ function UGCPage() {
     setSavedId(null);
     try {
       const result = await generateUGC(
-        { creatorId, script, durationSec: Number(duration) as 5 | 10 | 15, location, tone, productAssetId: productId, projectId: currentProjectId },
+        { creatorId, script, durationSec: Number(duration) as 5 | 10 | 15, location, tone, language, productAssetId: productId, projectId: currentProjectId },
         (_step, index) => setPhase({ kind: "loading", step: index }),
       );
       setPhase({ kind: "done", result });
-      toast.success("Vidéo UGC prête", `${creator.name} · ${duration} s`);
+      toast.success("Vidéo UGC prête", `${creator.name} · ${languageLabel(language)} · ${duration} s`);
     } catch (error) {
       setPhase({ kind: "error", error });
     }
@@ -90,14 +98,15 @@ function UGCPage() {
       <ControlField label="Produit" hint={product?.name}>
         <ProductPicker value={productId} onChange={(a) => setProductId(a.id)} />
       </ControlField>
-      <ControlField label="Créateur">
+      <Select label="Langue de la voix" value={language} onChange={(e) => setLanguage(e.target.value as LanguageId)} options={LANGUAGES.map((l) => ({ value: l.id, label: l.label }))} />
+      <ControlField label="Créateur" hint={creator.languages.includes(languageLabel(language)) ? undefined : `${creator.name} sera doublé(e) en ${languageLabel(language).toLowerCase()}`}>
         <div className="grid grid-cols-1 gap-2">
           {featured.map((c) => <CreatorCard key={c.id} creator={c} compact selected={c.id === creatorId} onSelect={() => setCreatorId(c.id)} />)}
         </div>
       </ControlField>
       <Textarea label="Script" value={script} onChange={(e) => setScript(e.target.value)} rows={4} hint={`${script.length} caractères`} />
       <Select label="Lieu" value={location} onChange={(e) => setLocation(e.target.value)} options={LOCATIONS.map((l) => ({ value: l, label: l }))} />
-      <ControlField label="Tone">
+      <ControlField label="Ton">
         <ChipGroup size="sm" options={TONES.map((t) => ({ value: t, label: TONE_LABELS[t] }))} value={tone} onChange={setTone} />
       </ControlField>
       <ControlField label="Durée">

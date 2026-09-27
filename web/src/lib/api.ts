@@ -7,6 +7,7 @@ import { useStore } from "./store";
 import { CREDIT_COSTS, type AdVariation, type AspectRatio, type Asset, type Campaign, type CopyResult, type CopyTool, type Generation, type ID, type ImageStyle, type Platform, type AdFormat, type Tone, type CampaignFormat, type CampaignObjective } from "./types";
 import { hooks as hookBank } from "@/data/copy";
 import { img, uid } from "./utils";
+import { languageLabel, type LanguageId } from "./market";
 
 export class ApiError extends Error {
   code: "insufficient-credits" | "failed";
@@ -97,6 +98,8 @@ export interface GenerateUGCParams {
   script: string;
   location?: string;
   tone?: string;
+  /** Voice-over language. */
+  language?: LanguageId;
   durationSec: 5 | 10 | 15;
   projectId?: ID | null;
 }
@@ -108,7 +111,7 @@ export async function generateUGC(params: GenerateUGCParams, onProgress?: (step:
   }
   const seed = uid("ugc");
   const result: VideoResult = { id: uid("res"), url: img(seed, 1080, 1920), thumbnail: img(seed, 540, 960), poster: img(seed, 540, 960), durationSec: params.durationSec, ratio: "9:16" };
-  record({ type: "video", prompt: params.script, status: "completed", thumbnails: [result.thumbnail], projectId: params.projectId ?? null, params: { creator: params.creatorId, tone: params.tone ?? "", durationSec: params.durationSec }, creditsUsed: CREDIT_COSTS.ugc });
+  record({ type: "video", prompt: params.script, status: "completed", thumbnails: [result.thumbnail], projectId: params.projectId ?? null, params: { creator: params.creatorId, tone: params.tone ?? "", language: params.language ?? "fr", durationSec: params.durationSec }, creditsUsed: CREDIT_COSTS.ugc });
   return result;
 }
 
@@ -141,6 +144,8 @@ export interface GenerateAdsParams {
   offer: string;
   audience: string;
   cta: string;
+  /** Price shown on the visual, already formatted in local currency ("7 500 FCFA"). */
+  price?: string;
   projectId?: ID | null;
 }
 export async function generateAds(params: GenerateAdsParams): Promise<AdVariation[]> {
@@ -153,13 +158,14 @@ export async function generateAds(params: GenerateAdsParams): Promise<AdVariatio
     `${params.offer} — cette semaine seulement`,
     `Pourquoi ${params.audience} adore ${params.product}`,
   ];
+  const priceLine = params.price ? ` Prix : ${params.price}.` : "";
   const texts = [
-    `${params.product} a été pensé pour ${params.audience}. ${params.offer}. ${params.cta} dès aujourd’hui.`,
+    `${params.product} a été pensé pour ${params.audience}. ${params.offer}.${priceLine} ${params.cta} dès aujourd’hui.`,
     `Ne vous contentez plus de moins. ${params.product} fait le travail à votre place. ${params.offer}.`,
-    `Offre limitée : ${params.offer} sur ${params.product}. Idéal pour ${params.audience}.`,
+    `Offre limitée : ${params.offer} sur ${params.product}.${priceLine} Idéal pour ${params.audience}.`,
     `De vrais résultats, de vraies personnes. Découvrez pourquoi ${params.product} cartonne auprès de ${params.audience}.`,
   ];
-  const ctas = [params.cta, "En savoir plus", "Profiter de l’offre", params.cta];
+  const ctas = [params.cta, params.platform === "whatsapp" ? "Commander sur WhatsApp" : "En savoir plus", "Profiter de l’offre", params.cta];
   const results = labels.map((label, i) => ({
     id: uid("var"), label, visual: img(`${uid("ad")}-${label}`, 800, 1000), headline: headlines[i], primaryText: texts[i], cta: ctas[i], platform: params.platform, format: params.format,
   }));
@@ -175,14 +181,19 @@ export interface GenerateCopyParams {
   tone: Tone;
   goal: string;
   platform?: Platform;
+  /** Output language (text and, for voice notes, the voice-over). Defaults to French. */
+  language?: LanguageId;
   projectId?: ID | null;
 }
 export async function generateCopy(params: GenerateCopyParams): Promise<CopyResult> {
   charge("copy", `Rédaction — ${labelFor(params.tool)}`);
   await delay(700, 1400);
   const voice = useStore.getState().brands.find((b) => b.id === useStore.getState().currentBrandId)?.voice;
-  const text = buildCopy(params, voice?.writingStyle);
-  const result: CopyResult = { id: uid("copy"), tool: params.tool, title: `${labelFor(params.tool)} — ${params.product}`, text, tone: params.tone, platform: params.platform, createdAt: new Date().toISOString() };
+  const lang = params.language ?? "fr";
+  const body = buildCopy(params, voice?.writingStyle);
+  // Mock: the real model writes directly in the target language.
+  const text = lang === "fr" ? body : `[${languageLabel(lang)}]\n${body}`;
+  const result: CopyResult = { id: uid("copy"), tool: params.tool, title: `${labelFor(params.tool)} — ${params.product}`, text, tone: params.tone, platform: params.platform, language: lang, createdAt: new Date().toISOString() };
   record({ type: "copy", prompt: `${labelFor(params.tool)} pour ${params.product}, ${params.audience}, ton ${params.tone}, objectif : ${params.goal}`, status: "completed", thumbnails: [], projectId: params.projectId ?? null, params: { tool: params.tool, tone: params.tone }, creditsUsed: CREDIT_COSTS.copy });
   return result;
 }
@@ -191,7 +202,7 @@ export async function generateHooks(params: { product: string; audience?: string
   charge("copy", `Accroches — ${params.product}`);
   await delay(600, 1200);
   const shuffled = [...hookBank].sort(() => Math.random() - 0.5).slice(0, 10);
-  const out = shuffled.map((h) => h.replace(/serum/gi, params.product.toLowerCase().includes("serum") ? "serum" : params.product));
+  const out = shuffled;
   record({ type: "copy", prompt: `10 accroches pour ${params.product}`, status: "completed", thumbnails: [], projectId: params.projectId ?? null, params: { tone: params.tone ?? "bold" }, creditsUsed: CREDIT_COSTS.copy });
   return out;
 }
@@ -213,7 +224,7 @@ export async function createCampaign(params: CreateCampaignParams, onProgress?: 
   }
   const store = useStore.getState();
   const assetIds = store.assets.filter((a) => a.type === "image").slice(0, 8).map((a) => a.id);
-  const variations = await generateAds({ platform: params.platforms[0] ?? "instagram", format: "image", product: "Luma Glow Serum", offer: "-20 % pour le lancement", audience: params.audience, cta: "Acheter maintenant", projectId: params.projectId });
+  const variations = await generateAds({ platform: params.platforms[0] ?? "instagram", format: "image", product: "Beurre de karité pur", offer: "Livraison offerte cette semaine", audience: params.audience, cta: "Commander sur WhatsApp", projectId: params.projectId });
   const campaign = store.createCampaign({
     ...params,
     status: "draft",
@@ -232,7 +243,10 @@ export async function createCampaign(params: CreateCampaignParams, onProgress?: 
 export interface ExportParams {
   assetIds: ID[];
   format: "png" | "jpg" | "mp4" | "pdf";
-  quality: "standard" | "high" | "maximum";
+  /** "light" = compressed for slow connections and WhatsApp (videos ≤ 16 Mo). */
+  quality: "light" | "standard" | "high" | "maximum";
+  /** Paper size for printable flyers and posters (PDF only). */
+  printSize?: "A5" | "A4" | "A3";
   campaignId?: ID;
 }
 export async function exportAssets(params: ExportParams, onProgress?: (progress: number, label: string) => void): Promise<Asset> {
@@ -244,7 +258,7 @@ export async function exportAssets(params: ExportParams, onProgress?: (progress:
   onProgress?.(100, "Empaquetage");
   await delay(400);
   const name = params.campaignId ? `Export campagne.${params.format === "mp4" ? "mp4" : "zip"}` : `Export ${new Date().toLocaleDateString("fr-FR").replace(/\//g, "-")}.${total > 1 ? "zip" : params.format}`;
-  const asset = useStore.getState().addAsset({ name, type: "export", url: img(uid("exp"), 1200, 1500), thumbnail: img(uid("exp"), 800, 1000), projectId: useStore.getState().currentProjectId, favorite: false, sizeKb: 1800 * total, tags: ["export", params.format, params.quality] });
+  const asset = useStore.getState().addAsset({ name, type: "export", url: img(uid("exp"), 1200, 1500), thumbnail: img(uid("exp"), 800, 1000), projectId: useStore.getState().currentProjectId, favorite: false, sizeKb: (params.quality === "light" ? 450 : 1800) * total, tags: ["export", params.format, params.quality, ...(params.printSize ? [params.printSize] : [])] });
   useStore.getState().pushNotification({ kind: "export-complete", title: "Export terminé", body: `${name} est prêt à être téléchargé.`, href: "/assets" });
   return asset;
 }
@@ -259,20 +273,27 @@ export async function upscaleImage(params: { url: string; assetId?: ID; projectI
 
 /* ---------- Upload ---------- */
 export async function uploadProduct(file: { name: string; size?: number; projectId?: ID | null }, onProgress?: (progress: number) => void): Promise<Asset> {
-  for (let p = 10; p <= 100; p += 30) {
+  // "Phone photo" mode: background removal + light and sharpness fix, for quick or blurry phone shots.
+  const enhance = useStore.getState().preferences.phonePhotoMode ?? true;
+  for (let p = 10; p <= 100; p += enhance ? 15 : 30) {
     onProgress?.(Math.min(p, 100));
     await delay(150, 300);
   }
   const seed = uid("upload");
-  return useStore.getState().addAsset({ name: file.name, type: "image", url: img(seed, 1600, 2000), thumbnail: img(seed, 800, 1000), projectId: file.projectId ?? useStore.getState().currentProjectId, favorite: false, width: 1600, height: 2000, sizeKb: Math.round((file.size ?? 900000) / 1024), tags: ["upload", "product"] });
+  return useStore.getState().addAsset({ name: file.name, type: "image", url: img(seed, 1600, 2000), thumbnail: img(seed, 800, 1000), projectId: file.projectId ?? useStore.getState().currentProjectId, favorite: false, width: 1600, height: 2000, sizeKb: Math.round((file.size ?? 900000) / 1024), tags: ["upload", "product", ...(enhance ? ["améliorée"] : [])] });
+}
+
+/** Toast subtitle after an upload, mentioning the automatic clean-up when it ran. */
+export function uploadSummary(asset: Asset): string {
+  return asset.tags.includes("améliorée") ? `${asset.name} · détourage, lumière et netteté corrigés` : asset.name;
 }
 
 /* ---------- AI assistant ---------- */
 export async function assistantReply(message: string): Promise<{ text: string; actions: string[] }> {
   await delay(600, 1200);
   const m = message.toLowerCase();
-  if (m.includes("campaign") || m.includes("campagne")) return { text: "Je peux créer une campagne complète pour Luma Glow Serum : photos produit, une annonce UGC, un reel et une série de stories pour Instagram, TikTok et Facebook. On commence avec l’objectif Ventes ?", actions: ["Generate Campaign", "Write Ad Copy"] };
-  if (m.includes("video") || m.includes("vidéo") || m.includes("reel")) return { text: "Une rotation lente de 10 secondes fonctionne très bien pour les sérums. J’utiliserai votre packshot principal comme image source. Prêt quand vous l’êtes.", actions: ["Generate Video", "Generate UGC"] };
+  if (m.includes("campaign") || m.includes("campagne")) return { text: "Je peux créer une campagne complète pour votre beurre de karité : photos produit, une vidéo UGC, des statuts WhatsApp et des pubs Facebook avec votre prix en FCFA. On commence avec l’objectif Ventes ?", actions: ["Generate Campaign", "Write Ad Copy"] };
+  if (m.includes("video") || m.includes("vidéo") || m.includes("reel")) return { text: "Une rotation lente de 10 secondes fonctionne très bien pour un pot de karité. J’utiliserai votre photo principale comme image source, en version légère pour WhatsApp. Prêt quand vous l’êtes.", actions: ["Generate Video", "Generate UGC"] };
   if (m.includes("copy") || m.includes("caption") || m.includes("texte") || m.includes("légende")) return { text: "Votre ton de marque est court, assuré et jamais guindé. Je vais rédiger trois propositions de légende dans ce ton.", actions: ["Write Ad Copy"] };
   return { text: "Importez une photo produit ou choisissez un modèle, je m’occupe du reste. Que créons-nous aujourd’hui ?", actions: ["Generate Product Shoot", "Generate UGC", "Generate Campaign"] };
 }
@@ -292,6 +313,7 @@ const COPY_TOOL_LABELS: Record<CopyTool, string> = {
   "ad-copy": "Texte d’annonce", "product-description": "Description produit", "instagram-caption": "Légende Instagram",
   "tiktok-caption": "Légende TikTok", email: "E-mail", headline: "Titre", hook: "Accroche", cta: "Appel à l’action",
   "ugc-script": "Script UGC", "landing-page": "Page de destination",
+  "whatsapp-status": "Statuts WhatsApp", "whatsapp-catalog": "Fiche catalogue WhatsApp", "voice-note": "Note vocale pub",
 };
 
 function labelFor(tool: CopyTool): string {
@@ -300,27 +322,40 @@ function labelFor(tool: CopyTool): string {
 
 function buildCopy(p: GenerateCopyParams, style?: string): string {
   const tone = p.tone;
-  const opener = tone === "luxury" ? "Certaines choses valent la peine d’attendre." : tone === "urgent" ? "Jusqu’à dimanche seulement." : tone === "funny" ? "Votre peau a appelé. Elle réclame une augmentation." : tone === "bold" ? "C’est lui, le bon." : tone === "minimal" ? `${p.product}.` : `Découvrez ${p.product}.`;
+  const opener = tone === "luxury" ? "La qualité se remarque tout de suite." : tone === "urgent" ? "Jusqu’à dimanche seulement." : tone === "funny" ? "Votre voisine l’a déjà. Et vous ?" : tone === "bold" ? "C’est lui, le bon." : tone === "minimal" ? `${p.product}.` : `Découvrez ${p.product}.`;
+  const tag = p.product.replace(/\s+/g, "").toLowerCase();
   switch (p.tool) {
     case "ad-copy":
-      return `Titre : ${opener}\n\nTexte principal : ${p.product} a été conçu pour ${p.audience}. Objectif : ${p.goal}. Formule clean, résultats visibles, zéro prise de tête.\n\nCTA : Acheter maintenant`;
+      return `Titre : ${opener}\n\nTexte principal : ${p.product}, pensé pour ${p.audience}. Objectif : ${p.goal}. Qualité garantie, livraison rapide, paiement à la livraison ou par Mobile Money.\n\nCTA : Commander sur WhatsApp`;
     case "product-description":
-      return `${p.product} est un sérum éclat à la vitamine C pensé pour la routine quotidienne. Conçu pour ${p.audience}, il cible le teint terne et irrégulier tout en restant assez léger pour s’appliquer sous un SPF. ${style ? "" : ""}Clean. Efficace. Au quotidien.`;
+      return `${p.product} : un produit de qualité pour ${p.audience}. ${style ? "" : ""}Disponible tout de suite, livraison dans toute la ville, paiement Mobile Money ou à la livraison. Écrivez-nous sur WhatsApp pour réserver le vôtre.`;
     case "instagram-caption":
-      return `${opener} ${p.product} est là pour ${p.audience}. ${p.goal}.\n\n#skincare #glow #vitaminc #${p.product.replace(/\s+/g, "").toLowerCase()}`;
+      return `${opener} ${p.product} est là pour ${p.audience}. ${p.goal}.\n\nCommandes en DM ou sur WhatsApp (lien en bio).\n#${tag} #madeinafrica #boutique #livraison`;
     case "tiktok-caption":
-      return `${opener} pov : ${p.audience} l’a enfin trouvé. #${p.product.replace(/\s+/g, "").toLowerCase()} #skintok`;
+      return `${opener} pov : ${p.audience} l’a enfin trouvé. Commande sur WhatsApp, lien en bio. #${tag} #tiktokafrique`;
     case "email":
-      return `Objet : ${opener}\n\nBonjour,\n\n${p.product} est disponible, et il a été conçu pour ${p.audience}. ${p.goal}.\n\nJe découvre →`;
+      return `Objet : ${opener}\n\nBonjour,\n\n${p.product} est disponible, et il a été pensé pour ${p.audience}. ${p.goal}.\n\nJe commande →`;
     case "headline":
-      return [`${opener}`, `${p.product}, pensé pour ${p.audience}`, `Un éclat visible en 7 jours`, `Un seul produit. Zéro prise de tête.`, `Le dernier que vous adopterez`].map((h, i) => `${i + 1}. ${h}`).join("\n");
+      return [`${opener}`, `${p.product}, pensé pour ${p.audience}`, `La qualité au juste prix`, `Livré chez vous, payé en Mobile Money`, `Stock limité, réservez le vôtre`].map((h, i) => `${i + 1}. ${h}`).join("\n");
     case "hook":
       return hookBank.slice(0, 5).map((h, i) => `${i + 1}. ${h}`).join("\n");
     case "cta":
-      return ["Acheter maintenant", "Profiter de -20 %", "Essayer dès aujourd’hui", "Voir l’éclat", "Commencer ma routine"].map((c, i) => `${i + 1}. ${c}`).join("\n");
+      return ["Commander sur WhatsApp", "Réserver le mien", "Payer en Mobile Money", "Écrivez-nous maintenant", "Passer à la boutique"].map((c, i) => `${i + 1}. ${c}`).join("\n");
     case "ugc-script":
-      return `[Accroche] ${hookBank[0]}\n[Démo] Deux gouttes de ${p.product}. Tapotez avant le SPF.\n[Preuve] Jour sept, et c’est la première chose qu’on remarque.\n[CTA] Lien en bio. ${p.goal}.`;
+      return `[Accroche] ${hookBank[0]}\n[Démo] Regardez ${p.product} de près : la finition, la qualité.\n[Preuve] Mes clientes reviennent toutes pour en reprendre.\n[CTA] Écrivez-moi sur WhatsApp, je livre aujourd’hui. ${p.goal}.`;
     case "landing-page":
-      return `Hero : ${opener}\nSous-titre : ${p.product} pour ${p.audience}. Un éclat visible dès le septième jour.\n\nBénéfices :\n• Vitamine C stabilisée\n• Texture légère, s’applique sous un SPF\n• Clean, sans parfum\n\nPreuve : 4,8★ sur 1 200 avis\n\nCTA : Acheter maintenant`;
+      return `Hero : ${opener}\nSous-titre : ${p.product} pour ${p.audience}.\n\nBénéfices :\n• Qualité vérifiée\n• Livraison rapide dans votre ville\n• Paiement Mobile Money ou à la livraison\n\nCTA : Commander sur WhatsApp`;
+    case "whatsapp-status":
+      return [
+        `Lundi : ${opener} ${p.product} est arrivé 🔥`,
+        `Mardi : Photo du jour. Qui veut le sien ? Répondez à ce statut.`,
+        `Mercredi : ${p.goal}. Prix spécial jusqu’à vendredi.`,
+        `Jeudi : Une cliente satisfaite nous a envoyé ceci 🙏`,
+        `Vendredi : Derniers articles en stock. Écrivez-moi en privé.`,
+      ].join("\n");
+    case "whatsapp-catalog":
+      return `Nom : ${p.product}\nDescription : Pensé pour ${p.audience}. Qualité vérifiée, livraison rapide.\nPrix : à compléter\nLien : Commander sur WhatsApp`;
+    case "voice-note":
+      return `🎙 Note vocale · 20 secondes\n\nBonjour à tous ! Nouveau chez nous : ${p.product}, pensé pour ${p.audience}. Les quantités sont limitées. Pour commander, envoyez-moi simplement un message ici sur WhatsApp. On livre aujourd’hui même. Merci et à tout de suite !`;
   }
 }

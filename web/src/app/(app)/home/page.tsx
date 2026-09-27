@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Camera, FolderKanban, Images, Megaphone, PenLine, Sparkles, TrendingUp, Users, Video, Wand2, Play } from "lucide-react";
+import { ArrowRight, CalendarHeart, Camera, FolderKanban, Images, Megaphone, PenLine, Sparkles, TrendingUp, Users, Video, Wand2, Play } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -17,6 +17,8 @@ import { cn, formatNumber, greetingForHour, timeAgo } from "@/lib/utils";
 import { AD_FORMAT_LABELS, GENERATION_TYPE_LABELS, labelOf } from "@/lib/labels";
 import { platformLabel } from "@/components/library/TemplateCard";
 import { ProjectCard } from "@/components/projects/ProjectCard";
+import { studioRouteForMode } from "@/components/studio/useTemplatePreset";
+import { upcomingMoments } from "@/lib/market";
 
 const modeIcon: Record<string, typeof Wand2> = { image: Images, video: Video, ugc: Users, "product-shoot": Camera, ads: Megaphone, copy: PenLine };
 
@@ -36,6 +38,14 @@ export default function HomePage() {
   const recentAssets = [...assets].filter((a) => a.type === "image" || a.type === "video").sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 8);
   const continueItems = generations.filter((g) => g.status === "completed" && g.thumbnails.length).slice(0, 3);
   const featuredTemplates = templates.filter((t) => t.popular).slice(0, 6);
+  const setPendingTemplate = useStore((s) => s.setPendingTemplate);
+  const [moments] = useState(() => upcomingMoments().slice(0, 3));
+  const openTemplate = (id: string) => {
+    const t = templates.find((x) => x.id === id);
+    if (!t) return;
+    setPendingTemplate(t.id);
+    router.push(studioRouteForMode(t.preset.mode));
+  };
 
   const stats = [
     { label: "Projets", value: active.length, icon: FolderKanban, href: "/projects" },
@@ -69,6 +79,28 @@ export default function HomePage() {
           </motion.div>
         ))}
       </div>
+
+      {moments.length > 0 && (
+        <Section title="Prochains temps forts" description="Préparez vos promos trois semaines avant : c’est là que tout se joue.">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {moments.map((m) => (
+              <Card key={m.id} className={cn("flex flex-col gap-3", m.daysLeft <= 21 && "border-accent/50 bg-accent/8")}>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-semibold flex items-center gap-1.5"><CalendarHeart className="size-4 text-highlight shrink-0" />{m.name}</p>
+                  <Badge tone={m.daysLeft <= 21 ? "accent" : "outline"}>J-{m.daysLeft}</Badge>
+                </div>
+                <p className="text-[13px] text-text2 flex-1">{m.pitch}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {m.templateIds.map((id) => {
+                    const t = templates.find((x) => x.id === id);
+                    return t ? <Button key={id} size="sm" variant="secondary" onClick={() => openTemplate(id)}>{t.title}</Button> : null;
+                  })}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </Section>
+      )}
 
       <Section title="Projets récents" action={<Link href="/projects" className="text-[13px] text-text2 hover:text-text flex items-center gap-1">Tout voir <ArrowRight className="size-3.5" /></Link>}>
         {recentProjects.length ? (

@@ -13,16 +13,16 @@ export const analytics: AnalyticsSummary = {
   topFormats: [
     { format: "Vidéo UGC", share: 32 },
     { format: "Photos produit", share: 27 },
-    { format: "Reels", share: 18 },
+    { format: "Statuts WhatsApp", share: 18 },
     { format: "Carrousels", share: 13 },
     { format: "Stories", share: 10 },
   ],
 };
 
 export const trendingFormats: { id: string; title: string; description: string; growth: string; mode: "image" | "video" | "ugc" | "product-shoot" | "ads" | "copy" }[] = [
-  { id: "tf_ugc", title: "Pubs vidéo UGC", description: "Pubs de 15 s portées par un créateur : accroche, démo et CTA.", growth: "+38%", mode: "ugc" },
+  { id: "tf_ugc", title: "Pubs vidéo UGC", description: "Pubs de 15 s portées par une créatrice : accroche, démo et prix en FCFA.", growth: "+38%", mode: "ugc" },
   { id: "tf_shoot", title: "Shooting produit IA", description: "Une photo → neuf décors en quelques secondes.", growth: "+27%", mode: "product-shoot" },
-  { id: "tf_reel", title: "Reels verticaux", description: "Reels produit en orbite lente et travelling avant pour IG et TikTok.", growth: "+19%", mode: "video" },
+  { id: "tf_reel", title: "Vidéos verticales", description: "Vidéos produit en rotation lente pour TikTok, Facebook et statuts WhatsApp.", growth: "+19%", mode: "video" },
   { id: "tf_carousel", title: "Carrousels de preuve", description: "Carrousels avant/après et témoignages qui convertissent.", growth: "+14%", mode: "ads" },
-  { id: "tf_hooks", title: "Packs d'accroches", description: "Dix accroches qui stoppent le scroll par produit, en un clic.", growth: "+11%", mode: "copy" },
+  { id: "tf_hooks", title: "Packs d'accroches", description: "Dix accroches qui arrêtent le scroll, en français ou en langue locale.", growth: "+11%", mode: "copy" },
 ];

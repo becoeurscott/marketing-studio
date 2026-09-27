@@ -1,29 +1,33 @@
 import type { Creator } from "@/lib/types";
 import { avatar } from "@/lib/utils";
 
-type R = [string, Creator["gender"], number, string, string[], number, string, boolean];
+// [id, name, gender, age, style, languages, country, avatar, bio, featured]
+// Ids are kept from the previous seed so existing references stay valid.
+type R = [string, string, Creator["gender"], number, string, string[], string, number, string, boolean];
+
+// Avatars are placeholders; replace with generated African portraits before launch.
 const rows: R[] = [
-  ["Maya", "female", 24, "Lifestyle", ["Anglais", "Espagnol"], 47, "Routines matinales, soin de la peau et slow living. Ton chaleureux et naturel.", true],
-  ["Jordan", "male", 29, "Fitness", ["Anglais"], 33, "Énergie de salle de sport, tests produits honnêtes, avis sans détour.", true],
-  ["Sofia", "female", 27, "Beauté", ["Anglais", "Portugais"], 45, "Spécialiste du GRWM. Démos d'application précises et gros plans.", true],
-  ["Marcus", "male", 31, "Tech", ["Anglais", "Allemand"], 59, "Déballages et analyses techniques avec un humour pince-sans-rire.", true],
-  ["Priya", "female", 26, "Mode", ["Anglais", "Hindi"], 41, "Transitions de tenues et fit checks street style.", false],
-  ["Leo", "male", 23, "Humour", ["Anglais"], 15, "Placements produit en sketchs qui font vraiment mouche.", false],
-  ["Hana", "female", 30, "Cuisine", ["Anglais", "Japonais"], 44, "Plans de cuisine vus du dessus et voix off apaisantes.", false],
-  ["Diego", "male", 34, "Voyage", ["Espagnol", "Anglais"], 60, "Plans de coupe en extérieur et produits en situation réelle.", false],
-  ["Amara", "female", 28, "Bien-être", ["Anglais", "Français"], 49, "Explications posées et scientifiques des ingrédients.", false],
-  ["Ethan", "male", 25, "Gaming", ["Anglais"], 52, "Tests de setups de bureau et montages rythmés.", false],
-  ["Chloe", "female", 22, "Vie étudiante", ["Anglais"], 16, "Authenticité de chambre d'étudiant, angle petit budget.", false],
-  ["Noah", "male", 36, "Vie de papa", ["Anglais"], 68, "Démos pratiques en famille avec une touche d'humour.", false],
-  ["Yuki", "non-binary", 27, "Art & design", ["Anglais", "Japonais"], 25, "Flatlays esthétiques et boucles produit en stop-motion.", false],
-  ["Isabella", "female", 33, "Maison", ["Anglais", "Italien"], 20, "Mise en scène de produits en cuisine et salle de bain.", false],
-  ["Samuel", "male", 40, "Finance", ["Anglais"], 53, "Analyses franches du rapport qualité-prix des produits premium.", false],
-  ["Zara", "female", 29, "Luxe", ["Anglais", "Arabe"], 32, "Finition éditoriale, révélations lentes et cadrages élégants.", false],
+  ["creator_maya", "Aïcha", "female", 24, "Beauté", ["Français", "Dioula"], "Côte d'Ivoire", 47, "Routines karité, soins naturels et conseils peau. Ton chaleureux de grande sœur.", true],
+  ["creator_jordan", "Kofi", "male", 29, "Tech & téléphones", ["Français", "Anglais"], "Côte d'Ivoire", 33, "Déballages de téléphones et tests honnêtes, du marché d'Adjamé à la boutique.", true],
+  ["creator_sofia", "Fatou", "female", 27, "Mode wax", ["Français", "Wolof"], "Sénégal", 45, "Tenues wax, essayages et transitions pour cérémonies et bureau.", true],
+  ["creator_marcus", "Moussa", "male", 31, "Marché & bons plans", ["Français", "Bambara"], "Mali", 59, "Comparaisons de prix et bons plans du marché, avec beaucoup d'humour.", true],
+  ["creator_priya", "Nneka", "female", 26, "Coiffure", ["Anglais", "Pidgin"], "Nigeria", 41, "Tresses, perruques et soins des cheveux crépus. Démos pas à pas.", false],
+  ["creator_leo", "Chinedu", "male", 23, "Humour", ["Anglais", "Pidgin"], "Nigeria", 15, "Sketchs courts où le produit arrive au bon moment. Ça fait vraiment rire.", false],
+  ["creator_hana", "Mariam", "female", 30, "Cuisine", ["Français", "Bambara"], "Mali", 44, "Recettes du quotidien vues du dessus, voix posée et astuces de maman.", false],
+  ["creator_diego", "Yao", "male", 34, "Livraison & quartier", ["Français", "Dioula"], "Côte d'Ivoire", 60, "Vidéos en extérieur dans les rues d'Abidjan, produits en situation réelle.", false],
+  ["creator_amara", "Grâce", "female", 28, "Bien-être", ["Français", "Lingala"], "RD Congo", 49, "Explications simples sur les ingrédients naturels et les bonnes habitudes.", false],
+  ["creator_ethan", "Émeka", "male", 25, "Gaming & tech", ["Anglais", "Pidgin"], "Nigeria", 52, "Tests d'accessoires, montages rythmés et avis sans détour.", false],
+  ["creator_chloe", "Khady", "female", 22, "Vie étudiante", ["Français", "Wolof"], "Sénégal", 16, "Angle petit budget et vie de campus à Dakar, très authentique.", false],
+  ["creator_noah", "Ibrahima", "male", 36, "Vie de famille", ["Français", "Wolof"], "Sénégal", 68, "Démos pratiques à la maison avec les enfants, une touche d'humour.", false],
+  ["creator_yuki", "Adjoa", "female", 27, "Art & design", ["Français", "Anglais"], "Côte d'Ivoire", 25, "Mises en scène produit colorées, pagnes et boucles en stop-motion.", false],
+  ["creator_isabella", "Tshiala", "female", 33, "Maison", ["Français", "Lingala"], "RD Congo", 20, "Produits mis en scène dans la cuisine et la salle de bain, ton rassurant.", false],
+  ["creator_samuel", "Amina", "female", 40, "Commerce & business", ["Français", "Anglais"], "Cameroun", 53, "Conseils aux commerçantes et avis francs sur le rapport qualité-prix.", false],
+  ["creator_zara", "Wanjiru", "female", 29, "Luxe & élégance", ["Anglais", "Swahili"], "Kenya", 32, "Finition éditoriale, révélations lentes et cadrages élégants.", false],
 ];
 
-export const creators: Creator[] = rows.map(([name, gender, age, style, languages, av, bio, featured], i) => ({
-  id: `creator_${name.toLowerCase()}`,
-  name, gender, age, style, languages, bio, featured,
+export const creators: Creator[] = rows.map(([id, name, gender, age, style, languages, country, av, bio, featured], i) => ({
+  id,
+  name, gender, age, style, languages, country, bio, featured,
   ageRange: age < 25 ? "18–24" : age < 30 ? "25–29" : age < 35 ? "30–34" : "35+",
   avatarUrl: avatar(av + (i % 2)),
 }));

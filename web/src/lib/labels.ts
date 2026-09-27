@@ -5,16 +5,16 @@
 import type { AdFormat, Creator, GenerationType, ImageStyle, StudioMode, TemplateCategory, Tone } from "./types";
 
 export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
-  "Product Ads": "Pubs produit",
+  "Wax & Couture": "Couture & wax",
+  Cosmetics: "Cosmétiques",
+  Restaurant: "Restauration",
+  Electronics: "Électronique",
+  Hair: "Coiffure",
+  Grocery: "Alimentation",
+  WhatsApp: "WhatsApp",
+  Print: "Flyers & affiches",
   UGC: "UGC",
-  "Social Media": "Réseaux sociaux",
-  "E-commerce": "E-commerce",
-  Fashion: "Mode",
-  Beauty: "Beauté",
-  Food: "Food",
-  Technology: "Tech",
-  "Real Estate": "Immobilier",
-  Fitness: "Fitness",
+  Promo: "Promos & fêtes",
 };
 
 export const AD_FORMAT_LABELS: Record<AdFormat, string> = {
@@ -24,6 +24,9 @@ export const AD_FORMAT_LABELS: Record<AdFormat, string> = {
   story: "Story",
   reel: "Reel",
   short: "Short",
+  status: "Statut WhatsApp",
+  catalog: "Fiche catalogue",
+  flyer: "Flyer / affiche",
 };
 
 export const IMAGE_STYLE_LABELS: Record<ImageStyle, string> = {

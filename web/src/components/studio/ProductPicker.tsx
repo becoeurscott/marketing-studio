@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { ProgressBar } from "@/components/ui/ProgressIndicator";
 import { useToast } from "@/components/ui/Toast";
-import { uploadProduct } from "@/lib/api";
+import { uploadProduct, uploadSummary } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import type { Asset } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,7 @@ export function useProductUpload(onUploaded: (asset: Asset) => void) {
       setProgress(0);
       try {
         const asset = await uploadProduct({ name: file.name, size: file.size, projectId: currentProjectId }, setProgress);
-        toast.success("Produit importé", asset.name);
+        toast.success("Produit importé", uploadSummary(asset));
         onUploaded(asset);
       } catch (err) {
         toast.error("Une erreur est survenue.", err instanceof Error ? err.message : undefined);

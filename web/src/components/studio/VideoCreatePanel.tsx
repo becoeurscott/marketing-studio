@@ -32,7 +32,7 @@ export function VideoCreatePanel({ params, update, onGenerate, generating, hideG
       <ProductField label="Image source" asset={source} onChange={() => setPickerOpen(true)} onClear={() => update("sourceAssetId", null)} />
       <ProductPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onPick={(a) => update("sourceAssetId", a.id)} selectedId={params.sourceAssetId} />
 
-      <Textarea label="Concept" name="concept" rows={3} value={params.concept} onChange={(e) => update("concept", e.target.value)} placeholder="Orbite lente autour du sérum sur du marbre mouillé, lumière du matin, légère vapeur…" />
+      <Textarea label="Concept" name="concept" rows={3} value={params.concept} onChange={(e) => update("concept", e.target.value)} placeholder="Orbite lente autour du pot de karité sur un pagne wax, lumière du matin…" />
 
       <div className="flex flex-col gap-1.5">
         <span className="text-[13px] font-medium text-text2">Durée</span>

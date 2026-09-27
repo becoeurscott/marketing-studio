@@ -1,14 +1,17 @@
 /* ---------- Primitives ---------- */
+import type { CountryCode, LanguageId } from "./market";
+
 export type ID = string;
 export type ISODate = string;
 
-export type Platform = "instagram" | "tiktok" | "facebook" | "youtube" | "google" | "pinterest";
-export type AdFormat = "image" | "video" | "carousel" | "story" | "reel" | "short";
+export type Platform = "whatsapp" | "instagram" | "tiktok" | "facebook" | "youtube" | "google" | "pinterest";
+export type AdFormat = "image" | "video" | "carousel" | "story" | "reel" | "short" | "status" | "catalog" | "flyer";
 export type CampaignFormat = "product-photos" | "ugc" | "video-ads" | "stories" | "carousels";
 export type AspectRatio = "1:1" | "4:5" | "9:16" | "16:9" | "3:2";
 export type Tone = "professional" | "friendly" | "luxury" | "bold" | "funny" | "minimal" | "urgent";
 
 export const PLATFORMS: { id: Platform; label: string }[] = [
+  { id: "whatsapp", label: "WhatsApp" },
   { id: "instagram", label: "Instagram" },
   { id: "tiktok", label: "TikTok" },
   { id: "facebook", label: "Facebook" },
@@ -145,8 +148,8 @@ export interface Campaign {
 
 /* ---------- Templates ---------- */
 export type TemplateCategory =
-  | "Product Ads" | "UGC" | "Social Media" | "E-commerce" | "Fashion"
-  | "Beauty" | "Food" | "Technology" | "Real Estate" | "Fitness";
+  | "Wax & Couture" | "Cosmetics" | "Restaurant" | "Electronics" | "Hair" | "Grocery"
+  | "WhatsApp" | "Print" | "UGC" | "Promo";
 
 export type StudioMode = "image" | "video" | "ugc" | "product-shoot" | "ads" | "copy";
 
@@ -160,6 +163,7 @@ export interface TemplatePreset {
   platform?: Platform;
   format?: AdFormat;
   tone?: Tone;
+  language?: LanguageId;
 }
 
 export interface Template {
@@ -184,6 +188,7 @@ export interface Creator {
   age: number;
   style: string;
   languages: string[];
+  country?: string;
   avatarUrl: string;
   bio: string;
   featured: boolean;
@@ -229,6 +234,8 @@ export interface Brand {
   colors: string[];
   fonts: { heading: string; body: string };
   website: string;
+  /** Number customers write to, used by "Commander sur WhatsApp" buttons. */
+  whatsapp?: string;
   description: string;
   industry: string;
   audience: string;
@@ -256,7 +263,8 @@ export interface Notification {
 /* ---------- Copy ---------- */
 export type CopyTool =
   | "ad-copy" | "product-description" | "instagram-caption" | "tiktok-caption"
-  | "email" | "headline" | "hook" | "cta" | "ugc-script" | "landing-page";
+  | "email" | "headline" | "hook" | "cta" | "ugc-script" | "landing-page"
+  | "whatsapp-status" | "whatsapp-catalog" | "voice-note";
 
 export interface CopyResult {
   id: ID;
@@ -265,6 +273,7 @@ export interface CopyResult {
   text: string;
   tone: Tone;
   platform?: Platform;
+  language?: LanguageId;
   createdAt: ISODate;
 }
 
@@ -302,7 +311,8 @@ export type PlanId = "starter" | "creator" | "studio" | "agency";
 export interface Plan {
   id: PlanId;
   name: string;
-  priceMonthly: number;
+  /** Monthly price in FCFA; converted per country with lib/market.ts. */
+  priceXof: number;
   credits: number;
   features: {
     generations: string;
@@ -335,6 +345,7 @@ export interface OnboardingAnswers {
   boldness?: string | null;
   brandKit?: boolean;
   product?: { name: string; category: string; description: string; sample: boolean } | null;
+  country?: CountryCode;
 }
 
 export interface Preferences {
@@ -344,6 +355,12 @@ export interface Preferences {
   emailNotifications: boolean;
   pushNotifications: boolean;
   compactSidebar: boolean;
+  /** Clean up blurry / badly lit phone photos before generating. */
+  phonePhotoMode?: boolean;
+  /** Smaller video files for slow connections and limited data plans. */
+  lightVideos?: boolean;
+  /** Default language for texts and voice-overs. */
+  language?: LanguageId;
 }
 
 export type FavoriteKind = "asset" | "template" | "prompt" | "creator";

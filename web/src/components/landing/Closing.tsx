@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Briefcase, Check, Minus, Plus, Store, Users } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { COUNTRIES, DEFAULT_COUNTRY, PAYMENT_METHODS, USAGE_PACKS, countryOf, priceIn, type CountryCode, type PaymentMethodId } from "@/lib/market";
 import { cn } from "@/lib/utils";
 import { DEMO_HREF, Logo } from "./Hero";
 import { CtaButton, EASE, Particles, Reveal, ScrollText, SectionTitle } from "./motion";
@@ -12,9 +13,9 @@ import { GlowCard } from "./Story";
 /* ───────────────────────── Audiences ───────────────────────── */
 
 const AUDIENCES = [
-  { icon: Store, title: "Vendeurs e-commerce", text: "Des visuels pro pour chaque produit de votre boutique, sans budget shooting." },
-  { icon: Users, title: "Créateurs de contenu", text: "Publiez plus souvent, avec des idées d'accroches qui ne s'épuisent jamais." },
-  { icon: Briefcase, title: "Agences & freelances", text: "Livrez plus de campagnes à vos clients, plus vite, avec une marque par client." },
+  { icon: Store, title: "Boutiques & commerçants", text: "Au marché, en boutique ou sur WhatsApp : des visuels pro pour chaque produit, sans payer de photographe." },
+  { icon: Users, title: "Vendeurs en ligne & créateurs", text: "Statuts, TikTok, Facebook : publiez tous les jours avec des accroches qui ne s'épuisent jamais." },
+  { icon: Briefcase, title: "Agences & community managers", text: "Gérez plusieurs clients, une marque par client, et livrez plus vite." },
 ];
 
 export function Audiences() {
@@ -53,29 +54,34 @@ export function Audiences() {
 
 /* ───────────────────────── Pricing ───────────────────────── */
 
+/** Monthly prices in FCFA, converted per country (same values as the in-app plans). */
 const PLANS = [
   {
     name: "Starter",
-    desc: "Pour tester et lancer vos premiers contenus",
-    price: 12,
-    features: ["300 générations IA / mois", "Générateur d'images", "Rédaction IA", "1 kit de marque", "5 vidéos / mois"],
+    desc: "Pour lancer vos premiers contenus",
+    priceXof: 4900,
+    features: ["300 crédits / mois (30 visuels)", "Générateur d'images", "Rédaction en langues locales", "1 kit de marque", "5 vidéos / mois"],
   },
   {
-    name: "Créateur",
-    desc: "Pour les marques qui publient chaque semaine",
-    price: 29,
+    name: "Creator",
+    desc: "Pour les boutiques qui publient chaque semaine",
+    priceXof: 14900,
     popular: true,
-    features: ["1 000 générations IA / mois", "Vidéos UGC", "Shooting produit IA", "3 kits de marque", "30 vidéos / mois", "Tous les modèles"],
+    features: ["1 000 crédits / mois", "Vidéos UGC avec créatrices africaines", "Statuts et catalogue WhatsApp", "3 kits de marque", "30 vidéos / mois", "Tous les modèles par secteur"],
   },
   {
     name: "Studio",
     desc: "Pour les équipes et les agences",
-    price: 59,
-    features: ["3 000 générations IA / mois", "Campagnes + calendrier", "Export 4K", "10 kits de marque", "100 vidéos / mois", "5 membres d'équipe"],
+    priceXof: 29900,
+    features: ["3 000 crédits / mois", "Campagnes + calendrier des fêtes", "Flyers et affiches imprimables", "10 kits de marque", "100 vidéos / mois", "5 membres d'équipe"],
   },
 ];
 
+const LANDING_PAYMENTS: PaymentMethodId[] = ["wave", "orange-money", "mtn-momo", "moov-money", "mpesa", "card"];
+
 export function Pricing() {
+  const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
+  const c = countryOf(country);
   return (
     <section id="tarifs" className="relative scroll-mt-24 px-4 sm:px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
@@ -83,14 +89,57 @@ export function Pricing() {
           eyebrow="Tarifs"
           title={
             <>
-              Des offres simples
+              Payez à l&apos;usage,
               <br />
-              pour grandir
+              en Mobile Money
             </>
           }
-          text="Choisissez l'offre qui correspond à votre rythme. Changez ou arrêtez quand vous voulez."
+          text="Commencez sans abonnement dès 1 000 FCFA. Passez à un forfait mensuel quand vous publiez tous les jours."
         />
-        <div className="mt-16 grid gap-4 lg:grid-cols-3 lg:items-stretch">
+        <Reveal className="mt-8 flex flex-col items-center gap-4">
+          <label className="flex items-center gap-2 text-sm text-text2">
+            Prix pour
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value as CountryCode)}
+              className="h-9 rounded-full border border-white/10 bg-white/[0.04] px-3 text-sm text-text focus:border-accent focus:outline-none"
+            >
+              {COUNTRIES.map((x) => <option key={x.code} value={x.code} className="bg-bg">{x.flag} {x.name}</option>)}
+            </select>
+          </label>
+          <ul className="flex flex-wrap justify-center gap-2" aria-label="Moyens de paiement acceptés">
+            {LANDING_PAYMENTS.map((id) => {
+              const m = PAYMENT_METHODS[id];
+              const local = c.payments.includes(id);
+              return (
+                <li key={id} className={cn("flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs", local ? "border-white/15 bg-white/[0.06] text-text" : "border-white/[0.06] text-muted")}>
+                  <span className="size-2.5 rounded-full" style={{ background: m.color }} />
+                  {m.label}
+                </li>
+              );
+            })}
+          </ul>
+        </Reveal>
+
+        {/* Pay-as-you-go packs */}
+        <div className="mt-12 grid gap-3 sm:grid-cols-3">
+          {USAGE_PACKS.map((p, i) => (
+            <Reveal key={p.id} delay={i * 0.08}>
+              <div className={cn("h-full rounded-2xl border p-5", p.popular ? "border-accent/40 bg-accent/10" : "border-white/[0.08] bg-white/[0.03]")}>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm text-text2">{p.name}</p>
+                  {p.popular && <span className="rounded-full bg-accent/20 border border-accent/40 px-2 py-0.5 text-[10px] text-highlight">Le plus pris</span>}
+                </div>
+                <p className="mt-2 text-3xl font-medium tracking-tight text-white tabular-nums">{priceIn(p.priceXof, country)}</p>
+                <p className="mt-1 text-sm">{p.pitch}</p>
+                <p className="mt-2 text-xs text-muted">Sans abonnement{p.validityDays ? ` · valable ${p.validityDays} jours` : ""}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <p className="mt-14 text-center text-sm text-text2">Ou un forfait mensuel, résiliable à tout moment</p>
+        <div className="mt-6 grid gap-4 lg:grid-cols-3 lg:items-stretch">
           {PLANS.map((p, i) => (
             <Reveal key={p.name} delay={i * 0.12}>
               <GlowCard
@@ -104,9 +153,9 @@ export function Pricing() {
                   {p.popular && <span className="rounded-full bg-accent/20 border border-accent/40 px-2.5 py-0.5 text-[11px] text-highlight">Populaire</span>}
                 </div>
                 <p className="mt-2 text-sm text-text2">{p.desc}</p>
-                <p className="mt-8 flex items-end gap-1.5">
-                  <span className="text-5xl font-light tracking-tight bg-gradient-to-b from-white to-highlight bg-clip-text text-transparent">${p.price}</span>
-                  <span className="pb-1.5 text-text2">/ mois</span>
+                <p className="mt-8 flex flex-col">
+                  <span className="whitespace-nowrap text-4xl font-light tracking-tight text-white tabular-nums">{priceIn(p.priceXof, country)}</span>
+                  <span className="mt-1 text-sm text-text2">par mois</span>
                 </p>
                 <div className="my-7 h-px bg-white/10" />
                 <ul className="space-y-3">
@@ -208,7 +257,7 @@ export function Faq() {
 
 /* ───────────────────────── Platforms orbit ───────────────────────── */
 
-const PLATFORMS = ["TikTok", "Instagram", "Facebook", "YouTube", "Pinterest", "Google"];
+const PLATFORMS = ["WhatsApp", "TikTok", "Facebook", "Instagram", "YouTube", "Pinterest", "Google"];
 
 export function Platforms() {
   return (
@@ -271,7 +320,7 @@ export function FinalCta() {
             <CtaButton href={DEMO_HREF} className="mt-10">
               Essayer la démo gratuite
             </CtaButton>
-            <p className="mt-5 text-xs text-muted">Sans engagement · Sans carte bancaire</p>
+            <p className="mt-5 text-xs text-muted">Sans engagement · Dès 1 000 FCFA · Paiement Mobile Money</p>
           </div>
         </div>
       </Reveal>
@@ -285,7 +334,7 @@ export function SiteFooter() {
       <div className="mx-auto flex max-w-6xl flex-col gap-10 sm:flex-row sm:justify-between">
         <div className="max-w-xs">
           <Logo />
-          <p className="mt-4 text-sm text-text2">Le studio marketing IA qui transforme vos produits en campagnes complètes.</p>
+          <p className="mt-4 text-sm text-text2">Le studio marketing IA des commerçants africains : vos produits en visuels, vidéos et statuts qui font vendre.</p>
         </div>
         <div>
           <p className="text-sm font-medium">Liens rapides</p>

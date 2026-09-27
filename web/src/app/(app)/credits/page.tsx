@@ -11,9 +11,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterBar } from "@/components/ui/FilterBar";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
-import { creditPacks, plans } from "@/data";
+import { PaymentMethodPicker, isPaymentReady, paymentSummary, useMoney, usePaymentChoice } from "@/components/account/PaymentMethodPicker";
+import { plans } from "@/data";
 import { delay } from "@/lib/api";
 import { useStore } from "@/lib/store";
+import { TOP_UP_PACKS, USAGE_PACKS, type UsagePack } from "@/lib/market";
 import { CREDIT_COSTS, type CreditAction } from "@/lib/types";
 import { cn, formatDate, formatNumber, timeAgo } from "@/lib/utils";
 
@@ -32,7 +34,8 @@ const ACTION_META: Record<CreditAction, { label: string; icon: LucideIcon }> = {
 
 const COST_ROWS: (keyof typeof CREDIT_COSTS)[] = ["image", "video", "upscale", "ugc", "product-shoot", "ads", "copy"];
 type HistoryFilter = "all" | "spent" | "added";
-type Pack = (typeof creditPacks)[number];
+type Pack = UsagePack;
+const PACKS: Pack[] = [...USAGE_PACKS, ...TOP_UP_PACKS];
 
 export default function CreditsPage() {
   const credits = useStore((s) => s.credits);
@@ -40,6 +43,8 @@ export default function CreditsPage() {
   const transactions = useStore((s) => s.transactions);
   const buyCredits = useStore((s) => s.buyCredits);
   const toast = useToast();
+  const money = useMoney();
+  const [payment, setPayment] = usePaymentChoice();
 
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const [pack, setPack] = useState<Pack | null>(null);
@@ -64,7 +69,7 @@ export default function CreditsPage() {
     if (!pack) return;
     setBuying(true);
     await delay(900, 1400);
-    buyCredits(pack.credits, `Achat de ${formatNumber(pack.credits)} crédits`);
+    buyCredits(pack.credits, `${pack.name} · ${money(pack.priceXof)} via ${paymentSummary(payment)}`);
     setBuying(false);
     setSuccess(pack);
     setPack(null);
@@ -73,7 +78,7 @@ export default function CreditsPage() {
 
   return (
     <>
-      <PageHeader title="Crédits" description="Chaque génération consomme des crédits. Rechargez à tout moment ; les crédits non utilisés sont reportés." />
+      <PageHeader title="Crédits" description="Chaque génération consomme des crédits. Rechargez dès 1 000 FCFA, en Mobile Money." />
 
       {/* Balance hero */}
       <Card elevated className="relative overflow-hidden mb-6">
@@ -101,25 +106,22 @@ export default function CreditsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-6">
         <div>
           {/* Buy packs */}
-          <Section title="Acheter des crédits" description="Packs ponctuels. Aucun paiement réel dans ce prototype.">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {creditPacks.map((p, i) => {
-                const best = i === 1;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setPack(p)}
-                    className={cn("relative text-left rounded-lg border p-4 transition-colors hover:border-white/20", best ? "bg-accent/8 border-accent/50" : "bg-card border-border")}
-                  >
-                    {best && <Badge tone="accent" className="absolute top-3 right-3">Meilleure offre</Badge>}
-                    <p className="text-2xl font-bold tracking-tight tabular-nums">{formatNumber(p.credits)}</p>
-                    <p className="text-[13px] text-text2">crédits {p.bonus && <span className="text-success font-medium">{p.bonus}</span>}</p>
-                    <p className="text-sm font-semibold mt-3">{p.price} $</p>
-                    <p className="text-[11px] text-muted">{(p.price / p.credits * 100).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} $ les 100</p>
-                  </button>
-                );
-              })}
+          <Section title="Recharger" description="Sans abonnement. Paiement simulé dans ce prototype.">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {PACKS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setPack(p)}
+                  className={cn("relative text-left rounded-lg border p-4 transition-colors hover:border-white/20", p.popular ? "bg-accent/8 border-accent/50" : "bg-card border-border")}
+                >
+                  {p.popular && <Badge tone="accent" className="absolute top-3 right-3">Le plus pris</Badge>}
+                  <p className="text-[13px] text-text2">{p.name}</p>
+                  <p className="text-2xl font-bold tracking-tight tabular-nums mt-0.5">{money(p.priceXof)}</p>
+                  <p className="text-[13px] mt-1">{p.pitch}</p>
+                  <p className="text-[11px] text-muted mt-2">{formatNumber(p.credits)} crédits{p.validityDays ? ` · valables ${p.validityDays} jours` : ""}</p>
+                </button>
+              ))}
             </div>
           </Section>
 
@@ -183,21 +185,23 @@ export default function CreditsPage() {
         open={!!pack}
         onClose={() => !buying && setPack(null)}
         title="Confirmer l’achat"
-        description="Paiement simulé : aucune carte n’est débitée."
+        description="Paiement simulé : aucun montant n’est débité."
         size="sm"
         footer={
           <>
             <Button variant="ghost" onClick={() => setPack(null)} disabled={buying}>Annuler</Button>
-            <Button onClick={confirmBuy} loading={buying} leftIcon={<CreditCard className="size-4" />}>Payer {pack?.price} $</Button>
+            <Button onClick={confirmBuy} loading={buying} disabled={!isPaymentReady(payment)} leftIcon={<CreditCard className="size-4" />}>Payer {pack && money(pack.priceXof)}</Button>
           </>
         }
       >
         {pack && (
-          <div className="rounded-md bg-surface border border-border p-4 space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-text2">Pack</span><span className="font-medium">{formatNumber(pack.credits)} crédits {pack.bonus}</span></div>
-            <div className="flex justify-between"><span className="text-text2">Prix</span><span className="font-medium">{pack.price},00 $</span></div>
-            <div className="flex justify-between"><span className="text-text2">Paiement</span><span className="font-medium">Visa •••• 4242</span></div>
-            <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-text2">Nouveau solde</span><span className="font-semibold">{formatNumber(credits + pack.credits)}</span></div>
+          <div className="space-y-3">
+            <div className="rounded-md bg-surface border border-border p-4 space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-text2">Pack</span><span className="font-medium">{pack.name}</span></div>
+              <div className="flex justify-between"><span className="text-text2">Crédits</span><span className="font-medium">+{formatNumber(pack.credits)}{pack.validityDays ? ` · ${pack.validityDays} jours` : ""}</span></div>
+              <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-text2">Nouveau solde</span><span className="font-semibold">{formatNumber(credits + pack.credits)}</span></div>
+            </div>
+            <PaymentMethodPicker value={payment} onChange={setPayment} />
           </div>
         )}
       </Modal>

@@ -10,6 +10,7 @@ import type {
 } from "./types";
 import * as seed from "@/data";
 import { uid } from "./utils";
+import { DEFAULT_COUNTRY, type CountryCode } from "./market";
 
 /* ---------- State shape ---------- */
 export interface StoreState {
@@ -32,6 +33,8 @@ export interface StoreState {
   preferences: Preferences;
   currentProjectId: ID | null;
   plan: PlanId;
+  /** Market the user sells in: drives currency, Mobile Money options and languages. */
+  country: CountryCode;
   /** Template chosen via "Use Template"; consumed (cleared) by /studio on mount. Not persisted. */
   pendingTemplateId: ID | null;
   /** Copy and hooks the user bookmarked in /studio/copy. Persisted. */
@@ -90,6 +93,7 @@ export interface StoreActions {
   /* prefs / plan */
   setPreference: <K extends keyof Preferences>(key: K, value: Preferences[K]) => void;
   setPlan: (plan: PlanId) => void;
+  setCountry: (country: CountryCode) => void;
   /* templates → studio handoff */
   setPendingTemplate: (id: ID | null) => void;
   /* saved copy & hooks */
@@ -103,7 +107,8 @@ export interface StoreActions {
 
 export type Store = StoreState & StoreActions;
 
-const SEED_VERSION = 1;
+// Bumped to 2 for the African-market seed data (re-seeds prototype data).
+const SEED_VERSION = 2;
 
 function initialState(): StoreState {
   return {
@@ -135,9 +140,12 @@ function initialState(): StoreState {
       emailNotifications: true,
       pushNotifications: true,
       compactSidebar: false,
+      phonePhotoMode: true,
+      lightVideos: true,
     },
     currentProjectId: seed.projects[0]?.id ?? null,
     plan: "creator",
+    country: DEFAULT_COUNTRY,
     pendingTemplateId: null,
     savedCopy: [],
     savedHooks: [],
@@ -316,6 +324,7 @@ export const useStore = create<Store>()(
 
       setPreference: (key, value) => set((s) => ({ preferences: { ...s.preferences, [key]: value } })),
       setPlan: (plan) => set({ plan }),
+      setCountry: (country) => set({ country }),
       setPendingTemplate: (id) => set({ pendingTemplateId: id }),
 
       saveCopy: (copy) => set((s) => ({ savedCopy: s.savedCopy.some((c) => c.id === copy.id) ? s.savedCopy : [copy, ...s.savedCopy] })),
@@ -341,12 +350,12 @@ export const useStore = create<Store>()(
         const {
           version, user, onboardingDone, onboarding, projects, assets, campaigns, generations, favorites,
           brands, currentBrandId, credits, transactions, notifications, members, workspaceName, preferences,
-          currentProjectId, plan, savedCopy, savedHooks,
+          currentProjectId, plan, country, savedCopy, savedHooks,
         } = s;
         return {
           version, user, onboardingDone, onboarding, projects, assets, campaigns, generations, favorites,
           brands, currentBrandId, credits, transactions, notifications, members, workspaceName, preferences,
-          currentProjectId, plan, savedCopy, savedHooks,
+          currentProjectId, plan, country, savedCopy, savedHooks,
         } as Store;
       },
       migrate: (persisted, fromVersion) => {
@@ -377,6 +386,7 @@ export function useHydrated(): boolean {
 
 /* ---------- Convenience selectors ---------- */
 export const selectUnreadCount = (s: Store) => s.notifications.filter((n) => !n.read).length;
+export const selectCountry = (s: Store) => s.country ?? DEFAULT_COUNTRY;
 export const selectCurrentBrand = (s: Store) => s.brands.find((b) => b.id === s.currentBrandId) ?? s.brands[0];
 export const selectProject = (id: ID) => (s: Store) => s.projects.find((p) => p.id === id);
 export const selectProjectAssets = (id: ID) => (s: Store) => s.assets.filter((a) => a.projectId === id);

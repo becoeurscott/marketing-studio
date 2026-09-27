@@ -193,10 +193,10 @@ export function Problem() {
 /* ───────────────────────── Solution ───────────────────────── */
 
 const STATS = [
-  { to: 12, suffix: "", label: "Styles visuels", text: "Luxe, minimaliste, lifestyle, street, éditorial… un rendu adapté à chaque marque." },
+  { to: 8, suffix: "", label: "Langues", text: "Français, anglais, wolof, dioula, bambara, lingala, swahili et pidgin, pour les textes et les voix off." },
   { to: 4, suffix: "", label: "Variantes par génération", text: "Comparez plusieurs propositions et gardez la meilleure." },
-  { to: 10, suffix: "", label: "Outils de rédaction", text: "Accroches, légendes, scripts UGC, descriptions produit, emails…" },
-  { to: 6, suffix: "", label: "Plateformes", text: "TikTok, Instagram, Facebook, YouTube, Pinterest et Google." },
+  { to: 13, suffix: "", label: "Outils de rédaction", text: "Accroches, statuts WhatsApp, fiches catalogue, notes vocales, scripts UGC…" },
+  { to: 7, suffix: "", label: "Plateformes", text: "WhatsApp, TikTok, Facebook, Instagram, YouTube, Pinterest et Google." },
 ];
 
 export function Solution() {
@@ -238,9 +238,9 @@ export function Solution() {
 /* ───────────────────────── Services ───────────────────────── */
 
 const SERVICES = [
-  { icon: Camera, title: "Photos", accent: "produit", text: "Placez votre produit dans une salle de bain de luxe, sur une plage ou en studio, sans shooting." },
-  { icon: Clapperboard, title: "Vidéos", accent: "UGC", text: "Des créateurs virtuels présentent votre produit face caméra, au format TikTok et Reels." },
-  { icon: Megaphone, title: "Publicités", accent: "prêtes", text: "Plusieurs variantes par plateforme : visuel, accroche, texte et bouton d'action." },
+  { icon: Camera, title: "Photos", accent: "produit", text: "Une photo prise au téléphone suffit : votre produit en studio, au marché ou porté par un mannequin africain." },
+  { icon: Clapperboard, title: "Vidéos", accent: "UGC", text: "Des créatrices et créateurs africains virtuels présentent votre produit face caméra, dans votre langue." },
+  { icon: Megaphone, title: "Publicités", accent: "prêtes", text: "Plusieurs variantes par plateforme, avec votre prix en FCFA et un bouton « Commander sur WhatsApp »." },
 ];
 
 export function Services() {

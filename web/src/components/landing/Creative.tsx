@@ -1,81 +1,90 @@
 import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type CreativeKind = "serum" | "sneaker" | "coffee" | "watch" | "perfume" | "phone" | "bag" | "juice";
+export type CreativeKind = "wax" | "shea" | "wig" | "phone" | "plate" | "jersey" | "fashion";
 
 export interface CreativeData {
   kind: CreativeKind;
   title: string;
   tag: string;
+  /** Where the creative is published (shown as a badge). */
   platform: string;
   bg: string;
   video?: boolean;
-  /** Real visual from /public, e.g. "/showcase/sneaker.mp4" or "/showcase/serum.jpg". Falls back to the CSS mockup when absent. */
+  /** Price tag shown on the visual, in local currency. */
+  price?: string;
+  /** Real visual from /public, e.g. "/showcase/food-street.mp4". Falls back to the CSS mockup when absent. */
   media?: string;
 }
 
-/** Example creatives shown in the hero carousel and the gallery marquee. Higgsfield Marketing Studio template previews, hotlinked and credited. */
+/**
+ * Example creatives for the hero carousel, the gallery marquee and the use cases: products local merchants
+ * actually sell. Items without `media` render a CSS mockup; drop a photo in /public/showcase and set `media`
+ * to replace it.
+ */
 export const CREATIVES: CreativeData[] = [
-  { kind: "serum", title: "Chilled Can", tag: "Photo produit", platform: "Higgsfield", bg: "from-[#2a1540] via-[#6b2fa8] to-[#e9b8ff]", media: "https://cdn.higgsfield.ai/cdn-cgi/image/width=720,quality=80,format=auto/marketing-studio-v2-product-shots-people/834bb6b2-3a9b-48dd-9889-6934c765ccc2.webp" },
-  { kind: "sneaker", title: "Wheatpaste Wall", tag: "Pub vidéo", platform: "Higgsfield", bg: "from-[#0f172a] via-[#1e3a8a] to-[#60a5fa]", video: true, media: "https://cdn.higgsfield.ai/marketing-studio-motion-preview/458431c6-813b-42b2-9adc-bbf380d8c106.mp4" },
-  { kind: "coffee", title: "Ice Cube Hover", tag: "Photo produit", platform: "Higgsfield", bg: "from-[#1c0f08] via-[#7c3f1d] to-[#f5c28b]", media: "https://cdn.higgsfield.ai/cdn-cgi/image/width=720,quality=80,format=auto/marketing-studio-v2-product-shot/941ef07a-c2ab-5a0e-ac67-4e6c762c8ef2.webp" },
-  { kind: "watch", title: "90s Bedroom CRT", tag: "Mixed media", platform: "Higgsfield", bg: "from-[#0b0b0b] via-[#3f3f46] to-[#d4d4d8]", video: true, media: "https://cdn.higgsfield.ai/marketing-studio-motion-preview/18bbd999-1cf7-429d-9e1d-67acf7d8769f.mp4" },
-  { kind: "perfume", title: "Brushed Tin", tag: "Photo lifestyle", platform: "Higgsfield", bg: "from-[#3b0a1e] via-[#9d174d] to-[#fbcfe8]", media: "https://cdn.higgsfield.ai/cdn-cgi/image/width=720,quality=80,format=auto/marketing-studio-v2-product-shots-people/862de749-aa5c-4816-b028-7e254d969759.webp" },
-  { kind: "phone", title: "Pixel Block Yard", tag: "Motion", platform: "Higgsfield", bg: "from-[#052e2b] via-[#0f766e] to-[#99f6e4]", video: true, media: "https://cdn.higgsfield.ai/marketing-studio-motion-preview/353daae1-e520-486b-b7d5-83f026169305.mp4" },
-  { kind: "bag", title: "Linen Lid Lift", tag: "Photo produit", platform: "Higgsfield", bg: "from-[#2b1a05] via-[#a16207] to-[#fde68a]", media: "https://cdn.higgsfield.ai/cdn-cgi/image/width=720,quality=80,format=auto/marketing-studio-v2-product-shot/36052145-6b41-51f2-95c1-7a0f0393a112.webp" },
-  { kind: "juice", title: "Monospace Callouts", tag: "Pub motion", platform: "Higgsfield", bg: "from-[#3a0d06] via-[#c2410c] to-[#fed7aa]", video: true, media: "https://cdn.higgsfield.ai/marketing-studio-motion-preview/aef59e19-f388-4dcc-b55a-e43a5c48c835.mp4" },
+  { kind: "wax", title: "Pagne wax 6 yards", tag: "Photo produit", platform: "Statut WhatsApp", price: "15 000 FCFA", bg: "from-[#3b1d0a] via-[#c2410c] to-[#fbbf24]" },
+  { kind: "plate", title: "Garba du maquis", tag: "Vidéo UGC", platform: "TikTok", video: true, bg: "from-[#1c0f08] via-[#7c3f1d] to-[#f5c28b]", media: "/showcase/food-street.mp4" },
+  { kind: "shea", title: "Beurre de karité pur", tag: "Photo produit", platform: "Instagram", price: "7 500 FCFA", bg: "from-[#2b1a05] via-[#a16207] to-[#fde68a]" },
+  { kind: "jersey", title: "Maillots de foot", tag: "Vidéo UGC", platform: "TikTok", video: true, bg: "from-[#052e16] via-[#15803d] to-[#fde047]", media: "/showcase/jersey-brazil.mp4" },
+  { kind: "wig", title: "Perruque lisse 22 pouces", tag: "Photo lifestyle", platform: "Instagram", price: "45 000 FCFA", bg: "from-[#3b0a1e] via-[#9d174d] to-[#fbcfe8]" },
+  { kind: "phone", title: "Boutique de téléphones", tag: "Pub produit", platform: "Facebook", price: "95 000 FCFA", bg: "from-[#0f172a] via-[#1e3a8a] to-[#60a5fa]" },
+  { kind: "plate", title: "Livraison de repas", tag: "Vidéo UGC", platform: "Statut WhatsApp", video: true, bg: "from-[#3a0d06] via-[#c2410c] to-[#fed7aa]", media: "/showcase/food-catch.mp4" },
+  { kind: "fashion", title: "Nouvel arrivage mode", tag: "Photo lifestyle", platform: "Instagram", bg: "from-[#0b0b0b] via-[#3f3f46] to-[#d4d4d8]", media: "/showcase/street-fashion.webp" },
 ];
 
+/** Repeating wax-print motif (concentric circles + diamonds), pure CSS. */
+const WAX_PATTERN =
+  "radial-gradient(circle at 25% 25%, #fde047 0 14%, #7c2d12 14% 20%, transparent 20%), radial-gradient(circle at 75% 75%, #16a34a 0 14%, #fde047 14% 20%, transparent 20%), conic-gradient(from 45deg at 50% 50%, #c2410c 0 25%, #1d4ed8 0 50%, #c2410c 0 75%, #1d4ed8 0)";
+
 function Product({ kind }: { kind: CreativeKind }) {
-  const glass = "bg-gradient-to-b from-white/70 to-white/25 border border-white/60 shadow-[0_20px_40px_rgba(0,0,0,0.35)] backdrop-blur-sm";
   switch (kind) {
-    case "serum":
+    case "wax":
       return (
-        <div className="flex w-full flex-col items-center">
-          <div className="w-[18%] aspect-[1/1.2] min-w-4 rounded-t-md bg-black/80" />
-          <div className={cn("w-[34%] aspect-[1/1.6] rounded-2xl", glass)} />
+        <div className="relative w-[62%] aspect-[1/1.1]">
+          {/* Folded stack of fabric */}
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="absolute inset-x-0 h-[34%] rounded-md border border-black/20 shadow-[0_10px_20px_rgba(0,0,0,0.35)]"
+              style={{ bottom: `${i * 30}%`, backgroundImage: WAX_PATTERN, backgroundSize: "28px 28px", filter: i === 1 ? "hue-rotate(140deg)" : i === 2 ? "hue-rotate(260deg)" : undefined }}
+            />
+          ))}
         </div>
       );
-    case "perfume":
+    case "shea":
       return (
         <div className="flex w-full flex-col items-center">
-          <div className="w-[16%] aspect-square rounded-sm bg-gradient-to-b from-amber-200 to-amber-500" />
-          <div className={cn("w-[46%] aspect-square rounded-[30%]", glass)} />
+          <div className="w-[46%] aspect-[1/0.28] rounded-t-lg bg-gradient-to-b from-amber-700 to-amber-900" />
+          <div className="relative w-[50%] aspect-[1/0.8] rounded-b-2xl rounded-t-sm bg-gradient-to-b from-[#fff7e6] to-[#f3dfb8] shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+            <div className="absolute inset-x-[14%] top-[28%] bottom-[28%] rounded-md bg-amber-800/85 flex items-center justify-center">
+              <span className="text-[9px] font-bold tracking-wide text-amber-100">KARITÉ</span>
+            </div>
+          </div>
         </div>
       );
-    case "sneaker":
-      return <div className="w-[70%] aspect-[2.4/1] rounded-[60%_40%_18%_18%] bg-gradient-to-br from-white to-slate-300 shadow-[0_20px_40px_rgba(0,0,0,0.45)] border-b-8 border-slate-900/80" />;
-    case "coffee":
+    case "wig":
       return (
-        <div className="relative w-[44%] aspect-[1/1.1]">
-          <div className="absolute inset-0 rounded-b-[40%] rounded-t-lg bg-gradient-to-b from-[#fff7ed] to-[#fcd9b0] shadow-[0_20px_40px_rgba(0,0,0,0.4)]" />
-          <div className="absolute -right-[22%] top-[22%] w-[34%] aspect-square rounded-full border-[6px] border-[#fcd9b0]" />
-        </div>
-      );
-    case "watch":
-      return (
-        <div className="flex w-full flex-col items-center">
-          <div className="w-[22%] aspect-[1/1] bg-zinc-800 rounded-t-md" />
-          <div className="w-[46%] aspect-square rounded-full bg-gradient-to-br from-zinc-100 to-zinc-400 border-[6px] border-zinc-800 shadow-[0_20px_40px_rgba(0,0,0,0.5)]" />
-          <div className="w-[22%] aspect-[1/1] bg-zinc-800 rounded-b-md" />
+        <div className="relative w-[48%] aspect-[1/1.5]">
+          <div className="absolute inset-x-0 top-0 h-[40%] rounded-t-full bg-gradient-to-b from-zinc-800 to-zinc-950" />
+          <div className="absolute inset-x-[-6%] top-[26%] bottom-0 rounded-b-[40%] bg-[repeating-linear-gradient(90deg,#18181b_0_6px,#3f3f46_6px_8px)] shadow-[0_20px_40px_rgba(0,0,0,0.45)]" />
+          <div className="absolute inset-x-[24%] top-[22%] h-[40%] rounded-full bg-[#8a5a3b]" />
         </div>
       );
     case "phone":
-      return <div className="w-[36%] aspect-[1/2] rounded-[22%/11%] bg-gradient-to-b from-zinc-900 to-black border-2 border-white/30 shadow-[0_20px_40px_rgba(0,0,0,0.5)]" />;
-    case "bag":
       return (
-        <div className="relative w-[50%] aspect-square mt-[10%]">
-          <div className="absolute left-1/2 -translate-x-1/2 -top-[26%] w-[46%] aspect-square rounded-full border-[6px] border-amber-900/80" />
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-amber-100 to-amber-300 shadow-[0_20px_40px_rgba(0,0,0,0.4)]" />
+        <div className="flex items-end gap-[6%] w-full justify-center">
+          {[0.82, 1, 0.82].map((scale, i) => (
+            <div key={i} className="w-[24%] aspect-[1/2] rounded-[22%/11%] bg-gradient-to-b from-zinc-800 to-black border-2 border-white/30 shadow-[0_20px_40px_rgba(0,0,0,0.5)]" style={{ transform: `scale(${scale})` }}>
+              <div className="m-[10%] h-[80%] rounded-[16%/8%] bg-gradient-to-br from-sky-400 to-fuchsia-500 opacity-80" />
+            </div>
+          ))}
         </div>
       );
-    case "juice":
-      return (
-        <div className="flex w-full flex-col items-center">
-          <div className="w-[20%] aspect-[1/0.5] rounded-t-sm bg-white/80" />
-          <div className={cn("w-[34%] aspect-[1/1.9] rounded-xl", glass, "from-orange-100/80 to-orange-300/50")} />
-        </div>
-      );
+    case "plate":
+    case "jersey":
+    case "fashion":
+      return <div className="w-[55%] aspect-square rounded-full bg-white/20 border border-white/30" />;
   }
 }
 
@@ -110,6 +119,9 @@ function Overlay({ data, compact }: { data: CreativeData; compact?: boolean }) {
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
       <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
         <span className="rounded-full bg-black/45 backdrop-blur px-2 py-0.5 text-[10px] font-medium text-white">{data.platform}</span>
+        {data.price && !data.video && (
+          <span className="ml-auto rotate-3 rounded-md bg-highlight px-2 py-0.5 text-[11px] font-extrabold text-white shadow-lg">{data.price}</span>
+        )}
         {data.video && (
           <span className="size-6 rounded-full bg-white/25 backdrop-blur flex items-center justify-center">
             <Play className="size-3 text-white fill-white" />
@@ -119,7 +131,7 @@ function Overlay({ data, compact }: { data: CreativeData; compact?: boolean }) {
       <div className={cn("absolute inset-x-0 bottom-0", compact ? "p-2.5" : "p-4")}>
         <p className={cn("font-semibold text-white leading-tight", compact ? "text-xs" : "text-base")}>{data.title}</p>
         {!compact && (
-          <span className="mt-2 inline-block rounded-full bg-white text-black px-3 py-1 text-[11px] font-medium">Acheter</span>
+          <span className="mt-2 inline-block rounded-full bg-[#25D366] text-black px-3 py-1 text-[11px] font-semibold">Commander sur WhatsApp</span>
         )}
       </div>
     </>

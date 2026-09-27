@@ -12,6 +12,9 @@ export const COPY_TOOLS: { id: CopyTool; label: string; description: string }[] 
   { id: "cta", label: "CTA", description: "Variantes d'appel à l'action." },
   { id: "ugc-script", label: "Script UGC", description: "Script créateur de 15 à 30 s." },
   { id: "landing-page", label: "Texte de landing page", description: "Hero, bénéfices, preuves, CTA." },
+  { id: "whatsapp-status", label: "Statuts WhatsApp", description: "Cinq statuts courts pour la semaine." },
+  { id: "whatsapp-catalog", label: "Fiche catalogue", description: "Nom, description et prix pour WhatsApp Business." },
+  { id: "voice-note", label: "Note vocale pub", description: "Script de 20 s à enregistrer et transférer dans vos groupes." },
 ];
 
 export const TONES: { id: Tone; label: string }[] = [
@@ -25,24 +28,25 @@ export const TONES: { id: Tone; label: string }[] = [
 ];
 
 export const hooks: string[] = [
-  "Personne ne vous dit ça sur les sérums à la vitamine C...",
-  "Vous l'utilisez mal depuis toujours.",
-  "POV : vous avez enfin trouvé le sérum qui marche vraiment.",
-  "J'ai arrêté ma routine en 10 étapes et j'ai fait ça à la place.",
-  "Les dermatos détestent à quel point c'est simple.",
-  "C'est la seule chose que j'ai changée. 30 jours plus tard...",
-  "Si votre peau est terne dès 15 h, regardez ça.",
-  "Le sérum à 48 $ qui a remplacé trois produits sur mon étagère.",
-  "Attendez l'éclat à la fin.",
-  "Arrêtez de scroller si vous n'avez jamais vu votre peau comme ça.",
-  "J'étais sceptique. Puis j'ai vu le septième jour.",
-  "Voici ce que veut vraiment dire un sérum « clean ».",
+  "Arrêtez de payer ce prix au marché…",
+  "Ma cliente m'a envoyé cette photo…",
+  "Personne ne vous dit ça avant d'acheter…",
+  "POV : tu as enfin trouvé le bon produit, au bon prix.",
+  "Le vendeur ne voulait pas que je montre ça.",
+  "J'ai testé pendant 7 jours. Voici le résultat.",
+  "Si tu es à Abidjan, regarde ça avant ce soir.",
+  "3 erreurs que tout le monde fait en achetant ça.",
+  "Le produit à 5 000 FCFA qui a remplacé trois autres chez moi.",
+  "On m'a posé la question 50 fois dans mes DM, je réponds ici.",
+  "Attends de voir la fin.",
+  "Livraison aujourd'hui, paiement à la réception. Oui, vraiment.",
 ];
 
 export const copySamples: CopyResult[] = [
-  { id: "copy_1", tool: "instagram-caption", title: "Légende lancement été", tone: "friendly", platform: "instagram", text: "Découvrez le sérum Luma Glow. Vitamine C stabilisée, fini léger et un éclat que vous remarquerez dès le septième jour. Semaine de lancement : -20 %, lien en bio.\n\n#lumaskin #vitaminc #glowup #skincareroutine", createdAt: daysAgo(1) },
-  { id: "copy_2", tool: "product-description", title: "Description fiche produit", tone: "professional", text: "Le sérum Luma Glow est un sérum illuminateur à la vitamine C conçu pour les routines de soin quotidiennes. Sa formule stabilisée à 12 % cible le teint terne et irrégulier, tandis que l'acide hyaluronique garde la peau confortable. Clean, sans parfum et assez léger pour s'appliquer sous un SPF.", createdAt: daysAgo(2) },
-  { id: "copy_3", tool: "email", title: "Annonce de lancement", tone: "urgent", text: "Objet : Votre éclat est arrivé (-20 % jusqu'à dimanche)\n\nAlex,\n\nLe sérum Luma Glow est disponible. La vitamine C bien faite : lumineuse, unifiante, au quotidien. Le prix de lancement prend fin dimanche à minuit.\n\nJe commande →", createdAt: daysAgo(3) },
-  { id: "copy_4", tool: "ugc-script", title: "Script routine matinale de Maya", tone: "friendly", platform: "tiktok", text: "[Accroche] Personne ne vous dit ça sur les sérums à la vitamine C...\n[Démo] Deux gouttes. C'est tout. Tapotez avant le SPF.\n[Preuve] Septième jour et ma peau a l'air réveillée avant même le café.\n[CTA] Le lien est dans ma bio, la réduction de lancement se termine dimanche.", createdAt: daysAgo(4) },
-  { id: "copy_5", tool: "headline", title: "Propositions de titres", tone: "bold", text: "1. Un éclat visible en 7 jours\n2. La vitamine C. Bien faite.\n3. Vos matins deviennent plus lumineux\n4. Un sérum. Zéro prise de tête.\n5. Le dernier sérum que vous adopterez", createdAt: daysAgo(5) },
+  { id: "copy_1", tool: "whatsapp-status", title: "Statuts lancement karité", tone: "friendly", platform: "whatsapp", language: "fr", text: "Lundi : Il est arrivé ! Le beurre de karité pur Karité d'Or.\nMardi : 100 % naturel, sans mélange, direct de Korhogo.\nMercredi : Peau sèche ? Cheveux cassants ? Un seul pot suffit.\nJeudi : Pot de 250 g à 7 500 FCFA. Livraison partout à Abidjan.\nVendredi : Derniers pots du premier arrivage. Écris-moi « KARITÉ » pour commander.", createdAt: daysAgo(1) },
+  { id: "copy_2", tool: "whatsapp-catalog", title: "Fiche catalogue WhatsApp Business", tone: "professional", platform: "whatsapp", language: "fr", text: "Beurre de karité pur — 250 g\n\nBeurre de karité non raffiné, fabriqué par une coopérative de femmes à Korhogo. Nourrit la peau sèche, adoucit les talons et protège les cheveux crépus. Sans parfum ajouté, sans produit chimique.\n\nPrix : 7 500 FCFA\nLivraison Abidjan : 1 000 FCFA, paiement Wave ou Orange Money.", createdAt: daysAgo(2) },
+  { id: "copy_3", tool: "ad-copy", title: "Pub Facebook promo Tabaski", tone: "urgent", platform: "facebook", language: "fr", text: "Titre : -20 % sur tout Karité d'Or pour la Tabaski\n\nPour la fête, faites-vous belle au naturel. Beurre de karité, savon noir et huiles cheveux à -20 % jusqu'à dimanche minuit. Le pot de karité passe à 6 000 FCFA au lieu de 7 500 FCFA.\n\nCommandez sur WhatsApp, livraison le jour même à Abidjan.", createdAt: daysAgo(3) },
+  { id: "copy_4", tool: "ugc-script", title: "Script routine du matin d'Aïcha", tone: "friendly", platform: "tiktok", language: "fr", text: "[Accroche] Arrêtez de payer ce prix au marché…\n[Démo] Une noisette de karité, je chauffe entre mes mains, j'applique sur les bras et les pointes.\n[Preuve] Une semaine après, ma peau ne tire plus et mes cheveux cassent beaucoup moins.\n[CTA] Le numéro WhatsApp est dans ma bio, le pot est à 7 500 FCFA.", createdAt: daysAgo(4) },
+  { id: "copy_5", tool: "voice-note", title: "Note vocale arrivage savon noir", tone: "friendly", platform: "whatsapp", language: "fr", text: "Bonjour la famille, c'est Awa de Karité d'Or ! Le savon noir est enfin revenu. Il nettoie en douceur, il sent bon, et il est fait à la main. Le morceau est à 2 500 FCFA, et si tu prends trois, je te fais 6 500. Réponds juste à ce message et on te livre aujourd'hui. Merci et bonne journée !", createdAt: daysAgo(5) },
+  { id: "copy_6", tool: "headline", title: "Propositions de titres", tone: "bold", language: "fr", text: "1. Une peau douce en 7 jours\n2. Le vrai karité, sans mélange\n3. Fait à Abidjan, pour ta peau\n4. Un pot. Toute la famille.\n5. Le karité que ta maman reconnaîtrait", createdAt: daysAgo(6) },
 ];

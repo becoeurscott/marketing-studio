@@ -3,7 +3,7 @@
 import { Check, ImagePlus, Loader2, Upload } from "lucide-react";
 import { useMemo, useRef, useState, type DragEvent } from "react";
 import { useToast } from "@/components/ui/Toast";
-import { uploadProduct } from "@/lib/api";
+import { uploadProduct, uploadSummary } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import type { Asset } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -33,7 +33,7 @@ export function ProductPicker({ value, onChange, limit = 8, allowUpload = true }
     try {
       const asset = await uploadProduct({ name: f.name, size: f.size }, setUploading);
       onChange(asset);
-      toast.success("Produit importé", asset.name);
+      toast.success("Produit importé", uploadSummary(asset));
     } catch {
       toast.error("Échec de l'import", "Veuillez réessayer.");
     } finally {

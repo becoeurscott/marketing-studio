@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Download, Megaphone, Pencil, RefreshCw, Save, Sparkles } from "lucide-react";
+import { Copy, Download, Megaphone, MessageCircle, Pencil, RefreshCw, Save, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Canvas, ControlField, ErrorState, StudioControls } from "@/components/creative";
 import { PageHeader } from "@/components/shell/PageHeader";
@@ -16,11 +16,14 @@ import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
 import { exportAssets, generateAds } from "@/lib/api";
 import { useTemplatePreset } from "@/components/studio/useTemplatePreset";
-import { useStore } from "@/lib/store";
+import { Toggle } from "@/components/account/Toggle";
+import { CURRENCIES, countryOf, formatMoney, whatsappLink } from "@/lib/market";
+import { selectCountry, selectCurrentBrand, useStore } from "@/lib/store";
 import { CREDIT_COSTS, PLATFORMS, type AdFormat, type AdVariation, type Platform } from "@/lib/types";
 import { cn, uid } from "@/lib/utils";
 
 const FORMATS: { value: AdFormat; label: string }[] = [
+  { value: "status", label: "Statut WhatsApp" }, { value: "catalog", label: "Fiche catalogue" }, { value: "flyer", label: "Flyer / affiche" },
   { value: "image", label: "Image" }, { value: "video", label: "Vidéo" }, { value: "carousel", label: "Carrousel" },
   { value: "story", label: "Story" }, { value: "reel", label: "Reel" }, { value: "short", label: "Short" },
 ];
@@ -28,7 +31,9 @@ const formatLabel = (f: AdFormat) => FORMATS.find((x) => x.value === f)?.label ?
 
 /** Frame aspect + chrome per platform/format. */
 function frameFor(platform: Platform, format: AdFormat): { ratio: string; label: string } {
-  if (["story", "reel", "short"].includes(format) || platform === "tiktok") return { ratio: "aspect-[9/16]", label: "9:16" };
+  if (format === "flyer") return { ratio: "aspect-[1/1.414]", label: "A4 / A5" };
+  if (format === "catalog") return { ratio: "aspect-square", label: "1:1" };
+  if (["story", "reel", "short", "status"].includes(format) || platform === "tiktok" || platform === "whatsapp") return { ratio: "aspect-[9/16]", label: "9:16" };
   if (platform === "youtube" || platform === "google") return { ratio: "aspect-[16/9]", label: "16:9" };
   if (platform === "pinterest") return { ratio: "aspect-[2/3]", label: "2:3" };
   return { ratio: "aspect-[4/5]", label: "4:5" };
@@ -42,13 +47,23 @@ export default function AdsPage() {
   const addAsset = useStore((s) => s.addAsset);
   const addGeneration = useStore((s) => s.addGeneration);
 
+  const brand = useStore(selectCurrentBrand);
+  const country = countryOf(useStore(selectCountry));
+  const currency = CURRENCIES[country.currency];
+
   const { template, preset } = useTemplatePreset("ads");
-  const [platform, setPlatform] = useState<Platform>(preset?.platform ?? "instagram");
-  const [format, setFormat] = useState<AdFormat>(preset?.format ?? "image");
-  const [product, setProduct] = useState("Montre Premium");
-  const [offer, setOffer] = useState("-20 % pour le lancement");
-  const [audience, setAudience] = useState("Hommes 25–40 ans");
-  const [cta, setCta] = useState("Acheter maintenant");
+  const [platform, setPlatform] = useState<Platform>(preset?.platform ?? "whatsapp");
+  const [format, setFormat] = useState<AdFormat>(preset?.format ?? "status");
+  const [product, setProduct] = useState("Pagne wax 6 yards");
+  const [price, setPrice] = useState("15000");
+  const [offer, setOffer] = useState("Livraison offerte cette semaine");
+  const [audience, setAudience] = useState("Femmes 25–45 ans");
+  const [cta, setCta] = useState("Commander sur WhatsApp");
+  const [waButton, setWaButton] = useState(true);
+  const [waNumber, setWaNumber] = useState(brand?.whatsapp ?? `+${country.dialCode} `);
+  const priceLabel = price.trim() ? formatMoney(Number(price.replace(/\D/g, "")) || 0, country.currency) : "";
+  const orderLink = whatsappLink(waNumber, `Bonjour, je souhaite commander : ${product}${priceLabel ? ` (${priceLabel})` : ""}. J'ai vu votre publicité.`);
+  const waReady = waNumber.replace(/\D/g, "").length >= 8;
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [variations, setVariations] = useState<AdVariation[]>([]);
   const [editing, setEditing] = useState<AdVariation | null>(null);
@@ -62,7 +77,7 @@ export default function AdsPage() {
     if (!product.trim()) { toast.error("Ajoutez d'abord un nom de produit"); return; }
     setPhase({ kind: "loading" });
     try {
-      const results = await generateAds({ platform, format, product, offer, audience, cta, projectId: currentProjectId });
+      const results = await generateAds({ platform, format, product, offer, audience, cta, price: priceLabel || undefined, projectId: currentProjectId });
       setVariations(results);
       setSaved([]);
       setPhase({ kind: "done" });
@@ -113,16 +128,21 @@ export default function AdsPage() {
       <ControlField label="Format">
         <ChipGroup size="sm" options={FORMATS} value={format} onChange={setFormat} />
       </ControlField>
-      <Input label="Produit" value={product} onChange={(e) => setProduct(e.target.value)} placeholder="Montre Premium" />
-      <Input label="Offre" value={offer} onChange={(e) => setOffer(e.target.value)} placeholder="-20 % pour le lancement" />
-      <Input label="Audience cible" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="Hommes 25–40 ans" />
-      <Input label="Appel à l'action" value={cta} onChange={(e) => setCta(e.target.value)} placeholder="Acheter maintenant" />
+      <Input label="Produit" value={product} onChange={(e) => setProduct(e.target.value)} placeholder="Pagne wax 6 yards" />
+      <Input label={`Prix affiché sur le visuel (${currency.symbol})`} inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="15000" hint={priceLabel ? `Affiché : ${priceLabel}` : "Laissez vide pour ne pas afficher de prix."} />
+      <Input label="Offre" value={offer} onChange={(e) => setOffer(e.target.value)} placeholder="Livraison offerte cette semaine" />
+      <Input label="Audience cible" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="Femmes 25–45 ans" />
+      <Input label="Appel à l'action" value={cta} onChange={(e) => setCta(e.target.value)} placeholder="Commander sur WhatsApp" />
+      <div className="rounded-md border border-border bg-surface px-3">
+        <Toggle label="Bouton « Commander sur WhatsApp »" description="Le client arrive dans votre discussion avec un message déjà rempli." checked={waButton} onChange={setWaButton} />
+        {waButton && <Input className="pb-3" label="Votre numéro WhatsApp" inputMode="tel" value={waNumber} onChange={(e) => setWaNumber(e.target.value)} placeholder={`+${country.dialCode} 07 00 00 00 00`} />}
+      </div>
     </>
   );
 
   return (
     <>
-      <PageHeader title="Créateur de pubs" description="Quatre variantes créatives pour chaque plateforme, prêtes à modifier et exporter." eyebrow={<div className="flex flex-wrap items-center gap-1.5"><Badge tone="accent">Studio · Pubs</Badge>{template && <Badge tone="outline">Modèle · {template.title}</Badge>}</div>} />
+      <PageHeader title="Créateur de pubs" description="Quatre variantes pour WhatsApp, Facebook, TikTok et les autres, avec votre prix et un bouton de commande." eyebrow={<div className="flex flex-wrap items-center gap-1.5"><Badge tone="accent">Studio · Pubs</Badge>{template && <Badge tone="outline">Modèle · {template.title}</Badge>}</div>} />
       <StudioControls title="Paramètres de la pub" controls={controls} generateLabel={phase.kind === "done" ? "Régénérer" : "Générer les pubs"} generateIcon={Sparkles} onGenerate={generate} loading={loading} cost={CREDIT_COSTS.ads} />
 
       <Canvas>
@@ -161,7 +181,10 @@ export default function AdsPage() {
                         </div>
                         <div className={cn("relative rounded-md overflow-hidden bg-elevated", frame.ratio)}>
                           <img src={v.visual} alt={`Création ${v.label}`} className="size-full object-cover" />
-                          {["story", "reel", "short"].includes(format) && (
+                          {priceLabel && (
+                            <span className="absolute top-3 right-3 rotate-3 rounded-md bg-highlight px-2.5 py-1 text-sm font-extrabold text-white shadow-lg tabular-nums">{priceLabel}</span>
+                          )}
+                          {["story", "reel", "short", "status", "flyer"].includes(format) && (
                             <div className="absolute bottom-3 left-3 right-3 text-white drop-shadow"><p className="text-sm font-bold leading-tight">{v.headline}</p></div>
                           )}
                           {exporting[v.id] !== undefined && (
@@ -172,7 +195,20 @@ export default function AdsPage() {
                       <div className="p-3 flex-1">
                         <p className="text-sm font-semibold leading-snug">{v.headline}</p>
                         <p className="text-[13px] text-text2 mt-1 line-clamp-3">{v.primaryText}</p>
-                        <span className="inline-flex mt-3 h-8 items-center px-3 rounded-sm bg-elevated border border-border-strong text-xs font-medium">{v.cta}</span>
+                        {waButton ? (
+                          <a
+                            href={waReady ? orderLink : undefined}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-disabled={!waReady}
+                            title={waReady ? "Tester le lien de commande" : "Ajoutez votre numéro WhatsApp"}
+                            className={cn("inline-flex mt-3 h-8 items-center gap-1.5 px-3 rounded-full bg-[#25D366] text-black text-xs font-semibold", !waReady && "opacity-50 pointer-events-none")}
+                          >
+                            <MessageCircle className="size-3.5" /> Commander sur WhatsApp
+                          </a>
+                        ) : (
+                          <span className="inline-flex mt-3 h-8 items-center px-3 rounded-sm bg-elevated border border-border-strong text-xs font-medium">{v.cta}</span>
+                        )}
                       </div>
                       <div className="flex items-center justify-between gap-1 px-2 py-2 border-t border-border">
                         <IconButton label="Modifier" size="sm" onClick={() => setEditing(v)}><Pencil /></IconButton>

@@ -57,7 +57,7 @@ function ProjectForm({ project, onClose }: { project?: Project | null; onClose: 
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <Input label="Nom" name="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Lancement d'été Luma Glow" error={error} autoFocus />
+      <Input label="Nom" name="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Promo Tabaski Karité d'Or" error={error} autoFocus />
       <Textarea label="Description" name="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="À quoi sert ce projet ?" />
       <Select label="Marque" name="brand" value={brandId} onChange={(e) => setBrandId(e.target.value)} options={brands.map((b) => ({ value: b.id, label: b.name }))} />
       <div className="flex items-center justify-end gap-2 pt-2">

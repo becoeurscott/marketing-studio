@@ -3,10 +3,10 @@ import { avatar, daysAgo } from "@/lib/utils";
 
 export const currentUser: User = {
   id: "user_alex",
-  name: "Alex Carter",
-  email: "alex@northstarcreative.co",
-  company: "Northstar Creative",
-  role: "Fondateur",
+  name: "Awa Koné",
+  email: "awa@karitedor.example",
+  company: "Karité d'Or",
+  role: "Fondatrice",
   avatarUrl: avatar(12),
   createdAt: daysAgo(210),
 };

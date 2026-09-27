@@ -85,7 +85,7 @@ export function Creations() {
               prêts à publier
             </>
           }
-          text="Chaque création est pensée pour sa plateforme : bon format, bon cadrage, bonne accroche. Aperçu de modèles Marketing Studio, propulsés par Higgsfield, disponibles dans Sokozia."
+          text="Chaque création est pensée pour sa plateforme : statut WhatsApp, TikTok, Facebook ou Instagram. Bon format, bon cadrage, bonne accroche, et votre prix bien visible."
         />
         <Reveal className="mt-8 flex justify-center">
           <CtaButton href={DEMO_HREF}>Créer les miens</CtaButton>
@@ -99,7 +99,7 @@ export function Creations() {
                 <Creative data={c} className="aspect-[9/14] w-full" />
                 <div className="px-2 pb-2 pt-4">
                   <p className="text-sm font-medium">{c.tag}</p>
-                  <p className="mt-0.5 text-xs text-muted">Format {c.platform}</p>
+                  <p className="mt-0.5 text-xs text-muted">{c.title} · {c.platform}</p>
                 </div>
               </div>
             ))}
@@ -113,11 +113,11 @@ export function Creations() {
 /* ───────────────────────── Use cases ───────────────────────── */
 
 const CASES = [
-  { creative: CREATIVES[0], sector: "Beauté & cosmétique", title: "Des photos produit dignes d'un magazine", text: "Mettez vos sérums et crèmes en scène dans des décors luxueux, sans louer de studio." },
-  { creative: CREATIVES[1], sector: "Mode & sport", title: "Des pubs vidéo qui donnent envie", text: "Des vidéos dynamiques pour TikTok et Reels, déclinées en plusieurs variantes." },
-  { creative: CREATIVES[2], sector: "Restauration", title: "Des visuels qui ouvrent l'appétit", text: "Menus, plats du jour, promos : du contenu frais chaque semaine." },
-  { creative: CREATIVES[5], sector: "Tech & e-commerce", title: "Des démos produit claires", text: "Vidéos UGC et carrousels qui expliquent votre produit en quelques secondes." },
-  { creative: CREATIVES[6], sector: "Boutiques & créateurs", title: "Des lancements qui font du bruit", text: "Une campagne complète pour chaque nouvelle collection." },
+  { creative: CREATIVES[0], sector: "Couture & wax", title: "Vos pagnes et tenues, mis en valeur", text: "Photos portées, fiches catalogue WhatsApp et statuts prêts pour Tabaski ou la Korité." },
+  { creative: CREATIVES[1], sector: "Restauration & maquis", title: "Des plats qui donnent faim", text: "Plat du jour, menu, livraison : une vidéo fraîche chaque semaine pour vos statuts et TikTok." },
+  { creative: CREATIVES[2], sector: "Cosmétiques", title: "Vos soins comme en magazine", text: "Karité, savon noir, huiles : des packshots propres, sans louer de studio." },
+  { creative: CREATIVES[5], sector: "Téléphones & électronique", title: "Votre vitrine, prix affichés", text: "Pubs Facebook et flyers avec les prix en FCFA et les facilités de paiement." },
+  { creative: CREATIVES[4], sector: "Coiffure & beauté", title: "Chaque nouvel arrivage vendu vite", text: "Perruques, tresses, mèches : avant/après et vidéos UGC avec des créatrices africaines." },
 ];
 
 function CaseCard({ c, large }: { c: (typeof CASES)[number]; large?: boolean }) {

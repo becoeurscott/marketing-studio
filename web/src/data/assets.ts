@@ -7,20 +7,20 @@ const projectIds = [
 ];
 
 const imageNames = [
-  "Sérum hero — marbre", "Sérum sur serviette de plage", "Sérum et agrumes", "Nature morte étagère salle de bain",
-  "Packshot heure dorée", "Packshot studio fond blanc", "Main tenant le sérum", "Macro goutte de sérum",
-  "Routine matinale lifestyle", "Flatlay sur lin", "Photo studio néon", "Portrait éditorial avec produit",
-  "Versement de cold brew", "Gros plan latte art", "Sachet de café sur comptoir", "Macro crema d'espresso",
-  "Coureur à l'aube", "Plan salle de sport", "Sprint en flou de mouvement", "Couloir de piste vu du dessus",
-  "Montre au poignet — manchette", "Macro cadran de montre", "Montre sur cuir", "Déballage de l'écrin",
-  "Coffret cadeau vu du dessus", "Ruban et boîte", "Nature morte fenêtre enneigée", "Bougie et sérum",
-  "Flacon SPF sur le sable", "Texture crème solaire", "Produit au bord de la piscine", "Lunettes de soleil et sérum",
+  "Pot de karité — pagne bogolan", "Pot de karité au soleil", "Karité et noix de karité", "Étagère salle de bain, pot et savon noir",
+  "Packshot fin d'après-midi", "Packshot studio fond blanc", "Main qui prend le karité", "Macro texture du beurre",
+  "Routine du matin lifestyle", "Flatlay sur pagne wax", "Photo studio fond ocre", "Portrait de cliente avec le pot",
+  "Attiéké poisson braisé", "Alloco bien doré", "Poulet braisé et piment", "Jus de bissap en bouteille",
+  "Pagne wax plié en boutique", "Mannequin en tenue wax", "Rouleaux de wax colorés", "Vitrine tissus vue du dessus",
+  "Smartphone en main — marché", "Macro écran de téléphone", "Téléphones sur comptoir", "Déballage d'un téléphone",
+  "Coffret fête des mères vu du dessus", "Ruban et panier tressé", "Coffret sur table en bois", "Savon noir et bougie",
+  "Stand au marché de Treichville", "Texture du savon noir", "Pot de karité au bord de la lagune", "Karité et huile de coco",
 ];
 
 const videoNames = [
-  "UGC — Routine matinale de Maya", "UGC — Sac de sport de Jordan", "UGC — GRWM de Sofia", "UGC — Avis de Marcus",
-  "Reel produit — orbite lente", "Reel produit — travelling avant", "Spot cold brew 15 s", "Histoire du fondateur — montage 1",
-  "Histoire du fondateur — montage 2", "Montre cinématique 10 s", "Fitness énergique 9:16", "Boucle goutte de sérum",
+  "UGC — Routine du matin d'Aïcha", "UGC — Avis de Kofi sur le savon noir", "UGC — Préparation de Fatou", "UGC — Test de Moussa",
+  "Vidéo produit — rotation du pot", "Vidéo produit — travelling avant", "Spot attiéké 15 s", "Histoire de la fondatrice — montage 1",
+  "Histoire de la fondatrice — montage 2", "Arrivage téléphones 10 s", "Défilé wax 9:16", "Boucle texture karité",
 ];
 
 function make(i: number, type: AssetType, name: string, opts: Partial<Asset> = {}): Asset {
@@ -48,9 +48,9 @@ function make(i: number, type: AssetType, name: string, opts: Partial<Asset> = {
 
 const images = imageNames.map((n, i) => make(i, "image", n));
 const videos = videoNames.map((n, i) => make(i + 100, "video", n));
-const audio = ["Fond pop entraînant", "Boucle piano douce", "Matin lo-fi", "Montée cinématique"].map((n, i) => make(i + 200, "audio", n, { thumbnail: img(`audio-${i}`, 800, 800), url: img(`audio-${i}`, 800, 800) }));
-const logos = ["Logotype Luma", "Icône Luma", "Logo Urban Coffee"].map((n, i) => make(i + 300, "logo", n, { projectId: null, thumbnail: img(`logo-${i}`, 800, 800) }));
+const audio = ["Afrobeat entraînant", "Boucle kora douce", "Coupé-décalé festif", "Montée percussions"].map((n, i) => make(i + 200, "audio", n, { thumbnail: img(`audio-${i}`, 800, 800), url: img(`audio-${i}`, 800, 800) }));
+const logos = ["Logotype Karité d'Or", "Icône Karité d'Or", "Logo Chez Tantie Rose"].map((n, i) => make(i + 300, "logo", n, { projectId: null, thumbnail: img(`logo-${i}`, 800, 800) }));
 const brandAssets = ["Palette de marque", "Spécimen typographique", "Gabarit d'emballage"].map((n, i) => make(i + 400, "brand", n, { projectId: null, thumbnail: img(`brand-${i}`, 800, 800) }));
-const exportsList = ["Lancement été — carrousel IG.zip", "Pubs UGC — TikTok.mp4", "Présentation campagne.pdf", "Reel montre — 4K.mp4"].map((n, i) => make(i + 500, "export", n, { thumbnail: img(`export-${i}`, 800, 1000) }));
+const exportsList = ["Lancement karité — statuts WhatsApp.zip", "Témoignages — TikTok.mp4", "Flyer marché Treichville.pdf", "Arrivage téléphones — HD.mp4"].map((n, i) => make(i + 500, "export", n, { thumbnail: img(`export-${i}`, 800, 1000) }));
 
 export const assets: Asset[] = [...images, ...videos, ...audio, ...logos, ...brandAssets, ...exportsList];

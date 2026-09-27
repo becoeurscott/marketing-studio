@@ -4,19 +4,19 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-/* Higgsfield Marketing Studio preview assets (same as landing/Creative.tsx). */
+/* Local showcase media (web/public/showcase): posters are frames of the matching videos. */
 export const MEDIA = {
   photos: [
-    "https://cdn.higgsfield.ai/cdn-cgi/image/width=720,quality=80,format=auto/marketing-studio-v2-product-shots-people/834bb6b2-3a9b-48dd-9889-6934c765ccc2.webp",
-    "https://cdn.higgsfield.ai/cdn-cgi/image/width=720,quality=80,format=auto/marketing-studio-v2-product-shot/941ef07a-c2ab-5a0e-ac67-4e6c762c8ef2.webp",
-    "https://cdn.higgsfield.ai/cdn-cgi/image/width=720,quality=80,format=auto/marketing-studio-v2-product-shots-people/862de749-aa5c-4816-b028-7e254d969759.webp",
-    "https://cdn.higgsfield.ai/cdn-cgi/image/width=720,quality=80,format=auto/marketing-studio-v2-product-shot/36052145-6b41-51f2-95c1-7a0f0393a112.webp",
+    "/showcase/jersey-france-poster.webp",
+    "/showcase/food-street-poster.jpg",
+    "/showcase/street-fashion.webp",
+    "/showcase/jersey-brazil-poster.jpg",
   ],
   videos: [
-    "https://cdn.higgsfield.ai/marketing-studio-motion-preview/458431c6-813b-42b2-9adc-bbf380d8c106.mp4",
-    "https://cdn.higgsfield.ai/marketing-studio-motion-preview/18bbd999-1cf7-429d-9e1d-67acf7d8769f.mp4",
-    "https://cdn.higgsfield.ai/marketing-studio-motion-preview/353daae1-e520-486b-b7d5-83f026169305.mp4",
-    "https://cdn.higgsfield.ai/marketing-studio-motion-preview/aef59e19-f388-4dcc-b55a-e43a5c48c835.mp4",
+    "/showcase/jersey-france.mp4",
+    "/showcase/food-street.mp4",
+    "/showcase/jersey-brazil.mp4",
+    "/showcase/food-catch.mp4",
   ],
 };
 
@@ -29,9 +29,9 @@ export interface ProductInfo {
 }
 
 export const SAMPLE_PRODUCT: ProductInfo = {
-  name: "Luma Glow Serum",
-  category: "Soin · Beauté",
-  description: "Un sérum éclat léger qui illumine le teint dès la première application.",
+  name: "Maillot de foot 2026",
+  category: "Mode · Sport",
+  description: "Le maillot de la saison, tissu respirant, toutes les tailles en stock.",
   image: MEDIA.photos[0],
   sample: true,
 };

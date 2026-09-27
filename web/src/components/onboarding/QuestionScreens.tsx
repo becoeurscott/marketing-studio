@@ -39,6 +39,7 @@ export function GoalScreen({ value, onChange, onNext }: { value: string | null; 
 
 /* 5. Platforms */
 const PLATFORMS: { value: Platform; label: string }[] = [
+  { value: "whatsapp", label: "WhatsApp" },
   { value: "tiktok", label: "TikTok" },
   { value: "instagram", label: "Instagram" },
   { value: "facebook", label: "Facebook" },
@@ -49,6 +50,7 @@ const PLATFORMS: { value: Platform; label: string }[] = [
 
 export function platformFeedback(p: Platform[]): string | null {
   if (p.length === 0) return null;
+  if (p.includes("whatsapp")) return "Parfait. Je prépare des statuts 9:16, des fiches catalogue et un bouton « Commander sur WhatsApp ».";
   const vertical = p.filter((x) => x === "tiktok" || x === "instagram").length;
   if (vertical && p.length === vertical) return "Parfait. J'optimise la campagne pour le format vertical court.";
   if (p.includes("youtube") && vertical) return "Bien vu. Je prépare du vertical court et du format horizontal 16:9.";

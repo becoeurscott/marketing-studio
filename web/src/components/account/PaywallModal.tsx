@@ -9,6 +9,7 @@ import { plans } from "@/data";
 import { useStore } from "@/lib/store";
 import { CREDIT_COSTS, type CreditAction, type PlanId } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
+import { useMoney } from "./PaymentMethodPicker";
 
 export type PaywallReason = "credits" | "plan";
 
@@ -38,6 +39,7 @@ export function PaywallModal({ open, onClose, reason = "credits", required = 0, 
   const plan = useStore((s) => s.plan);
   const target = plans.find((p) => p.id === requiredPlan) ?? plans[1];
   const isCredits = reason === "credits";
+  const money = useMoney();
 
   const go = (href: string) => { onClose(); router.push(href); };
 
@@ -51,7 +53,7 @@ export function PaywallModal({ open, onClose, reason = "credits", required = 0, 
         <p className="text-sm text-text2 mt-1.5">
           {isCredits
             ? <>{feature ?? "Cette action"} coûte <span className="text-text font-medium">{formatNumber(required)}</span> crédits. Vous en avez <span className="text-text font-medium">{formatNumber(credits)}</span>.</>
-            : <>Vous êtes sur le forfait <span className="text-text font-medium capitalize">{plan}</span>. Passez à {target.name} ({target.priceMonthly} $/mois) pour la débloquer.</>}
+            : <>Vous êtes sur le forfait <span className="text-text font-medium capitalize">{plan}</span>. Passez à {target.name} ({money(target.priceXof)}/mois) pour la débloquer.</>}
         </p>
         {!isCredits && (
           <ul className="mt-4 text-left space-y-1.5 text-[13px] text-text2 bg-surface border border-border rounded-md p-3">
@@ -61,7 +63,7 @@ export function PaywallModal({ open, onClose, reason = "credits", required = 0, 
           </ul>
         )}
         <div className="mt-5 flex flex-col gap-2">
-          <Button fullWidth onClick={() => go(isCredits ? "/credits" : "/pricing")}>{isCredits ? "Acheter des crédits" : `Passer à ${target.name}`}</Button>
+          <Button fullWidth onClick={() => go(isCredits ? "/credits" : "/pricing")}>{isCredits ? "Recharger (dès 1 000 FCFA)" : `Passer à ${target.name}`}</Button>
           <Button fullWidth variant="ghost" onClick={() => go(isCredits ? "/pricing" : "/credits")}>{isCredits ? "Voir les forfaits" : "Acheter plutôt des crédits"}</Button>
         </div>
       </div>

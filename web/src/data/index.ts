@@ -9,6 +9,6 @@ export { brand, brands } from "./brand";
 export { notifications } from "./notifications";
 export { copySamples, hooks, COPY_TOOLS, TONES } from "./copy";
 export { analytics, trendingFormats } from "./analytics";
-export { creditTransactions, creditPacks, STARTING_CREDITS } from "./credits";
+export { creditTransactions, STARTING_CREDITS } from "./credits";
 export { plans } from "./plans";
 export { workspace } from "./workspace";

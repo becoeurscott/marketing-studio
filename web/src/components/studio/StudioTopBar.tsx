@@ -100,7 +100,8 @@ function ProjectPickerModal({ open, onClose, projects, currentId, onPick }: { op
 export function ExportModal({ open, onClose, getAsset, kind }: { open: boolean; onClose: () => void; getAsset: () => Asset | null; kind: "image" | "video" }) {
   const toast = useToast();
   const [format, setFormat] = useState<ExportParams["format"]>(kind === "video" ? "mp4" : "png");
-  const [quality, setQuality] = useState<ExportParams["quality"]>("high");
+  const lightByDefault = useStore((s) => s.preferences.lightVideos ?? true);
+  const [quality, setQuality] = useState<ExportParams["quality"]>(kind === "video" && lightByDefault ? "light" : "high");
   const [progress, setProgress] = useState<{ pct: number; label: string } | null>(null);
   const [done, setDone] = useState<Asset | null>(null);
 
@@ -125,7 +126,7 @@ export function ExportModal({ open, onClose, getAsset, kind }: { open: boolean; 
     <Modal open={open} onClose={onClose} title="Exporter" description="Exportez le résultat sélectionné." size="sm" footer={<><Button variant="ghost" onClick={onClose}>Fermer</Button><Button onClick={run} loading={!!progress} leftIcon={<Download className="size-4" />}>Exporter</Button></>}>
       <div className="grid grid-cols-2 gap-3">
         <Select label="Format" name="format" value={format} onChange={(e) => setFormat(e.target.value as ExportParams["format"])} options={formats} />
-        <Select label="Qualité" name="quality" value={quality} onChange={(e) => setQuality(e.target.value as ExportParams["quality"])} options={[{ value: "standard", label: "Standard" }, { value: "high", label: "Haute" }, { value: "maximum", label: "Maximale" }]} />
+        <Select label="Qualité" name="quality" value={quality} onChange={(e) => setQuality(e.target.value as ExportParams["quality"])} options={[{ value: "light", label: "Légère (WhatsApp, data réduite)" }, { value: "standard", label: "Standard" }, { value: "high", label: "Haute" }, { value: "maximum", label: "Maximale" }]} />
       </div>
       {progress && <ProgressBar value={progress.pct} label={progress.label} className="mt-4" />}
       {done && (

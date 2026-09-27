@@ -168,7 +168,7 @@ export function CampaignBuilder() {
         {step === 4 && objective && (
           <StepShell title="Vérifiez et générez" description="Nommez la campagne et confirmez le brief.">
             <div className="grid sm:grid-cols-2 gap-4 mb-5">
-              <Input label="Nom de la campagne" value={name} onChange={(e) => setName(e.target.value)} onFocus={suggestedName} placeholder="Lancement d'été Luma Glow" autoFocus />
+              <Input label="Nom de la campagne" value={name} onChange={(e) => setName(e.target.value)} onFocus={suggestedName} placeholder="Promo Tabaski Karité d'Or" autoFocus />
               <Select label="Projet" value={projectId} onChange={(e) => setProjectId(e.target.value)} options={activeProjects.map((p) => ({ value: p.id, label: p.name }))} placeholder="Choisissez un projet" />
             </div>
             <dl className="divide-y divide-border rounded-lg border border-border bg-surface/50">

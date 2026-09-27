@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Check, ClipboardCopy, Clapperboard, Mic2, PenLine, RefreshCw, Sparkles, Trash2, Zap } from "lucide-react";
+import { Bookmark, Check, ClipboardCopy, Clapperboard, MessageCircle, Mic2, PenLine, Play, RefreshCw, Sparkles, Trash2, Zap } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,7 +19,8 @@ import { useToast } from "@/components/ui/Toast";
 import { COPY_TOOLS, TONES } from "@/data";
 import { generateCopy, generateHooks } from "@/lib/api";
 import { useTemplatePreset } from "@/components/studio/useTemplatePreset";
-import { selectCurrentBrand, useStore } from "@/lib/store";
+import { LANGUAGES, countryOf, languageLabel, type LanguageId } from "@/lib/market";
+import { selectCountry, selectCurrentBrand, useStore } from "@/lib/store";
 import { CREDIT_COSTS, type CopyResult, type CopyTool, type Tone } from "@/lib/types";
 import { cn, timeAgo } from "@/lib/utils";
 
@@ -43,9 +44,14 @@ export default function CopyPage() {
 
   const [mode, setMode] = useState<Mode>("copy");
   const [tool, setTool] = useState<CopyTool>("ad-copy");
-  const [product, setProduct] = useState("Luma Glow Serum");
-  const [audience, setAudience] = useState("Femmes et hommes de 20 à 35 ans");
+  const [product, setProduct] = useState("Beurre de karité pur 250 g");
+  const [audience, setAudience] = useState("Femmes 20–45 ans qui aiment les soins naturels");
   const { template, preset } = useTemplatePreset("copy");
+  const country = countryOf(useStore(selectCountry));
+  const defaultLanguage = useStore((s) => s.preferences.language);
+  const [language, setLanguage] = useState<LanguageId>(preset?.language ?? defaultLanguage ?? country.languages[0]);
+  // Country languages first, then the rest.
+  const languageOptions = [...LANGUAGES].sort((a, b) => Number(country.languages.includes(b.id)) - Number(country.languages.includes(a.id)));
   const [tone, setTone] = useState<Tone>(preset?.tone ?? "friendly");
   const [goal, setGoal] = useState(GOALS[0]);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
@@ -65,7 +71,7 @@ export default function CopyPage() {
         setHooks(await generateHooks({ product, audience, tone, projectId: currentProjectId }));
         toast.success("10 accroches prêtes", brand ? `Rédigées avec votre ton de marque (${brand.voice.tone})` : "Rédigées avec votre ton de marque");
       } else {
-        const r = await generateCopy({ tool, product, audience, tone, goal, projectId: currentProjectId });
+        const r = await generateCopy({ tool, product, audience, tone, goal, language, projectId: currentProjectId });
         setResults([r]);
         toast.success(`${toolMeta.label} : prêt`, `Ton ${toneLabel(tone).toLowerCase()} · ${CREDIT_COSTS.copy} crédits`);
       }
@@ -78,7 +84,7 @@ export default function CopyPage() {
     setVariationsLoading(true);
     try {
       const tones: Tone[] = [tone, ...TONES.map((t) => t.id).filter((t) => t !== tone).slice(0, 2)];
-      const extra = await Promise.all(tones.slice(1).map((t) => generateCopy({ tool, product, audience, tone: t, goal, projectId: currentProjectId })));
+      const extra = await Promise.all(tones.slice(1).map((t) => generateCopy({ tool, product, audience, tone: t, goal, language, projectId: currentProjectId })));
       setResults((r) => [...r, ...extra]);
       toast.success("2 variantes ajoutées", "Des tons différents pour vos tests A/B");
     } catch (error) {
@@ -89,7 +95,7 @@ export default function CopyPage() {
   }
   async function regenerateOne(r: CopyResult) {
     try {
-      const next = await generateCopy({ tool: r.tool, product, audience, tone: r.tone, goal, projectId: currentProjectId });
+      const next = await generateCopy({ tool: r.tool, product, audience, tone: r.tone, goal, language: r.language, projectId: currentProjectId });
       setResults((list) => list.map((x) => (x.id === r.id ? next : x)));
     } catch (error) {
       toast.error("Une erreur est survenue.", error instanceof Error ? error.message : undefined);
@@ -120,6 +126,11 @@ export default function CopyPage() {
       )}
       <Input label="Produit" value={product} onChange={(e) => setProduct(e.target.value)} />
       <Input label="Audience" value={audience} onChange={(e) => setAudience(e.target.value)} />
+      {!isHooks && (
+        <ControlField label={tool === "voice-note" ? "Langue de la voix" : "Langue"}>
+          <ChipGroup size="sm" options={languageOptions.map((l) => ({ value: l.id, label: l.label }))} value={language} onChange={setLanguage} />
+        </ControlField>
+      )}
       <ControlField label="Ton">
         <ChipGroup size="sm" options={TONES.map((t) => ({ value: t.id, label: t.label }))} value={tone} onChange={setTone} />
       </ControlField>
@@ -139,7 +150,7 @@ export default function CopyPage() {
 
   return (
     <>
-      <PageHeader title="Rédacteur" description="Des textes fidèles à votre marque pour vos pubs, légendes, e-mails et scripts. Accroches incluses." eyebrow={<div className="flex flex-wrap items-center gap-1.5"><Badge tone="accent">Studio · Textes</Badge>{template && <Badge tone="outline">Modèle · {template.title}</Badge>}</div>} />
+      <PageHeader title="Rédacteur" description="Pubs, statuts WhatsApp, fiches catalogue et notes vocales, en français, en anglais ou en langue locale." eyebrow={<div className="flex flex-wrap items-center gap-1.5"><Badge tone="accent">Studio · Textes</Badge>{template && <Badge tone="outline">Modèle · {template.title}</Badge>}</div>} />
       <Tabs
         layoutId="copy-mode"
         variant="pill"
@@ -226,20 +237,44 @@ export default function CopyPage() {
   );
 }
 
+/** Opens WhatsApp with the text ready to send (the user picks the contact, group or status). */
+const shareOnWhatsApp = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;
+
 function CopyCard({ result, index, saved, onCopy, onSave, onRegenerate }: { result: CopyResult; index: number; saved: boolean; onCopy: () => void; onSave: () => void; onRegenerate: () => Promise<void> }) {
   const [busy, setBusy] = useState(false);
+  const isVoice = result.tool === "voice-note";
   return (
     <Card padded={false} className="overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border">
         <span className="text-xs font-medium">{index === 0 ? "Résultat" : `Variante ${index + 1}`}</span>
         <Badge tone="outline">{TONES.find((t) => t.id === result.tone)?.label ?? result.tone}</Badge>
+        {result.language && <Badge tone="outline">{languageLabel(result.language)}</Badge>}
         <span className="flex-1" />
+        <a href={shareOnWhatsApp(result.text)} target="_blank" rel="noreferrer" aria-label="Partager sur WhatsApp" title="Partager sur WhatsApp" className="inline-flex size-8 items-center justify-center rounded-md text-[#25D366] hover:bg-white/5"><MessageCircle className="size-4" /></a>
         <IconButton label="Copier dans le presse-papiers" size="sm" onClick={onCopy}><ClipboardCopy /></IconButton>
         <IconButton label={saved ? "Enregistré" : "Enregistrer"} size="sm" active={saved} onClick={onSave}>{saved ? <Check className="text-success" /> : <Bookmark />}</IconButton>
         <IconButton label="Régénérer" size="sm" disabled={busy} onClick={async () => { setBusy(true); await onRegenerate(); setBusy(false); }}><RefreshCw className={cn(busy && "animate-spin")} /></IconButton>
       </div>
+      {isVoice && <VoiceNotePreview language={result.language ?? "fr"} />}
       <pre className="px-4 py-4 text-sm leading-relaxed whitespace-pre-wrap font-sans text-text">{result.text}</pre>
     </Card>
+  );
+}
+
+/** Mock of the generated audio: the real voice-over is rendered server-side as an .ogg/.m4a. */
+function VoiceNotePreview({ language }: { language: LanguageId }) {
+  const [playing, setPlaying] = useState(false);
+  const bars = [4, 9, 14, 7, 11, 16, 6, 12, 9, 15, 5, 10, 13, 8, 14, 6, 11, 7, 12, 9, 5, 13, 8, 10];
+  return (
+    <div className="mx-4 mt-4 flex items-center gap-3 rounded-full bg-[#25D366]/12 border border-[#25D366]/30 px-3 py-2">
+      <button type="button" onClick={() => setPlaying((p) => !p)} aria-label={playing ? "Pause" : "Écouter"} className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-black">
+        <Play className="size-3.5 fill-black" />
+      </button>
+      <div className="flex flex-1 items-center gap-[3px] h-6" aria-hidden>
+        {bars.map((h, i) => <span key={i} className={cn("w-[3px] rounded-full bg-[#25D366]/70", playing && "animate-pulse")} style={{ height: h + 4 }} />)}
+      </div>
+      <span className="text-[11px] text-text2 tabular-nums shrink-0">0:20 · {languageLabel(language)}</span>
+    </div>
   );
 }
 

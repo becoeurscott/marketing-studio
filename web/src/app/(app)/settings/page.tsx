@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Bell, Building2, Check, CreditCard, ExternalLink, KeyRound, LifeBuoy, Monitor, Palette, RotateCcw,
+  Bell, Building2, Check, CreditCard, ExternalLink, Globe2, KeyRound, LifeBuoy, Monitor, Palette, RotateCcw,
   Shield, Smartphone, Sparkles, User as UserIcon, Users, type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import { useState, type FormEvent } from "react";
 import { industryLabel, toneLabel } from "@/components/account/BrandEditModal";
 import { ConfirmModal } from "@/components/account/ConfirmModal";
 import { Toggle } from "@/components/account/Toggle";
+import { useMoney } from "@/components/account/PaymentMethodPicker";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { useShell } from "@/components/shell/ShellContext";
 import { Avatar } from "@/components/ui/Avatar";
@@ -21,7 +22,8 @@ import { Select } from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
 import { plans } from "@/data";
 import { delay } from "@/lib/api";
-import { selectCurrentBrand, useStore } from "@/lib/store";
+import { COUNTRIES, CURRENCIES, LANGUAGES, PAYMENT_METHODS, countryOf, type CountryCode, type LanguageId } from "@/lib/market";
+import { selectCountry, selectCurrentBrand, useStore } from "@/lib/store";
 import { IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
 import { avatar, cn, formatDate, formatNumber } from "@/lib/utils";
 
@@ -32,10 +34,11 @@ const STYLE_LABELS: Record<string, string> = {
   Cinematic: "Cinématique", UGC: "UGC", Studio: "Studio", Fashion: "Mode", Food: "Culinaire", Tech: "Tech",
 };
 
-type SectionId = "account" | "workspace" | "notifications" | "appearance" | "brand" | "subscription" | "security" | "help";
+type SectionId = "account" | "market" | "workspace" | "notifications" | "appearance" | "brand" | "subscription" | "security" | "help";
 
 const SECTIONS: { id: SectionId; label: string; icon: LucideIcon; description: string }[] = [
   { id: "account", label: "Compte", icon: UserIcon, description: "Votre nom, votre e-mail et votre avatar." },
+  { id: "market", label: "Pays et langues", icon: Globe2, description: "Monnaie, Mobile Money, langues et mode économie de data." },
   { id: "workspace", label: "Espace de travail", icon: Building2, description: "Nom de l’espace de travail et équipe." },
   { id: "notifications", label: "Notifications", icon: Bell, description: "Ce dont nous vous informons, et où." },
   { id: "appearance", label: "Apparence", icon: Palette, description: "Thème, animations et réglages par défaut du Studio." },
@@ -101,6 +104,7 @@ export default function SettingsPage() {
             <p className="text-[13px] text-text2">{current.description}</p>
           </div>
           {section === "account" && <AccountSection />}
+          {section === "market" && <MarketSection />}
           {section === "workspace" && <WorkspaceSection />}
           {section === "notifications" && <NotificationsSection />}
           {section === "appearance" && <AppearanceSection />}
@@ -350,6 +354,39 @@ function AppearanceSection() {
   );
 }
 
+/* ---------- Market ---------- */
+
+function MarketSection() {
+  const country = useStore(selectCountry);
+  const setCountry = useStore((s) => s.setCountry);
+  const prefs = useStore((s) => s.preferences);
+  const setPreference = useStore((s) => s.setPreference);
+  const info = countryOf(country);
+  const currency = CURRENCIES[info.currency];
+
+  return (
+    <>
+      <Card>
+        <CardHeader title="Pays" subtitle="Vos prix s’affichent dans votre monnaie et vous payez avec le Mobile Money de votre pays." />
+        <Select label="Pays de vente" name="country" value={country} onChange={(e) => setCountry(e.target.value as CountryCode)} options={COUNTRIES.map((c) => ({ value: c.code, label: `${c.flag} ${c.name}` }))} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 text-[13px]">
+          <div className="rounded-md border border-border bg-surface p-3"><p className="text-muted text-[12px]">Monnaie</p><p className="font-medium mt-0.5">{currency.label} ({currency.symbol})</p></div>
+          <div className="rounded-md border border-border bg-surface p-3"><p className="text-muted text-[12px]">Paiements acceptés</p><p className="font-medium mt-0.5">{info.payments.map((m) => PAYMENT_METHODS[m].label).join(", ")}</p></div>
+        </div>
+      </Card>
+      <Card>
+        <CardHeader title="Langue des textes et voix off" subtitle="Langue proposée par défaut dans le rédacteur, les notes vocales et les vidéos UGC." />
+        <Select label="Langue par défaut" name="language" value={prefs.language ?? info.languages[0]} onChange={(e) => setPreference("language", e.target.value as LanguageId)} options={LANGUAGES.map((l) => ({ value: l.id, label: `${l.label}${info.languages.includes(l.id) ? " · parlée dans votre pays" : ""}` }))} />
+      </Card>
+      <Card>
+        <CardHeader title="Téléphone et connexion" subtitle="Pensé pour les photos prises au téléphone et les forfaits data limités." />
+        <Toggle label="Mode photo prise au téléphone" description="Détourage, lumière et netteté corrigés automatiquement, même avec une photo floue ou sombre." checked={prefs.phonePhotoMode ?? true} onChange={(v) => setPreference("phonePhotoMode", v)} />
+        <Toggle label="Vidéos légères" description="Fichiers jusqu’à 4 fois plus petits, pour les connexions lentes et le partage sur WhatsApp." checked={prefs.lightVideos ?? true} onChange={(v) => setPreference("lightVideos", v)} className="border-t border-border" />
+      </Card>
+    </>
+  );
+}
+
 /* ---------- Brand ---------- */
 
 function BrandSection() {
@@ -411,6 +448,8 @@ function SubscriptionSection() {
   const transactions = useStore((s) => s.transactions);
   const current = plans.find((p) => p.id === plan) ?? plans[1];
   const next = plans[plans.findIndex((p) => p.id === current.id) + 1];
+  const money = useMoney();
+  const payment = PAYMENT_METHODS[countryOf(useStore(selectCountry)).payments[0]];
   const renew = new Date(); renew.setMonth(renew.getMonth() + 1, 1);
 
   return (
@@ -420,7 +459,7 @@ function SubscriptionSection() {
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-[13px] text-text2">Forfait actuel</p>
-            <p className="text-2xl font-bold tracking-tight">{current.name} <span className="text-base font-medium text-text2">{current.priceMonthly} $/mois</span></p>
+            <p className="text-2xl font-bold tracking-tight">{current.name} <span className="text-base font-medium text-text2">{money(current.priceXof)}/mois</span></p>
             <p className="text-[12px] text-muted mt-1">Renouvellement le {formatDate(renew.toISOString())} · {formatNumber(current.credits)} crédits par mois</p>
           </div>
           <div className="flex gap-2">
@@ -445,14 +484,14 @@ function SubscriptionSection() {
       <Card>
         <CardHeader title="Facturation" subtitle="Moyen de paiement et factures (simulés)." />
         <div className="flex items-center gap-3 rounded-md border border-border bg-surface p-3">
-          <div className="h-8 w-12 rounded-xs bg-elevated flex items-center justify-center text-[10px] font-bold tracking-wider">VISA</div>
+          <div className="h-8 w-12 rounded-xs flex items-center justify-center text-[10px] font-bold tracking-wider text-black" style={{ background: payment.color }}>{payment.short}</div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">Visa se terminant par 4242</p>
-            <p className="text-[12px] text-muted">Expire le 08/28 · Par défaut</p>
+            <p className="text-sm font-medium">{payment.label} · •• •• 42</p>
+            <p className="text-[12px] text-muted">Confirmation sur votre téléphone · Par défaut</p>
           </div>
           <Badge tone="success" dot>Active</Badge>
         </div>
-        <p className="text-[12px] text-muted mt-3">Les paiements sont simulés dans ce prototype. Aucune carte n’est débitée.</p>
+        <p className="text-[12px] text-muted mt-3">Les paiements sont simulés dans ce prototype. Aucun montant n’est débité.</p>
       </Card>
     </>
   );

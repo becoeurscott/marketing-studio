@@ -19,6 +19,7 @@ export const DEMO_HREF = "/onboarding";
 
 const NAV = [
   { href: "#fonctionnalites", label: "Fonctionnalités" },
+  { href: "#whatsapp", label: "WhatsApp" },
   { href: "#creations", label: "Créations" },
   { href: "#tarifs", label: "Tarifs" },
   { href: "#faq", label: "FAQ" },
@@ -169,7 +170,7 @@ export function Hero() {
           className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-xs text-text2 backdrop-blur"
         >
           <span className="size-1.5 rounded-full bg-highlight shadow-[0_0_8px_#c084fc]" />
-          Le studio marketing IA pour les marques qui vendent
+          Le studio marketing IA des commerçants africains
         </motion.span>
 
         <h1 className="mt-7 text-[42px] leading-[1.02] sm:text-6xl lg:text-7xl font-medium tracking-[-0.04em] text-balance">
@@ -192,8 +193,8 @@ export function Hero() {
           transition={{ duration: 0.9, delay: 0.7, ease: EASE }}
           className="mt-6 mx-auto max-w-2xl text-base sm:text-lg text-text2 leading-relaxed"
         >
-          Photos produit, vidéos UGC, publicités et textes de vente : Sokozia transforme une simple photo de votre
-          produit en campagne complète, prête à publier sur TikTok, Instagram et Facebook.
+          Photos produit, vidéos UGC, statuts WhatsApp et pubs avec vos prix en FCFA : Sokozia transforme une simple
+          photo prise au téléphone en contenus prêts à vendre sur WhatsApp, TikTok et Facebook. Dès 1 000 FCFA, en Mobile Money.
         </motion.p>
 
         <motion.div

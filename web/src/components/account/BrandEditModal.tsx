@@ -49,6 +49,7 @@ function BrandForm({ brand, section, onClose }: { brand: Brand; section: BrandSe
   const toast = useToast();
   const [name, setName] = useState(brand.name);
   const [website, setWebsite] = useState(brand.website);
+  const [whatsapp, setWhatsapp] = useState(brand.whatsapp ?? "");
   const [logoUrl, setLogoUrl] = useState(brand.logoUrl);
   const [colors, setColors] = useState<string[]>(brand.colors);
   const [heading, setHeading] = useState(brand.fonts.heading);
@@ -63,7 +64,7 @@ function BrandForm({ brand, section, onClose }: { brand: Brand; section: BrandSe
     e.preventDefault();
     if (section === "identity" && !name.trim()) { setError("Le nom de la marque est obligatoire."); return; }
     const patch: Partial<Brand> =
-      section === "identity" ? { name: name.trim(), website: website.trim(), logoUrl: logoUrl.trim() || brand.logoUrl }
+      section === "identity" ? { name: name.trim(), website: website.trim(), whatsapp: whatsapp.trim() || undefined, logoUrl: logoUrl.trim() || brand.logoUrl }
       : section === "colors" ? { colors: colors.filter(Boolean) }
       : section === "fonts" ? { fonts: { heading, body } }
       : { description: description.trim(), industry, audience: audience.trim(), styleTags: tags.split(",").map((t) => t.trim()).filter(Boolean) };
@@ -78,6 +79,7 @@ function BrandForm({ brand, section, onClose }: { brand: Brand; section: BrandSe
         <>
           <Input label="Nom de la marque" name="name" value={name} onChange={(e) => setName(e.target.value)} error={error} autoFocus />
           <Input label="Site web" name="website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />
+          <Input label="Numéro WhatsApp de commande" name="whatsapp" inputMode="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+225 07 00 00 00 00" hint="Utilisé par les boutons « Commander sur WhatsApp » de vos pubs." />
           <Input label="URL du logo" name="logo" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} hint="Collez l’URL d’une image. Les imports sont simulés dans ce prototype." />
         </>
       )}

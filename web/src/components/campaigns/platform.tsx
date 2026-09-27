@@ -20,7 +20,12 @@ const Youtube = (props: IconProps) => (
   <svg {...svg(props)}><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" /><path d="m10 15 5-3-5-3z" /></svg>
 );
 
+const WhatsApp = (props: IconProps) => (
+  <svg {...svg(props)}><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 .8a4.5 4.5 0 0 1-2.3-2.3l.8-1-1-2Z" /></svg>
+);
+
 export const PLATFORM_ICONS: Record<Platform, ComponentType<IconProps>> = {
+  whatsapp: WhatsApp,
   instagram: Instagram,
   tiktok: Music2,
   facebook: Facebook,
@@ -66,7 +71,7 @@ export const CAMPAIGN_FORMATS: { id: CampaignFormat; label: string; description:
   { id: "product-photos", label: "Photos produit", description: "Packshots studio et lifestyle." },
   { id: "ugc", label: "UGC", description: "Vidéos façon créateur avec accroche et démo." },
   { id: "video-ads", label: "Pubs vidéo", description: "Courts films produit cinématiques." },
-  { id: "stories", label: "Stories", description: "Visuels verticaux 9:16 pour les stories." },
+  { id: "stories", label: "Stories & statuts", description: "Visuels verticaux 9:16 pour les stories et les statuts WhatsApp." },
   { id: "carousels", label: "Carrousels", description: "Plusieurs slides pour preuves et bénéfices." },
 ];
 
@@ -77,6 +82,9 @@ export const AD_FORMATS: { id: AdFormat; label: string }[] = [
   { id: "story", label: "Story" },
   { id: "reel", label: "Reel" },
   { id: "short", label: "Short" },
+  { id: "status", label: "Statut WhatsApp" },
+  { id: "catalog", label: "Fiche catalogue" },
+  { id: "flyer", label: "Flyer / affiche" },
 ];
 
 export const CALENDAR_STATUSES: { id: CalendarStatus; label: string }[] = [
