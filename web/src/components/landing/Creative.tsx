@@ -1,4 +1,7 @@
+"use client";
+
 import { Play } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 export type CreativeKind = "wax" | "shea" | "wig" | "phone" | "plate" | "jersey" | "fashion";
@@ -13,79 +16,44 @@ export interface CreativeData {
   video?: boolean;
   /** Price tag shown on the visual, in local currency. */
   price?: string;
-  /** Real visual from /public, e.g. "/showcase/food-street.mp4". Falls back to the CSS mockup when absent. */
-  media?: string;
+  /** Generated visual from /public: a UGC video (/showcase/ugc/*.mp4, poster .jpg alongside) or a style photo. */
+  media: string;
 }
 
 /**
- * Example creatives for the hero carousel, the gallery marquee and the use cases: products local merchants
- * actually sell. Items without `media` render a CSS mockup; drop a photo in /public/showcase and set `media`
- * to replace it.
+ * Example creatives for the hero carousel, the gallery marquee and the use cases, all generated with
+ * Sokozia (Higgsfield): UGC videos in /public/showcase/ugc and style photos in /public/styles.
+ * Index order matters: [0] WhatsApp status mockup, [3] upload visual, [1]/[4] publish visual.
  */
+const UGC = (slug: string) => `/showcase/ugc/${slug}.mp4`;
+const STYLE = (id: string) => `/styles/${id}.jpg`;
+
 export const CREATIVES: CreativeData[] = [
-  { kind: "wax", title: "Pagne wax 6 yards", tag: "Photo produit", platform: "Statut WhatsApp", price: "15 000 FCFA", bg: "from-[#3b1d0a] via-[#c2410c] to-[#fbbf24]" },
-  { kind: "plate", title: "Garba du maquis", tag: "Vidéo UGC", platform: "TikTok", video: true, bg: "from-[#1c0f08] via-[#7c3f1d] to-[#f5c28b]", media: "/showcase/food-street.mp4" },
-  { kind: "shea", title: "Beurre de karité pur", tag: "Photo produit", platform: "Instagram", price: "7 500 FCFA", bg: "from-[#2b1a05] via-[#a16207] to-[#fde68a]" },
-  { kind: "jersey", title: "Maillots de foot", tag: "Vidéo UGC", platform: "TikTok", video: true, bg: "from-[#052e16] via-[#15803d] to-[#fde047]", media: "/showcase/jersey-brazil.mp4" },
-  { kind: "wig", title: "Perruque lisse 22 pouces", tag: "Photo lifestyle", platform: "Instagram", price: "45 000 FCFA", bg: "from-[#3b0a1e] via-[#9d174d] to-[#fbcfe8]" },
-  { kind: "phone", title: "Boutique de téléphones", tag: "Pub produit", platform: "Facebook", price: "95 000 FCFA", bg: "from-[#0f172a] via-[#1e3a8a] to-[#60a5fa]" },
-  { kind: "plate", title: "Livraison de repas", tag: "Vidéo UGC", platform: "Statut WhatsApp", video: true, bg: "from-[#3a0d06] via-[#c2410c] to-[#fed7aa]", media: "/showcase/food-catch.mp4" },
-  { kind: "fashion", title: "Nouvel arrivage mode", tag: "Photo lifestyle", platform: "Instagram", bg: "from-[#0b0b0b] via-[#3f3f46] to-[#d4d4d8]", media: "/showcase/street-fashion.webp" },
+  { kind: "wax", title: "Nouvel arrivage wax", tag: "Vidéo UGC", platform: "Statut WhatsApp", price: "15 000 FCFA", video: true, bg: "from-[#3b1d0a] via-[#c2410c] to-[#fbbf24]", media: UGC("vendeuse-marche-wax") },
+  { kind: "plate", title: "Garba du quartier", tag: "Micro-trottoir", platform: "TikTok", video: true, bg: "from-[#1c0f08] via-[#7c3f1d] to-[#f5c28b]", media: UGC("micro-trottoir-garba") },
+  { kind: "shea", title: "Beurre de karité pur", tag: "Photo produit", platform: "Instagram", price: "7 500 FCFA", bg: "from-[#2b1a05] via-[#a16207] to-[#fde68a]", media: STYLE("marche-africain") },
+  { kind: "shea", title: "Fiche catalogue", tag: "Catalogue WhatsApp", platform: "WhatsApp Business", bg: "from-[#f5f5f4] via-[#e7e5e4] to-[#d6d3d1]", media: STYLE("catalogue") },
+  { kind: "wig", title: "Perruque lisse 22 pouces", tag: "Get ready with me", platform: "Instagram", price: "45 000 FCFA", video: true, bg: "from-[#3b0a1e] via-[#9d174d] to-[#fbcfe8]", media: UGC("grwm-perruque") },
+  { kind: "phone", title: "Boutique de téléphones", tag: "Déballage", platform: "Facebook", price: "95 000 FCFA", video: true, bg: "from-[#0f172a] via-[#1e3a8a] to-[#60a5fa]", media: UGC("unboxing-telephone") },
+  { kind: "plate", title: "Livraison en 2 heures", tag: "Commande WhatsApp", platform: "Statut WhatsApp", video: true, bg: "from-[#3a0d06] via-[#c2410c] to-[#fed7aa]", media: UGC("livraison-whatsapp") },
+  { kind: "fashion", title: "Tenue sur mesure", tag: "Fit check atelier", platform: "Instagram", video: true, bg: "from-[#0b0b0b] via-[#3f3f46] to-[#d4d4d8]", media: UGC("atelier-couture") },
+  { kind: "shea", title: "Témoignage karité", tag: "Témoignage", platform: "TikTok", video: true, bg: "from-[#2b1a05] via-[#a16207] to-[#fde68a]", media: UGC("temoignage-karite") },
+  { kind: "plate", title: "Poulet braisé", tag: "Dégustation", platform: "Facebook", video: true, bg: "from-[#1c0f08] via-[#7c3f1d] to-[#f5c28b]", media: UGC("degustation-maquis") },
+  { kind: "shea", title: "Collection luxe", tag: "Style Luxe doré", platform: "Instagram", price: "12 000 FCFA", bg: "from-[#0b0b0b] via-[#3f3f46] to-[#d4d4d8]", media: STYLE("luxe-dore") },
+  { kind: "fashion", title: "Bazin brodé Tabaski", tag: "Promo fête", platform: "Statut WhatsApp", video: true, bg: "from-[#3b1d0a] via-[#c2410c] to-[#fbbf24]", media: UGC("promo-tabaski") },
 ];
 
-/** Repeating wax-print motif (concentric circles + diamonds), pure CSS. */
-const WAX_PATTERN =
-  "radial-gradient(circle at 25% 25%, #fde047 0 14%, #7c2d12 14% 20%, transparent 20%), radial-gradient(circle at 75% 75%, #16a34a 0 14%, #fde047 14% 20%, transparent 20%), conic-gradient(from 45deg at 50% 50%, #c2410c 0 25%, #1d4ed8 0 50%, #c2410c 0 75%, #1d4ed8 0)";
-
-function Product({ kind }: { kind: CreativeKind }) {
-  switch (kind) {
-    case "wax":
-      return (
-        <div className="relative w-[62%] aspect-[1/1.1]">
-          {/* Folded stack of fabric */}
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="absolute inset-x-0 h-[34%] rounded-md border border-black/20 shadow-[0_10px_20px_rgba(0,0,0,0.35)]"
-              style={{ bottom: `${i * 30}%`, backgroundImage: WAX_PATTERN, backgroundSize: "28px 28px", filter: i === 1 ? "hue-rotate(140deg)" : i === 2 ? "hue-rotate(260deg)" : undefined }}
-            />
-          ))}
-        </div>
-      );
-    case "shea":
-      return (
-        <div className="flex w-full flex-col items-center">
-          <div className="w-[46%] aspect-[1/0.28] rounded-t-lg bg-gradient-to-b from-amber-700 to-amber-900" />
-          <div className="relative w-[50%] aspect-[1/0.8] rounded-b-2xl rounded-t-sm bg-gradient-to-b from-[#fff7e6] to-[#f3dfb8] shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
-            <div className="absolute inset-x-[14%] top-[28%] bottom-[28%] rounded-md bg-amber-800/85 flex items-center justify-center">
-              <span className="text-[9px] font-bold tracking-wide text-amber-100">KARITÉ</span>
-            </div>
-          </div>
-        </div>
-      );
-    case "wig":
-      return (
-        <div className="relative w-[48%] aspect-[1/1.5]">
-          <div className="absolute inset-x-0 top-0 h-[40%] rounded-t-full bg-gradient-to-b from-zinc-800 to-zinc-950" />
-          <div className="absolute inset-x-[-6%] top-[26%] bottom-0 rounded-b-[40%] bg-[repeating-linear-gradient(90deg,#18181b_0_6px,#3f3f46_6px_8px)] shadow-[0_20px_40px_rgba(0,0,0,0.45)]" />
-          <div className="absolute inset-x-[24%] top-[22%] h-[40%] rounded-full bg-[#8a5a3b]" />
-        </div>
-      );
-    case "phone":
-      return (
-        <div className="flex items-end gap-[6%] w-full justify-center">
-          {[0.82, 1, 0.82].map((scale, i) => (
-            <div key={i} className="w-[24%] aspect-[1/2] rounded-[22%/11%] bg-gradient-to-b from-zinc-800 to-black border-2 border-white/30 shadow-[0_20px_40px_rgba(0,0,0,0.5)]" style={{ transform: `scale(${scale})` }}>
-              <div className="m-[10%] h-[80%] rounded-[16%/8%] bg-gradient-to-br from-highlight via-accent to-green opacity-80" />
-            </div>
-          ))}
-        </div>
-      );
-    case "plate":
-    case "jersey":
-    case "fashion":
-      return <div className="w-[55%] aspect-square rounded-full bg-white/20 border border-white/30" />;
-  }
+/** Plays only while on screen and loads nothing before (the gallery repeats items; keep mobile data low). */
+function LazyVideo({ src }: { src: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? void el.play().catch(() => {}) : el.pause()), { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return <video ref={ref} src={src} poster={src.replace(/\.mp4$/, ".jpg")} muted loop playsInline preload="none" className="absolute inset-0 size-full object-cover" />;
 }
 
 /** `bare` hides the platform badge and caption, for use as a plain thumbnail. */
@@ -93,20 +61,10 @@ export function Creative({ data, className, compact, bare }: { data: CreativeDat
   return (
     <div className={cn("relative overflow-hidden rounded-2xl bg-gradient-to-br", data.bg, className)}>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(255,255,255,0.28),transparent_60%)]" />
-      {data.media ? (
-        /\.(mp4|webm|mov)(\?|$)/i.test(data.media) ? (
-          <video src={data.media} autoPlay muted loop playsInline preload="metadata" className="absolute inset-0 size-full object-cover" />
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={data.media} alt={data.title} className="absolute inset-0 size-full object-cover" />
-        )
+      {/\.(mp4|webm|mov)(\?|$)/i.test(data.media) ? (
+        <LazyVideo src={data.media} />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center pb-[18%]">
-          {/* Square box sized by card height, so products keep proportions in any aspect ratio. */}
-          <div className="flex h-[80%] max-w-full aspect-square items-center justify-center">
-            <Product kind={data.kind} />
-          </div>
-        </div>
+        <img src={data.media} alt={data.title} loading="lazy" className="absolute inset-0 size-full object-cover" />
       )}
       {!bare && <Overlay data={data} compact={compact} />}
     </div>

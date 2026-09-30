@@ -113,8 +113,8 @@ export function Creations() {
 /* ───────────────────────── Use cases ───────────────────────── */
 
 const CASES = [
-  { creative: CREATIVES[0], sector: "Couture & wax", title: "Vos pagnes et tenues, mis en valeur", text: "Photos portées, fiches catalogue WhatsApp et statuts prêts pour Tabaski ou la Korité." },
-  { creative: CREATIVES[1], sector: "Restauration & maquis", title: "Des plats qui donnent faim", text: "Plat du jour, menu, livraison : une vidéo fraîche chaque semaine pour vos statuts et TikTok." },
+  { creative: CREATIVES[7], sector: "Couture & wax", title: "Vos pagnes et tenues, mis en valeur", text: "Photos portées, fiches catalogue WhatsApp et statuts prêts pour Tabaski ou la Korité." },
+  { creative: CREATIVES[9], sector: "Restauration & maquis", title: "Des plats qui donnent faim", text: "Plat du jour, menu, livraison : une vidéo fraîche chaque semaine pour vos statuts et TikTok." },
   { creative: CREATIVES[2], sector: "Cosmétiques", title: "Vos soins comme en magazine", text: "Karité, savon noir, huiles : des packshots propres, sans louer de studio." },
   { creative: CREATIVES[5], sector: "Téléphones & électronique", title: "Votre vitrine, prix affichés", text: "Pubs Facebook et flyers avec les prix en FCFA et les facilités de paiement." },
   { creative: CREATIVES[4], sector: "Coiffure & beauté", title: "Chaque nouvel arrivage vendu vite", text: "Perruques, tresses, mèches : avant/après et vidéos UGC avec des créatrices africaines." },
@@ -206,7 +206,7 @@ function BeforeAfter() {
     <div className="relative h-full min-h-[220px] overflow-hidden rounded-2xl border border-white/10">
       {/* After */}
       <div className="absolute inset-0">
-        <Creative data={CREATIVES[0]} bare className="size-full" />
+        <Creative data={CREATIVES[2]} bare className="size-full" />
       </div>
       {/* Before: plain phone photo, revealed by a sweeping divider */}
       <motion.div

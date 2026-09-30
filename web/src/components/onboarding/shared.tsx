@@ -4,19 +4,19 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-/* Local showcase media (web/public/showcase): posters are frames of the matching videos. */
+/* Media generated with Sokozia (Higgsfield): style photos and UGC videos. */
 export const MEDIA = {
   photos: [
-    "/showcase/jersey-france-poster.webp",
-    "/showcase/food-street-poster.jpg",
-    "/showcase/street-fashion.webp",
-    "/showcase/jersey-brazil-poster.jpg",
+    "/styles/porte-mannequin.jpg",
+    "/styles/marche-africain.jpg",
+    "/styles/statut-whatsapp.jpg",
+    "/styles/luxe-dore.jpg",
   ],
   videos: [
-    "/showcase/jersey-france.mp4",
-    "/showcase/food-street.mp4",
-    "/showcase/jersey-brazil.mp4",
-    "/showcase/food-catch.mp4",
+    "/showcase/ugc/temoignage-karite.mp4",
+    "/showcase/ugc/vendeuse-marche-wax.mp4",
+    "/showcase/ugc/grwm-perruque.mp4",
+    "/showcase/ugc/promo-tabaski.mp4",
   ],
 };
 
@@ -29,9 +29,9 @@ export interface ProductInfo {
 }
 
 export const SAMPLE_PRODUCT: ProductInfo = {
-  name: "Maillot de foot 2026",
-  category: "Mode · Sport",
-  description: "Le maillot de la saison, tissu respirant, toutes les tailles en stock.",
+  name: "Beurre de karité pur",
+  category: "Soin · Cosmétiques",
+  description: "Beurre de karité 100 % naturel, 250 g, hydrate et nourrit la peau.",
   image: MEDIA.photos[0],
   sample: true,
 };
