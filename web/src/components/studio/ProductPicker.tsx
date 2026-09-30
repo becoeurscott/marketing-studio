@@ -26,7 +26,7 @@ export function useProductUpload(onUploaded: (asset: Asset) => void) {
       }
       setProgress(0);
       try {
-        const asset = await uploadProduct({ name: file.name, size: file.size, projectId: currentProjectId }, setProgress);
+        const asset = await uploadProduct(file, { projectId: currentProjectId }, setProgress);
         toast.success("Produit importé", uploadSummary(asset));
         onUploaded(asset);
       } catch (err) {

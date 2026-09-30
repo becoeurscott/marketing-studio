@@ -34,7 +34,7 @@ const rows: T[] = [
 export const templates: Template[] = rows.map(([title, description, category, platform, format, preset, popular, uses], i) => ({
   id: `tpl_${i + 1}`,
   title, description, category, platform, format, preset, popular, uses,
-  thumbnail: img(`template-${title}`, 800, 1000),
+  thumbnail: img(`template-${title}`, 800, 1000, title.split(" ").slice(0, 3).join(" ")),
 }));
 
 export const TEMPLATE_CATEGORIES: TemplateCategory[] = [

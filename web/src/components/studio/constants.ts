@@ -20,7 +20,6 @@ export const DURATIONS = [5, 10, 15] as const;
 export type DurationSec = (typeof DURATIONS)[number];
 
 /** Free sample clip used by the mock player (Big Buck Bunny, CC-BY). */
-export const SAMPLE_VIDEO_URL = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
 
 export const PROMPT_PLACEHOLDER = "Créez une publicité produit haut de gamme pour ce parfum…";
 

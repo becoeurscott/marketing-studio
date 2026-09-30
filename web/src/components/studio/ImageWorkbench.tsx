@@ -7,6 +7,7 @@ import { CampaignPicker } from "./CampaignPicker";
 import { ImageEditor } from "./ImageEditor";
 import { ImageResults } from "./ImageResults";
 import type { ImageGenerator } from "./useImageGenerator";
+import { downloadUrl } from "@/lib/utils";
 
 /**
  * Wires the result gallery to the generator: download (toast), favorite, edit (Image Editor),
@@ -19,7 +20,8 @@ export function ImageWorkbench({ gen, dense, className }: { gen: ImageGenerator;
 
   const download = (r: ImageResult) => {
     const a = gen.ensureAsset(r);
-    toast.toast({ title: "Téléchargement lancé", description: `${a.name}.png · 1600×2000`, tone: "success", action: { label: "Ouvrir", onClick: () => window.open(r.url, "_blank", "noopener") } });
+    downloadUrl(r.url, a.name);
+    toast.success("Téléchargement lancé", a.name);
   };
   const favorite = (r: ImageResult) => {
     const { asset, favorited } = gen.favorite(r);

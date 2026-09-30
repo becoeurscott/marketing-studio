@@ -2,7 +2,7 @@
 
 import { Check, ExternalLink, ImagePlus, MessageSquareQuote, Palette, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { BrandEditModal, industryLabel, toneLabel, type BrandSection } from "@/components/account/BrandEditModal";
 import { ConfirmModal } from "@/components/account/ConfirmModal";
 import { PageHeader, Section } from "@/components/shell/PageHeader";
@@ -16,7 +16,8 @@ import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { selectCurrentBrand, useStore } from "@/lib/store";
 import type { Brand, BrandAsset } from "@/lib/types";
-import { cn, img, uid } from "@/lib/utils";
+import { uploadPhoto } from "@/lib/higgsfield/client";
+import { cn, uid } from "@/lib/utils";
 
 const ASSET_KINDS: { kind: BrandAsset["kind"]; label: string; hint: string }[] = [
   { kind: "primary-logo", label: "Logo principal", hint: "Logotype sur fond clair et sombre." },
@@ -38,15 +39,32 @@ export default function BrandPage() {
   const [deleting, setDeleting] = useState<Brand | null>(null);
   const [removingAsset, setRemovingAsset] = useState<BrandAsset | null>(null);
 
+  const fileRef = useRef<HTMLInputElement>(null);
+  const pendingKind = useRef<BrandAsset["kind"]>("product");
+  const [uploading, setUploading] = useState(false);
+
+  /** Opens the file picker; the chosen image is uploaded and becomes usable in generations. */
   const addAsset = (kind: BrandAsset["kind"]) => {
-    if (!brand) return;
-    const n = brand.assets.filter((a) => a.kind === kind).length + 1;
-    const label = ASSET_KINDS.find((k) => k.kind === kind)?.label ?? kind;
-    const id = uid("ba");
-    const asset: BrandAsset = { id, kind, name: `${brand.name} ${label.toLowerCase()} ${n}`, url: img(`${brand.name}-${kind}-${n}-${id}`, kind === "primary-logo" ? 800 : 600, kind === "primary-logo" ? 400 : 600) };
-    updateBrand(brand.id, { assets: [...brand.assets, asset] });
-    toast.success("Ressource importée", asset.name);
+    pendingKind.current = kind;
+    fileRef.current?.click();
   };
+  const onFile = async (file: File | null) => {
+    if (!brand || !file) return;
+    const kind = pendingKind.current;
+    const label = ASSET_KINDS.find((k) => k.kind === kind)?.label ?? kind;
+    setUploading(true);
+    try {
+      const url = await uploadPhoto(file);
+      const asset: BrandAsset = { id: uid("ba"), kind, name: file.name || `${brand.name} ${label.toLowerCase()}`, url };
+      updateBrand(brand.id, { assets: [...brand.assets, asset], ...(kind === "primary-logo" && !brand.logoUrl ? { logoUrl: url } : {}) });
+      toast.success("Ressource importée", asset.name);
+    } catch (err) {
+      toast.error("Échec de l'import", err instanceof Error ? err.message : undefined);
+    } finally {
+      setUploading(false);
+    }
+  };
+  const fileInput = <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-hidden tabIndex={-1} onChange={(e) => { void onFile(e.target.files?.[0] ?? null); e.target.value = ""; }} />;
 
   if (!brand) {
     return (
@@ -60,6 +78,7 @@ export default function BrandPage() {
 
   return (
     <>
+      {fileInput}
       <PageHeader
         title="Kit de marque"
         description="Logo, couleurs, polices et ton : tout ce dont l’IA a besoin pour respecter votre marque."
@@ -158,7 +177,7 @@ export default function BrandPage() {
                         <h4 className="text-sm font-semibold">{label}</h4>
                         <p className="text-[12px] text-muted">{hint}</p>
                       </div>
-                      <Button size="sm" variant="secondary" leftIcon={<ImagePlus className="size-4" />} onClick={() => addAsset(kind)}>Importer</Button>
+                      <Button size="sm" variant="secondary" leftIcon={<ImagePlus className="size-4" />} loading={uploading} onClick={() => addAsset(kind)}>Importer</Button>
                     </div>
                     {items.length ? (
                       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">

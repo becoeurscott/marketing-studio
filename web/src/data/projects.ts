@@ -1,17 +1,4 @@
 import type { Project } from "@/lib/types";
-import { daysAgo, img } from "@/lib/utils";
 
-export const projects: Project[] = [
-  { id: "proj_luma_summer", name: "Lancement beurre de karité pur", description: "Lancement du pot de beurre de karité pur 250 g sur WhatsApp, TikTok et Facebook.", brandId: "brand_luma", thumbnail: img("karite-launch", 800, 600), status: "active", createdAt: daysAgo(12), updatedAt: daysAgo(0, 8) },
-  { id: "proj_summer_skincare", name: "Statuts WhatsApp de la semaine", description: "Cinq statuts par semaine pour la gamme karité et savon noir, à publier chaque matin.", brandId: "brand_luma", thumbnail: img("whatsapp-statuts", 800, 600), status: "active", createdAt: daysAgo(25), updatedAt: daysAgo(1) },
-  { id: "proj_urban_coffee", name: "Menu du maquis Chez Tantie Rose", description: "Visuels du menu, plat du jour et flyers de livraison pour le maquis.", brandId: "brand_urban", thumbnail: img("maquis-menu", 800, 600), status: "active", createdAt: daysAgo(30), updatedAt: daysAgo(2) },
-  { id: "proj_fitness", name: "Nouvel arrivage tissus wax", description: "Photos et vidéos pour l'arrivage de pagnes wax et de tenues cousues, vendus en boutique partenaire.", brandId: "brand_luma", thumbnail: img("wax-arrivage", 800, 600), status: "active", createdAt: daysAgo(40), updatedAt: daysAgo(3) },
-  { id: "proj_watch", name: "Boutique de téléphones Adjamé", description: "Visuels produits et promos pour une boutique partenaire de téléphones et accessoires.", brandId: "brand_luma", thumbnail: img("telephones-adjame", 800, 600), status: "active", createdAt: daysAgo(45), updatedAt: daysAgo(4) },
-  { id: "proj_ugc_ads", name: "Vidéos témoignages clientes", description: "Vidéos UGC avec créatrices IA, quatre accroches testées pour le beurre de karité.", brandId: "brand_luma", thumbnail: img("temoignages-karite", 800, 600), status: "active", createdAt: daysAgo(18), updatedAt: daysAgo(1, 15) },
-  { id: "proj_holiday", name: "Coffrets fête des mères", description: "Coffrets cadeaux karité et savon noir, avec carrousels, statuts et flyers.", brandId: "brand_luma", thumbnail: img("fete-des-meres", 800, 600), status: "active", createdAt: daysAgo(60), updatedAt: daysAgo(9) },
-  { id: "proj_retinol", name: "Promo Korité", description: "Offres spéciales Korité sur les huiles cheveux et le savon noir.", brandId: "brand_luma", thumbnail: img("korite-promo", 800, 600), status: "archived", createdAt: daysAgo(120), updatedAt: daysAgo(70) },
-  { id: "proj_coldbrew_tiktok", name: "Série TikTok attiéké poisson braisé", description: "Dix courtes vidéos en cuisine pour faire connaître le maquis.", brandId: "brand_urban", thumbnail: img("attieke-tiktok", 800, 600), status: "active", updatedAt: daysAgo(6), createdAt: daysAgo(22) },
-  { id: "proj_spring_sale", name: "Promo Tabaski", description: "Créas promo -20 % sur toute la gamme pour la Tabaski, en statuts et pubs Facebook.", brandId: "brand_luma", thumbnail: img("tabaski-promo", 800, 600), status: "archived", createdAt: daysAgo(200), updatedAt: daysAgo(150) },
-  { id: "proj_founder_story", name: "Histoire de la fondatrice", description: "Awa raconte la coopérative de Korhogo, découpée en vidéos courtes.", brandId: "brand_luma", thumbnail: img("fondatrice-karite", 800, 600), status: "active", createdAt: daysAgo(80), updatedAt: daysAgo(14) },
-  { id: "proj_sunscreen", name: "Flyer boutique marché de Treichville", description: "Flyer et affiche pour le stand Karité d'Or au marché de Treichville.", brandId: "brand_luma", thumbnail: img("flyer-marche", 800, 600), status: "active", createdAt: daysAgo(5), updatedAt: daysAgo(0, 11) },
-];
+/** Starts empty: filled by the user's own work. */
+export const projects: Project[] = [];

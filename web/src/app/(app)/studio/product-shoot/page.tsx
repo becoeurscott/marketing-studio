@@ -14,7 +14,7 @@ import { generateProductShoot, uploadProduct, type ImageResult } from "@/lib/api
 import { useTemplatePreset } from "@/components/studio/useTemplatePreset";
 import { useStore } from "@/lib/store";
 import { CREDIT_COSTS, type Asset } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, downloadUrl } from "@/lib/utils";
 
 const ENVIRONMENTS = ["Salle de bain de luxe", "Cuisine moderne", "Plage", "Bureau", "Rue", "Studio", "Restaurant", "Salle de sport", "Intérieur de voiture"];
 const LIGHTING = ["Naturelle", "Heure dorée", "Studio", "Néon", "Softbox", "Dramatique"];
@@ -50,11 +50,11 @@ export default function ProductShootPage() {
     if (!f) return;
     setUploading(0);
     try {
-      const asset = await uploadProduct({ name: f.name, size: f.size, projectId: currentProjectId }, setUploading);
+      const asset = await uploadProduct(f, { projectId: currentProjectId }, setUploading);
       setProductId(asset.id);
       toast.success("Produit importé", asset.name);
-    } catch {
-      toast.error("Échec de l'import", "Veuillez réessayer.");
+    } catch (err) {
+      toast.error("Échec de l'import", err instanceof Error ? err.message : "Veuillez réessayer.");
     } finally {
       setUploading(null);
     }
@@ -82,7 +82,7 @@ export default function ProductShootPage() {
     setSaved((s) => ({ ...s, [r.id]: asset.id }));
     return asset;
   }
-  function download(r: ImageResult) { toast.success("Téléchargement lancé", `${environment} · ${camera}.png`); void r; }
+  function download(r: ImageResult) { downloadUrl(r.url, `${environment} · ${camera}`); toast.success("Téléchargement lancé", `${environment} · ${camera}`); }
   function addToCampaign(r: ImageResult) { const a = save(r); router.push(`/campaigns?asset=${a.id}`); }
   function saveAll() {
     if (phase.kind !== "done") return;

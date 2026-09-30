@@ -7,9 +7,9 @@ import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
-import { delay, type ImageResult } from "@/lib/api";
+import { editImage, type ImageResult } from "@/lib/api";
 import { RATIOS, type AspectRatio } from "@/lib/types";
-import { cn, img, uid } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { EDITOR_TOOL_LABELS, EDITOR_TOOLS, RATIO_CLASS, type EditorTool } from "./constants";
 
 const toolIcons: Record<EditorTool, LucideIcon> = {
@@ -51,16 +51,12 @@ function EditorBody({ result, onApply, onClose }: { result: ImageResult; onApply
   const apply = async () => {
     setApplying(true);
     try {
-      await delay(900, 1500);
-      const seed = uid("edit");
-      const w = ratio === "16:9" ? 960 : ratio === "9:16" ? 540 : 800;
-      const h = ratio === "16:9" ? 540 : ratio === "9:16" ? 960 : ratio === "1:1" ? 800 : ratio === "3:2" ? 533 : 1000;
-      const next: ImageResult = { ...preview, id: preview.id, ratio, url: img(seed, w * 2, h * 2), thumbnail: img(seed, w, h), seed };
-      setPreview(next);
+      const edited = await editImage({ url: preview.url, tool, instruction: prompt.trim() || undefined, ratio });
+      setPreview({ ...edited, id: preview.id, ratio });
       setEdits((e) => [...e, `${EDITOR_TOOL_LABELS[tool]}${prompt ? ` — ${prompt.slice(0, 30)}` : ""}`]);
       toast.success("Modifications appliquées", `${EDITOR_TOOL_LABELS[tool]} · intensité ${strength} %`);
-    } catch {
-      toast.error("Une erreur est survenue.");
+    } catch (err) {
+      toast.error("Une erreur est survenue.", err instanceof Error ? err.message : undefined);
     } finally {
       setApplying(false);
     }

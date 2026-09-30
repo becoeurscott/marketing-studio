@@ -1,6 +1,6 @@
 "use client";
 
-import { Clapperboard, Megaphone, Play, RefreshCw, Save, Video } from "lucide-react";
+import { Clapperboard, Megaphone, RefreshCw, Save, Video } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { Canvas, ControlField, CreatorCard, ErrorState, ProductPicker, StudioControls } from "@/components/creative";
@@ -130,13 +130,9 @@ function UGCPage() {
               <div className="relative w-full max-w-[300px] aspect-[9/16] rounded-2xl overflow-hidden border border-border-strong bg-elevated shadow-float">
                 {phase.kind === "done" ? (
                   <>
-                    <img src={phase.result.poster} alt="Vidéo UGC générée" className="size-full object-cover" />
-                    <button type="button" className="absolute inset-0 flex items-center justify-center" aria-label="Lire la vidéo" onClick={() => toast.info("La lecture est simulée dans ce prototype")}>
-                      <span className="size-16 rounded-full bg-white/90 text-black flex items-center justify-center shadow-float"><Play className="size-6 ml-1 fill-current" /></span>
-                    </button>
+                    <video src={phase.result.url} poster={phase.result.poster || undefined} controls playsInline className="size-full object-cover" aria-label="Vidéo UGC générée" />
                     <span className="absolute top-3 left-3 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 backdrop-blur">{phase.result.durationSec} s · 9:16</span>
-                    <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 to-transparent flex items-center gap-2">
-                      <img src={creator.avatarUrl} alt="" className="size-7 rounded-full border border-white/30" />
+                    <div className="pointer-events-none absolute top-10 inset-x-0 p-3 flex items-center gap-2">
                       <div className="min-w-0"><p className="text-xs font-semibold">@{creator.name.toLowerCase()}</p><p className="text-[11px] text-white/70 truncate">{script}</p></div>
                     </div>
                   </>

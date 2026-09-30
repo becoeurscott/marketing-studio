@@ -6,7 +6,9 @@
 import { useStore } from "./store";
 import { CREDIT_COSTS, type AdVariation, type AspectRatio, type Asset, type Campaign, type CopyResult, type CopyTool, type Generation, type ID, type ImageStyle, type Platform, type AdFormat, type Tone, type CampaignFormat, type CampaignObjective } from "./types";
 import { hooks as hookBank } from "@/data/copy";
-import { img, uid } from "./utils";
+import { uid } from "./utils";
+import { runJob, uploadPhoto } from "./higgsfield/client";
+import { creators as creatorsSeed } from "@/data/creators";
 import { languageLabel, type LanguageId } from "./market";
 
 export class ApiError extends Error {
@@ -34,6 +36,39 @@ function record(gen: Omit<Generation, "id" | "createdAt">) {
   return useStore.getState().addGeneration(gen);
 }
 
+/* ---------- Real generation helpers (Higgsfield via /api/hf) ---------- */
+
+/** Runs `work` after charging credits; refunds them if it fails, then rethrows. */
+async function charged<T>(action: keyof typeof CREDIT_COSTS, description: string, multiplier: number, work: () => Promise<T>): Promise<T> {
+  charge(action, description, multiplier);
+  try {
+    return await work();
+  } catch (error) {
+    const cost = CREDIT_COSTS[action] * multiplier;
+    if (cost > 0) useStore.getState().buyCredits(cost, `Remboursement — ${description}`);
+    throw error;
+  }
+}
+
+/** marketing-studio/image supports these ratios; the app's 4:5 maps to the closest one. */
+function imageRatio(r?: AspectRatio): string {
+  if (!r) return "auto";
+  return r === "4:5" ? "3:4" : r;
+}
+
+function assetUrl(id?: ID | null): string | undefined {
+  if (!id) return undefined;
+  const a = useStore.getState().assets.find((x) => x.id === id);
+  return a?.url.startsWith("https://") ? a.url : undefined;
+}
+
+async function images(prompt: string, count: number, opts: { ratio?: AspectRatio; imageUrls?: string[]; upscale?: boolean }): Promise<ImageResult[]> {
+  const jobs = await Promise.all(
+    Array.from({ length: count }, () => runJob({ kind: "image", prompt, aspectRatio: imageRatio(opts.ratio), imageUrls: opts.imageUrls, upscale: opts.upscale })),
+  );
+  return jobs.flatMap((j) => j.images).map((url) => ({ id: uid("res"), url, thumbnail: url, ratio: opts.ratio ?? "4:5", seed: url }));
+}
+
 /* ---------- Image ---------- */
 export interface GenerateImageParams {
   prompt: string;
@@ -50,15 +85,12 @@ export interface GenerateImageParams {
 export interface ImageResult { id: ID; url: string; thumbnail: string; ratio: AspectRatio; seed: string }
 
 export async function generateImage(params: GenerateImageParams): Promise<ImageResult[]> {
-  const count = params.count ?? 4;
-  charge("image", `Génération d’image — ${params.prompt.slice(0, 40)}`, count / 4 < 1 ? 1 : count / 4);
-  await delay(1400, 2500);
-  const [w, h] = ratioToSize(params.ratio ?? "4:5");
-  const results = Array.from({ length: count }, (_, i) => {
-    const seed = `${uid("img")}-${i}`;
-    return { id: uid("res"), url: img(seed, w * 2, h * 2), thumbnail: img(seed, w, h), ratio: params.ratio ?? "4:5", seed };
-  });
-  record({ type: "image", prompt: params.prompt, status: "completed", thumbnails: results.map((r) => r.thumbnail), projectId: params.projectId ?? null, params: { style: params.style ?? "", ratio: params.ratio ?? "" }, creditsUsed: CREDIT_COSTS.image });
+  const count = Math.min(params.count ?? 2, 4);
+  const product = assetUrl(params.productAssetId);
+  const details = [params.style && `style ${params.style}`, params.background && `décor : ${params.background}`, params.lighting && `lumière : ${params.lighting}`, params.camera && `cadrage : ${params.camera}`, params.composition && `composition : ${params.composition}`].filter(Boolean).join(", ");
+  const prompt = `${params.prompt}${details ? `. ${details}` : ""}${product ? ". Garde le produit de la photo fourni exactement identique (forme, couleurs, étiquette)." : ""}`;
+  const results = await charged("image", `Génération d’image — ${params.prompt.slice(0, 40)}`, count, () => images(prompt, count, { ratio: params.ratio, imageUrls: product ? [product] : undefined }));
+  record({ type: "image", prompt: params.prompt, status: "completed", thumbnails: results.map((r) => r.thumbnail), projectId: params.projectId ?? null, params: { style: params.style ?? "", ratio: params.ratio ?? "" }, creditsUsed: CREDIT_COSTS.image * count });
   return results;
 }
 
@@ -78,16 +110,31 @@ export interface GenerateVideoParams {
 }
 export interface VideoResult { id: ID; url: string; thumbnail: string; poster: string; durationSec: number; ratio: AspectRatio }
 
-export async function generateVideo(params: GenerateVideoParams, onProgress?: (step: VideoStep, index: number, progress: number) => void): Promise<VideoResult> {
-  charge("video", `Vidéo — ${params.concept.slice(0, 40)}`);
-  for (let i = 0; i < VIDEO_STEPS.length; i++) {
+type Progress = (step: VideoStep, index: number, progress: number) => void;
+
+/** Maps job states onto the existing progress steps (queued → rendering → done). */
+function stepper(onProgress?: Progress, offset = 0) {
+  return (status: string) => {
+    const i = Math.min(VIDEO_STEPS.length - 1, offset + (status === "queued" ? 1 : status === "in_progress" ? 3 : 4));
     onProgress?.(VIDEO_STEPS[i], i, Math.round(((i + 1) / VIDEO_STEPS.length) * 100));
-    await delay(600, 1100);
-  }
-  const seed = uid("vid");
-  const [w, h] = ratioToSize(params.ratio ?? "9:16");
-  const result: VideoResult = { id: uid("res"), url: params.sourceUrl ?? img(seed, w * 2, h * 2), thumbnail: img(seed, w, h), poster: img(seed, w, h), durationSec: params.durationSec, ratio: params.ratio ?? "9:16" };
-  record({ type: "video", prompt: params.concept, status: "completed", thumbnails: [result.thumbnail], projectId: params.projectId ?? null, params: { durationSec: params.durationSec, camera: params.camera ?? "", style: params.style ?? "" }, creditsUsed: CREDIT_COSTS.video });
+  };
+}
+
+async function video(req: { prompt: string; imageUrl?: string; durationSec: number; ratio?: AspectRatio }, onProgress?: Progress, offset = 0): Promise<VideoResult> {
+  const light = useStore.getState().preferences.lightVideos ?? true;
+  const ratio = req.ratio === "4:5" ? "3:4" : (req.ratio ?? "9:16");
+  const job = await runJob({ kind: "video", prompt: req.prompt, imageUrls: req.imageUrl ? [req.imageUrl] : undefined, durationSec: req.durationSec, aspectRatio: ratio, light }, stepper(onProgress, offset));
+  const url = job.videoUrl!;
+  const poster = req.imageUrl ?? "";
+  return { id: uid("res"), url, thumbnail: poster, poster, durationSec: req.durationSec, ratio: req.ratio ?? "9:16" };
+}
+
+export async function generateVideo(params: GenerateVideoParams, onProgress?: Progress): Promise<VideoResult> {
+  onProgress?.(VIDEO_STEPS[0], 0, 20);
+  const source = params.sourceUrl?.startsWith("https://") ? params.sourceUrl : assetUrl(params.sourceAssetId);
+  const prompt = [params.concept, params.camera && `mouvement de caméra : ${params.camera}`, params.style && `style ${params.style}`].filter(Boolean).join(". ");
+  const result = await charged("video", `Vidéo — ${params.concept.slice(0, 40)}`, 1, () => video({ prompt, imageUrl: source, durationSec: params.durationSec, ratio: params.ratio }, onProgress));
+  record({ type: "video", prompt: params.concept, status: "completed", thumbnails: result.thumbnail ? [result.thumbnail] : [], projectId: params.projectId ?? null, params: { durationSec: params.durationSec, camera: params.camera ?? "", style: params.style ?? "" }, creditsUsed: CREDIT_COSTS.video });
   return result;
 }
 
@@ -103,15 +150,29 @@ export interface GenerateUGCParams {
   durationSec: 5 | 10 | 15;
   projectId?: ID | null;
 }
-export async function generateUGC(params: GenerateUGCParams, onProgress?: (step: VideoStep, index: number, progress: number) => void): Promise<VideoResult> {
-  charge("ugc", `Vidéo UGC — ${params.creatorId.replace("creator_", "")}`);
-  for (let i = 0; i < VIDEO_STEPS.length; i++) {
-    onProgress?.(VIDEO_STEPS[i], i, Math.round(((i + 1) / VIDEO_STEPS.length) * 100));
-    await delay(500, 900);
-  }
-  const seed = uid("ugc");
-  const result: VideoResult = { id: uid("res"), url: img(seed, 1080, 1920), thumbnail: img(seed, 540, 960), poster: img(seed, 540, 960), durationSec: params.durationSec, ratio: "9:16" };
-  record({ type: "video", prompt: params.script, status: "completed", thumbnails: [result.thumbnail], projectId: params.projectId ?? null, params: { creator: params.creatorId, tone: params.tone ?? "", language: params.language ?? "fr", durationSec: params.durationSec }, creditsUsed: CREDIT_COSTS.ugc });
+
+/**
+ * Two steps: 1) an image of the virtual creator holding the product (from the product photo),
+ * 2) that image animated into a selfie-style talking video with audio.
+ */
+export async function generateUGC(params: GenerateUGCParams, onProgress?: Progress): Promise<VideoResult> {
+  const creator = creatorsSeed.find((c) => c.id === params.creatorId);
+  const product = assetUrl(params.productAssetId);
+  const persona = creator ? `${creator.gender === "male" ? "un créateur" : "une créatrice"} africain(e) d’environ ${creator.age} ans${creator.country ? ` (${creator.country})` : ""}, style ${creator.style}` : "une créatrice de contenu africaine";
+  const place = params.location ? `, dans un décor : ${params.location}` : "";
+  const lang = languageLabel(params.language ?? "fr");
+  const result = await charged("ugc", `Vidéo UGC — ${creator?.name ?? "créateur"}`, 1, async () => {
+    onProgress?.(VIDEO_STEPS[0], 0, 20);
+    const frame = await runJob({
+      kind: "image",
+      prompt: `Photo verticale façon selfie UGC : ${persona} tient ce produit face caméra${place}, lumière naturelle, authentique, smartphone.`,
+      aspectRatio: "9:16",
+      imageUrls: product ? [product] : undefined,
+    });
+    onProgress?.(VIDEO_STEPS[1], 1, 40);
+    return video({ prompt: `Vidéo UGC selfie : la personne parle face caméra en ${lang}, ton ${params.tone ?? "authentique"}, et montre le produit. Ce qu’elle dit : « ${params.script} »`, imageUrl: frame.images[0], durationSec: params.durationSec, ratio: "9:16" }, onProgress, 1);
+  });
+  record({ type: "video", prompt: params.script, status: "completed", thumbnails: result.thumbnail ? [result.thumbnail] : [], projectId: params.projectId ?? null, params: { creator: params.creatorId, tone: params.tone ?? "", language: params.language ?? "fr", durationSec: params.durationSec }, creditsUsed: CREDIT_COSTS.ugc });
   return result;
 }
 
@@ -125,13 +186,10 @@ export interface ProductShootParams {
   projectId?: ID | null;
 }
 export async function generateProductShoot(params: ProductShootParams): Promise<ImageResult[]> {
-  const count = params.count ?? 6;
-  charge("product-shoot", `Shooting produit — ${params.environment}`);
-  await delay(1600, 2500);
-  const results = Array.from({ length: count }, (_, i) => {
-    const seed = `${uid("shoot")}-${i}`;
-    return { id: uid("res"), url: img(seed, 1600, 2000), thumbnail: img(seed, 800, 1000), ratio: "4:5" as AspectRatio, seed };
-  });
+  if (!params.productUrl.startsWith("https://")) throw new ApiError("failed", "Importez d’abord une photo de votre produit.");
+  const count = Math.min(params.count ?? 3, 4);
+  const prompt = `Photo produit professionnelle : place ce produit, strictement identique, dans ce décor : ${params.environment}. Éclairage ${params.lighting}, cadrage ${params.camera}. Rendu publicitaire net et réaliste.`;
+  const results = await charged("product-shoot", `Shooting produit — ${params.environment}`, 1, () => images(prompt, count, { ratio: "4:5", imageUrls: [params.productUrl] }));
   record({ type: "image", prompt: `Shooting produit : ${params.environment}, éclairage ${params.lighting}, ${params.camera}`, status: "completed", thumbnails: results.map((r) => r.thumbnail), projectId: params.projectId ?? null, params: { environment: params.environment, lighting: params.lighting, camera: params.camera }, creditsUsed: CREDIT_COSTS["product-shoot"] });
   return results;
 }
@@ -146,11 +204,19 @@ export interface GenerateAdsParams {
   cta: string;
   /** Price shown on the visual, already formatted in local currency ("7 500 FCFA"). */
   price?: string;
+  /** Product photo used as the base of the visuals. */
+  productAssetId?: ID | null;
   projectId?: ID | null;
 }
+
+function adRatio(platform: Platform, format: AdFormat): AspectRatio {
+  if (["story", "reel", "short", "status"].includes(format) || platform === "tiktok" || platform === "whatsapp") return "9:16";
+  if (format === "catalog") return "1:1";
+  if (platform === "youtube" || platform === "google") return "16:9";
+  return "4:5";
+}
+
 export async function generateAds(params: GenerateAdsParams): Promise<AdVariation[]> {
-  charge("ads", `Variantes d’annonce — ${params.platform} ${params.format}`);
-  await delay(1200, 2200);
   const labels = ["A", "B", "C", "D"] as const;
   const headlines = [
     `${params.product}: ${params.offer}`,
@@ -166,10 +232,14 @@ export async function generateAds(params: GenerateAdsParams): Promise<AdVariatio
     `De vrais résultats, de vraies personnes. Découvrez pourquoi ${params.product} cartonne auprès de ${params.audience}.`,
   ];
   const ctas = [params.cta, params.platform === "whatsapp" ? "Commander sur WhatsApp" : "En savoir plus", "Profiter de l’offre", params.cta];
+  const product = assetUrl(params.productAssetId);
+  const prompt = `Visuel publicitaire ${params.format === "flyer" ? "de flyer imprimable" : `pour ${params.platform}`} : ${params.product}. ${params.offer}. Pour ${params.audience}. Laisse de l’espace libre pour le texte et le prix, style marketing africain moderne, couleurs vives.${product ? " Garde le produit de la photo identique." : ""}`;
+  // Two visuals shared by the four copy variants (A/C, B/D) to halve generation cost.
+  const visuals = await charged("ads", `Variantes d’annonce — ${params.platform} ${params.format}`, 1, () => images(prompt, 2, { ratio: adRatio(params.platform, params.format), imageUrls: product ? [product] : undefined }));
   const results = labels.map((label, i) => ({
-    id: uid("var"), label, visual: img(`${uid("ad")}-${label}`, 800, 1000), headline: headlines[i], primaryText: texts[i], cta: ctas[i], platform: params.platform, format: params.format,
+    id: uid("var"), label, visual: visuals[i % visuals.length].url, headline: headlines[i], primaryText: texts[i], cta: ctas[i], platform: params.platform, format: params.format,
   }));
-  record({ type: "ad", prompt: `${params.platform} ${params.format} annonce — ${params.product}, ${params.audience}, ${params.offer}, ${params.cta}`, status: "completed", thumbnails: results.map((r) => r.visual), projectId: params.projectId ?? null, params: { platform: params.platform, format: params.format }, creditsUsed: CREDIT_COSTS.ads });
+  record({ type: "ad", prompt: `${params.platform} ${params.format} annonce — ${params.product}, ${params.audience}, ${params.offer}, ${params.cta}`, status: "completed", thumbnails: visuals.map((v) => v.url), projectId: params.projectId ?? null, params: { platform: params.platform, format: params.format }, creditsUsed: CREDIT_COSTS.ads });
   return results;
 }
 
@@ -249,38 +319,64 @@ export interface ExportParams {
   printSize?: "A5" | "A4" | "A3";
   campaignId?: ID;
 }
+/**
+ * Collects the real files of the selected assets and records the export. Files are downloaded
+ * in their generated format; conversion and print layout (PDF) are not done server-side yet.
+ */
 export async function exportAssets(params: ExportParams, onProgress?: (progress: number, label: string) => void): Promise<Asset> {
-  const total = Math.max(params.assetIds.length, 1);
-  for (let i = 0; i < total; i++) {
-    onProgress?.(Math.round(((i + 1) / total) * 90), `Export ${i + 1} sur ${total}`);
-    await delay(250, 500);
-  }
-  onProgress?.(100, "Empaquetage");
-  await delay(400);
-  const name = params.campaignId ? `Export campagne.${params.format === "mp4" ? "mp4" : "zip"}` : `Export ${new Date().toLocaleDateString("fr-FR").replace(/\//g, "-")}.${total > 1 ? "zip" : params.format}`;
-  const asset = useStore.getState().addAsset({ name, type: "export", url: img(uid("exp"), 1200, 1500), thumbnail: img(uid("exp"), 800, 1000), projectId: useStore.getState().currentProjectId, favorite: false, sizeKb: (params.quality === "light" ? 450 : 1800) * total, tags: ["export", params.format, params.quality, ...(params.printSize ? [params.printSize] : [])] });
-  useStore.getState().pushNotification({ kind: "export-complete", title: "Export terminé", body: `${name} est prêt à être téléchargé.`, href: "/assets" });
+  const store = useStore.getState();
+  const files = params.assetIds.map((id) => store.assets.find((a) => a.id === id)).filter((a): a is Asset => !!a && a.url.startsWith("https://"));
+  if (!files.length) throw new ApiError("failed", "Aucun fichier réel à exporter : générez ou importez d’abord des contenus.");
+  onProgress?.(60, "Préparation des fichiers");
+  await delay(200);
+  onProgress?.(100, "Prêt");
+  const name = params.campaignId ? `Export campagne (${files.length} fichiers)` : `Export ${new Date().toLocaleDateString("fr-FR").replace(/\//g, "-")} (${files.length} fichier${files.length > 1 ? "s" : ""})`;
+  const asset = store.addAsset({ name, type: "export", url: files[0].url, thumbnail: files[0].thumbnail, projectId: store.currentProjectId, favorite: false, sizeKb: files.reduce((n, f) => n + f.sizeKb, 0), tags: ["export", params.format, params.quality, ...files.map((f) => `file:${f.url}`)] });
+  store.pushNotification({ kind: "export-complete", title: "Export prêt", body: `${name} est prêt à être téléchargé.`, href: "/assets" });
   return asset;
+}
+
+/** URLs of the files included in an export asset. */
+export function exportFiles(asset: Asset): string[] {
+  const urls = asset.tags.filter((t) => t.startsWith("file:")).map((t) => t.slice(5));
+  return urls.length ? urls : [asset.url];
+}
+
+/* ---------- Edit ---------- */
+const EDIT_INSTRUCTIONS: Record<string, string> = {
+  Crop: "Recadre l’image sur le sujet principal",
+  Resize: "Adapte l’image au nouveau format sans déformer le sujet",
+  "Remove Background": "Supprime l’arrière-plan : produit détouré sur fond blanc uni",
+  "Replace Background": "Remplace l’arrière-plan",
+  Relight: "Refais l’éclairage de la scène",
+  Retouch: "Retouche l’image : nettoie les défauts, améliore la netteté et les couleurs",
+  "Add Text": "Ajoute ce texte de façon lisible et soignée",
+  "Add Logo": "Ajoute un emplacement de logo discret",
+  "Expand Image": "Agrandis la scène autour du sujet en gardant le même style",
+};
+
+/** Real edit of an existing generated/uploaded image (marketing-studio/image in edit mode). */
+export async function editImage(params: { url: string; tool: string; instruction?: string; ratio: AspectRatio }): Promise<ImageResult> {
+  if (!params.url.startsWith("https://")) throw new ApiError("failed", "Cette image ne peut pas être modifiée : générez-la ou importez-la d’abord.");
+  const prompt = `${EDIT_INSTRUCTIONS[params.tool] ?? "Modifie l’image"}${params.instruction ? ` : ${params.instruction}` : "."} Garde le produit identique.`;
+  const [result] = await charged("image", `Retouche — ${params.tool}`, 1, () => images(prompt, 1, { ratio: params.ratio, imageUrls: [params.url] }));
+  return result;
 }
 
 /* ---------- Upscale ---------- */
 export async function upscaleImage(params: { url: string; assetId?: ID; projectId?: ID | null }): Promise<ImageResult> {
-  charge("upscale", `Agrandissement d’image${params.assetId ? ` — ${params.assetId}` : ""}`);
-  await delay(1200, 2000);
-  const seed = uid("up");
-  return { id: uid("res"), url: img(seed, 2400, 3000), thumbnail: img(seed, 800, 1000), ratio: "4:5", seed };
+  const [result] = await charged("upscale", "Agrandissement d’image", 1, () => images("Même image, identique, en très haute définition : détails plus nets, sans rien changer.", 1, { imageUrls: [params.url], upscale: true }));
+  return result;
 }
 
 /* ---------- Upload ---------- */
-export async function uploadProduct(file: { name: string; size?: number; projectId?: ID | null }, onProgress?: (progress: number) => void): Promise<Asset> {
-  // "Phone photo" mode: background removal + light and sharpness fix, for quick or blurry phone shots.
+export async function uploadProduct(file: File, opts: { projectId?: ID | null } = {}, onProgress?: (progress: number) => void): Promise<Asset> {
+  onProgress?.(20);
+  const url = await uploadPhoto(file);
+  onProgress?.(100);
+  // "Phone photo" mode: the clean-up happens in the generation prompts (background, light, sharpness).
   const enhance = useStore.getState().preferences.phonePhotoMode ?? true;
-  for (let p = 10; p <= 100; p += enhance ? 15 : 30) {
-    onProgress?.(Math.min(p, 100));
-    await delay(150, 300);
-  }
-  const seed = uid("upload");
-  return useStore.getState().addAsset({ name: file.name, type: "image", url: img(seed, 1600, 2000), thumbnail: img(seed, 800, 1000), projectId: file.projectId ?? useStore.getState().currentProjectId, favorite: false, width: 1600, height: 2000, sizeKb: Math.round((file.size ?? 900000) / 1024), tags: ["upload", "product", ...(enhance ? ["améliorée"] : [])] });
+  return useStore.getState().addAsset({ name: file.name, type: "image", url, thumbnail: url, projectId: opts.projectId ?? useStore.getState().currentProjectId, favorite: false, sizeKb: Math.round(file.size / 1024), tags: ["upload", "product", ...(enhance ? ["améliorée"] : [])] });
 }
 
 /** Toast subtitle after an upload, mentioning the automatic clean-up when it ran. */

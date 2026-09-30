@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui/Modal";
 import { ProgressBar } from "@/components/ui/ProgressIndicator";
 import { Select } from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
-import { exportAssets, type ExportParams } from "@/lib/api";
+import { exportAssets, exportFiles, type ExportParams } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import type { Asset, ID } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -97,7 +97,7 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
         <h3 className="text-lg font-semibold mt-3">Export prêt</h3>
         <p className="text-sm text-text2 mt-1">{done.name} · {itemCount(ids.length)} · {format.toUpperCase()} · {qualityLabel(quality)}</p>
         <div className="flex items-center justify-center gap-2 mt-6">
-          <Button leftIcon={<Download className="size-4" />} onClick={() => toast.info("Téléchargement lancé", done.name)}>Télécharger</Button>
+          <Button leftIcon={<Download className="size-4" />} onClick={() => { exportFiles(done).forEach((u) => window.open(u, "_blank", "noopener")); toast.info("Téléchargement lancé", done.name); }}>Télécharger</Button>
           <Link href={`/assets/${done.id}`}><Button variant="secondary" onClick={onClose}>Voir dans les ressources</Button></Link>
         </div>
       </div>

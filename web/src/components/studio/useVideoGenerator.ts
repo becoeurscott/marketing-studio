@@ -6,7 +6,7 @@ import { ApiError, generateUGC, generateVideo, VIDEO_STEPS, type VideoResult } f
 import { creators } from "@/data";
 import { useStore } from "@/lib/store";
 import type { Asset } from "@/lib/types";
-import { SAMPLE_VIDEO_URL, VIDEO_CAMERAS, VIDEO_STYLES, type DurationSec, type VideoParams } from "./constants";
+import { VIDEO_CAMERAS, VIDEO_STYLES, type DurationSec, type VideoParams } from "./constants";
 import type { GenError } from "./useImageGenerator";
 
 /** Video-generation state for Studio VIDEO mode and /studio/video (SPEC §14). */
@@ -52,8 +52,7 @@ export function useVideoGenerator() {
       const out = kind === "ugc" && creatorId
         ? await generateUGC({ creatorId, script: params.concept, durationSec: params.durationSec, productAssetId: params.sourceAssetId, tone: params.style, projectId: currentProjectId }, (_label, index) => setStep(index))
         : await generateVideo({ ...params, sourceUrl: src?.url, projectId: currentProjectId }, (_label, index) => setStep(index));
-      // Mock player plays a free sample clip; poster is the generated frame.
-      setResult({ ...out, url: SAMPLE_VIDEO_URL, poster: src?.url ?? out.poster, thumbnail: src?.thumbnail ?? out.thumbnail });
+      setResult({ ...out, poster: out.poster || src?.url || "", thumbnail: out.thumbnail || src?.thumbnail || "" });
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "failed";
       setError({ code, message: err instanceof Error ? err.message : "Erreur inconnue" });

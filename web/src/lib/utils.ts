@@ -28,13 +28,23 @@ export function slugify(input: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
-/** Seeded placeholder image. */
-export function img(seed: string, w = 800, h = 1000): string {
-  return `https://picsum.photos/seed/${slugify(seed)}/${w}/${h}`;
+const svgUri = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+const PALETTES = [["#F97316", "#FACC15"], ["#16A34A", "#FACC15"], ["#EA580C", "#16A34A"], ["#0A0A0A", "#F97316"]];
+const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+
+/** Local placeholder graphic (no stock photo): brand gradient with an optional label. */
+export function img(seed: string, w = 800, h = 1000, label = ""): string {
+  const [a, b] = PALETTES[hash(seed) % PALETTES.length];
+  const text = label ? `<text x="50%" y="50%" fill="#0A0A0A" font-family="Inter,system-ui,sans-serif" font-size="${Math.round(w / 16)}" font-weight="700" text-anchor="middle" dominant-baseline="middle">${label.replace(/[<&>"]/g, "")}</text>` : "";
+  return svgUri(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/>${text}</svg>`);
 }
 
-export function avatar(n: number): string {
-  return `https://i.pravatar.cc/300?img=${n}`;
+/** Initials avatar (no stock face). `n` picks a color variant, or pass a name. */
+export function avatar(n: number | string): string {
+  const name = typeof n === "string" ? n : "";
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("") || "S";
+  const [a, b] = PALETTES[(typeof n === "number" ? n : hash(name)) % PALETTES.length];
+  return svgUri(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="300" height="300" fill="url(#g)"/><text x="50%" y="52%" fill="#0A0A0A" font-family="Inter,system-ui,sans-serif" font-size="120" font-weight="700" text-anchor="middle" dominant-baseline="middle">${initials}</text></svg>`);
 }
 
 export function formatDate(iso: string, opts?: Intl.DateTimeFormatOptions): string {
@@ -72,4 +82,16 @@ export function greetingForHour(hour: number): string {
   if (hour < 12) return "Bonjour";
   if (hour < 18) return "Bon après-midi";
   return "Bonsoir";
+}
+
+/** Opens a generated file for download (cross-origin files open in a new tab). */
+export function downloadUrl(url: string, filename?: string): void {
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener";
+  if (filename) a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }

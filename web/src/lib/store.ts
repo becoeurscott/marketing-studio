@@ -9,7 +9,7 @@ import type {
   Preferences, Project, SavedHook, User, WorkspaceMember, WorkspaceRole,
 } from "./types";
 import * as seed from "@/data";
-import { uid } from "./utils";
+import { avatar, img, uid } from "./utils";
 import { DEFAULT_COUNTRY, type CountryCode } from "./market";
 
 /* ---------- State shape ---------- */
@@ -107,8 +107,8 @@ export interface StoreActions {
 
 export type Store = StoreState & StoreActions;
 
-// Bumped to 2 for the African-market seed data (re-seeds prototype data).
-const SEED_VERSION = 2;
+// Bumped to 3: demo data removed, accounts start empty (re-seeds local data once).
+const SEED_VERSION = 3;
 
 function initialState(): StoreState {
   return {
@@ -122,9 +122,9 @@ function initialState(): StoreState {
     generations: seed.generations,
     favorites: {
       asset: seed.assets.filter((a) => a.favorite).map((a) => a.id),
-      template: ["tpl_1", "tpl_2", "tpl_5"],
+      template: [],
       prompt: [],
-      creator: ["creator_maya", "creator_sofia"],
+      creator: [],
     },
     brands: seed.brands,
     currentBrandId: seed.brand.id,
@@ -169,7 +169,7 @@ export const useStore = create<Store>()(
           name,
           description,
           brandId: brandId ?? get().currentBrandId,
-          thumbnail: `https://picsum.photos/seed/${encodeURIComponent(name.toLowerCase().replace(/\s+/g, "-"))}/800/600`,
+          thumbnail: img(name, 800, 600, name),
           status: "active",
           createdAt: now(),
           updatedAt: now(),
@@ -260,7 +260,7 @@ export const useStore = create<Store>()(
       addBrand: (input) => {
         const b: Brand = {
           id: uid("brand"),
-          logoUrl: `https://picsum.photos/seed/${uid("logo")}/400/400`,
+          logoUrl: "",
           colors: ["#FFFFFF", "#1C1C1C", "#F97316"],
           fonts: { heading: "Inter", body: "Inter" },
           website: "",
@@ -311,7 +311,7 @@ export const useStore = create<Store>()(
           name,
           email,
           role,
-          avatarUrl: `https://i.pravatar.cc/300?img=${(email.length * 7) % 70}`,
+          avatarUrl: avatar(name),
           status: "invited",
           joinedAt: now(),
         };

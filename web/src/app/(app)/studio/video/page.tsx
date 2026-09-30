@@ -19,6 +19,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useStore } from "@/lib/store";
 import { CREDIT_COSTS } from "@/lib/types";
 import { VIDEO_CAMERA_LABELS, VIDEO_STYLE_LABELS } from "@/components/studio/constants";
+import { downloadUrl } from "@/lib/utils";
 
 /** SPEC §14: source image, concept, duration, ratio, camera, style → step progress → mock player. */
 export default function VideoGeneratorPage() {
@@ -48,7 +49,7 @@ export default function VideoGeneratorPage() {
         <div className="flex flex-col gap-4">
           <VideoPlayer result={vid.result} className="max-w-3xl mx-auto w-full" />
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Button variant="secondary" size="sm" leftIcon={<Download className="size-4" />} onClick={() => { const a = vid.ensureAsset(); toast.success("Téléchargement lancé", `${a?.name}.mp4 · ${vid.result?.durationSec} s`); }}>Télécharger</Button>
+            <Button variant="secondary" size="sm" leftIcon={<Download className="size-4" />} onClick={() => { const a = vid.ensureAsset(); if (vid.result) downloadUrl(vid.result.url, a?.name); toast.success("Téléchargement lancé", `${a?.name} · ${vid.result?.durationSec} s`); }}>Télécharger</Button>
             <Button variant="secondary" size="sm" leftIcon={<Heart className={fav ? "size-4 fill-current text-highlight" : "size-4"} />} onClick={() => { const a = vid.ensureAsset(); if (a) { toggleFavorite("asset", a.id); toast.info(fav ? "Retiré des favoris" : "Ajouté aux favoris", a.name); } }}>{fav ? "En favori" : "Favori"}</Button>
             <Button variant="secondary" size="sm" leftIcon={<Megaphone className="size-4" />} onClick={() => setCampaign(true)}>Utiliser dans une campagne</Button>
             <Button variant="secondary" size="sm" leftIcon={<RefreshCw className="size-4" />} onClick={() => void vid.generate()}>Régénérer</Button>

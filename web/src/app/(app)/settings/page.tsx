@@ -603,8 +603,8 @@ function HelpSection() {
       <Card>
         <CardHeader title="À propos" />
         <dl className="grid grid-cols-2 gap-y-2 text-[13px]">
-          <dt className="text-text2">Version</dt><dd>0.9.0 (prototype)</dd>
-          <dt className="text-text2">Build</dt><dd>Next.js · frontend uniquement, API simulées</dd>
+          <dt className="text-text2">Version</dt><dd>0.10.0 (bêta)</dd>
+          <dt className="text-text2">Build</dt><dd>Next.js · génération Higgsfield (images Marketing Studio, vidéos Seedance 2.5)</dd>
           <dt className="text-text2">Données</dt><dd>Stockées localement dans ce navigateur</dd>
         </dl>
       </Card>

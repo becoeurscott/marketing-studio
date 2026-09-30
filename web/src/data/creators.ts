@@ -5,7 +5,7 @@ import { avatar } from "@/lib/utils";
 // Ids are kept from the previous seed so existing references stay valid.
 type R = [string, string, Creator["gender"], number, string, string[], string, number, string, boolean];
 
-// Avatars are placeholders; replace with generated African portraits before launch.
+// Avatars are initials placeholders; replace with generated African portraits (Higgsfield) before launch.
 const rows: R[] = [
   ["creator_maya", "Aïcha", "female", 24, "Beauté", ["Français", "Dioula"], "Côte d'Ivoire", 47, "Routines karité, soins naturels et conseils peau. Ton chaleureux de grande sœur.", true],
   ["creator_jordan", "Kofi", "male", 29, "Tech & téléphones", ["Français", "Anglais"], "Côte d'Ivoire", 33, "Déballages de téléphones et tests honnêtes, du marché d'Adjamé à la boutique.", true],
@@ -25,9 +25,9 @@ const rows: R[] = [
   ["creator_zara", "Wanjiru", "female", 29, "Luxe & élégance", ["Anglais", "Swahili"], "Kenya", 32, "Finition éditoriale, révélations lentes et cadrages élégants.", false],
 ];
 
-export const creators: Creator[] = rows.map(([id, name, gender, age, style, languages, country, av, bio, featured], i) => ({
+export const creators: Creator[] = rows.map(([id, name, gender, age, style, languages, country, , bio, featured]) => ({
   id,
   name, gender, age, style, languages, country, bio, featured,
   ageRange: age < 25 ? "18–24" : age < 30 ? "25–29" : age < 35 ? "30–34" : "35+",
-  avatarUrl: avatar(av + (i % 2)),
+  avatarUrl: avatar(name),
 }));

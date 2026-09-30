@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, CalendarHeart, Camera, FolderKanban, Images, Megaphone, PenLine, Sparkles, TrendingUp, Users, Video, Wand2, Play } from "lucide-react";
+import { ArrowRight, CalendarHeart, FolderKanban, Images, Megaphone, Sparkles, Wand2, Play } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { templates } from "@/data/templates";
-import { trendingFormats } from "@/data/analytics";
 import { useStore } from "@/lib/store";
 import { cn, formatNumber, greetingForHour, timeAgo } from "@/lib/utils";
 import { AD_FORMAT_LABELS, GENERATION_TYPE_LABELS, labelOf } from "@/lib/labels";
@@ -19,8 +18,6 @@ import { platformLabel } from "@/components/library/TemplateCard";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { studioRouteForMode } from "@/components/studio/useTemplatePreset";
 import { upcomingMoments } from "@/lib/market";
-
-const modeIcon: Record<string, typeof Wand2> = { image: Images, video: Video, ugc: Users, "product-shoot": Camera, ads: Megaphone, copy: PenLine };
 
 export default function HomePage() {
   const router = useRouter();
@@ -57,7 +54,7 @@ export default function HomePage() {
   return (
     <>
       <PageHeader
-        title={`${greeting}, ${user.name.split(" ")[0]}.`}
+        title={user.name && user.name !== "Mon compte" ? `${greeting}, ${user.name.split(" ")[0]}.` : `${greeting} !`}
         description="Que créons-nous aujourd’hui ?"
         actions={<Button size="lg" leftIcon={<Wand2 className="size-4" />} onClick={() => router.push("/studio")}>Créer quelque chose</Button>}
       />
@@ -147,26 +144,6 @@ export default function HomePage() {
               <p className="text-[11px] text-muted mt-1.5">{platformLabel(t.platform)} · {labelOf(AD_FORMAT_LABELS, t.format)}</p>
             </Link>
           ))}
-        </div>
-      </Section>
-
-      <Section title="Formats tendance" description="Ce qui fonctionne le mieux sur le studio cette semaine.">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
-          {trendingFormats.map((f) => {
-            const Icon = modeIcon[f.mode] ?? Wand2;
-            return (
-              <Card key={f.id} interactive onClick={() => router.push(`/studio/${f.mode}`)} className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <span className="size-8 rounded-md bg-elevated border border-border flex items-center justify-center text-text2"><Icon className="size-4" /></span>
-                  <span className="text-xs font-medium text-success flex items-center gap-1"><TrendingUp className="size-3.5" />{f.growth}</span>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">{f.title}</p>
-                  <p className="text-xs text-text2 mt-0.5 leading-relaxed">{f.description}</p>
-                </div>
-              </Card>
-            );
-          })}
         </div>
       </Section>
 

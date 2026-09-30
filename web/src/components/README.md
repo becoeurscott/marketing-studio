@@ -21,7 +21,7 @@ lib/
   types.ts   All domain types + constants (PLATFORMS, IMAGE_STYLES, RATIOS, CREDIT_COSTS)
   store.ts   zustand store (persist → localStorage key `ms-store`), `useHydrated()`, selectors
   api.ts     Mock async API (delays, progress callbacks, credit deduction)
-  utils.ts   cn(), uid(), img(seed,w,h), avatar(n), formatDate, timeAgo, formatNumber, daysAgo
+  utils.ts   cn(), uid(), img(seed,w,h,label) placeholder, avatar(n|name) initials, formatDate, timeAgo, formatNumber, daysAgo
 ```
 
 ## Design tokens (Tailwind v4 `@theme` in `app/globals.css`)
@@ -55,7 +55,7 @@ Accent is for primary actions + selection only. Everything else stays neutral.
 | `Tooltip` | CSS-only hover tooltip |
 | `Avatar` | `src`, `name` (initials fallback), `size` |
 
-Conventions: `"use client"` on anything with state/handlers; `cn()` for classes; lucide icons at `size-4` inside buttons; `<img>` (not next/image) for picsum/pravatar URLs (`img()` / `avatar()` helpers).
+Conventions: `"use client"` on anything with state/handlers; `cn()` for classes; lucide icons at `size-4` inside buttons; `<img>` (not next/image) for generated URLs and the local `img()` / `avatar()` placeholder helpers.
 
 ## App shell
 

@@ -47,3 +47,6 @@ next-env.d.ts
 # duplicate/offloaded build folders (e.g. iCloud .nosync copies)
 /.next*
 /node_modules*
+
+# Template listing required variables (no secrets)
+!.env.example

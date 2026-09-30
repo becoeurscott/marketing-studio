@@ -31,11 +31,11 @@ export function ProductPicker({ value, onChange, limit = 8, allowUpload = true }
     if (!f) return;
     setUploading(0);
     try {
-      const asset = await uploadProduct({ name: f.name, size: f.size }, setUploading);
+      const asset = await uploadProduct(f, {}, setUploading);
       onChange(asset);
       toast.success("Produit importé", uploadSummary(asset));
-    } catch {
-      toast.error("Échec de l'import", "Veuillez réessayer.");
+    } catch (err) {
+      toast.error("Échec de l'import", err instanceof Error ? err.message : "Veuillez réessayer.");
     } finally {
       setUploading(null);
     }

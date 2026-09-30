@@ -16,7 +16,7 @@ import { Tabs } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
 import { useStore } from "@/lib/store";
 import type { Asset, AssetType } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, downloadUrl } from "@/lib/utils";
 
 type TypeTab = "all" | AssetType;
 type DateFilter = "any" | "7d" | "30d";
@@ -127,7 +127,7 @@ export default function AssetsPage() {
                   onSelect={toggleSelect}
                   href={selecting ? undefined : `/assets/${a.id}`}
                   onPreview={setPreview}
-                  onDownload={(x) => toast.success("Téléchargement lancé", x.name)}
+                  onDownload={(x) => { downloadUrl(x.url, x.name); toast.success("Téléchargement lancé", x.name); }}
                   onRename={setRenaming}
                   onMove={(x) => setMoving([x])}
                   onDelete={(x) => setDeleting([x])}
