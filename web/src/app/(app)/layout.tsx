@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { AppShell } from "@/components/shell/AppShell";
-import { useHydrated, useStore } from "@/lib/store";
+import { useHydrated } from "@/lib/store";
+import { AuthSync } from "./AuthSync";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function BootScreen() {
@@ -21,15 +21,17 @@ function BootScreen() {
   );
 }
 
+/**
+ * Signed-in area (the proxy redirects visitors to /connexion). Onboarding runs right after sign-up,
+ * so a returning user on a new device goes straight to the app instead of being sent back to it.
+ */
 export default function AppLayout({ children }: { children: ReactNode }) {
   const hydrated = useHydrated();
-  const onboardingDone = useStore((s) => s.onboardingDone);
-  const router = useRouter();
-
-  useEffect(() => {
-    if (hydrated && !onboardingDone) router.replace("/onboarding");
-  }, [hydrated, onboardingDone, router]);
-
-  if (!hydrated || !onboardingDone) return <BootScreen />;
-  return <AppShell>{children}</AppShell>;
+  if (!hydrated) return <BootScreen />;
+  return (
+    <AppShell>
+      <AuthSync />
+      {children}
+    </AppShell>
+  );
 }

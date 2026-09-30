@@ -1,9 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChevronsLeft, ChevronsRight, Sparkles } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, LogOut, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "@/app/(auth)/actions";
 import { useStore } from "@/lib/store";
 import { cn, formatNumber } from "@/lib/utils";
 import { Avatar } from "@/components/ui/Avatar";
@@ -78,10 +79,19 @@ export function Sidebar() {
           {!collapsed && (
             <span className="min-w-0">
               <span className="block text-[13px] font-medium truncate">{user.name}</span>
-              <span className="block text-[11px] text-muted truncate">{user.company}</span>
+              <span className="block text-[11px] text-muted truncate">{user.company || user.email}</span>
             </span>
           )}
         </Link>
+        <form action={signOut}>
+          <button
+            type="submit"
+            title="Se déconnecter"
+            className={cn("flex items-center h-8 w-full rounded-md text-[12px] text-muted hover:text-text hover:bg-white/4 transition-colors", collapsed ? "justify-center" : "px-2.5 gap-3")}
+          >
+            <LogOut className="size-4" />{!collapsed && "Se déconnecter"}
+          </button>
+        </form>
         <button
           onClick={() => setSidebarCollapsed(!collapsed)}
           className={cn("flex items-center h-8 w-full rounded-md text-[12px] text-muted hover:text-text hover:bg-white/4 transition-colors", collapsed ? "justify-center" : "px-2.5 gap-3")}

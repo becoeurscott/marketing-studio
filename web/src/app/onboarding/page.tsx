@@ -5,7 +5,7 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { StepDots } from "@/components/ui/ProgressIndicator";
-import { AccountScreen, PaywallScreen } from "@/components/onboarding/FinishScreens";
+import { PaywallScreen } from "@/components/onboarding/FinishScreens";
 import { AnalysisScreen, OpeningScreen, UploadScreen } from "@/components/onboarding/IntroScreens";
 import { BoldnessScreen, BrandScreen, GoalScreen, PlatformsScreen, StyleScreen } from "@/components/onboarding/QuestionScreens";
 import {
@@ -18,7 +18,7 @@ import type { CampaignObjective, PlanId } from "@/lib/types";
 
 const STEPS = [
   "opening", "upload", "analysis", "goal", "platforms", "style", "brand", "boldness", "generation",
-  "photos", "ugc", "ads", "copy", "campaign", "formats", "value", "workflow", "card", "calendar", "account", "paywall",
+  "photos", "ugc", "ads", "copy", "campaign", "formats", "value", "workflow", "card", "calendar", "paywall",
 ] as const;
 type Step = (typeof STEPS)[number];
 
@@ -102,7 +102,7 @@ export default function OnboardingPage() {
 
   const screen = (() => {
     switch (step) {
-      case "opening": return <OpeningScreen onStart={next} onLogin={() => router.push("/home")} />;
+      case "opening": return <OpeningScreen onStart={next} onLogin={() => { complete(); router.push("/home"); }} />;
       case "upload": return <UploadScreen onPick={(p) => { saveProduct(p); go("analysis"); }} />;
       case "analysis": return <AnalysisScreen product={product} onChange={saveProduct} onConfirm={next} />;
       case "goal": return <GoalScreen value={answers.goal} onChange={(v) => setAnswers({ goal: v })} onNext={next} />;
@@ -121,7 +121,6 @@ export default function OnboardingPage() {
       case "workflow": return <WorkflowScreen onNext={next} />;
       case "card": return <CampaignCardScreen product={product} platformsCount={answers.platforms.length} onNext={next} />;
       case "calendar": return <CalendarScreen product={product} onNext={next} />;
-      case "account": return <AccountScreen product={product} onNext={next} />;
       case "paywall": return <PaywallScreen product={product} onFinish={finish} />;
     }
   })();

@@ -15,7 +15,8 @@ import { cn } from "@/lib/utils";
 import { CREATIVES, Creative } from "./Creative";
 import { CtaButton, EASE, Particles } from "./motion";
 
-export const DEMO_HREF = "/onboarding";
+/** Every "try it" CTA leads to account creation; onboarding follows sign-up. */
+export const DEMO_HREF = "/inscription";
 
 const NAV = [
   { href: "#fonctionnalites", label: "Fonctionnalités" },
@@ -64,6 +65,10 @@ export function SiteHeader() {
             </a>
           ))}
         </nav>
+        <div className="flex items-center gap-2">
+        <Link href="/connexion" className="hidden sm:inline-flex h-9 items-center px-3 text-sm text-text2 hover:text-text transition-colors">
+          Connexion
+        </Link>
         <Link
           href={DEMO_HREF}
           className="group inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition-colors"
@@ -71,6 +76,7 @@ export function SiteHeader() {
           Commencer
           <span className="transition-transform group-hover:translate-x-0.5">↗</span>
         </Link>
+        </div>
       </div>
     </motion.header>
   );

@@ -1,32 +1,12 @@
 "use client";
 
-import { ArrowRight, Check, Mail } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useMoney } from "@/components/account/PaymentMethodPicker";
 import { cn } from "@/lib/utils";
 import { TOTAL } from "./RevealScreens";
 import { CtaBar, Img, MEDIA, ScreenTitle, type ProductInfo } from "./shared";
-
-/* 20. Account (mock) */
-export function AccountScreen({ product, onNext }: { product: ProductInfo; onNext: () => void }) {
-  const isApple = typeof navigator !== "undefined" && /iPhone|iPad|Mac/i.test(navigator.userAgent);
-  const google = <Button key="g" variant={isApple ? "secondary" : "primary"} size="lg" fullWidth onClick={onNext}>Continuer avec Google</Button>;
-  const apple = <Button key="a" variant={isApple ? "primary" : "secondary"} size="lg" fullWidth onClick={onNext}>Continuer avec Apple</Button>;
-  return (
-    <div className="w-full max-w-sm">
-      <div className="mx-auto size-20 rounded-2xl overflow-hidden border border-accent/50 shadow-glow mb-5">
-        <Img src={product.image} alt={product.name} />
-      </div>
-      <ScreenTitle title="Sauvegardez votre campagne." subtitle={`Vos ${TOTAL} contenus sont prêts.`} />
-      <div className="space-y-2.5">
-        {isApple ? [apple, google] : [google, apple]}
-        <Button variant="ghost" size="lg" fullWidth leftIcon={<Mail className="size-4" />} onClick={onNext}>Continuer avec un e-mail</Button>
-      </div>
-      <p className="text-[11px] text-muted text-center mt-4">En continuant, vous acceptez les conditions d&apos;utilisation de Sokozia.</p>
-    </div>
-  );
-}
 
 /* 21. Paywall */
 /** Prices in FCFA, shown in the user's currency. "free" = pay-as-you-go pack, no subscription. */

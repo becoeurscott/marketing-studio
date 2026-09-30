@@ -53,7 +53,7 @@ export function OpeningScreen({ onStart, onLogin }: { onStart: () => void; onLog
         </motion.div>
       </div>
       <CtaBar>
-        <Button variant="ghost" size="lg" onClick={onLogin}>J&apos;ai déjà un compte</Button>
+        <Button variant="ghost" size="lg" onClick={onLogin}>Passer, aller à mon espace</Button>
         <Button size="lg" onClick={onStart} rightIcon={<ArrowRight className="size-4" />}>Créer ma première campagne</Button>
       </CtaBar>
     </div>
