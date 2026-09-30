@@ -14,9 +14,9 @@ import { generateProductShoot, uploadProduct, type ImageResult } from "@/lib/api
 import { useTemplatePreset } from "@/components/studio/useTemplatePreset";
 import { useStore } from "@/lib/store";
 import { CREDIT_COSTS, type Asset } from "@/lib/types";
+import { SOKOZIA_STYLES, styleById } from "@/lib/styles";
 import { cn, downloadUrl } from "@/lib/utils";
 
-const ENVIRONMENTS = ["Salle de bain de luxe", "Cuisine moderne", "Plage", "Bureau", "Rue", "Studio", "Restaurant", "Salle de sport", "Intérieur de voiture"];
 const LIGHTING = ["Naturelle", "Heure dorée", "Studio", "Néon", "Softbox", "Dramatique"];
 const CAMERAS = ["Gros plan", "Plan moyen", "Plan large", "Macro"];
 
@@ -31,9 +31,10 @@ export default function ProductShootPage() {
 
   const [productId, setProductId] = useState<string | null>(null);
   const { template, preset } = useTemplatePreset("product-shoot");
-  const [environment, setEnvironment] = useState(() => (preset?.style === "Studio" ? "Studio" : ENVIRONMENTS[0]));
   const [lighting, setLighting] = useState(() => (preset?.style === "Studio" ? "Studio" : LIGHTING[0]));
   const [camera, setCamera] = useState(CAMERAS[1]);
+  const [styleId, setStyleId] = useState<string>(SOKOZIA_STYLES[0].id);
+  const style = styleById(styleId)!;
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [selected, setSelected] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -66,10 +67,10 @@ export default function ProductShootPage() {
     setPhase({ kind: "loading" });
     setSelected(null);
     try {
-      const results = await generateProductShoot({ productUrl: product.url, environment, lighting, camera, projectId: currentProjectId });
+      const results = await generateProductShoot({ productUrl: product.url, environment: style.name, lighting, camera, styleDirection: style.direction, styleName: style.name, projectId: currentProjectId });
       setPhase({ kind: "done", results });
       setSelected(results[0]?.id ?? null);
-      toast.success("Shooting produit prêt", `${results.length} photos · ${environment}`);
+      toast.success("Shooting produit prêt", `${results.length} photos · ${style.name}`);
     } catch (error) {
       setPhase({ kind: "error", error });
     }
@@ -78,11 +79,11 @@ export default function ProductShootPage() {
   function save(r: ImageResult): Asset {
     const existing = saved[r.id] && assets.find((a) => a.id === saved[r.id]);
     if (existing) return existing;
-    const asset = addAsset({ name: `${product?.name ?? "Produit"} — ${environment}`, type: "image", url: r.url, thumbnail: r.thumbnail, projectId: currentProjectId, favorite: favorites.includes(r.id), width: 1600, height: 2000, sizeKb: 1400, tags: ["product-shoot", environment.toLowerCase(), lighting.toLowerCase(), camera.toLowerCase()] });
+    const asset = addAsset({ name: `${product?.name ?? "Produit"} — ${style.name}`, type: "image", url: r.url, thumbnail: r.thumbnail, projectId: currentProjectId, favorite: favorites.includes(r.id), width: 1600, height: 2000, sizeKb: 1400, tags: ["product-shoot", style.id, lighting.toLowerCase(), camera.toLowerCase()] });
     setSaved((s) => ({ ...s, [r.id]: asset.id }));
     return asset;
   }
-  function download(r: ImageResult) { downloadUrl(r.url, `${environment} · ${camera}`); toast.success("Téléchargement lancé", `${environment} · ${camera}`); }
+  function download(r: ImageResult) { downloadUrl(r.url, `${style.name} · ${camera}`); toast.success("Téléchargement lancé", `${style.name} · ${camera}`); }
   function addToCampaign(r: ImageResult) { const a = save(r); router.push(`/campaigns?asset=${a.id}`); }
   function saveAll() {
     if (phase.kind !== "done") return;
@@ -95,8 +96,21 @@ export default function ProductShootPage() {
       <ControlField label="Photo produit" hint={product?.name}>
         <ProductPicker value={productId} onChange={(a) => setProductId(a.id)} />
       </ControlField>
-      <ControlField label="Environment">
-        <ChipGroup size="sm" options={ENVIRONMENTS.map((e) => ({ value: e, label: e }))} value={environment} onChange={setEnvironment} />
+      <ControlField label="Style Sokozia" hint={style.description}>
+        <div className="grid grid-cols-2 gap-2">
+          {SOKOZIA_STYLES.map((st) => (
+            <button
+              key={st.id}
+              type="button"
+              onClick={() => setStyleId(st.id)}
+              aria-pressed={styleId === st.id}
+              className={cn("group relative overflow-hidden rounded-md border text-left transition-colors", styleId === st.id ? "border-accent ring-1 ring-accent" : "border-border hover:border-white/25")}
+            >
+              <img src={`/styles/${st.id}.jpg`} alt="" loading="lazy" className="aspect-[4/5] w-full object-cover" />
+              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2 pb-1.5 pt-6 text-[11px] font-semibold text-white">{st.name}</span>
+            </button>
+          ))}
+        </div>
       </ControlField>
       <ControlField label="Éclairage">
         <ChipGroup size="sm" options={LIGHTING.map((l) => ({ value: l, label: l }))} value={lighting} onChange={setLighting} />
@@ -141,7 +155,7 @@ export default function ProductShootPage() {
               {product && <img src={product.thumbnail} alt={product.name} className="size-12 rounded-md object-cover border border-border" />}
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold truncate">{product?.name}</p>
-                <p className="text-xs text-text2">{environment} · {lighting} · {camera}</p>
+                <p className="text-xs text-text2">{style.name} · {lighting} · {camera}</p>
               </div>
               {phase.kind === "done" && (
                 <div className="flex gap-2">

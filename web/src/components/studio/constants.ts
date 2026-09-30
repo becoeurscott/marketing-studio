@@ -1,3 +1,4 @@
+import { IMAGE_MODELS, VIDEO_MODELS, type ImageModelId, type VideoModelId } from "@/lib/higgsfield/models";
 import type { AspectRatio, ImageStyle } from "@/lib/types";
 
 /** Image generator options (SPEC §11). */
@@ -5,13 +6,15 @@ export const BACKGROUNDS = ["Studio white", "Dark marble", "Soft gradient", "Nat
 export const LIGHTING = ["Natural", "Golden hour", "Studio", "Softbox", "Neon", "Dramatic"] as const;
 export const IMAGE_CAMERAS = ["Close-up", "Medium", "Wide", "Macro", "Overhead"] as const;
 export const COMPOSITIONS = ["Centered", "Rule of thirds", "Hero left", "Hero right", "Flatlay"] as const;
-export const MODELS = [
-  { id: "studio-v3", label: "Aurora 3", hint: "Qualité maximale" },
-  { id: "studio-fast", label: "Aurora Flash", hint: "2x plus rapide" },
-  { id: "photoreal-xl", label: "Lumen XL", hint: "Produits photoréalistes" },
-  { id: "drift-2", label: "Drift 2.5", hint: "Mouvement et vidéo" },
-] as const;
-export type ModelId = (typeof MODELS)[number]["id"];
+/** Real Higgsfield models, priced in credits (see lib/higgsfield/models.ts). */
+export type ModelId = ImageModelId | VideoModelId;
+export interface ModelOption { id: ModelId; label: string; hint: string; cost: string }
+export function modelOptions(mode: "image" | "video" | "ugc"): ModelOption[] {
+  if (mode === "image") return IMAGE_MODELS.map((m) => ({ id: m.id, label: m.label, hint: m.hint, cost: `${m.credits} cr / image` }));
+  // UGC always animates a photo of the creator with the product, so only models with image-to-video apply.
+  const list = mode === "ugc" ? VIDEO_MODELS.filter((m) => m.i2v) : VIDEO_MODELS;
+  return list.map((m) => ({ id: m.id, label: m.label, hint: m.hint, cost: `${m.creditsPerSecond} cr / s` }));
+}
 
 /** Video generator options (SPEC §14). */
 export const VIDEO_CAMERAS = ["Slow zoom", "Orbit", "Handheld", "Push in", "Pull out", "Tracking", "Static"] as const;
@@ -27,7 +30,7 @@ export interface ImageParams {
   prompt: string;
   style: ImageStyle;
   ratio: AspectRatio;
-  model: ModelId;
+  model: ImageModelId;
   background: (typeof BACKGROUNDS)[number];
   lighting: (typeof LIGHTING)[number];
   camera: (typeof IMAGE_CAMERAS)[number];
@@ -37,7 +40,7 @@ export interface ImageParams {
 
 export interface VideoParams {
   concept: string;
-  model: ModelId;
+  model: VideoModelId;
   /** UGC creator (only used by the UGC composer mode). */
   creatorId: string | null;
   durationSec: DurationSec;

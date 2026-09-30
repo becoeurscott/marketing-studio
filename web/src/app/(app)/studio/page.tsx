@@ -25,6 +25,7 @@ import { templates } from "@/data";
 import { useStore } from "@/lib/store";
 import type { Asset } from "@/lib/types";
 import { IMAGE_STYLE_LABELS, label } from "@/components/studio/constants";
+import type { ImageModelId, VideoModelId } from "@/lib/higgsfield/models";
 
 const MODE_ICON = { image: ImageIcon, video: Clapperboard, ugc: UserRound } as const;
 
@@ -134,7 +135,7 @@ export default function StudioPage() {
             mode="image"
             prompt={gen.params.prompt} onPrompt={(v) => gen.update("prompt", v)}
             productId={gen.params.productAssetId} onProduct={setProduct}
-            model={gen.params.model} onModel={(m) => gen.update("model", m)}
+            model={gen.params.model} onModel={(m) => gen.update("model", m as ImageModelId)}
             ratio={gen.params.ratio} onRatio={(r) => gen.update("ratio", r)}
             onGenerate={generate} generating={gen.generating}
             onMore={() => setAdvanced((v) => !v)} moreActive={advanced}
@@ -146,7 +147,7 @@ export default function StudioPage() {
             prompt={vid.params.concept} onPrompt={(v) => vid.update("concept", v)}
             productId={vid.params.sourceAssetId} onProduct={setProduct}
             creatorId={vid.params.creatorId} onCreator={(c) => vid.update("creatorId", c?.id ?? null)}
-            model={vid.params.model} onModel={(m) => vid.update("model", m)}
+            model={vid.params.model} onModel={(m) => vid.update("model", m as VideoModelId)}
             ratio={vid.params.ratio} onRatio={(r) => vid.update("ratio", r)}
             duration={vid.params.durationSec} onDuration={(d) => vid.update("durationSec", d)}
             onGenerate={generate} generating={vid.generating}

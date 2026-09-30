@@ -13,12 +13,12 @@ import { StepProgress } from "@/components/ui/ProgressIndicator";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
 import { creators } from "@/data";
-import { generateUGC, VIDEO_STEPS, type VideoResult } from "@/lib/api";
+import { generateUGC, ugcCredits, VIDEO_STEPS, type VideoResult } from "@/lib/api";
 import { capitalize, useTemplatePreset } from "@/components/studio/useTemplatePreset";
 import { VIDEO_STEP_LABELS } from "@/components/studio/constants";
 import { LANGUAGES, countryOf, languageLabel, type LanguageId } from "@/lib/market";
 import { selectCountry, useStore } from "@/lib/store";
-import { CREDIT_COSTS, type Asset } from "@/lib/types";
+import { type Asset } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_SCRIPT = "Créez une vidéo de 15 secondes façon TikTok pour présenter ce produit.";
@@ -118,7 +118,7 @@ function UGCPage() {
   return (
     <>
       <PageHeader title="Créateur UGC" description="Choisissez un créateur, écrivez le script et générez une vidéo produit authentique." eyebrow={<div className="flex flex-wrap items-center gap-1.5"><Badge tone="accent">Studio · UGC</Badge>{template && <Badge tone="outline">Modèle · {template.title}</Badge>}</div>} />
-      <StudioControls title="Paramètres UGC" controls={controls} generateLabel={phase.kind === "done" ? "Régénérer" : "Générer la vidéo UGC"} generateIcon={Clapperboard} onGenerate={generate} loading={loading} cost={CREDIT_COSTS.ugc} />
+      <StudioControls title="Paramètres UGC" controls={controls} generateLabel={phase.kind === "done" ? "Régénérer" : "Générer la vidéo UGC"} generateIcon={Clapperboard} onGenerate={generate} loading={loading} cost={ugcCredits(Number(duration))} />
 
       <Canvas>
         {phase.kind === "error" ? (

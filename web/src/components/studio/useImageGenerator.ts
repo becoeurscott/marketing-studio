@@ -29,7 +29,7 @@ export function useImageGenerator() {
 
   const [params, setParams] = useState<ImageParams>(() => {
     const base: ImageParams = {
-      prompt: "", style: prefs.defaultStyle, ratio: prefs.defaultRatio, model: "studio-v3",
+      prompt: "", style: prefs.defaultStyle, ratio: prefs.defaultRatio, model: "marketing-studio",
       background: BACKGROUNDS[0], lighting: LIGHTING[0], camera: IMAGE_CAMERAS[1], composition: COMPOSITIONS[0], productAssetId: null,
     };
     const tpl = pendingTemplateId ? templates.find((t) => t.id === pendingTemplateId) : undefined;
@@ -87,7 +87,7 @@ export function useImageGenerator() {
     if (!params.prompt.trim() && !params.productAssetId) return;
     setGenerating(true); setError(null);
     try {
-      const out = await generateImage({ ...params, projectId: currentProjectId, count: 4 });
+      const out = await generateImage({ ...params, projectId: currentProjectId, count: 2 });
       commit(out);
       markSaved();
     } catch (err) {

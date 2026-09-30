@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { useStore } from "@/lib/store";
 import { CREDIT_COSTS, IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { BACKGROUND_LABELS, BACKGROUNDS, COMPOSITION_LABELS, COMPOSITIONS, IMAGE_CAMERA_LABELS, IMAGE_CAMERAS, IMAGE_STYLE_LABELS, label, LIGHTING, LIGHTING_LABELS, MODELS, PROMPT_PLACEHOLDER, type ImageParams, type ModelId } from "./constants";
+import { BACKGROUND_LABELS, BACKGROUNDS, COMPOSITION_LABELS, COMPOSITIONS, IMAGE_CAMERA_LABELS, IMAGE_CAMERAS, IMAGE_STYLE_LABELS, label, LIGHTING, LIGHTING_LABELS, modelOptions, PROMPT_PLACEHOLDER, type ImageParams } from "./constants";
 import { ProductField, ProductPicker } from "./ProductPicker";
 
 export interface ImageCreatePanelProps {
@@ -72,7 +72,7 @@ export function ImageCreatePanel({ params, update, onGenerate, generating, hideG
         </div>
       </div>
 
-      <Select label="Modèle" name="model" value={params.model} onChange={(e) => update("model", e.target.value as ModelId)} options={MODELS.map((m) => ({ value: m.id, label: `${m.label} · ${m.hint}` }))} />
+      <Select label="Modèle" name="model" value={params.model} onChange={(e) => update("model", e.target.value as ImageParams["model"])} options={modelOptions("image").map((m) => ({ value: m.id, label: `${m.label} · ${m.cost}` }))} />
 
       <div>
         <button onClick={() => setAdvanced((v) => !v)} className="flex items-center gap-1.5 text-[13px] font-medium text-text2 hover:text-text" aria-expanded={advanced}>

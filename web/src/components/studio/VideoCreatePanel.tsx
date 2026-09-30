@@ -4,9 +4,11 @@ import { Clapperboard } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ChipGroup } from "@/components/ui/Chip";
+import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { useStore } from "@/lib/store";
-import { CREDIT_COSTS, RATIOS, type AspectRatio } from "@/lib/types";
+import { VIDEO_MODELS, videoCredits, videoModel, type VideoModelId } from "@/lib/higgsfield/models";
+import { RATIOS, type AspectRatio } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { DURATIONS, VIDEO_CAMERA_LABELS, VIDEO_CAMERAS, VIDEO_STYLE_LABELS, VIDEO_STYLES, type VideoParams } from "./constants";
 import { ProductField, ProductPicker } from "./ProductPicker";
@@ -26,6 +28,8 @@ export function VideoCreatePanel({ params, update, onGenerate, generating, hideG
   const [pickerOpen, setPickerOpen] = useState(false);
   const source = assets.find((a) => a.id === params.sourceAssetId) ?? null;
   const canGenerate = !!params.concept.trim() || !!params.sourceAssetId;
+  const model = videoModel(params.model);
+  const cost = videoCredits(params.model, params.durationSec, !!source);
 
   return (
     <div className={cn("flex flex-col gap-5", className)}>
@@ -33,6 +37,11 @@ export function VideoCreatePanel({ params, update, onGenerate, generating, hideG
       <ProductPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onPick={(a) => update("sourceAssetId", a.id)} selectedId={params.sourceAssetId} />
 
       <Textarea label="Concept" name="concept" rows={3} value={params.concept} onChange={(e) => update("concept", e.target.value)} placeholder="Orbite lente autour du pot de karité sur un pagne wax, lumière du matin…" />
+
+      <div>
+        <Select label="Modèle vidéo" name="videoModel" value={params.model} onChange={(e) => update("model", e.target.value as VideoModelId)} options={VIDEO_MODELS.map((m) => ({ value: m.id, label: `${m.label} · ${m.creditsPerSecond} cr/s` }))} />
+        <p className="text-[12px] text-muted mt-1.5">{model.hint}{source && !model.i2v ? " · Avec une image source, la vidéo est rendue avec Seedance 2.5." : ""}</p>
+      </div>
 
       <div className="flex flex-col gap-1.5">
         <span className="text-[13px] font-medium text-text2">Durée</span>
@@ -62,7 +71,7 @@ export function VideoCreatePanel({ params, update, onGenerate, generating, hideG
       {!hideGenerate && (
         <div className="sticky bottom-0 -mx-4 px-4 py-3 bg-surface/95 backdrop-blur border-t border-border lg:mt-auto">
           <Button fullWidth size="lg" onClick={onGenerate} loading={generating} disabled={!canGenerate} leftIcon={<Clapperboard className="size-4" />}>
-            {generating ? "Rendu en cours…" : `Générer la vidéo · ${CREDIT_COSTS.video} crédits`}
+            {generating ? "Rendu en cours…" : `Générer la vidéo · ${cost} crédits`}
           </Button>
           {!canGenerate && <p className="text-xs text-muted text-center mt-2">Ajoutez un concept ou une image source pour commencer.</p>}
         </div>

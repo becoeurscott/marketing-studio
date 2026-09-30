@@ -16,6 +16,8 @@ import { plans } from "@/data";
 import { delay } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import { TOP_UP_PACKS, USAGE_PACKS, type UsagePack } from "@/lib/market";
+import { IMAGE_MODELS, VIDEO_MODELS, videoCredits } from "@/lib/higgsfield/models";
+import { ugcCredits } from "@/lib/api";
 import { CREDIT_COSTS, type CreditAction } from "@/lib/types";
 import { cn, formatDate, formatNumber, timeAgo } from "@/lib/utils";
 
@@ -32,7 +34,7 @@ const ACTION_META: Record<CreditAction, { label: string; icon: LucideIcon }> = {
   bonus: { label: "Bonus", icon: Gift },
 };
 
-const COST_ROWS: (keyof typeof CREDIT_COSTS)[] = ["image", "video", "upscale", "ugc", "product-shoot", "ads", "copy"];
+const COST_ROWS: (keyof typeof CREDIT_COSTS)[] = ["upscale", "product-shoot", "ads", "copy"];
 type HistoryFilter = "all" | "spent" | "added";
 type Pack = UsagePack;
 const PACKS: Pack[] = [...USAGE_PACKS, ...TOP_UP_PACKS];
@@ -160,9 +162,25 @@ export default function CreditsPage() {
         <div className="lg:sticky lg:top-20 self-start">
           <Card>
             <h3 className="text-[15px] font-semibold mb-1">Coût des actions</h3>
-            <p className="text-[13px] text-text2 mb-3">Par génération. Les exports sont gratuits.</p>
+            <p className="text-[13px] text-text2 mb-3">Les vidéos se paient à la seconde, selon le modèle. Les exports sont gratuits.</p>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-border">
+                {IMAGE_MODELS.map((m) => (
+                  <tr key={m.id}>
+                    <td className="py-2.5 flex items-center gap-2 text-text2"><ImageIcon className="size-4" />Image · {m.label}</td>
+                    <td className="py-2.5 text-right font-semibold tabular-nums">{m.credits} <span className="text-muted font-normal text-[12px]">cr</span></td>
+                  </tr>
+                ))}
+                {VIDEO_MODELS.map((m) => (
+                  <tr key={m.id}>
+                    <td className="py-2.5 flex items-center gap-2 text-text2"><Video className="size-4" />Vidéo · {m.label}</td>
+                    <td className="py-2.5 text-right font-semibold tabular-nums">{m.creditsPerSecond} <span className="text-muted font-normal text-[12px]">cr / s</span></td>
+                  </tr>
+                ))}
+                <tr>
+                  <td className="py-2.5 flex items-center gap-2 text-text2"><Users className="size-4" />UGC 8 s (photo + vidéo)</td>
+                  <td className="py-2.5 text-right font-semibold tabular-nums">{ugcCredits(8)} <span className="text-muted font-normal text-[12px]">cr</span></td>
+                </tr>
                 {COST_ROWS.map((k) => {
                   const meta = ACTION_META[k];
                   const Icon = meta.icon;
@@ -175,7 +193,7 @@ export default function CreditsPage() {
                 })}
               </tbody>
             </table>
-            <p className="text-[12px] text-muted mt-3">Avec {formatNumber(credits)} crédits, vous pouvez créer environ {formatNumber(Math.floor(credits / CREDIT_COSTS.image))} images ou {formatNumber(Math.floor(credits / CREDIT_COSTS.video))} vidéos.</p>
+            <p className="text-[12px] text-muted mt-3">Avec {formatNumber(credits)} crédits, vous pouvez créer environ {formatNumber(Math.floor(credits / CREDIT_COSTS.image))} images ou {formatNumber(Math.floor(credits / videoCredits("kling-3.0", 5)))} vidéos Kling de 5 s.</p>
           </Card>
         </div>
       </div>

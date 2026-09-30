@@ -1,6 +1,7 @@
 import "server-only";
 import { config, higgsfield } from "@higgsfield/client/v2";
-import type { GenerationJob, GenerationKind, GenerationRequest, JobStatus } from "./types";
+import { DEFAULT_VIDEO_MODEL, clampDuration, imageModel, videoModel } from "./models";
+import type { GenerationJob, GenerationKind, GenerationRequest, HfPreset, JobStatus } from "./types";
 
 /**
  * Server-side Higgsfield access. HF_CREDENTIALS ("key-id:key-secret") is read from the
@@ -10,8 +11,6 @@ const API = "https://api.higgsfield.ai";
 
 export const MODELS = {
   image: "marketing-studio/image",
-  textToVideo: "bytedance/seedance-2.5/text-to-video",
-  imageToVideo: "bytedance/seedance-2.5/image-to-video",
 } as const;
 
 export class NotConfiguredError extends Error {
@@ -47,6 +46,7 @@ async function hfFetch(path: string, init?: RequestInit): Promise<Response> {
 
 const IMAGE_RATIOS = new Set(["auto", "1:1", "3:2", "2:3", "4:3", "3:4", "16:9", "9:16", "21:9"]);
 const VIDEO_RATIOS = new Set(["16:9", "4:3", "1:1", "3:4", "9:16", "21:9"]);
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const clampText = (s: unknown, max = 2000) => String(s ?? "").trim().slice(0, max);
 const isHttpsUrl = (u: unknown): u is string => typeof u === "string" && /^https:\/\/\S+$/.test(u) && u.length < 2048;
 
@@ -58,17 +58,34 @@ export function toModelInput(req: GenerationRequest): [string, Record<string, un
 
   switch (req.kind as GenerationKind) {
     case "image": {
+      if (imageModel(req.model).id === "soul-2") {
+        const soulRatios = ["9:16", "16:9", "4:3", "3:4", "1:1", "2:3", "3:2"];
+        return [imageModel("soul-2").endpoint, { prompt, batch_size: 1, resolution: "1080p", aspect_ratio: soulRatios.includes(req.aspectRatio ?? "") ? req.aspectRatio : "3:4", enhance_prompt: true }];
+      }
       const ratio = IMAGE_RATIOS.has(req.aspectRatio ?? "") ? req.aspectRatio : "auto";
-      return [MODELS.image, { prompt, aspect_ratio: ratio, resolution: req.upscale ? "4k" : "2k", ...(images.length ? { image_urls: images } : {}) }];
+      const resolution = req.upscale ? "4k" : "2k";
+      if (req.presetId) {
+        // Preset (enhanced) mode: product photo first, optional model reference second.
+        if (!UUID.test(req.presetId)) throw new Error("Style inconnu.");
+        if (!images.length) throw new Error("Ce style a besoin d’une photo de votre produit.");
+        const refs = isHttpsUrl(req.modelReferenceUrl) ? [images[0], req.modelReferenceUrl] : [images[0]];
+        return [MODELS.image, { prompt, image_urls: refs, preset_id: req.presetId, enhance_prompt: true, aspect_ratio: ratio, resolution }];
+      }
+      return [MODELS.image, { prompt, aspect_ratio: ratio, resolution, ...(images.length ? { image_urls: images } : {}) }];
     }
     case "video": {
-      const duration = Math.min(15, Math.max(4, Math.round(Number(req.durationSec) || 5)));
-      const resolution = req.light ? "480p" : "720p";
-      if (images.length) {
-        return [MODELS.imageToVideo, { image_url: images[0], prompt, duration, resolution, generate_audio: req.audio ?? true }];
-      }
-      const ratio = VIDEO_RATIOS.has(req.aspectRatio ?? "") ? req.aspectRatio : "9:16";
-      return [MODELS.textToVideo, { prompt, duration, resolution, aspect_ratio: ratio, generate_audio: req.audio ?? true }];
+      // A product photo can only be animated by a model with an image-to-video mode.
+      const chosen = videoModel(req.model);
+      const m = images.length && !chosen.i2v ? videoModel(DEFAULT_VIDEO_MODEL) : chosen;
+      const duration = clampDuration(m, Number(req.durationSec) || 5);
+      const input: Record<string, unknown> = { prompt, duration };
+      const resolution = m.resolution(!!req.light);
+      if (resolution) input.resolution = resolution;
+      if (m.audio === "generate_audio") input.generate_audio = req.audio ?? true;
+      if (m.audio === "sound") input.sound = (req.audio ?? true) ? "on" : "off";
+      if (images.length && m.i2v) return [m.i2v, { ...input, image_url: images[0] }];
+      input.aspect_ratio = m.ratios.includes(req.aspectRatio ?? "") ? req.aspectRatio : m.ratios.includes("9:16") ? "9:16" : m.ratios[0];
+      return [m.t2v, input];
     }
     default:
       throw new Error("Type de génération inconnu.");
@@ -109,6 +126,46 @@ export async function getJob(requestId: string): Promise<GenerationJob> {
   const res = await hfFetch(`/requests/${encodeURIComponent(requestId)}/status`);
   if (!res.ok) throw new Error(`Statut indisponible (${res.status}).`);
   return normalize((await res.json()) as RawResponse);
+}
+
+/* ---------- Presets ---------- */
+
+let presetCache: { at: number; items: HfPreset[] } | null = null;
+
+function pickPreview(item: Record<string, unknown>): string | null {
+  // Field name isn't documented; take the first image-looking URL the catalog returns.
+  for (const [k, v] of Object.entries(item)) {
+    if (typeof v === "string" && /^https:\/\//.test(v) && /(preview|thumb|cover|image|url|media)/i.test(k)) return v;
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      const nested = pickPreview(v as Record<string, unknown>);
+      if (nested) return nested;
+    }
+    if (Array.isArray(v) && v.length && typeof v[0] === "object") {
+      const nested = pickPreview(v[0] as Record<string, unknown>);
+      if (nested) return nested;
+    }
+  }
+  return null;
+}
+
+/** Marketing Studio presets (cached 1 h). Fetched dynamically, as the API docs require. */
+export async function listPresets(): Promise<HfPreset[]> {
+  if (presetCache && Date.now() - presetCache.at < 3_600_000) return presetCache.items;
+  const items: HfPreset[] = [];
+  let cursor: string | null = null;
+  for (let page = 0; page < 10; page++) {
+    const q = new URLSearchParams({ size: "50", ...(cursor ? { cursor } : {}) });
+    const res = await hfFetch(`/marketing-studio/image/presets?${q}`);
+    if (!res.ok) throw new Error(`Styles indisponibles (${res.status}).`);
+    const data = (await res.json()) as { items?: Record<string, unknown>[]; cursor?: string | null };
+    for (const it of data.items ?? []) {
+      items.push({ id: String(it.id), name: String(it.name ?? it.title ?? "Style"), type: String(it.type ?? ""), preview: pickPreview(it) });
+    }
+    cursor = data.cursor ?? null;
+    if (!cursor || !data.items?.length) break;
+  }
+  presetCache = { at: Date.now(), items };
+  return items;
 }
 
 /* ---------- Uploads ---------- */

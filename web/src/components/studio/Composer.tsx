@@ -8,7 +8,8 @@ import { creators } from "@/data";
 import { useStore } from "@/lib/store";
 import { CREDIT_COSTS, RATIOS, type AspectRatio, type Asset, type Creator } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { DURATIONS, MODELS, type DurationSec, type ModelId } from "./constants";
+import { videoCredits, imageModel } from "@/lib/higgsfield/models";
+import { DURATIONS, modelOptions, type DurationSec, type ModelId } from "./constants";
 import { CreatorPicker } from "./CreatorPicker";
 import type { ComposeMode } from "./ModeTabs";
 import { ProductPicker, useProductUpload } from "./ProductPicker";
@@ -46,7 +47,11 @@ const TEMPLATES: Record<ComposeMode, { segments: Segment[]; placeholder: string 
   ugc: { segments: [{ kind: "text", text: "Créer une vidéo UGC où" }, { kind: "slot", slot: "creator" }, { kind: "text", text: "profite du produit" }, { kind: "slot", slot: "product" }], placeholder: "pendant sa routine du matin…" },
 };
 
-const COST: Record<ComposeMode, number> = { image: CREDIT_COSTS.image, video: CREDIT_COSTS.video, ugc: CREDIT_COSTS.ugc };
+/** Credits for the current settings: per image, or per second of video on the chosen model. */
+function costFor(mode: ComposeMode, model: ModelId, duration = 5, withPhoto = false): number {
+  if (mode === "image") return imageModel(model).credits;
+  return videoCredits(mode === "ugc" ? "seedance-2.5" : model, duration, withPhoto || mode === "ugc") + (mode === "ugc" ? CREDIT_COSTS.image : 0);
+}
 
 /**
  * Floating composer card (SPEC §46 redesign): media slots → inline chip prompt → pill row.
@@ -137,10 +142,10 @@ export function Composer(p: ComposerProps) {
             onClick={p.onGenerate}
             disabled={!canGenerate}
             className={cn("shrink-0 h-10 md:h-11 px-3.5 md:px-4 rounded-full bg-accent text-on-accent font-bold text-[15px] inline-flex items-center gap-2 shadow-[0_8px_24px_-6px_rgba(249,115,22,0.7)] transition-[transform,opacity,background] hover:bg-highlight active:scale-95 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed", p.generating && "animate-pulse")}
-            aria-label={`Générer · ${COST[p.mode]} crédits`}
+            aria-label={`Générer · ${costFor(p.mode, p.model, p.duration, !!p.productId)} crédits`}
           >
             <SendHorizontal className="size-[18px]" />
-            <span className="tabular-nums">{COST[p.mode]}</span>
+            <span className="tabular-nums">{costFor(p.mode, p.model, p.duration, !!p.productId)}</span>
           </button>
         </div>
       </motion.div>
@@ -237,7 +242,8 @@ function ModelPill({ value, onChange, mode }: { value: ModelId; onChange: (m: Mo
     document.addEventListener("mousedown", onDoc); document.addEventListener("keydown", onKey);
     return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
   }, [open]);
-  const cur = MODELS.find((m) => m.id === value) ?? MODELS[0];
+  const options = modelOptions(mode);
+  const cur = options.find((m) => m.id === value) ?? options[0];
   return (
     <div ref={ref} className="relative shrink-0">
       <Pill onClick={toggle} label={`Modèle : ${cur.label}`} className="pl-1.5">
@@ -254,15 +260,16 @@ function ModelPill({ value, onChange, mode }: { value: ModelId; onChange: (m: Mo
             style={{ position: "fixed", left: pos.left, bottom: pos.bottom }}
             className="w-60 rounded-xl bg-[#111]/95 backdrop-blur-xl border border-white/10 shadow-float p-1 z-[120]"
           >
-            {MODELS.map((m) => {
+            {options.map((m) => {
               const sel = m.id === value;
-              const recommended = mode === "image" ? m.id === "studio-v3" : m.id === "drift-2";
+              const recommended = m.id === "marketing-studio" || m.id === "seedance-2.5";
               return (
                 <li key={m.id}>
                   <button role="option" aria-selected={sel} onClick={() => { onChange(m.id); setOpen(false); }} className={cn("w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-white/8", sel && "bg-white/8")}>
                     <span className="flex-1 min-w-0">
                       <span className="block text-[13px] font-medium text-white truncate">{m.label}{recommended && <span className="ml-1.5 text-[10px] text-highlight font-semibold">RECOMMANDÉ</span>}</span>
                       <span className="block text-[11px] text-white/50 truncate">{m.hint}</span>
+                      <span className="block text-[11px] text-highlight tabular-nums">{m.cost}</span>
                     </span>
                     {sel && <Check className="size-4 text-highlight shrink-0" />}
                   </button>

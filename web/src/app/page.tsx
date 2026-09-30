@@ -4,6 +4,8 @@ import { Hero, SiteHeader } from "@/components/landing/Hero";
 import { LandingMotion } from "@/components/landing/LandingMotion";
 import { PromoCalendar, Terrain, Trust, WhatsAppSection } from "@/components/landing/Local";
 import { Benefits, Creations, Process, UseCases } from "@/components/landing/Showcase";
+import { StylesShowcase } from "@/components/landing/StylesShowcase";
+import { UgcShowcase } from "@/components/landing/UgcShowcase";
 import { Problem, Services, Solution } from "@/components/landing/Story";
 
 export const metadata: Metadata = {
@@ -33,6 +35,8 @@ export default function LandingPage() {
           <Benefits />
           <WhatsAppSection />
           <Creations />
+          <UgcShowcase />
+          <StylesShowcase />
           <UseCases />
           <Process />
           <Terrain />

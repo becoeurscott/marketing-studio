@@ -19,7 +19,7 @@ export function useVideoGenerator() {
 
   const [params, setParams] = useState<VideoParams>(() => {
     const firstImage = assets.find((a) => a.type === "image");
-    const base: VideoParams = { concept: "", model: "drift-2", creatorId: creators.find((c) => c.featured)?.id ?? null, durationSec: 10, ratio: "9:16", camera: "Slow zoom", style: "Commercial", sourceAssetId: firstImage?.id ?? null };
+    const base: VideoParams = { concept: "", model: "seedance-2.5", creatorId: creators.find((c) => c.featured)?.id ?? null, durationSec: 10, ratio: "9:16", camera: "Slow zoom", style: "Commercial", sourceAssetId: firstImage?.id ?? null };
     const tpl = pendingTemplateId ? templates.find((t) => t.id === pendingTemplateId)?.preset : undefined;
     if (!tpl || tpl.mode !== "video") return base;
     return {

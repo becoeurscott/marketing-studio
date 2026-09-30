@@ -15,7 +15,8 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CREDIT_COSTS } from "@/lib/types";
-import { IMAGE_STYLE_LABELS, label, MODELS } from "@/components/studio/constants";
+import { IMAGE_STYLE_LABELS, label } from "@/components/studio/constants";
+import { imageModel } from "@/lib/higgsfield/models";
 
 /** SPEC §11–13: full image generator → progress → 4-result gallery with per-result actions + editor. */
 export default function ImageGeneratorPage() {
@@ -48,7 +49,7 @@ export default function ImageGeneratorPage() {
           {gen.selected && (
             <div className="rounded-lg border border-border bg-card p-3 flex flex-wrap items-center gap-3 text-[13px] text-text2">
               <span className="font-medium text-text">Sélection</span>
-              <span>{gen.selected.ratio}</span><span>·</span><span>{MODELS.find((m) => m.id === gen.params.model)?.label ?? gen.params.model}</span><span>·</span><span className="truncate max-w-md">{gen.params.prompt || "Génération à partir du produit seul"}</span>
+              <span>{gen.selected.ratio}</span><span>·</span><span>{imageModel(gen.params.model).label}</span><span>·</span><span className="truncate max-w-md">{gen.params.prompt || "Génération à partir du produit seul"}</span>
             </div>
           )}
         </div>
