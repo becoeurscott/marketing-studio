@@ -32,6 +32,7 @@ export const creators: Creator[] = rows.map(([id, name, gender, age, style, lang
   avatarUrl: `/creators/${id}/portrait.jpg`,
   portrait: `/creators/${id}/portrait.jpg`,
   sheet: `/creators/${id}/sheet.jpg`,
+  intro: `/creators/${id}/intro.mp4`,
   look: CREATOR_LOOKS[id] ?? "",
 }));
 
