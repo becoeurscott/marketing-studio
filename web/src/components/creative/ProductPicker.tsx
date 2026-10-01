@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ImagePlus, Loader2, Upload } from "lucide-react";
+import { Check, ImagePlus, Loader2, Upload, X } from "lucide-react";
 import { useMemo, useRef, useState, type DragEvent } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { uploadProduct, uploadSummary } from "@/lib/api";
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
  * Pick a product image from the asset library, or upload one (mock).
  * Compact grid meant for the inspector; `limit` caps the visible assets.
  */
-export function ProductPicker({ value, onChange, limit = 8, allowUpload = true }: { value: string | null; onChange: (asset: Asset) => void; limit?: number; allowUpload?: boolean }) {
+export function ProductPicker({ value, onChange, onClear, limit = 8, allowUpload = true }: { value: string | null; onChange: (asset: Asset) => void; onClear?: () => void; limit?: number; allowUpload?: boolean }) {
   const assets = useStore((s) => s.assets);
   const currentProjectId = useStore((s) => s.currentProjectId);
   const toast = useToast();
@@ -66,7 +66,7 @@ export function ProductPicker({ value, onChange, limit = 8, allowUpload = true }
         {images.map((a) => {
           const selected = a.id === value;
           return (
-            <button key={a.id} type="button" onClick={() => onChange(a)} title={a.name} className={cn("relative aspect-square rounded-md overflow-hidden border transition-all", selected ? "border-accent ring-2 ring-accent/40" : "border-border hover:border-white/25")}>
+            <button key={a.id} type="button" onClick={() => (selected && onClear ? onClear() : onChange(a))} title={selected && onClear ? `Retirer ${a.name}` : a.name} aria-pressed={selected} className={cn("relative aspect-square rounded-md overflow-hidden border transition-all", selected ? "border-accent ring-2 ring-accent/40" : "border-border hover:border-white/25")}>
               <img src={a.thumbnail} alt={a.name} className="size-full object-cover" />
               {selected && <span className="absolute top-1 right-1 size-4 rounded-full bg-accent text-on-accent flex items-center justify-center"><Check className="size-3" /></span>}
             </button>
@@ -76,6 +76,11 @@ export function ProductPicker({ value, onChange, limit = 8, allowUpload = true }
           <div className="col-span-4 text-xs text-muted flex items-center gap-2"><ImagePlus className="size-4" /> Aucune image produit pour l’instant.</div>
         )}
       </div>
+      {value && onClear && (
+        <button type="button" onClick={onClear} className="inline-flex items-center gap-1 text-xs text-muted hover:text-text transition-colors">
+          <X className="size-3.5" /> Retirer le produit
+        </button>
+      )}
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Clapperboard, Megaphone, RefreshCw, Save, Video } from "lucide-react";
+import { Clapperboard, Megaphone, RefreshCw, Save, Video, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { Canvas, ControlField, CreatorCard, ErrorState, ProductPicker, StudioControls } from "@/components/creative";
@@ -43,7 +43,8 @@ function UGCPage() {
   const defaultLanguage = useStore((s) => s.preferences.language);
   const [language, setLanguage] = useState<LanguageId>(preset?.language ?? defaultLanguage ?? country.languages[0]);
 
-  const [productId, setProductId] = useState<string | null>(() => assets.find((a) => a.type === "image")?.id ?? null);
+  // No product until the user picks or imports one (the video works without it).
+  const [productId, setProductId] = useState<string | null>(null);
   // A creator chosen elsewhere (creators page, profile modal) arrives as ?creator=<id>.
   const [creatorId, setCreatorId] = useState(() => {
     const wanted = params.get("creator");
@@ -102,7 +103,7 @@ function UGCPage() {
   const controls = (
     <>
       <ControlField label="Produit" hint={product?.name}>
-        <ProductPicker value={productId} onChange={(a) => setProductId(a.id)} />
+        <ProductPicker value={productId} onChange={(a) => setProductId(a.id)} onClear={() => setProductId(null)} />
       </ControlField>
       <Select label="Langue de la voix" value={language} onChange={(e) => setLanguage(e.target.value as LanguageId)} options={LANGUAGES.map((l) => ({ value: l.id, label: l.label }))} />
       <ControlField label="Créateur" hint={creator.languages.includes(languageLabel(language)) ? undefined : `${creator.name} sera doublé(e) en ${languageLabel(language).toLowerCase()}`}>
@@ -175,8 +176,8 @@ function UGCPage() {
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-muted mb-2">Produit</p>
                 {product ? (
-                  <div className="flex items-center gap-3"><img src={product.thumbnail} alt="" className="size-11 rounded-md object-cover border border-border" /><div className="min-w-0"><p className="text-sm font-medium truncate">{product.name}</p><p className="text-xs text-muted">{product.width ?? 800}×{product.height ?? 1000}</p></div></div>
-                ) : <p className="text-sm text-muted">Choisissez un produit dans les paramètres.</p>}
+                  <div className="flex items-center gap-3"><img src={product.thumbnail} alt="" className="size-11 rounded-md object-cover border border-border" /><div className="min-w-0 flex-1"><p className="text-sm font-medium truncate">{product.name}</p><p className="text-xs text-muted">{product.width ?? 800}×{product.height ?? 1000}</p></div><button type="button" onClick={() => setProductId(null)} className="size-8 shrink-0 rounded-md flex items-center justify-center text-muted hover:text-text hover:bg-elevated transition-colors" aria-label="Retirer le produit" title="Retirer le produit"><X className="size-4" /></button></div>
+                ) : <p className="text-sm text-muted">Aucun produit (facultatif). Importez-en un dans les paramètres.</p>}
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-muted mb-2">Script</p>
