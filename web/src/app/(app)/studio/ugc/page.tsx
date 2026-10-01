@@ -44,7 +44,11 @@ function UGCPage() {
   const [language, setLanguage] = useState<LanguageId>(preset?.language ?? defaultLanguage ?? country.languages[0]);
 
   const [productId, setProductId] = useState<string | null>(() => assets.find((a) => a.type === "image")?.id ?? null);
-  const [creatorId, setCreatorId] = useState(creators[0].id);
+  // A creator chosen elsewhere (creators page, profile modal) arrives as ?creator=<id>.
+  const [creatorId, setCreatorId] = useState(() => {
+    const wanted = params.get("creator");
+    return creators.some((c) => c.id === wanted) ? wanted! : creators[0].id;
+  });
   const [script, setScript] = useState(() => params.get("script") || DEFAULT_SCRIPT);
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [tone, setTone] = useState<UgcTone>(() => {
@@ -58,10 +62,12 @@ function UGCPage() {
   const product = useMemo(() => assets.find((a) => a.id === productId) ?? null, [assets, productId]);
   const creator = creators.find((c) => c.id === creatorId) ?? creators[0];
   // Creators who speak the chosen language first, then favorites, then featured.
+  // A creator picked from the creators page always shows up, even outside the top 8.
   const featured = useMemo(() => {
     const speaks = (c: (typeof creators)[number]) => Number(c.languages.includes(languageLabel(language)));
-    return [...creators].sort((a, b) => speaks(b) - speaks(a) || Number(favoriteCreators.includes(b.id)) - Number(favoriteCreators.includes(a.id)) || Number(b.featured) - Number(a.featured)).slice(0, 8);
-  }, [favoriteCreators, language]);
+    const top = [...creators].sort((a, b) => speaks(b) - speaks(a) || Number(favoriteCreators.includes(b.id)) - Number(favoriteCreators.includes(a.id)) || Number(b.featured) - Number(a.featured)).slice(0, 8);
+    return top.some((c) => c.id === creator.id) ? top : [creator, ...top.slice(0, 7)];
+  }, [favoriteCreators, language, creator]);
   const loading = phase.kind === "loading";
 
   async function generate() {
