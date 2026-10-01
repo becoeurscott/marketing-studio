@@ -30,8 +30,7 @@ struct ImageResultsView: View {
         .fullScreenCover(isPresented: $showEditor) {
             if let r = session.selected {
                 ImageEditorView(imageURL: r.url, ratio: session.ratio) { tool in
-                    session.applyEdit(tool: tool, store: store)
-                    router.toast("\(StudioOptions.label(tool)) appliqué", style: .success, icon: "wand.and.stars")
+                    Task { await session.applyEdit(tool: tool, store: store, router: router) }
                 }
             }
         }

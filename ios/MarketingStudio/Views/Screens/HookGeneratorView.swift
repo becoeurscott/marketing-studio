@@ -9,7 +9,7 @@ struct HookGeneratorView: View {
 
     private enum Phase: Equatable { case idle, generating, done, failed }
 
-    @State private var product = "Sérum Luma Glow"
+    @State private var product = ""
     @State private var audience = "Femmes et hommes de 20 à 35 ans"
     @State private var phase: Phase = .idle
     @State private var hooks: [HookResult] = []
@@ -23,7 +23,7 @@ struct HookGeneratorView: View {
             VStack(alignment: .leading, spacing: 22) {
                 header
                 VStack(spacing: 14) {
-                    MSTextField(label: "Produit", placeholder: "ex. Sérum Luma Glow", text: $product, icon: "shippingbox")
+                    MSTextField(label: "Produit", placeholder: "ex. Beurre de karité pur", text: $product, icon: "shippingbox")
                     MSTextField(label: "Audience", placeholder: "ex. Femmes et hommes de 20 à 35 ans", text: $audience, icon: "person.2")
                 }
                 .padding(.horizontal, MSSpacing.gutter)
@@ -112,7 +112,7 @@ struct HookGeneratorView: View {
         withAnimation(MSAnimation.gentle) { phase = .generating }
         Task {
             do {
-                let r = try await MockAPI.generateHooks(product: product, audience: audience, store: store)
+                let r = try await API.generateHooks(product: product, audience: audience, store: store)
                 MSHaptic.success()
                 withAnimation(MSAnimation.snappy) { hooks = r; phase = .done }
                 router.toast("10 accroches prêtes", style: .success, icon: "bolt.fill")

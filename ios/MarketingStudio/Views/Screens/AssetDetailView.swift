@@ -29,7 +29,13 @@ struct AssetDetailView: View {
     private func content(_ a: Asset) -> some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
-                ZoomableImage(url: a.imageURL)
+                Group {
+                    if a.kind == .video, let v = a.videoURL, !v.isEmpty {
+                        ResultVideoPlayer(url: v, poster: a.imageURL)
+                    } else {
+                        ZoomableImage(url: a.imageURL)
+                    }
+                }
                     .frame(height: 420)
                     .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
@@ -44,7 +50,7 @@ struct AssetDetailView: View {
                         MSIconButton(icon: "arrow.up.left.and.arrow.down.right", size: 32) { fullscreen = true }.padding(8)
                     }
                     .overlay(alignment: .center) {
-                        if a.kind == .video || a.kind == .audio {
+                        if (a.kind == .video && a.videoURL == nil) || a.kind == .audio {
                             Image(systemName: "play.fill").font(.system(size: 22, weight: .bold)).foregroundStyle(.white)
                                 .frame(width: 60, height: 60).background(.black.opacity(0.55), in: Circle())
                                 .allowsHitTesting(false)
@@ -59,9 +65,7 @@ struct AssetDetailView: View {
                 .padding(.horizontal, MSSpacing.gutter)
 
                 HStack(spacing: 10) {
-                    MSButton(title: "Télécharger", icon: "arrow.down.circle", size: .compact) {
-                        router.toast("\(a.name) enregistrée dans Photos", style: .success, icon: "arrow.down.circle")
-                    }
+                    ShareMediaButton(url: API.exportFiles(a).first?.absoluteString ?? a.imageURL, title: "Partager")
                     MSButton(title: a.favorite ? "En favori" : "Favori", icon: a.favorite ? "heart.fill" : "heart", style: .secondary, size: .compact) {
                         store.toggleFavorite(.asset, a.id)
                         router.toast(a.favorite ? "Retirée des favoris" : "Ajoutée aux favoris", style: .success)

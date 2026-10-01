@@ -1,11 +1,13 @@
 import SwiftUI
 
-/// SPEC §19 — Copywriter: 10 tools, product/audience/tone/goal, brand-voice aware results.
+/// Copywriter: 13 tools (incl. WhatsApp statuses, catalog sheet, voice-note script), any local
+/// language. Built-in templates, free.
 struct CopywriterView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
     static let tools: [(name: String, icon: String)] = [
+        ("WhatsApp Status", "message"), ("WhatsApp Catalog", "square.grid.2x2"), ("Voice Note", "mic"),
         ("Ad Copy", "megaphone"), ("Product Description", "shippingbox"), ("Instagram Caption", "camera.circle"),
         ("TikTok Caption", "music.note"), ("Email", "envelope"), ("Headline", "textformat.size"),
         ("Hook", "bolt"), ("CTA", "hand.tap"), ("UGC Script", "person.wave.2"), ("Landing Page Copy", "doc.richtext"),
@@ -14,6 +16,7 @@ struct CopywriterView: View {
         "Ad Copy": "Texte publicitaire", "Product Description": "Description produit", "Instagram Caption": "Légende Instagram",
         "TikTok Caption": "Légende TikTok", "Email": "E-mail", "Headline": "Titre", "Hook": "Accroche", "CTA": "Appel à l'action",
         "UGC Script": "Script UGC", "Landing Page Copy": "Texte de landing page",
+        "WhatsApp Status": "Statuts WhatsApp", "WhatsApp Catalog": "Fiche catalogue", "Voice Note": "Note vocale pub",
     ]
     static let toneLabels: [String: String] = [
         "Professional": "Professionnel", "Friendly": "Amical", "Luxury": "Luxe", "Bold": "Audacieux",
@@ -32,9 +35,10 @@ struct CopywriterView: View {
 
     private enum Phase: Equatable { case idle, generating, done, failed }
 
-    @State private var tool = "Ad Copy"
-    @State private var product = "Sérum Luma Glow"
-    @State private var audience = "Femmes et hommes de 20 à 35 ans"
+    @State private var tool = "WhatsApp Status"
+    @State private var language = "fr"
+    @State private var product = ""
+    @State private var audience = "mes clientes du quartier"
     @State private var tone: Set<String> = ["Professionnel"]
     @State private var goal: Set<String> = ["Ventes"]
     @State private var phase: Phase = .idle
@@ -50,11 +54,22 @@ struct CopywriterView: View {
                 header
                 toolPicker
                 VStack(spacing: 14) {
-                    MSTextField(label: "Produit", placeholder: "ex. Sérum Luma Glow", text: $product, icon: "shippingbox")
-                    MSTextField(label: "Audience", placeholder: "ex. Femmes et hommes de 20 à 35 ans", text: $audience, icon: "person.2")
+                    MSTextField(label: "Produit", placeholder: "ex. Beurre de karité pur", text: $product, icon: "shippingbox")
+                    MSTextField(label: "Pour qui ?", placeholder: "ex. les mamans d'Abidjan", text: $audience, icon: "person.2")
                 }
                 .padding(.horizontal, MSSpacing.gutter)
                 CreativeSection(title: "Ton") { ChipGroup(options: Self.tones.map(Self.toneLabel), selection: $tone, allowDeselect: false) }
+                CreativeSection(title: "Langue") {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(Market.languages) { l in
+                                MSChip(title: l.label, selected: language == l.id) { MSHaptic.tap(); language = l.id }
+                            }
+                        }
+                        .padding(.horizontal, MSSpacing.gutter)
+                    }
+                    .padding(.horizontal, -MSSpacing.gutter)
+                }
                 CreativeSection(title: "Objectif") { ChipGroup(options: Self.goals.map { Self.goalLabels[$0] ?? $0 }, selection: $goal, allowDeselect: false) }
                 brandVoiceCard
                 CreditCostRow(cost: Self.cost, label: Self.toolLabel(tool))
@@ -67,6 +82,7 @@ struct CopywriterView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
+        .onAppear { language = store.preferences.language }
         .navigationTitle("Rédacteur")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
@@ -77,7 +93,7 @@ struct CopywriterView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Rédacteur").msTitle(26)
-            Text("Des textes fidèles à votre marque pour chaque emplacement, avec votre ton.").msBody(14)
+            Text("Statuts WhatsApp, légendes, scripts et notes vocales, dans votre langue. Gratuit.").msBody(14)
         }
         .padding(.horizontal, MSSpacing.gutter)
     }
@@ -203,10 +219,10 @@ struct CopywriterView: View {
         MSHaptic.tap()
         lastError = nil
         withAnimation(MSAnimation.gentle) { phase = .generating }
-        let p = CopyParams(tool: tool, product: product, audience: audience, tone: Self.key(tone.first ?? "Professionnel", in: Self.toneLabels), goal: Self.key(goal.first ?? "Ventes", in: Self.goalLabels))
+        let p = CopyParams(tool: tool, product: product, audience: audience, tone: Self.key(tone.first ?? "Professionnel", in: Self.toneLabels), goal: Self.key(goal.first ?? "Ventes", in: Self.goalLabels), language: language)
         Task {
             do {
-                let r = try await MockAPI.generateCopy(p, store: store)
+                let r = try await API.generateCopy(p, store: store)
                 MSHaptic.success()
                 withAnimation(MSAnimation.snappy) { results.insert(r, at: 0); phase = .done }
                 savedIds.insert(r.id)   // MockAPI already stores the result in store.copyResults
@@ -264,6 +280,16 @@ struct CopyResultCard: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ResultAction(title: "Copier", icon: "doc.on.doc", action: onCopy)
+                    ResultAction(title: "WhatsApp", icon: "message.fill") {
+                        // Opens WhatsApp with the text ready to send (choose a chat or status there).
+                        var c = URLComponents(string: "https://wa.me/")
+                        c?.queryItems = [URLQueryItem(name: "text", value: result.text)]
+                        if let url = c?.url { UIApplication.shared.open(url) }
+                    }
+                    ShareLink(item: result.text) {
+                        Label("Partager", systemImage: "square.and.arrow.up").font(MSFont.control(13)).foregroundStyle(MSColor.text)
+                            .padding(.horizontal, 12).frame(height: 32).background(MSColor.elevated, in: Capsule())
+                    }
                     ResultAction(title: saved ? "Enregistré" : "Enregistrer", icon: saved ? "checkmark" : "bookmark", tint: saved ? MSColor.success : MSColor.text, action: onSave)
                     ResultAction(title: "Régénérer", icon: "arrow.clockwise", action: onRegenerate)
                     if let onUseInScript { ResultAction(title: "Utiliser dans le script", icon: "person.wave.2", action: onUseInScript) }

@@ -24,7 +24,7 @@ struct CampaignBuilderView: View {
         "Femmes 20–35 ans, curieuses de soins", "Hommes 25–40 ans, acheteurs premium", "Créateurs Gen Z", "Parents 30–45 ans",
         "Débutants en fitness", "Télétravailleurs", "Acheteurs de cadeaux", "Anciens clients",
     ]
-    /// Matches MockAPI.createCampaign (60) plus the ad set it generates internally.
+    /// Matches API.createCampaign (60) plus the ad set it generates internally.
     private static let campaignCost = 60 + GenerationKind.ad.creditCost
 
     private var canContinue: Bool {
@@ -292,7 +292,7 @@ struct CampaignBuilderView: View {
     private var reviewStep: some View {
         VStack(alignment: .leading, spacing: 16) {
             stepTitle("Récapitulatif", "Nommez la campagne puis générez visuels, textes et calendrier.")
-            MSTextField(label: "Nom de la campagne", placeholder: "ex. Lancement d'été Luma Glow", text: $name, icon: "flag")
+            MSTextField(label: "Nom de la campagne", placeholder: "ex. Promo Tabaski", text: $name, icon: "flag")
             VStack(spacing: 8) {
                 reviewRow("Objectif", objective?.title ?? "—", icon: objective?.icon ?? "target") { withAnimation(MSAnimation.snappy) { step = 0 } }
                 reviewRow("Audience", audience, icon: "person.2") { withAnimation(MSAnimation.snappy) { step = 1 } }
@@ -369,7 +369,7 @@ struct CampaignBuilderView: View {
         withAnimation(MSAnimation.gentle) { generating = true }
         Task {
             do {
-                let campaign = try await MockAPI.createCampaign(params, store: store) { label in
+                let campaign = try await API.createCampaign(params, store: store) { label in
                     if let i = Self.generationSteps.firstIndex(of: label) { progressStep = i }
                 }
                 progressStep = Self.generationSteps.count

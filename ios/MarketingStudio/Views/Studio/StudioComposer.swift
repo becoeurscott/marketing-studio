@@ -37,9 +37,9 @@ struct StudioComposer: View {
     }
     private var cost: Int {
         switch mode {
-        case .video: return VideoGenSession.cost
-        case .ugc: return UGCGenSession.cost
-        default: return ImageGenSession.cost
+        case .video: return video.cost
+        case .ugc: return ugc.cost
+        default: return image.cost
         }
     }
     private var product: Asset? {
@@ -432,7 +432,7 @@ struct ModelPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        BottomSheetContainer(title: "Modèle", subtitle: "Tous les modèles sont simulés dans ce prototype.") {
+        BottomSheetContainer(title: "Modèle", subtitle: "Prix en crédits Sokozia. Les modèles vidéo sont facturés à la seconde.") {
             VStack(spacing: 8) {
                 ForEach(models) { m in
                     let on = m.name == selection

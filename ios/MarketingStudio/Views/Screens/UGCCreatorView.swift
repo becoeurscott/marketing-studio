@@ -1,27 +1,28 @@
 import SwiftUI
 
-/// SPEC §15 — UGC Creator: product + creator + script + location/tone/duration → mock UGC video.
+/// UGC creator: AI creator (+ optional product) + script + language → a real talking video
+/// (Seedance 2.5 with the creator's character sheet, so the person stays the same).
 struct UGCCreatorView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
     var initialScript: String? = nil
 
-    static let defaultScript = "Créez une vidéo de 15 secondes façon TikTok qui présente ce produit."
-    static let locations = ["Salle de bain", "Chambre", "Cuisine", "Salon", "Extérieur", "Salle de sport", "Voiture", "Bureau", "Studio"]
+    static let defaultScript = "Bonjour ! Regardez ce que je viens de recevoir. La qualité est top et le prix est doux. Écrivez-nous sur WhatsApp pour commander."
+    static let locations = StudioOptions.ugcLocations
     static let tones = ["Enthousiaste", "Décontracté", "Professionnel", "Drôle", "Luxe", "Authentique"]
-    static let durations = [15, 30, 60]
-    static let cost = GenerationKind.video.creditCost
-    static let steps = ["Choix du créateur", "Lecture du script...", "Création de la scène 1...", "Ajout du mouvement...", "Rendu en cours...", "Finalisation..."]
+    static let durations = StudioOptions.ugcDurations
+    static let steps = ["Choix du créateur"] + API.videoSteps
 
     private enum Phase: Equatable { case idle, generating(step: Int, label: String), done, failed(String) }
 
     @State private var productId: String?
-    @State private var creatorId: String = "creator_maya"
+    @State private var creatorId: String = Catalog.creators[0].id
     @State private var script: String = UGCCreatorView.defaultScript
-    @State private var location: String = "Salle de bain"
+    @State private var location: String = StudioOptions.ugcLocations[0]
     @State private var tone: Set<String> = ["Authentique"]
-    @State private var duration = 15
+    @State private var language = "fr"
+    @State private var duration = 10
     @State private var phase: Phase = .idle
     @State private var result: GeneratedVideo?
     @State private var lastError: Error?
@@ -30,7 +31,9 @@ struct UGCCreatorView: View {
     @State private var scrollTarget: String?
 
     private var creator: Creator? { store.creator(creatorId) }
-    private var product: Asset? { productId.flatMap { store.asset($0) } ?? store.asset("asset_product_hero") }
+    /// Optional: no product until the user picks or imports one.
+    private var product: Asset? { productId.flatMap { store.asset($0) } }
+    private var cost: Int { AIModels.ugcCredits(seconds: duration) }
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -45,7 +48,7 @@ struct UGCCreatorView: View {
                     scriptSection
                     optionsSection
                     previewSection
-                    CreditCostRow(cost: Self.cost, label: "Vidéo UGC de \(duration) s")
+                    CreditCostRow(cost: cost, label: "Vidéo UGC de \(duration) s")
                     MSButton(title: result == nil ? "Générer la vidéo UGC" : "En générer une autre", icon: "sparkles", isLoading: isGenerating, isDisabled: script.trimmingCharacters(in: .whitespaces).isEmpty) {
                         generate()
                     }
@@ -62,13 +65,25 @@ struct UGCCreatorView: View {
         .navigationTitle("Créateur UGC")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
-        .onAppear { if let initialScript, !initialScript.isEmpty { script = initialScript } }
+        .onAppear {
+            if let initialScript, !initialScript.isEmpty { script = initialScript }
+            language = store.preferences.language
+            consumePendingCreator()
+        }
+        .onChange(of: store.pendingCreatorId) { _, _ in consumePendingCreator() }
         .msSheet(isPresented: $campaignPicker) {
             CampaignPickerSheet(assetIds: [savedAssetId].compactMap { $0 }) { campaignPicker = false }
         }
     }
 
     private var isGenerating: Bool { if case .generating = phase { return true }; return false }
+
+    /// A creator chosen on the Creators screen ("Utiliser en UGC").
+    private func consumePendingCreator() {
+        guard let id = store.pendingCreatorId, store.creator(id) != nil else { return }
+        store.pendingCreatorId = nil
+        creatorId = id
+    }
 
     // MARK: Sections
 
@@ -92,25 +107,43 @@ struct UGCCreatorView: View {
     }
 
     private var productSection: some View {
-        CreativeSection(title: "Produit", subtitle: "Choisissez parmi vos ressources ou importez une nouvelle photo") {
+        CreativeSection(title: "Produit (facultatif)", subtitle: "Le créateur le tient et le montre. Sans produit, il parle face caméra.") {
             ProductPicker(selectedId: $productId) { router.present(.uploadProduct) }
+            if let product {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(MSColor.success)
+                    Text(product.name).font(MSFont.control(13)).foregroundStyle(MSColor.text).lineLimit(1)
+                    Spacer()
+                    Button {
+                        MSHaptic.tap()
+                        withAnimation(MSAnimation.snappy) { productId = nil }
+                    } label: {
+                        Label("Retirer le produit", systemImage: "xmark").font(MSFont.control(13)).foregroundStyle(MSColor.text2)
+                    }
+                }
+            }
         }
     }
 
     private var creatorSection: some View {
-        CreativeSection(title: "Créateur", subtitle: "Tous les créateurs sont des personnages IA fictifs") {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(store.creators) { c in
-                        CreatorPickCard(creator: c, selected: c.id == creatorId) {
-                            MSHaptic.tap()
-                            withAnimation(MSAnimation.snappy) { creatorId = c.id }
+        CreativeSection(title: "Créateur", subtitle: "Créateurs IA : le même visage dans toutes vos vidéos") {
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(store.creators) { c in
+                            CreatorPickCard(creator: c, selected: c.id == creatorId) {
+                                MSHaptic.tap()
+                                withAnimation(MSAnimation.snappy) { creatorId = c.id }
+                            }
+                            .id(c.id)
                         }
                     }
+                    .padding(.horizontal, MSSpacing.gutter)
                 }
-                .padding(.horizontal, MSSpacing.gutter)
+                .padding(.horizontal, -MSSpacing.gutter)
+                .onAppear { proxy.scrollTo(creatorId, anchor: .center) }
+                .onChange(of: creatorId) { _, id in withAnimation(MSAnimation.gentle) { proxy.scrollTo(id, anchor: .center) } }
             }
-            .padding(.horizontal, -MSSpacing.gutter)
         }
     }
 
@@ -128,6 +161,17 @@ struct UGCCreatorView: View {
 
     private var optionsSection: some View {
         VStack(alignment: .leading, spacing: 18) {
+            CreativeSection(title: "Langue de la vidéo") {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(Market.languages) { l in
+                            MSChip(title: l.label, selected: language == l.id) { MSHaptic.tap(); withAnimation(MSAnimation.snappy) { language = l.id } }
+                        }
+                    }
+                    .padding(.horizontal, MSSpacing.gutter)
+                }
+                .padding(.horizontal, -MSSpacing.gutter)
+            }
             CreativeSection(title: "Lieu") {
                 ChipRow(options: Self.locations, selection: $location).padding(.horizontal, -MSSpacing.gutter)
             }
@@ -147,15 +191,21 @@ struct UGCCreatorView: View {
     }
 
     private var previewSection: some View {
-        CreativeSection(title: "Aperçu", subtitle: "Ce que le créateur recevra") {
+        CreativeSection(title: "Aperçu", subtitle: "Votre créateur se présente (touchez le haut-parleur pour l'écouter)") {
             HStack(alignment: .top, spacing: 12) {
                 ZStack(alignment: .bottomLeading) {
-                    RemoteImage(url: creator?.avatarURL, cornerRadius: 12)
-                        .frame(width: 96, height: 128)
-                    RemoteImage(url: product?.imageURL, cornerRadius: 8)
-                        .frame(width: 40, height: 40)
-                        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(MSColor.bg, lineWidth: 2))
-                        .padding(6)
+                    if let creator {
+                        CreatorIntroView(creator: creator)
+                            .id(creator.id)
+                            .frame(width: 108, height: 192)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                    if let product {
+                        RemoteImage(url: product.imageURL, cornerRadius: 8)
+                            .frame(width: 40, height: 40)
+                            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(MSColor.bg, lineWidth: 2))
+                            .padding(6)
+                    }
                 }
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
@@ -165,7 +215,7 @@ struct UGCCreatorView: View {
                     Text(product?.name ?? "Aucun produit sélectionné").msCaption(color: MSColor.text2).lineLimit(1)
                     Text("\u{201C}\(script)\u{201D}").msBody(13).lineLimit(3)
                     HStack(spacing: 6) {
-                        MSBadge(text: tone.first ?? "Authentique", tone: .accent)
+                        MSBadge(text: Market.languageLabel(language), tone: .accent)
                         MSBadge(text: location)
                         MSBadge(text: "\(duration) s")
                     }
@@ -185,34 +235,8 @@ struct UGCCreatorView: View {
                 Spacer()
                 MSBadge(text: "Prête", tone: .success, icon: "checkmark")
             }
-            PlatformPreviewFrame(ratio: 9 / 16, label: "9:16 · \(video.duration) s · \(creator?.name ?? "") · \(tone.first ?? "")") {
-                ZStack {
-                    RemoteImage(url: video.posterURL)
-                    LinearGradient(colors: [.clear, .black.opacity(0.55)], startPoint: .center, endPoint: .bottom)
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(width: 60, height: 60)
-                        .background(.white.opacity(0.18), in: Circle())
-                        .overlay(Circle().strokeBorder(.white.opacity(0.5), lineWidth: 1))
-                    VStack {
-                        HStack {
-                            HStack(spacing: 6) {
-                                AvatarView(url: creator?.avatarURL, name: creator?.name ?? "C", size: 22)
-                                Text(creator?.name ?? "").font(MSFont.control(12)).foregroundStyle(.white)
-                            }
-                            .padding(.horizontal, 8).padding(.vertical, 5)
-                            .background(.black.opacity(0.4), in: Capsule())
-                            Spacer()
-                            Text("0:\(String(format: "%02d", video.duration))").font(MSFont.mono(12)).foregroundStyle(.white)
-                                .padding(.horizontal, 8).padding(.vertical, 5)
-                                .background(.black.opacity(0.4), in: Capsule())
-                        }
-                        Spacer()
-                        Text(script).font(MSFont.control(13)).foregroundStyle(.white).lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(12)
-                }
+            PlatformPreviewFrame(ratio: 9 / 16, label: "9:16 · \(video.duration) s · \(creator?.name ?? "") · \(Market.languageLabel(language))") {
+                ResultVideoPlayer(url: video.videoURL, poster: video.posterURL)
             }
             .frame(maxWidth: 260)
             .frame(maxWidth: .infinity)
@@ -223,6 +247,10 @@ struct UGCCreatorView: View {
                     campaignPicker = true
                 }
                 ResultAction(title: "Régénérer", icon: "arrow.clockwise") { generate() }
+            }
+            HStack(spacing: 8) {
+                ShareMediaButton(url: video.videoURL, title: "Partager", icon: "square.and.arrow.up")
+                ShareMediaButton(url: video.videoURL, title: "WhatsApp", icon: "message.fill", style: .primary)
             }
         }
         .msCard()
@@ -238,16 +266,17 @@ struct UGCCreatorView: View {
         savedAssetId = nil
         withAnimation(MSAnimation.gentle) { phase = .generating(step: 0, label: Self.steps[0]); result = nil }
         scrollTarget = "progress"
-        let params = UGCParams(productAssetId: productId, creatorId: creatorId, script: script, location: location, tone: tone.first ?? "Authentique", duration: duration, projectId: store.currentProjectId)
+        let params = UGCParams(productAssetId: productId, creatorId: creatorId, script: script, location: location, tone: tone.first ?? "Authentique", language: language, duration: duration, projectId: store.currentProjectId)
         Task {
             do {
                 var idx = -1
-                let video = try await MockAPI.generateUGC(params, store: store) { label in
+                let video = try await API.generateUGC(params, store: store) { label in
                     idx = min(idx + 1, Self.steps.count - 1)
                     withAnimation(MSAnimation.gentle) { phase = .generating(step: idx, label: label) }
                 }
                 MSHaptic.success()
                 withAnimation(MSAnimation.snappy) { result = video; phase = .done }
+                save(video, quiet: true)
                 scrollTarget = "result"
                 router.toast("Vidéo UGC prête", style: .success, icon: "sparkles")
             } catch {
@@ -261,7 +290,7 @@ struct UGCCreatorView: View {
 
     private func save(_ video: GeneratedVideo, quiet: Bool = false) {
         guard savedAssetId == nil else { return }
-        let a = store.addAsset(name: "UGC · \(creator?.name ?? "Créateur") · \(tone.first ?? "")", kind: .video, imageURL: video.posterURL, projectId: store.currentProjectId, tags: ["ugc", (tone.first ?? "").lowercased()], durationSeconds: video.duration)
+        let a = store.addAsset(name: "UGC · \(creator?.name ?? "Créateur") · \(tone.first ?? "")", kind: .video, imageURL: video.posterURL, projectId: store.currentProjectId, tags: ["ugc", (tone.first ?? "").lowercased()], durationSeconds: video.duration, videoURL: video.videoURL)
         savedAssetId = a.id
         if !quiet { MSHaptic.success(); router.toast("Enregistrée dans les ressources", style: .success) }
     }

@@ -14,7 +14,7 @@ struct NewProjectSheet: View {
     var body: some View {
         BottomSheetContainer(title: isEditing ? "Renommer le projet" : "Nouveau projet", subtitle: isEditing ? nil : "Regroupez visuels, générations et campagnes.") {
             VStack(spacing: 14) {
-                MSTextField(label: "Nom", placeholder: "ex. Lancement été Luma Skin", text: $name, icon: "folder")
+                MSTextField(label: "Nom", placeholder: "ex. Promo Tabaski boutique", text: $name, icon: "folder")
                 if !isEditing {
                     MSTextEditor(label: "Description", placeholder: "À quoi sert ce projet ?", text: $description, minHeight: 90)
                 }

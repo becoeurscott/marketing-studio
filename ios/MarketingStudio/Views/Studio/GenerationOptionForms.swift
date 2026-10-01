@@ -126,7 +126,7 @@ struct VideoOptionsForm: View {
         VStack(alignment: .leading, spacing: 20) {
             if full {
                 AssetSourcePicker(label: "Image source", selected: $session.sourceAsset, onUpload: onUpload)
-                MSTextEditor(label: "Concept", placeholder: "Orbite lente autour du flacon de sérum sur marbre mouillé, douce lumière du matin...", text: $session.concept, minHeight: 90)
+                MSTextEditor(label: "Concept", placeholder: "Rotation lente autour du pot de karité sur un pagne wax, douce lumière du matin...", text: $session.concept, minHeight: 90)
             }
             VStack(alignment: .leading, spacing: 8) {
                 Text("DURÉE").font(MSFont.caption(11)).tracking(0.6).foregroundStyle(MSColor.muted)

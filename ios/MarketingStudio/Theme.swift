@@ -14,7 +14,8 @@ extension Color {
     }
 }
 
-/// Marketing Studio color system. Accent is reserved for primary actions and selection.
+/// Sokozia color system (same tokens as the web app): orange, yellow, green on black.
+/// Accent is reserved for primary actions and selection; text on accent fills is `onAccent`.
 enum MSColor {
     static let bg = Color(hex: 0x070707)
     static let surface = Color(hex: 0x101010)
@@ -23,9 +24,11 @@ enum MSColor {
     static let border = Color.white.opacity(0.08)
     static let borderStrong = Color.white.opacity(0.14)
 
-    static let accent = Color(hex: 0xA855F7)
-    static let accent2 = Color(hex: 0x7C3AED)
-    static let highlight = Color(hex: 0xC084FC)
+    static let accent = Color(hex: 0xF97316)
+    static let accent2 = Color(hex: 0xEA580C)
+    static let highlight = Color(hex: 0xFACC15)
+    static let green = Color(hex: 0x16A34A)
+    static let onAccent = Color(hex: 0x0A0A0A)
 
     static let success = Color(hex: 0x22C55E)
     static let warning = Color(hex: 0xF59E0B)

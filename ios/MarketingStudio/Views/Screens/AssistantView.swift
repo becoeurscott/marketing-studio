@@ -192,7 +192,7 @@ struct AssistantView: View {
         withAnimation(MSAnimation.snappy) { messages.append(AssistantMessage(text: t, fromUser: true)) }
         Task {
             withAnimation(MSAnimation.gentle) { typing = true }
-            let reply = await MockAPI.assistantReply(to: t, store: store)
+            let reply = await API.assistantReply(to: t, store: store)
             let final = route.map { "C'est parti. J'ouvre \(routeTitle($0)) avec les paramètres de votre marque." } ?? reply
             withAnimation(MSAnimation.snappy) {
                 typing = false

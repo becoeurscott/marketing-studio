@@ -62,6 +62,11 @@ struct StudioView: View {
         .onPreferenceChange(StudioBottomInsetKey.self) { bottomInset = $0 }
         .msScreen()
         .toolbar(.hidden, for: .navigationBar)
+        .onChange(of: store.pendingCreatorId) { _, id in
+            // "Utiliser en UGC" from the Creators screen while the Studio is open.
+            guard let id, let c = store.creator(id) else { return }
+            ugc.creator = c
+        }
         .onAppear {
             applyPreferencesIfFresh()
             consumePendingTemplate()
@@ -251,7 +256,7 @@ struct StudioView: View {
         switch video.phase {
         case .generating(let step):
             StudioCanvasMedia(url: video.sourceAsset?.imageURL, dimmed: true)
-            canvasOverlay { progressCard(steps: MockAPI.videoSteps, step: step, title: "Génération d'une vidéo de \(video.duration) s") }
+            canvasOverlay { progressCard(steps: API.videoSteps, step: step, title: "Génération d'une vidéo de \(video.duration) s") }
         case .result:
             if let r = video.result {
                 videoResultCanvas(r)
@@ -275,7 +280,7 @@ struct StudioView: View {
         switch ugc.phase {
         case .generating(let step):
             StudioCanvasMedia(url: ugc.creator?.avatarURL, dimmed: true)
-            canvasOverlay { progressCard(steps: UGCGenSession.steps, step: step, title: "Casting de \(ugc.creator?.name ?? "créateur")") }
+            canvasOverlay { progressCard(steps: UGCGenSession.steps, step: step, title: "Tournage avec \(ugc.creator?.name ?? "le créateur")") }
         case .result:
             if let r = ugc.result {
                 videoResultCanvas(r)
@@ -284,7 +289,11 @@ struct StudioView: View {
             errorCanvas { GenerationErrorView(failure: f, retry: { generate() }, back: { ugc.reset() }) }
         case .idle:
             if let c = ugc.creator {
-                StudioCanvasMedia(url: c.avatarURL) { fullscreen = FullscreenImageItem(url: c.avatarURL, aspect: 0.8) }
+                // The creator introduces themself (muted, speaker button to listen).
+                CreatorIntroView(creator: c)
+                    .aspectRatio(9.0 / 16.0, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
+                    .frame(maxWidth: .infinity)
                     .id(c.id)
                     .transition(.opacity)
             } else {
@@ -296,7 +305,15 @@ struct StudioView: View {
     }
 
     private func videoResultCanvas(_ r: VideoResult) -> some View {
-        StudioCanvasMedia(url: r.posterURL)
+        Group {
+            if r.posterURL.isEmpty {
+                // Text-to-video has no poster: show the clip itself (muted loop).
+                LoopingVideoView(url: r.videoURL)
+                    .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
+            } else {
+                StudioCanvasMedia(url: r.posterURL)
+            }
+        }
             .overlay {
                 canvasOverlay {
                 Button {
@@ -466,9 +483,9 @@ struct StudioView: View {
 
     private var currentCost: Int {
         switch mode {
-        case .video: return VideoGenSession.cost
-        case .ugc: return UGCGenSession.cost
-        default: return ImageGenSession.cost
+        case .video: return video.cost
+        case .ugc: return ugc.cost
+        default: return image.cost
         }
     }
 
@@ -501,15 +518,18 @@ struct StudioView: View {
         }
     }
 
-    /// The dashed "add media" slot: a PhotosPicker whose pick runs through the mock upload and lands in the product slot.
+    /// The dashed "add media" slot: the picked photo is uploaded to the account and lands in the product slot.
     private func uploadFromPhotos() {
-        guard !uploadingPhoto else { return }
+        guard !uploadingPhoto, let item = photoItem else { return }
         uploadingPhoto = true
         router.toast("Importation depuis Photos", style: .info, icon: "icloud.and.arrow.up")
         Task {
             defer { uploadingPhoto = false; photoItem = nil }
             do {
-                let a = try await MockAPI.uploadProduct(name: "Import de la pellicule", store: store) { _ in }
+                guard let data = try await item.loadTransferable(type: Data.self), let picked = UIImage(data: data) else {
+                    throw APIError.failed("Impossible de lire cette photo.")
+                }
+                let a = try await API.uploadProduct(image: picked, name: "Photo produit", store: store) { _ in }
                 MSHaptic.success()
                 setProduct(a)
                 router.toast("\(a.name) est prêt", style: .success, icon: "checkmark.circle.fill")
@@ -556,15 +576,29 @@ struct StudioView: View {
     private func consumePendingTemplate() {
         guard let id = store.pendingTemplateId, let t = store.template(id) else { return }
         store.pendingTemplateId = nil
-        let isVideo = t.format.localizedCaseInsensitiveContains("video") || t.format.localizedCaseInsensitiveContains("reel")
+        // Each template opens the tool it was made for.
+        switch t.mode {
+        case .productShoot: router.push(.productShoot); return
+        case .ads: router.push(.adCreator); return
+        case .copy: router.push(.copywriter); return
+        default: break
+        }
         withAnimation(MSAnimation.gentle) {
-            if isVideo {
+            switch t.mode {
+            case .video:
                 video.reset()
                 video.concept = t.prompt
                 if StudioOptions.videoStyles.contains(t.style) { video.style = t.style }
                 if StudioOptions.ratios.contains(t.ratio) { video.ratio = t.ratio }
+                if let d = t.durationSec { video.duration = d }
                 mode = .video
-            } else {
+            case .ugc:
+                ugc.reset()
+                ugc.leadIn = t.description
+                if let d = t.durationSec { ugc.duration = min(d, StudioOptions.ugcDurations.last ?? 15) }
+                if ugc.creator == nil { ugc.creator = store.creators.first }
+                mode = .ugc
+            default:
                 image.reset()
                 image.applyTemplate(t)
                 mode = .image
@@ -698,7 +732,7 @@ struct StudioModePill: View {
 
 // MARK: - Video playback
 
-/// Fullscreen playback for a generated video (mock player over the poster).
+/// Fullscreen playback for a generated video.
 struct VideoPlaybackScreen: View {
     var result: VideoResult
     @Environment(\.dismiss) private var dismiss
@@ -706,7 +740,7 @@ struct VideoPlaybackScreen: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Color.black.ignoresSafeArea()
-            MockVideoPlayer(posterURL: result.posterURL, duration: result.duration, ratio: result.ratio)
+            GeneratedVideoView(videoURL: result.videoURL, posterURL: result.posterURL, duration: result.duration, ratio: result.ratio)
                 .padding(.horizontal, 16)
             MSIconButton(icon: "xmark", size: 36) { dismiss() }
                 .padding(16)

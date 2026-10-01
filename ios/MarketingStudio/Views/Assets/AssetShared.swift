@@ -12,7 +12,15 @@ struct AssetCell: View {
 
     var body: some View {
         Button(action: action) {
-            RemoteImage(url: asset.imageURL, cornerRadius: 12)
+            Group {
+                if asset.imageURL.isEmpty {
+                    // Video without a poster (text-to-video).
+                    RoundedRectangle(cornerRadius: 12, style: .continuous).fill(MSColor.elevated)
+                        .overlay(Image(systemName: "play.rectangle.fill").font(.system(size: 26)).foregroundStyle(MSColor.highlight))
+                } else {
+                    RemoteImage(url: asset.imageURL, cornerRadius: 12)
+                }
+            }
                 .aspectRatio(0.8, contentMode: .fit)
                 .overlay(alignment: .bottomLeading) {
                     HStack(spacing: 4) {

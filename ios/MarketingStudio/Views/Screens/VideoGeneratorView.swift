@@ -21,14 +21,14 @@ struct VideoGeneratorView: View {
                             RemoteImage(url: s.imageURL, cornerRadius: MSRadius.md).frame(width: 100, height: 130)
                                 .overlay(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous).strokeBorder(MSColor.accent.opacity(0.5), lineWidth: 1))
                         }
-                        ProgressIndicator(steps: MockAPI.videoSteps, currentStep: step, title: "Génération d'une vidéo \(session.style.lowercased()) de \(session.duration) s")
+                        ProgressIndicator(steps: API.videoSteps, currentStep: step, title: "Génération d'une vidéo \(session.style.lowercased()) de \(session.duration) s")
                     }
                     .frame(maxWidth: .infinity)
                     .msCard(padding: 20)
                 case .result:
                     if let r = session.result {
                         VStack(spacing: 12) {
-                            MockVideoPlayer(posterURL: r.posterURL, duration: r.duration, ratio: r.ratio)
+                            GeneratedVideoView(videoURL: r.videoURL, posterURL: r.posterURL, duration: r.duration, ratio: r.ratio)
                             resultActions(r)
                         }
                     }
@@ -41,7 +41,7 @@ struct VideoGeneratorView: View {
                 if !session.isGenerating {
                     VideoOptionsForm(session: session, full: true) { showUpload = true }
                         .msCard()
-                    MSButton(title: "Générer la vidéo · \(VideoGenSession.cost) crédits", icon: "video.fill", isDisabled: !session.canGenerate) { generate() }
+                    MSButton(title: "Générer la vidéo · \(session.cost) crédits", icon: "video.fill", isDisabled: !session.canGenerate) { generate() }
                     Text("Solde : \(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits · \(session.duration) s en \(session.ratio)").msCaption()
                 }
             }

@@ -49,7 +49,7 @@ struct MSButton: View {
 
     private var foreground: Color {
         switch style {
-        case .primary: return .white
+        case .primary: return MSColor.onAccent
         case .secondary: return MSColor.text
         case .ghost: return MSColor.text2
         case .danger: return MSColor.danger

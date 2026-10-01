@@ -40,7 +40,7 @@ struct PricingView: View {
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                Text("Prototype : aucune carte n'est débitée. Changer de forfait l'active immédiatement et ajoute ses crédits mensuels.")
+                Text("Pas envie d'abonnement ? Les packs sans engagement sont dans Crédits. Paiement Mobile Money bientôt disponible.")
                     .msCaption()
                     .padding(.horizontal, MSSpacing.gutter)
             }
@@ -65,7 +65,8 @@ struct PricingView: View {
 
 /// Price per month for the given billing cycle.
 extension Plan {
-    func price(yearly: Bool) -> Int { yearly ? Int((Double(monthlyPrice) * 0.8).rounded()) : monthlyPrice }
+    /// FCFA per month for the given billing cycle (shown with `AppStore.price`).
+    func price(yearly: Bool) -> Int { yearly ? Int((Double(monthlyPriceXof) * 0.8 / 100).rounded()) * 100 : monthlyPriceXof }
     var tagline: String {
         switch self {
         case .starter: return "Pour tester des idées et les petites boutiques"
@@ -114,7 +115,7 @@ struct PlanCard: View {
                 else if recommended { MSBadge(text: "Recommandé", tone: .accent) }
             }
             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("\(plan.price(yearly: yearly)) $").font(.system(size: 34, weight: .bold, design: .rounded)).tracking(-1).foregroundStyle(MSColor.text)
+                Text(store.price(plan.price(yearly: yearly))).font(.system(size: 34, weight: .bold, design: .rounded)).tracking(-1).foregroundStyle(MSColor.text)
                     .contentTransition(.numericText())
                 Text("/ mois").msBody(14)
                 if yearly { Text("facturé annuellement").msCaption() }
@@ -145,6 +146,7 @@ struct PlanCard: View {
 // MARK: - Upgrade confirm + success (AppSheet.upgrade)
 
 struct UpgradeSheet: View {
+    @Environment(\.openURL) private var openURL
     var plan: Plan?
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
@@ -171,7 +173,7 @@ struct UpgradeSheet: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(Plan.allCases) { p in
-                            MSChip(title: "\(p.title) \(p.monthlyPrice) $", selected: selected == p) { selected = p }
+                            MSChip(title: "\(p.title) \(store.price(p.monthlyPriceXof))", selected: selected == p) { selected = p }
                         }
                     }
                 }
@@ -185,15 +187,15 @@ struct UpgradeSheet: View {
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 0) {
-                            Text("\(selected.price(yearly: yearly)) $").font(.system(size: 26, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
+                            Text(store.price(selected.price(yearly: yearly))).font(.system(size: 26, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
                             Text("par mois").msCaption()
                         }
                     }
                     Divider().overlay(MSColor.border)
                     row("Forfait actuel", store.plan.title)
-                    row("Crédits ajoutés maintenant", "+\(selected.monthlyCredits.formatted(.number.locale(Locale(identifier: "fr_FR"))))")
-                    row("Facturation", yearly ? "Annuelle, \(selected.price(yearly: true) * 12) $" : "Mensuelle")
-                    row("Prochain prélèvement", "Prototype : aucun")
+                    row("Crédits par mois", "+\(selected.monthlyCredits.formatted(.number.locale(Locale(identifier: "fr_FR"))))")
+                    row("Facturation", yearly ? "Annuelle, \(store.price(selected.price(yearly: true) * 12))" : "Mensuelle")
+                    row("Paiement", "Mobile Money (bientôt)")
                 }
             }
             Toggle(isOn: $yearly) {
@@ -205,13 +207,10 @@ struct UpgradeSheet: View {
             .tint(MSColor.accent)
             Spacer(minLength: 0)
             MSButton(title: working ? "Mise à jour du forfait" : (selected == store.plan ? "Déjà sur \(selected.title)" : "Confirmer \(selected.title)"), icon: working ? nil : "lock.fill", isLoading: working, isDisabled: selected == store.plan) {
-                working = true
-                Task {
-                    try? await Task.sleep(for: .seconds(1.3))
-                    store.setPlan(selected)
-                    MSHaptic.success()
-                    withAnimation(MSAnimation.snappy) { working = false; done = true }
-                }
+                // Mobile Money subscriptions aren't connected yet: continue on WhatsApp (no plan change here).
+                let message = "Bonjour Sokozia, je veux le forfait \(selected.title) (\(store.price(selected.price(yearly: yearly)))/mois) pour le compte \(store.user.email)."
+                router.toast("Mobile Money bientôt disponible", style: .info, icon: "clock")
+                if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: message) { openURL(url) }
             }
             MSButton(title: "Pas maintenant", style: .ghost) { router.dismissSheet() }
         }
@@ -288,7 +287,7 @@ struct PaywallSheet: View {
                         HStack {
                             Text(suggested.title).msHeadline(16)
                             Spacer()
-                            Text("\(suggested.monthlyPrice) $/mois").font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                            Text("\(store.price(suggested.monthlyPriceXof))/mois").font(MSFont.control(14)).foregroundStyle(MSColor.text)
                         }
                         ForEach(suggested.features.prefix(3), id: \.self) { f in
                             HStack(spacing: 8) {

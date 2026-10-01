@@ -101,7 +101,7 @@ struct CreditCostRow: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "bolt.fill").font(.system(size: 11, weight: .bold)).foregroundStyle(MSColor.highlight)
-            Text("\(cost) crédits · \(label)").msCaption(color: MSColor.text2)
+            Text(cost == 0 ? "Gratuit · \(label)" : "\(cost) crédits · \(label)").msCaption(color: MSColor.text2)
             Spacer()
             Text("Solde \(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR"))))").msCaption(color: store.canAfford(cost) ? MSColor.muted : MSColor.danger)
         }
@@ -143,7 +143,7 @@ struct CreativeErrorView: View {
     @EnvironmentObject private var router: Router
 
     private var isCredits: Bool {
-        if case MockAPIError.insufficientCredits = error { return true }
+        if case APIError.insufficientCredits = error { return true }
         return false
     }
 

@@ -4,6 +4,7 @@ import SwiftUI
 struct MarketingStudioApp: App {
     @StateObject private var store = AppStore()
     @StateObject private var router = Router()
+    @StateObject private var auth = AuthService.shared
 
     init() {
         Self.configureAppearance()
@@ -14,6 +15,7 @@ struct MarketingStudioApp: App {
             RootView()
                 .environmentObject(store)
                 .environmentObject(router)
+                .environmentObject(auth)
                 .preferredColorScheme(.dark)
                 .tint(MSColor.accent)
         }

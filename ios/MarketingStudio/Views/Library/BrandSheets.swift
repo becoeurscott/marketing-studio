@@ -56,7 +56,7 @@ enum BrandField: String, Identifiable, CaseIterable {
     }
     var placeholder: String {
         switch self {
-        case .name: return "ex. Luma Skin"
+        case .name: return "ex. Chez Awa Couture"
         case .website: return "https://"
         case .description: return "Que vend la marque et quelles sont ses valeurs ?"
         case .industry: return "ex. Beauté, Café, Fitness"

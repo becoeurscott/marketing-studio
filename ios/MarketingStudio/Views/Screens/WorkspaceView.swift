@@ -99,7 +99,7 @@ struct WorkspaceView: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(m.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                    if m.id == "mem_alex" || m.email == store.user.email { Text("Vous").msCaption() }
+                    if m.email == store.user.email { Text("Vous").msCaption() }
                 }
                 Text(m.email).msCaption().lineLimit(1)
             }

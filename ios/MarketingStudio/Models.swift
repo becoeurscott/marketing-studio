@@ -26,28 +26,29 @@ enum Plan: String, Codable, CaseIterable, Identifiable {
         case .agency: return "Agence"
         }
     }
-    var monthlyPrice: Int {
+    /// Monthly price in FCFA (converted per country with `Market.price`).
+    var monthlyPriceXof: Int {
         switch self {
-        case .starter: return 12
-        case .creator: return 29
-        case .studio: return 59
-        case .agency: return 149
+        case .starter: return 4_900
+        case .creator: return 14_900
+        case .studio: return 29_900
+        case .agency: return 79_900
         }
     }
     var monthlyCredits: Int {
         switch self {
-        case .starter: return 500
-        case .creator: return 1500
-        case .studio: return 4000
-        case .agency: return 12000
+        case .starter: return 300
+        case .creator: return 1_000
+        case .studio: return 3_000
+        case .agency: return 10_000
         }
     }
     var features: [String] {
         switch self {
-        case .starter: return ["500 générations IA / mois", "3 projets", "1 kit de marque", "2 campagnes", "5 générations vidéo", "1 membre d'équipe"]
-        case .creator: return ["1 500 générations IA / mois", "Projets illimités", "3 kits de marque", "10 campagnes", "30 générations vidéo", "3 membres d'équipe"]
-        case .studio: return ["4 000 générations IA / mois", "Projets illimités", "10 kits de marque", "Campagnes illimitées", "120 générations vidéo", "10 membres d'équipe"]
-        case .agency: return ["12 000 générations IA / mois", "Projets illimités", "Kits de marque illimités", "Campagnes illimitées", "500 générations vidéo", "Membres d'équipe illimités"]
+        case .starter: return ["300 générations IA / mois", "3 projets", "1 kit de marque", "Générateur d'images", "Rédacteur IA", "Modèles par secteur"]
+        case .creator: return ["1 000 générations IA / mois", "Projets illimités", "Créateur vidéo + UGC", "Shooting produit IA", "Statuts et catalogue WhatsApp", "Tous les modèles"]
+        case .studio: return ["3 000 générations IA / mois", "Campagnes illimitées", "Création de campagnes + calendrier", "Centre d'export (4K)", "Rendu prioritaire", "5 membres"]
+        case .agency: return ["10 000 générations IA / mois", "Kits de marque illimités", "Espaces clients", "Rôles + permissions", "Support dédié", "Membres illimités"]
         }
     }
 }
@@ -132,6 +133,8 @@ struct Asset: Codable, Identifiable, Hashable {
     var width: Int
     var height: Int
     var durationSeconds: Int?
+    /// Playable file for videos (`imageURL` is then the poster).
+    var videoURL: String? = nil
 }
 
 // MARK: - Campaigns
@@ -158,10 +161,11 @@ enum CampaignObjective: String, Codable, CaseIterable, Identifiable {
 }
 
 enum SocialPlatform: String, Codable, CaseIterable, Identifiable {
-    case instagram, tiktok, facebook, youtube, google, pinterest
+    case whatsapp, facebook, tiktok, instagram, youtube, google, pinterest
     var id: String { rawValue }
     var title: String {
         switch self {
+        case .whatsapp: return "WhatsApp"
         case .instagram: return "Instagram"
         case .tiktok: return "TikTok"
         case .facebook: return "Facebook"
@@ -172,6 +176,7 @@ enum SocialPlatform: String, Codable, CaseIterable, Identifiable {
     }
     var icon: String {
         switch self {
+        case .whatsapp: return "message.circle"
         case .instagram: return "camera.circle"
         case .tiktok: return "music.note"
         case .facebook: return "person.2.circle"
@@ -259,21 +264,37 @@ struct Campaign: Codable, Identifiable, Hashable {
 
 // MARK: - Templates / Creators
 
+/// Sector categories for local merchants (same as the web app).
 enum TemplateCategory: String, Codable, CaseIterable, Identifiable {
-    case productAds, ugc, socialMedia, ecommerce, fashion, beauty, food, technology, realEstate, fitness
+    case waxCouture, cosmetics, restaurant, electronics, hair, grocery, whatsapp, print, ugc, promo
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .productAds: return "Pubs produit"
+        case .waxCouture: return "Wax & couture"
+        case .cosmetics: return "Cosmétiques"
+        case .restaurant: return "Restauration"
+        case .electronics: return "Électronique"
+        case .hair: return "Coiffure"
+        case .grocery: return "Alimentation"
+        case .whatsapp: return "WhatsApp"
+        case .print: return "Imprimés"
         case .ugc: return "UGC"
-        case .socialMedia: return "Réseaux sociaux"
-        case .ecommerce: return "E-commerce"
-        case .fashion: return "Mode"
-        case .beauty: return "Beauté"
-        case .food: return "Alimentation"
-        case .technology: return "Technologie"
-        case .realEstate: return "Immobilier"
-        case .fitness: return "Fitness"
+        case .promo: return "Promos"
+        }
+    }
+}
+
+/// Which studio tool a template opens.
+enum TemplateMode: String, Codable, Hashable {
+    case image, video, ugc, productShoot, ads, copy
+    var title: String {
+        switch self {
+        case .image: return "Image"
+        case .video: return "Vidéo"
+        case .ugc: return "UGC"
+        case .productShoot: return "Shooting produit"
+        case .ads: return "Pub"
+        case .copy: return "Texte"
         }
     }
 }
@@ -284,13 +305,19 @@ struct Template: Codable, Identifiable, Hashable {
     var description: String
     var category: TemplateCategory
     var platforms: [SocialPlatform]
+    /// Display label of the output ("Statut", "Reel", "Flyer"…).
     var format: String
     var thumbnailURL: String
     var prompt: String
     var style: String
     var ratio: String
+    var mode: TemplateMode
+    var durationSec: Int?
+    var popular: Bool
+    var uses: Int
 }
 
+/// AI creator: a fixed persona with a character sheet (consistency reference) and an intro clip.
 struct Creator: Codable, Identifiable, Hashable {
     var id: String
     var name: String
@@ -299,8 +326,15 @@ struct Creator: Codable, Identifiable, Hashable {
     var age: Int
     var style: String
     var languages: [String]
+    var country: String
+    /// Portrait (hero image).
     var avatarURL: String
+    var sheetURL: String
+    var introURL: String
+    /// Fixed appearance, repeated in every video prompt.
+    var look: String
     var bio: String
+    var featured: Bool
 }
 
 // MARK: - Generations
@@ -324,11 +358,12 @@ enum GenerationKind: String, Codable, CaseIterable, Identifiable {
         case .ad: return "rectangle.stack"
         }
     }
+    /// Typical cost shown in lists (the exact cost depends on the model and duration, see AIModels).
     var creditCost: Int {
         switch self {
         case .image: return 10
-        case .video: return 50
-        case .copy: return 2
+        case .video: return AIModels.videoCredits(AIModels.defaultVideo, seconds: 10)
+        case .copy: return 0
         case .ad: return 20
         }
     }
@@ -446,11 +481,17 @@ struct OnboardingAnswers: Codable, Hashable {
 }
 
 struct UserPreferences: Codable, Hashable {
+    /// Market.countries code (prices, Mobile Money, languages).
+    var country: String = Market.defaultCountry
+    /// Default text / voice-over language (Market.languages id).
+    var language: String = "fr"
+    /// Lighter videos (480p) for slow connections and WhatsApp.
+    var lightVideos: Bool = true
     var haptics: Bool = true
     var pushNotifications: Bool = true
     var emailDigest: Bool = false
     var defaultRatio: String = "4:5"
-    var defaultModel: String = "Lumen 2.5"
+    var defaultModel: String = "Marketing Studio"
     var defaultStyle: String = "Product Photography"
     var reduceMotion: Bool = false
 }

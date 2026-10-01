@@ -1,12 +1,13 @@
 import SwiftUI
 
-/// SPEC §17–18 — Ad Creator: platform, format, product/offer/audience/CTA → Creative A–D variations.
+/// Ad creator: platform (WhatsApp first), format, product photo, offer, price in local currency →
+/// 2 real visuals shared by 4 copy variants (A–D).
 struct AdCreatorView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
-    static let formats = ["Image", "Video", "Carousel", "Story", "Reel", "Short"]
-    static let ctas = ["Acheter", "En savoir plus", "S'inscrire", "Profiter de l'offre", "Essai gratuit", "Réserver"]
+    static let formats = ["Status", "Image", "Story", "Flyer", "Catalog", "Carousel"]
+    static let ctas = ["Commander sur WhatsApp", "Acheter", "Réserver", "Profiter de l'offre", "Passer à la boutique", "En savoir plus"]
     static func formatLabel(_ f: String) -> String {
         switch f {
         case "Image": return "Image"
@@ -15,19 +16,24 @@ struct AdCreatorView: View {
         case "Story": return "Story"
         case "Reel": return "Reel"
         case "Short": return "Short"
+        case "Status": return "Statut"
+        case "Flyer": return "Flyer"
+        case "Catalog": return "Catalogue"
         default: return f
         }
     }
-    static let cost = GenerationKind.ad.creditCost
+    static let cost = AIModels.imageModel(nil).credits * 2
 
     private enum Phase: Equatable { case idle, generating, done, failed }
 
-    @State private var platform: SocialPlatform = .tiktok
-    @State private var format = "Image"
-    @State private var product = "Montre Premium"
-    @State private var offer = "-20 % de lancement"
-    @State private var audience = "Hommes 25–40 ans"
-    @State private var cta: Set<String> = ["Acheter"]
+    @State private var platform: SocialPlatform = .whatsapp
+    @State private var format = "Status"
+    @State private var product = ""
+    @State private var offer = "Livraison offerte cette semaine"
+    @State private var audience = "mes clientes du quartier"
+    @State private var price = ""
+    @State private var productId: String?
+    @State private var cta: Set<String> = ["Commander sur WhatsApp"]
     @State private var phase: Phase = .idle
     @State private var variations: [AdVariation] = []
     @State private var savedIds: [String: String] = [:]
@@ -40,10 +46,11 @@ struct AdCreatorView: View {
     /// Aspect ratio implied by platform + format (SPEC: 9:16 story/reel/short, 1:1 feed).
     private var previewRatio: CGFloat {
         switch format {
-        case "Story", "Reel", "Short", "Video": return 9 / 16
+        case "Story", "Reel", "Short", "Video", "Status": return 9 / 16
+        case "Catalog": return 1
         default:
             switch platform {
-            case .tiktok: return 9 / 16
+            case .tiktok, .whatsapp: return 9 / 16
             case .pinterest: return 2 / 3
             case .youtube, .google: return 16 / 9
             default: return 1
@@ -82,15 +89,19 @@ struct AdCreatorView: View {
                     }
                 }
                 VStack(spacing: 14) {
-                    MSTextField(label: "Produit", placeholder: "ex. Montre Premium", text: $product, icon: "shippingbox")
-                    MSTextField(label: "Offre", placeholder: "ex. -20 % de lancement", text: $offer, icon: "tag")
-                    MSTextField(label: "Audience cible", placeholder: "ex. Hommes 25–40 ans", text: $audience, icon: "person.2")
+                    MSTextField(label: "Produit", placeholder: "ex. Pagne wax 6 yards", text: $product, icon: "shippingbox")
+                    MSTextField(label: "Prix (\(Market.currencies[store.country.currency]?.symbol ?? "FCFA"), facultatif)", placeholder: "ex. 7500", text: $price, icon: "banknote", keyboard: .numberPad)
+                    MSTextField(label: "Offre", placeholder: "ex. Livraison offerte cette semaine", text: $offer, icon: "tag")
+                    MSTextField(label: "Pour qui ?", placeholder: "ex. les mamans d'Abidjan", text: $audience, icon: "person.2")
                 }
                 .padding(.horizontal, MSSpacing.gutter)
+                CreativeSection(title: "Photo du produit (facultatif)", subtitle: "Votre produit reste identique sur les visuels") {
+                    ProductPicker(selectedId: $productId) { router.present(.uploadProduct) }
+                }
                 CreativeSection(title: "Appel à l'action") {
                     ChipGroup(options: Self.ctas, selection: $cta, allowDeselect: false)
                 }
-                CreditCostRow(cost: Self.cost, label: "4 variantes de pub")
+                CreditCostRow(cost: Self.cost, label: "2 visuels · 4 textes")
                 MSButton(title: variations.isEmpty ? "Générer la pub" : "Générer une nouvelle série", icon: "sparkles", isLoading: phase == .generating, isDisabled: !canGenerate) { generate() }
                     .padding(.horizontal, MSSpacing.gutter)
                 resultsSection
@@ -164,10 +175,12 @@ struct AdCreatorView: View {
         MSHaptic.tap()
         lastError = nil
         withAnimation(MSAnimation.gentle) { phase = .generating; variations = []; savedIds = [:] }
-        let p = AdParams(platform: platform, format: format, product: product, offer: offer, audience: audience, cta: cta.first ?? "Acheter", projectId: store.currentProjectId)
+        let amount = Int(price.filter(\.isNumber))
+        let formattedPrice = amount.map { Market.format($0, currency: store.country.currency) }
+        let p = AdParams(platform: platform, format: Self.formatLabel(format), product: product, offer: offer, audience: audience, cta: cta.first ?? "Commander sur WhatsApp", price: formattedPrice, productAssetId: productId, projectId: store.currentProjectId)
         Task {
             do {
-                let vars = try await MockAPI.generateAds(p, store: store)
+                let vars = try await API.generateAds(p, store: store)
                 MSHaptic.success()
                 withAnimation(MSAnimation.snappy) { variations = vars; phase = .done }
                 router.toast("4 visuels prêts", style: .success, icon: "sparkles")
@@ -211,7 +224,7 @@ struct AdCreatorView: View {
         let id = save(v, quiet: true)
         Task {
             do {
-                _ = try await MockAPI.exportAssets(ids: [id], format: format == "Video" || format == "Reel" || format == "Short" ? .mp4 : .png, quality: .high, store: store) { _, step in
+                _ = try await API.exportAssets(ids: [id], format: format == "Video" || format == "Reel" || format == "Short" ? .mp4 : .png, quality: .high, store: store) { _, step in
                     router.toast("\(v.label): \(step)", style: .info, icon: "square.and.arrow.up")
                 }
                 MSHaptic.success()

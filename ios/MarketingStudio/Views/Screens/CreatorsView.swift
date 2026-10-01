@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// SPEC §31 — Creators: grid of AI creator cards, style filter, favorites, detail sheet → UGC.
+/// AI creators: each card plays the creator's intro clip (muted, speaker button to listen; one voice
+/// at a time). The detail shows the clip, the character sheet and "Utiliser en UGC".
 struct CreatorsView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
@@ -24,7 +25,7 @@ struct CreatorsView: View {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Créateurs").msTitle(30)
-                    Text("Des présentateurs IA fictifs pour vos vidéos UGC. Choisissez un visage, un style et une langue.").msBody(14)
+                    Text("16 créateurs IA africains pour vos vidéos UGC. Chaque créateur garde le même visage d'une vidéo à l'autre.").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
@@ -93,8 +94,10 @@ struct CreatorCard: View {
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 8) {
-                RemoteImage(url: creator.avatarURL, cornerRadius: 12)
-                    .aspectRatio(0.85, contentMode: .fit)
+                Color.clear
+                    .aspectRatio(9.0 / 14.0, contentMode: .fit)
+                    .overlay { CreatorIntroView(creator: creator) }
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .overlay(alignment: .topTrailing) {
                         Button {
                             MSHaptic.tap()
@@ -109,14 +112,14 @@ struct CreatorCard: View {
                         .buttonStyle(MSPressStyle())
                         .padding(6)
                     }
-                    .overlay(alignment: .bottomLeading) {
-                        MSBadge(text: creator.style, tone: .accent).padding(8)
+                    .overlay(alignment: .topLeading) {
+                        MSBadge(text: creator.style, tone: .overlay).lineLimit(1).padding(8).padding(.trailing, 36)
                     }
                 HStack(spacing: 6) {
                     Text(creator.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
                     Text("\(creator.age)").msCaption()
                 }
-                Text("\(creator.gender) · \(creator.ageRange)").msCaption()
+                Text(creator.country).msCaption()
                 Text(creator.languages.joined(separator: ", ")).msCaption(color: MSColor.text2).lineLimit(1)
             }
             .padding(10)
@@ -140,11 +143,17 @@ struct CreatorDetailSheet: View {
         BottomSheetContainer {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
-                    RemoteImage(url: creator.avatarURL, cornerRadius: MSRadius.xl)
-                        .aspectRatio(1, contentMode: .fit)
-                        .overlay(alignment: .topTrailing) {
-                            MSBadge(text: "Créateur IA fictif", tone: .neutral, icon: "sparkles").padding(12)
-                        }
+                    // Compact vertical frame: the intro clip, never taller than ~45% of the screen.
+                    HStack {
+                        Spacer(minLength: 0)
+                        CreatorIntroView(creator: creator)
+                            .frame(width: 210, height: 373)
+                            .clipShape(RoundedRectangle(cornerRadius: MSRadius.xl, style: .continuous))
+                            .overlay(alignment: .topLeading) {
+                                MSBadge(text: "Créateur IA", tone: .overlay, icon: "sparkles").padding(10)
+                            }
+                        Spacer(minLength: 0)
+                    }
                     HStack(alignment: .firstTextBaseline) {
                         Text(creator.name).msTitle(26)
                         Text("\(creator.age)").msBody(16)
@@ -156,8 +165,8 @@ struct CreatorDetailSheet: View {
                     Text(creator.bio).msBody(15).lineSpacing(3)
                     HStack(spacing: 0) {
                         stat("Style", creator.style)
-                        stat("Genre", creator.gender)
-                        stat("Tranche d'âge", creator.ageRange)
+                        stat("Pays", creator.country)
+                        stat("Âge", "\(creator.age) ans")
                     }
                     .msCard(padding: 14)
                     VStack(alignment: .leading, spacing: 8) {
@@ -168,6 +177,12 @@ struct CreatorDetailSheet: View {
                             }
                         }
                     }
+                    VStack(alignment: .leading, spacing: 6) {
+                        RemoteImage(url: creator.sheetURL, contentMode: .fit, cornerRadius: MSRadius.md)
+                            .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                            .background(MSColor.surface, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+                        Text("Fiche personnage : la même personne dans toutes vos vidéos.").msCaption()
+                    }
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Idéal pour").msHeadline(15)
                         FlowLayout(spacing: 8) {
@@ -177,6 +192,7 @@ struct CreatorDetailSheet: View {
                         }
                     }
                     MSButton(title: "Utiliser en UGC", icon: "video.fill") {
+                        store.pendingCreatorId = creator.id
                         dismiss()
                         router.push(.ugcCreator, on: .studio)
                         router.toast("\(creator.name) sélectionné(e) pour l'UGC", style: .success)

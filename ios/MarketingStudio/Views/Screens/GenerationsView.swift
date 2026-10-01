@@ -232,13 +232,13 @@ struct GenerationDetailSheet: View {
             do {
                 switch g.kind {
                 case .image:
-                    _ = try await MockAPI.generateImage(ImageGenParams(prompt: g.prompt, projectId: g.projectId), store: store)
+                    _ = try await API.generateImage(ImageGenParams(prompt: g.prompt, projectId: g.projectId), store: store)
                 case .video:
-                    _ = try await MockAPI.generateVideo(VideoGenParams(prompt: g.prompt, projectId: g.projectId), store: store) { _ in }
+                    _ = try await API.generateVideo(VideoGenParams(prompt: g.prompt, projectId: g.projectId), store: store) { _ in }
                 case .copy:
-                    _ = try await MockAPI.generateCopy(CopyParams(product: store.brand.name, audience: store.brand.audience), store: store)
+                    _ = try await API.generateCopy(CopyParams(product: store.brand.name, audience: store.brand.audience), store: store)
                 case .ad:
-                    _ = try await MockAPI.generateAds(AdParams(product: store.brand.name, offer: "Offre de lancement", audience: store.brand.audience, projectId: g.projectId), store: store)
+                    _ = try await API.generateAds(AdParams(product: store.brand.name, offer: "Offre de lancement", audience: store.brand.audience, projectId: g.projectId), store: store)
                 }
                 MSHaptic.success()
                 router.toast("Relance terminée", style: .success)

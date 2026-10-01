@@ -308,82 +308,11 @@ struct CampaignDetailView: View {
     // MARK: Analytics
 
     private func analyticsTab(_ c: Campaign) -> some View {
-        let a = CampaignAnalytics(campaign: c)
-        return VStack(alignment: .leading, spacing: 16) {
-            if a.totalReach == 0 {
-                EmptyStateView(icon: "chart.bar.xaxis", title: "Pas encore de données", message: "Les statistiques apparaissent une fois la campagne en cours. Passez-la en cours pour voir des exemples de métriques.", ctaTitle: "Passer en cours", ctaIcon: "dot.radiowaves.left.and.right") {
-                    store.setCampaignStatus(c.id, .live)
-                    router.toast("La campagne est en cours", style: .success)
-                }
-            } else {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                    StatTile(label: "Portée", value: a.totalReach.compactString, icon: "eye", tint: MSColor.highlight)
-                    StatTile(label: "Engagement", value: a.totalEngagement.compactString, icon: "heart", tint: MSColor.success)
-                    StatTile(label: "Clics", value: a.totalClicks.compactString, icon: "cursorarrow.click", tint: Color(hex: 0x60A5FA))
-                }
-                .padding(.horizontal, MSSpacing.gutter)
-
-                MSCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Portée · 14 derniers jours").msHeadline(15)
-                                Text("Impressions quotidiennes toutes plateformes").msCaption()
-                            }
-                            Spacer()
-                            MSBadge(text: "+\(Int.random(in: 8...24)) %", tone: .success, icon: "arrow.up.right")
-                        }
-                        MSBarChart(values: a.reach)
-                        HStack {
-                            Text("Il y a 14 j").msCaption()
-                            Spacer()
-                            Text("Aujourd'hui").msCaption()
-                        }
-                    }
-                }
-                .padding(.horizontal, MSSpacing.gutter)
-
-                HStack(spacing: 10) {
-                    MSCard(padding: 14) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Engagement").msCaption(color: MSColor.text2)
-                            Text(a.totalEngagement.compactString).msHeadline(20)
-                            MSSparkline(values: a.engagement, tint: MSColor.success, height: 44)
-                        }
-                    }
-                    MSCard(padding: 14) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Taux de clic").msCaption(color: MSColor.text2)
-                            Text(String(format: "%.1f %%", locale: Locale(identifier: "fr_FR"), a.ctr)).msHeadline(20)
-                            MSSparkline(values: a.clicks, tint: Color(hex: 0x60A5FA), height: 44)
-                        }
-                    }
-                }
-                .padding(.horizontal, MSSpacing.gutter)
-
-                MSCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Portée par plateforme").msHeadline(15)
-                        let maxV = max(a.byPlatform.map { $0.1 }.max() ?? 1, 1)
-                        ForEach(a.byPlatform, id: \.0) { p, v in
-                            HStack(spacing: 10) {
-                                Image(systemName: p.icon).font(.system(size: 12, weight: .semibold)).foregroundStyle(MSColor.text2).frame(width: 18)
-                                Text(p.title).font(MSFont.control(13)).foregroundStyle(MSColor.text).frame(width: 74, alignment: .leading)
-                                GeometryReader { geo in
-                                    ZStack(alignment: .leading) {
-                                        Capsule().fill(MSColor.elevated)
-                                        Capsule().fill(MSColor.accentGradient).frame(width: geo.size.width * CGFloat(v) / CGFloat(maxV))
-                                    }
-                                }
-                                .frame(height: 8)
-                                Text(v.compactString).msCaption().frame(width: 46, alignment: .trailing)
-                            }
-                        }
-                    }
-                }
-                .padding(.horizontal, MSSpacing.gutter)
-            }
+        // No fake numbers: real stats need the platforms' APIs (coming later).
+        EmptyStateView(icon: "chart.bar.xaxis", title: "Statistiques bientôt disponibles", message: "Pour l'instant, suivez vos ventes et vos messages WhatsApp. Les statistiques Facebook et TikTok arriveront avec la publication directe.", ctaTitle: "Partager les visuels", ctaIcon: "square.and.arrow.up") {
+            router.present(.exportAssets(ids: c.assetIds))
         }
+        .padding(.top, 8)
     }
 
     // MARK: Actions
@@ -393,7 +322,7 @@ struct CampaignDetailView: View {
         generatingMore = true
         Task {
             do {
-                let images = try await MockAPI.generateImage(ImageGenParams(prompt: "\(c.name) · \(c.formats.first?.title ?? "Photos produit") pour \(c.audience)", projectId: c.projectId), store: store)
+                let images = try await API.generateImage(ImageGenParams(prompt: "\(c.name) · \(c.formats.first?.title ?? "Photos produit") pour \(c.audience)", projectId: c.projectId), store: store)
                 let ids = images.map { store.addAsset(name: "Visuel \(c.name)", kind: .image, imageURL: $0.url, projectId: c.projectId, tags: ["campaign"]).id }
                 store.addAssets(ids, toCampaign: c.id)
                 MSHaptic.success()

@@ -12,35 +12,31 @@ enum StudioOptions {
     static let compositions = ["Centered", "Rule of thirds", "Flat lay", "Hero angle", "Top-down"]
     static let models = imageModels.map(\.name)
 
-    static let videoDurations = [5, 10, 15]
+    static let videoDurations = [5, 8, 10, 15]
     static let videoCameras = ["Slow zoom", "Orbit", "Handheld", "Push in", "Pull out", "Tracking", "Static"]
     static let videoStyles = ["UGC", "Commercial", "Cinematic", "Product demo", "Lifestyle"]
     static let videoModels = motionModels.map(\.name)
     static let ugcModels = personaModels.map(\.name)
 
-    static let ugcDurations = [15, 30, 60]
-    static let ugcLocations = ["Bathroom", "Bedroom", "Kitchen", "Living room", "Outdoors", "Gym", "Car", "Office", "Studio"]
+    static let ugcDurations = [5, 10, 15]
+    static let ugcLocations = ["Boutique", "Marché", "Maquis", "Salon de coiffure", "Cour familiale", "Salon", "Chambre", "Cuisine", "Rue", "Studio"]
     static let ugcTones = ["Excited", "Casual", "Professional", "Funny", "Luxury", "Authentic"]
 
-    /// Fictional model catalogs shown in the composer's model sheet.
-    static let imageModels: [StudioModel] = [
-        StudioModel(name: "Lumen 2.5", tagline: "La meilleure qualité pour vos visuels produit", icon: "sparkle", speed: "~20s"),
-        StudioModel(name: "Lumen 2.5 Flash", tagline: "Brouillons rapides, même rendu", icon: "bolt", speed: "~6s"),
-        StudioModel(name: "Verity XL", tagline: "Peau, tissu et verre photoréalistes", icon: "camera.aperture", speed: "~35s"),
-        StudioModel(name: "Atelier 1", tagline: "Styles éditoriaux et illustrés", icon: "paintpalette", speed: "~25s"),
-    ]
-    static let motionModels: [StudioModel] = [
-        StudioModel(name: "Kinetic 3", tagline: "Mouvements de caméra fluides, produits stables", icon: "sparkle", speed: "~60s"),
-        StudioModel(name: "Kinetic 3 Turbo", tagline: "Aperçus rapides, moins détaillés", icon: "bolt", speed: "~20s"),
-        StudioModel(name: "Drift 1.5", tagline: "Profondeur et éclairage cinématographiques", icon: "film", speed: "~90s"),
-    ]
+    /// Real models (AIModels), shown in the composer's model sheet with their price in credits.
+    static let imageModels: [StudioModel] = AIModels.image.map {
+        StudioModel(name: $0.label, tagline: $0.hint, icon: $0.acceptsImages ? "shippingbox" : "person.crop.square", speed: "\($0.credits) cr / image")
+    }
+    static let motionModels: [StudioModel] = AIModels.video.map {
+        StudioModel(name: $0.label, tagline: $0.hint, icon: $0.id == AIModels.defaultVideo ? "sparkle" : "film", speed: "\($0.creditsPerSecond) cr / s")
+    }
+    /// UGC always renders with Seedance 2.5 reference-to-video (keeps the creator identical).
     static let personaModels: [StudioModel] = [
-        StudioModel(name: "Persona 2", tagline: "Créateurs naturels, script synchronisé aux lèvres", icon: "sparkle", speed: "~70s"),
-        StudioModel(name: "Persona 2 Pro", tagline: "Visages et mains plus fidèles", icon: "person.crop.rectangle", speed: "~2m"),
-        StudioModel(name: "Kinetic 3", tagline: "Priorité au mouvement, moins de dialogue", icon: "film", speed: "~60s"),
+        StudioModel(name: "Seedance 2.5", tagline: "Le créateur reste identique d'une vidéo à l'autre, son inclus", icon: "sparkle", speed: "\(AIModels.videoModel(AIModels.defaultVideo).creditsPerSecond) cr / s"),
     ]
 
-    static let promptPlaceholder = "Créez une publicité produit de luxe pour ce parfum..."
+    static func videoModelId(_ label: String) -> String { AIModels.video.first { $0.label == label }?.id ?? AIModels.defaultVideo }
+
+    static let promptPlaceholder = "Créez une pub pour ce beurre de karité, sur un étal de marché..."
 
     /// French display label for an option value. Values themselves stay English (used in params/persistence).
     static func label(_ value: String) -> String { frLabels[value] ?? value }
@@ -120,9 +116,9 @@ enum GenerationFailure: Equatable {
     case insufficientCredits(needed: Int)
     case generic(String)
 
-    init(_ error: Error) {
-        if case MockAPIError.insufficientCredits(let n) = error {
-            self = .insufficientCredits(needed: n)
+    init(_ error: Error, cost: Int) {
+        if case APIError.insufficientCredits = error {
+            self = .insufficientCredits(needed: cost)
         } else {
             self = .generic(error.localizedDescription)
         }
@@ -158,7 +154,7 @@ final class ImageGenSession: ObservableObject {
     @Published var composition = "Centered"
     @Published var model = StudioOptions.models[0]
     @Published var productAsset: Asset?
-    /// Sentence built by the Studio composer ("Create a Luxury product shot of Luma Glow"); not user-editable.
+    /// Sentence built by the Studio composer ("Créer une photo produit de mon parfum"); not user-editable.
     @Published var leadIn = ""
 
     @Published private(set) var phase: ImagePhase = .idle
@@ -166,7 +162,9 @@ final class ImageGenSession: ObservableObject {
     @Published var selectedId: String?
     @Published private(set) var busyAction: String?
 
-    static let cost = GenerationKind.image.creditCost * 4
+    /// Images per generation.
+    var count = 2
+    var cost: Int { AIModels.imageModel(model).credits * count }
 
     init(defaults: UserPreferences? = nil) {
         if let defaults {
@@ -209,10 +207,11 @@ final class ImageGenSession: ObservableObject {
         let params = ImageGenParams(
             prompt: effectivePrompt, style: style, ratio: ratio, background: background,
             lighting: lighting, camera: camera, composition: composition,
-            productAssetId: productAsset?.id, projectId: store.currentProjectId
+            productAssetId: productAsset?.id, projectId: store.currentProjectId,
+            model: model, count: count
         )
         do {
-            let out = try await MockAPI.generateImage(params, store: store)
+            let out = try await API.generateImage(params, store: store)
             let name = String(params.prompt.prefix(32))
             results = out.enumerated().map { i, g in
                 let asset = store.addAsset(name: "\(name) · \(i + 1)", kind: .image, imageURL: g.url, projectId: store.currentProjectId, tags: [style, ratio, "generated"])
@@ -221,9 +220,9 @@ final class ImageGenSession: ObservableObject {
             selectedId = results.first?.id
             phase = .results
             MSHaptic.success()
-            router.toast("4 images prêtes", style: .success, icon: "sparkles")
+            router.toast("\(results.count) images prêtes", style: .success, icon: "sparkles")
         } catch {
-            phase = .failed(GenerationFailure(error))
+            phase = .failed(GenerationFailure(error, cost: cost))
             MSHaptic.warning()
         }
     }
@@ -233,22 +232,29 @@ final class ImageGenSession: ObservableObject {
         busyAction = "upscale"
         defer { busyAction = nil }
         do {
-            let g = try await MockAPI.upscaleImage(url: r.url, store: store)
-            let upURL = MockData.image("up-\(r.id.suffix(6))", w: 1600, h: 2000)
-            let asset = store.addAsset(name: "Agrandie 2× · \(store.asset(r.assetId)?.name ?? "image")", kind: .image, imageURL: upURL, projectId: store.currentProjectId, tags: ["upscaled"])
-            replace(r.id, with: ImageResult(id: r.id, url: upURL, assetId: asset.id, generationId: g.generationId, upscaled: true))
-            router.toast("Agrandie en 2× (3200 × 4000)", style: .success, icon: "arrow.up.left.and.arrow.down.right")
+            let g = try await API.upscaleImage(url: r.url, store: store)
+            let asset = store.addAsset(name: "HD · \(store.asset(r.assetId)?.name ?? "image")", kind: .image, imageURL: g.url, projectId: store.currentProjectId, tags: ["upscaled"])
+            replace(r.id, with: ImageResult(id: r.id, url: g.url, assetId: asset.id, generationId: g.generationId, upscaled: true))
+            router.toast("Image agrandie en haute définition", style: .success, icon: "arrow.up.left.and.arrow.down.right")
         } catch {
             router.toast(error.localizedDescription, style: .error)
         }
     }
 
-    /// Replaces the selected result with an edited version (from the Image Editor).
-    func applyEdit(tool: String, store: AppStore) {
-        guard let r = selected else { return }
-        let url = MockData.image("edit-\(tool.prefix(4).lowercased())-\(r.id.suffix(6))")
-        let asset = store.addAsset(name: "\(StudioOptions.label(tool)) · \(store.asset(r.assetId)?.name ?? "image")", kind: .image, imageURL: url, projectId: store.currentProjectId, tags: ["edited", tool])
-        replace(r.id, with: ImageResult(id: r.id, url: url, assetId: asset.id, generationId: r.generationId))
+    /// Replaces the selected result with a real edited version (from the Image Editor).
+    func applyEdit(tool: String, store: AppStore, router: Router) async {
+        guard let r = selected, busyAction == nil else { return }
+        busyAction = "edit"
+        defer { busyAction = nil }
+        router.toast("\(StudioOptions.label(tool)) en cours…", style: .info, icon: "wand.and.stars")
+        do {
+            let g = try await API.editImage(url: r.url, tool: tool, ratio: ratio, store: store)
+            let asset = store.addAsset(name: "\(StudioOptions.label(tool)) · \(store.asset(r.assetId)?.name ?? "image")", kind: .image, imageURL: g.url, projectId: store.currentProjectId, tags: ["edited", tool])
+            replace(r.id, with: ImageResult(id: r.id, url: g.url, assetId: asset.id, generationId: g.generationId))
+            router.toast("\(StudioOptions.label(tool)) appliqué", style: .success, icon: "wand.and.stars")
+        } catch {
+            router.toast(error.localizedDescription, style: .error)
+        }
     }
 
     private func replace(_ id: String, with new: ImageResult) {
@@ -262,6 +268,7 @@ final class ImageGenSession: ObservableObject {
 struct VideoResult: Identifiable, Hashable {
     let id: String
     var posterURL: String
+    var videoURL: String
     var duration: Int
     var assetId: String
     var ratio: String
@@ -288,7 +295,7 @@ final class VideoGenSession: ObservableObject {
     @Published private(set) var phase: VideoPhase = .idle
     @Published private(set) var result: VideoResult?
 
-    static let cost = GenerationKind.video.creditCost
+    var cost: Int { AIModels.videoCredits(StudioOptions.videoModelId(model), seconds: duration, withPhoto: sourceAsset != nil) }
 
     var isGenerating: Bool { if case .generating = phase { return true } else { return false } }
     var canGenerate: Bool { sourceAsset != nil || !concept.trimmingCharacters(in: .whitespaces).isEmpty || !leadIn.isEmpty }
@@ -309,20 +316,20 @@ final class VideoGenSession: ObservableObject {
     func generate(store: AppStore, router: Router) async {
         guard !isGenerating else { return }
         phase = .generating(step: 0)
-        let params = VideoGenParams(prompt: effectivePrompt, sourceAssetId: sourceAsset?.id, duration: duration, ratio: ratio, camera: camera, style: style, projectId: store.currentProjectId)
+        let params = VideoGenParams(prompt: effectivePrompt, sourceAssetId: sourceAsset?.id, duration: duration, ratio: ratio, camera: camera, style: style, model: StudioOptions.videoModelId(model), projectId: store.currentProjectId)
         do {
-            let v = try await MockAPI.generateVideo(params, store: store) { [weak self] step in
+            let v = try await API.generateVideo(params, store: store) { [weak self] step in
                 guard let self else { return }
-                let idx = MockAPI.videoSteps.firstIndex(of: step) ?? 0
+                let idx = API.videoSteps.firstIndex(of: step) ?? 0
                 withAnimation(MSAnimation.gentle) { self.phase = .generating(step: idx) }
             }
-            let asset = store.addAsset(name: "Vidéo \(StudioOptions.label(style)) · \(duration)s", kind: .video, imageURL: v.posterURL, projectId: store.currentProjectId, tags: [style, ratio, "generated"], durationSeconds: v.duration)
-            result = VideoResult(id: v.id, posterURL: v.posterURL, duration: v.duration, assetId: asset.id, ratio: ratio)
+            let asset = store.addAsset(name: "Vidéo \(StudioOptions.label(style)) · \(duration)s", kind: .video, imageURL: v.posterURL, projectId: store.currentProjectId, tags: [style, ratio, "generated"], durationSeconds: v.duration, videoURL: v.videoURL)
+            result = VideoResult(id: v.id, posterURL: v.posterURL, videoURL: v.videoURL, duration: v.duration, assetId: asset.id, ratio: ratio)
             phase = .result
             MSHaptic.success()
             router.toast("Vidéo générée", style: .success, icon: "video.fill")
         } catch {
-            phase = .failed(GenerationFailure(error))
+            phase = .failed(GenerationFailure(error, cost: cost))
             MSHaptic.warning()
         }
     }
@@ -331,7 +338,8 @@ final class VideoGenSession: ObservableObject {
 
 // MARK: - UGC session (SPEC §15)
 
-/// Drives the Studio UGC mode: creator + product + script → mock talking-head video.
+/// Drives the Studio UGC mode: creator + optional product + script → talking video (Seedance 2.5,
+/// creator character sheet as reference so the person stays the same).
 @MainActor
 final class UGCGenSession: ObservableObject {
     @Published var script = ""
@@ -340,13 +348,15 @@ final class UGCGenSession: ObservableObject {
     @Published var creator: Creator?
     @Published var duration = 15
     @Published var ratio = "9:16"
-    @Published var location = "Bathroom"
+    @Published var location = "Boutique"
     @Published var tone = "Authentic"
+    /// Voice-over language (Market.languages id).
+    @Published var language = "fr"
     @Published var model = StudioOptions.ugcModels[0]
     @Published private(set) var phase: VideoPhase = .idle
     @Published private(set) var result: VideoResult?
 
-    static let cost = GenerationKind.video.creditCost
+    var cost: Int { AIModels.ugcCredits(seconds: duration) }
     static let steps = ["Choix du créateur", "Lecture du script...", "Création de la scène 1...", "Ajout du mouvement...", "Rendu...", "Finalisation..."]
 
     var isGenerating: Bool { if case .generating = phase { return true } else { return false } }
@@ -357,7 +367,7 @@ final class UGCGenSession: ObservableObject {
         let lead = leadIn.trimmingCharacters(in: .whitespacesAndNewlines)
         if !lead.isEmpty { return s.isEmpty ? lead : "\(lead). \(s)" }
         if !s.isEmpty { return s }
-        return "Create a \(duration)-second TikTok-style video introducing \(productAsset?.name ?? "this product")."
+        return "Bonjour ! Je vous présente \(productAsset?.name ?? "mon produit préféré"). Écrivez-nous sur WhatsApp pour commander."
     }
 
     func reset() {
@@ -368,21 +378,21 @@ final class UGCGenSession: ObservableObject {
     func generate(store: AppStore, router: Router) async {
         guard !isGenerating, let creator else { return }
         phase = .generating(step: 0)
-        let params = UGCParams(productAssetId: productAsset?.id, creatorId: creator.id, script: effectiveScript, location: location, tone: tone, duration: duration, projectId: store.currentProjectId)
+        let params = UGCParams(productAssetId: productAsset?.id, creatorId: creator.id, script: effectiveScript, location: location, tone: tone, language: language, duration: duration, projectId: store.currentProjectId)
         do {
             var idx = -1
-            let v = try await MockAPI.generateUGC(params, store: store) { [weak self] _ in
+            let v = try await API.generateUGC(params, store: store) { [weak self] _ in
                 guard let self else { return }
                 idx = min(idx + 1, Self.steps.count - 1)
                 withAnimation(MSAnimation.gentle) { self.phase = .generating(step: idx) }
             }
-            let asset = store.addAsset(name: "UGC · \(creator.name) · \(StudioOptions.label(tone))", kind: .video, imageURL: v.posterURL, projectId: store.currentProjectId, tags: ["ugc", tone.lowercased(), ratio], durationSeconds: v.duration)
-            result = VideoResult(id: v.id, posterURL: v.posterURL, duration: v.duration, assetId: asset.id, ratio: ratio)
+            let asset = store.addAsset(name: "UGC · \(creator.name) · \(StudioOptions.label(tone))", kind: .video, imageURL: v.posterURL, projectId: store.currentProjectId, tags: ["ugc", tone.lowercased(), ratio], durationSeconds: v.duration, videoURL: v.videoURL)
+            result = VideoResult(id: v.id, posterURL: v.posterURL, videoURL: v.videoURL, duration: v.duration, assetId: asset.id, ratio: ratio)
             phase = .result
             MSHaptic.success()
             router.toast("Vidéo UGC prête", style: .success, icon: "sparkles")
         } catch {
-            phase = .failed(GenerationFailure(error))
+            phase = .failed(GenerationFailure(error, cost: cost))
             MSHaptic.warning()
         }
     }

@@ -59,14 +59,10 @@ struct ProfileView: View {
         }
         .msSheet(isPresented: $showEdit, detents: [.large]) { EditProfileSheet() }
         .confirmationDialog("Se déconnecter de Sokozia ?", isPresented: $confirmSignOut, titleVisibility: .visible) {
-            Button("Se déconnecter et réinitialiser la démo", role: .destructive) {
-                store.resetAll()
-                router.popToRoot(on: .more)
-                router.select(.home)
-            }
+            Button("Se déconnecter", role: .destructive) { Task { await AuthService.shared.signOut() } }
             Button("Annuler", role: .cancel) {}
         } message: {
-            Text("Ce prototype n’a pas de comptes : la déconnexion efface les données locales et relance l’accueil.")
+            Text("Vous pourrez vous reconnecter avec le même compte ; vos crédits sont gardés.")
         }
     }
 
@@ -142,36 +138,33 @@ struct EditProfileSheet: View {
     @State private var email = ""
     @State private var company = ""
     @State private var role = ""
-    @State private var avatarSeed = 12
-
-    private let roles = ["Fondateur", "Marketeur", "Créateur", "Agence", "Freelance", "Vendeur e-commerce"]
+    private let roles = ["Commerçant(e)", "Boutique en ligne", "Restaurant / maquis", "Couture", "Coiffure & beauté", "Créateur(trice)", "Agence"]
 
     var body: some View {
         BottomSheetContainer(title: "Modifier le profil") {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(spacing: 14) {
-                        AvatarView(url: MockData.avatar(avatarSeed), name: name, size: 64)
-                        MSButton(title: "Avatar aléatoire", icon: "shuffle", style: .secondary, size: .compact, fullWidth: false) {
-                            avatarSeed = Int.random(in: 1...70)
+                        AvatarView(url: nil, name: name, size: 64)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Compte").msCaption()
+                            Text(email).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
                         }
                     }
                     MSTextField(label: "Nom", placeholder: "Votre nom", text: $name, icon: "person", autocapitalization: .words)
-                    MSTextField(label: "E-mail", placeholder: "vous@entreprise.com", text: $email, icon: "envelope", keyboard: .emailAddress, autocapitalization: .never)
-                    MSTextField(label: "Entreprise", placeholder: "Entreprise ou marque", text: $company, icon: "building.2", autocapitalization: .words)
+                    MSTextField(label: "Boutique", placeholder: "Nom de votre boutique ou marque", text: $company, icon: "storefront", autocapitalization: .words)
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Rôle").msCaption(color: MSColor.text2)
                         FlowLayout(spacing: 8) {
                             ForEach(roles, id: \.self) { r in MSChip(title: r, selected: role == r) { role = r } }
                         }
                     }
-                    MSButton(title: "Enregistrer les modifications", icon: "checkmark", isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty || !email.contains("@")) {
+                    MSButton(title: "Enregistrer les modifications", icon: "checkmark", isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty) {
                         var u = store.user
                         u.name = name.trimmingCharacters(in: .whitespaces)
-                        u.email = email.trimmingCharacters(in: .whitespaces).lowercased()
                         u.company = company.trimmingCharacters(in: .whitespaces)
                         u.role = role
-                        u.avatarURL = MockData.avatar(avatarSeed)
+                        u.avatarURL = ""
                         store.updateUser(u)
                         router.toast("Profil mis à jour", style: .success)
                         dismiss()
@@ -185,7 +178,6 @@ struct EditProfileSheet: View {
         .onAppear {
             let u = store.user
             name = u.name; email = u.email; company = u.company; role = u.role
-            if let n = u.avatarURL.split(separator: "=").last, let v = Int(n) { avatarSeed = v }
         }
     }
 }

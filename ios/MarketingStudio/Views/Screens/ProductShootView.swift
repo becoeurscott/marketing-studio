@@ -1,7 +1,8 @@
 import SwiftUI
 import PhotosUI
 
-/// SPEC §16 — AI Product Shoot: one product photo + environment/lighting/camera → 4–6 photos.
+/// AI product shoot: one product photo + a Sokozia style (or a setting) → 2–4 photos that keep
+/// the product identical (Marketing Studio edit mode).
 struct ProductShootView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
@@ -9,10 +10,10 @@ struct ProductShootView: View {
     static let environments = ["Luxury bathroom", "Modern kitchen", "Beach", "Office", "Street", "Studio", "Restaurant", "Gym", "Car interior"]
     static let lightings = ["Natural", "Golden hour", "Studio", "Neon", "Softbox", "Dramatic"]
     static let cameras = ["Close-up", "Medium", "Wide", "Macro"]
-    static let counts = [4, 6]
+    static let counts = [2, 3, 4]
 
     /// French display labels → English values sent to the generation API.
-    static let environmentLabels: [(fr: String, en: String)] = [("Salle de bain de luxe", "Luxury bathroom"), ("Cuisine moderne", "Modern kitchen"), ("Plage", "Beach"), ("Bureau", "Office"), ("Rue", "Street"), ("Studio", "Studio"), ("Restaurant", "Restaurant"), ("Salle de sport", "Gym"), ("Intérieur de voiture", "Car interior")]
+    static let environmentLabels: [(fr: String, en: String)] = [("Studio", "Studio"), ("Étal de marché", "African market stall"), ("Boutique", "Small shop counter"), ("Maquis", "Outdoor maquis restaurant table"), ("Cuisine", "Home kitchen"), ("Salon", "Modern African living room"), ("Rue", "Street"), ("Plage", "Beach")]
     static let lightingLabels: [(fr: String, en: String)] = [("Naturelle", "Natural"), ("Heure dorée", "Golden hour"), ("Studio", "Studio"), ("Néon", "Neon"), ("Softbox", "Softbox"), ("Dramatique", "Dramatic")]
     static let cameraLabels: [(fr: String, en: String)] = [("Gros plan", "Close-up"), ("Plan moyen", "Medium"), ("Plan large", "Wide"), ("Macro", "Macro")]
     private static func english(_ fr: String?, in table: [(fr: String, en: String)], default d: String) -> String {
@@ -26,7 +27,8 @@ struct ProductShootView: View {
     @State private var environment: Set<String> = ["Studio"]
     @State private var lighting: Set<String> = ["Naturelle"]
     @State private var camera: Set<String> = ["Plan moyen"]
-    @State private var count = 4
+    @State private var count = 3
+    @State private var styleId: String? = "studio-ocre"
     @State private var phase: Phase = .idle
     @State private var results: [GeneratedImage] = []
     @State private var selectedIds: Set<String> = []
@@ -38,14 +40,17 @@ struct ProductShootView: View {
     @State private var campaignAssetIds: [String] = []
 
     private var product: Asset? { productId.flatMap { store.asset($0) } }
-    private var cost: Int { GenerationKind.image.creditCost * count }
+    private var cost: Int { AIModels.imageModel(nil).credits * count }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 22) {
                 header
                 uploadCard
-                CreativeSection(title: "Décor") { ChipGroup(options: Self.environmentLabels.map(\.fr), selection: $environment, allowDeselect: false) }
+                CreativeSection(title: "Style Sokozia") { stylePicker }
+                if styleId == nil {
+                    CreativeSection(title: "Décor") { ChipGroup(options: Self.environmentLabels.map(\.fr), selection: $environment, allowDeselect: false) }
+                }
                 CreativeSection(title: "Éclairage") { ChipGroup(options: Self.lightingLabels.map(\.fr), selection: $lighting, allowDeselect: false) }
                 CreativeSection(title: "Cadrage") { ChipGroup(options: Self.cameraLabels.map(\.fr), selection: $camera, allowDeselect: false) }
                 CreativeSection(title: "Photos") {
@@ -195,10 +200,10 @@ struct ProductShootView: View {
         MSHaptic.tap()
         lastError = nil
         withAnimation(MSAnimation.gentle) { phase = .generating; results = []; selectedIds = []; favoriteIds = []; savedIds = [:] }
-        let p = ProductShootParams(productAssetId: productId, environment: Self.english(environment.first, in: Self.environmentLabels, default: "Studio"), lighting: Self.english(lighting.first, in: Self.lightingLabels, default: "Natural"), camera: Self.english(camera.first, in: Self.cameraLabels, default: "Medium"), count: count, projectId: store.currentProjectId)
+        let p = ProductShootParams(productAssetId: productId, environment: Self.english(environment.first, in: Self.environmentLabels, default: "Studio"), lighting: Self.english(lighting.first, in: Self.lightingLabels, default: "Natural"), camera: Self.english(camera.first, in: Self.cameraLabels, default: "Medium"), styleId: styleId, count: count, projectId: store.currentProjectId)
         Task {
             do {
-                let imgs = try await MockAPI.generateProductShoot(p, store: store)
+                let imgs = try await API.generateProductShoot(p, store: store)
                 MSHaptic.success()
                 withAnimation(MSAnimation.snappy) { results = imgs; phase = .done }
                 router.toast("\(imgs.count) photos produit prêtes", style: .success, icon: "sparkles")
@@ -208,6 +213,40 @@ struct ProductShootView: View {
                 withAnimation(MSAnimation.gentle) { phase = .failed }
             }
         }
+    }
+
+    /// Sokozia styles with their reference image (each shown on a different product).
+    private var stylePicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10) {
+                styleTile(id: nil, name: "Décor libre", product: "Choisissez le décor", url: nil)
+                ForEach(Catalog.styles) { st in styleTile(id: st.id, name: st.name, product: st.product, url: st.imageURL) }
+            }
+            .padding(.horizontal, MSSpacing.gutter)
+        }
+        .padding(.horizontal, -MSSpacing.gutter)
+    }
+
+    private func styleTile(id: String?, name: String, product: String, url: String?) -> some View {
+        let sel = styleId == id
+        return Button {
+            MSHaptic.tap()
+            withAnimation(MSAnimation.snappy) { styleId = id }
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                Group {
+                    if let url { RemoteImage(url: url, cornerRadius: 12) }
+                    else { RoundedRectangle(cornerRadius: 12, style: .continuous).fill(MSColor.elevated).overlay(Image(systemName: "slider.horizontal.3").foregroundStyle(MSColor.text2)) }
+                }
+                .frame(width: 104, height: 128)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(sel ? MSColor.accent : MSColor.border, lineWidth: sel ? 2 : 1))
+                Text(name).font(MSFont.caption(12)).foregroundStyle(sel ? MSColor.text : MSColor.text2).lineLimit(1)
+                Text(product).msCaption(color: MSColor.muted).lineLimit(1)
+            }
+            .frame(width: 104, alignment: .leading)
+        }
+        .buttonStyle(MSPressStyle())
     }
 
     private func toggleSelect(_ img: GeneratedImage) {
@@ -285,7 +324,7 @@ struct ShootResultTile: View {
 
 // MARK: - Upload sheet
 
-/// Mock upload: pick a sample product image or a photo from the library, then simulate an upload with progress.
+/// Pick a library image, a Sokozia sample product, or a photo from Photos (uploaded to the account).
 struct ProductUploadSheet: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
@@ -293,14 +332,11 @@ struct ProductUploadSheet: View {
 
     @State private var name = ""
     @State private var pickedURL: String?
+    @State private var pickedImage: UIImage?
     @State private var photoItem: PhotosPickerItem?
     @State private var progress: Double = 0
     @State private var uploading = false
 
-    private static let samples: [(String, String)] = [
-        ("Sérum Luma Glow", "luma-packshot"), ("Montre Aurora", "watch-hero"), ("Baskets Nimbus", "sneaker-1"),
-        ("Canette Cold Brew", "coffee-can"), ("Rouge à lèvres Velvet", "lipstick"), ("Casque Halo", "headphones"),
-    ]
 
     private var existing: [Asset] { store.recentAssets.filter { $0.kind == .image || $0.kind == .brand }.prefix(6).map { $0 } }
 
@@ -336,17 +372,17 @@ struct ProductUploadSheet: View {
                     }
                     CreativeSection(title: "Produits d'exemple") {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                            ForEach(Self.samples, id: \.1) { s in
-                                let url = MockData.image(s.1)
+                            ForEach(Catalog.sampleProducts, id: \.url) { s in
+                                let url = s.url
                                 Button {
                                     MSHaptic.tap()
-                                    withAnimation(MSAnimation.snappy) { pickedURL = url; name = s.0 }
+                                    withAnimation(MSAnimation.snappy) { pickedURL = url; pickedImage = nil; name = s.name }
                                 } label: {
                                     VStack(alignment: .leading, spacing: 6) {
                                         RemoteImage(url: url, cornerRadius: 10)
                                             .aspectRatio(1, contentMode: .fit)
                                             .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(pickedURL == url ? MSColor.accent : .clear, lineWidth: 2))
-                                        Text(s.0).msCaption(color: pickedURL == url ? MSColor.text : MSColor.muted).lineLimit(1)
+                                        Text(s.name).msCaption(color: pickedURL == url ? MSColor.text : MSColor.muted).lineLimit(1)
                                     }
                                 }
                                 .buttonStyle(MSPressStyle())
@@ -366,15 +402,27 @@ struct ProductUploadSheet: View {
                             .overlay(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
                         }
                         .onChange(of: photoItem) { _, item in
-                            guard item != nil else { return }
-                            pickedURL = MockData.image("photo-\(Int.random(in: 100...999))")
-                            if name.isEmpty { name = "Ma photo produit" }
+                            guard let item else { return }
+                            Task {
+                                if let data = try? await item.loadTransferable(type: Data.self), let img = UIImage(data: data) {
+                                    pickedImage = img
+                                    pickedURL = nil
+                                    if name.isEmpty { name = "Ma photo produit" }
+                                } else {
+                                    router.toast("Impossible de lire cette photo.", style: .error)
+                                }
+                            }
+                        }
+                        if let pickedImage {
+                            Image(uiImage: pickedImage).resizable().scaledToFill().frame(width: 84, height: 84)
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(MSColor.accent, lineWidth: 2))
                         }
                     }
                     CreativeSection(title: "Nom") {
                         MSTextField(placeholder: "Nom du produit", text: $name, icon: "tag")
                     }
-                    MSButton(title: "Importer", icon: "square.and.arrow.up", isLoading: uploading, isDisabled: pickedURL == nil || name.trimmingCharacters(in: .whitespaces).isEmpty) { upload() }
+                    MSButton(title: "Importer", icon: "square.and.arrow.up", isLoading: uploading, isDisabled: (pickedURL == nil && pickedImage == nil) || name.trimmingCharacters(in: .whitespaces).isEmpty) { upload() }
                         .padding(.horizontal, MSSpacing.gutter)
                 }
                 .padding(.bottom, 30)
@@ -387,8 +435,13 @@ struct ProductUploadSheet: View {
         uploading = true
         Task {
             do {
-                var a = try await MockAPI.uploadProduct(name: name, store: store) { p in withAnimation(MSAnimation.gentle) { progress = p } }
-                if let pickedURL { a.imageURL = pickedURL; store.updateAsset(a) }
+                let a: Asset
+                if let pickedImage {
+                    a = try await API.uploadProduct(image: pickedImage, name: name, store: store) { p in withAnimation(MSAnimation.gentle) { progress = p } }
+                } else {
+                    // Sample product: already a public image, no upload needed.
+                    a = store.addAsset(name: name, kind: .image, imageURL: pickedURL ?? "", projectId: store.currentProjectId, tags: ["product", "sample"])
+                }
                 MSHaptic.success()
                 router.toast("\(name) importé", style: .success)
                 onUploaded(a)

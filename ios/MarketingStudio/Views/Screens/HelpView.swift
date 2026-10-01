@@ -16,15 +16,15 @@ struct HelpView: View {
     }
 
     private let faqs: [FAQ] = [
-        FAQ(id: "credits", q: "Comment fonctionnent les crédits ?", a: "Chaque génération consomme des crédits : 10 par image, 50 par vidéo, 15 par agrandissement, 20 par série de publicités et 2 par texte généré. Votre forfait recharge vos crédits chaque mois et vous pouvez en ajouter à tout moment depuis l'écran Crédits."),
-        FAQ(id: "template", q: "Que se passe-t-il quand j'utilise un modèle ?", a: "Le Studio s'ouvre avec le prompt, le style et le format du modèle déjà renseignés. Ajoutez votre produit, ajustez le prompt et générez."),
-        FAQ(id: "brand", q: "Quel est l'effet du kit de marque sur les résultats ?", a: "Les couleurs, les polices et le ton de votre marque sont transmis à chaque générateur. Les textes suivent votre ton et votre style d'écriture ; les visuels s'appuient sur votre palette."),
-        FAQ(id: "ugc", q: "Les créateurs sont-ils de vraies personnes ?", a: "Non. Chaque créateur est un présentateur IA fictif. Choisissez-en un dans Créateurs, puis utilisez-le dans le Créateur UGC avec votre script, votre ton et votre produit."),
-        FAQ(id: "campaign", q: "Puis-je publier directement sur Instagram ou TikTok ?", a: "Pas dans ce prototype. Le calendrier de contenu planifie les publications par plateforme et par statut ; les exports vous fournissent les fichiers à publier vous-même."),
-        FAQ(id: "export", q: "Quels formats d'export sont pris en charge ?", a: "PNG, JPG, MP4 et PDF en qualité Standard, Haute ou Maximale. Exportez une sélection de ressources ou une campagne entière depuis le Centre d'export."),
-        FAQ(id: "team", q: "Combien de coéquipiers puis-je inviter ?", a: "Starter inclut 1 place, Creator 3, Studio 10 et Agency un nombre illimité. Les propriétaires et administrateurs gèrent les membres depuis l'écran Espace de travail."),
-        FAQ(id: "data", q: "Où sont stockées mes données ?", a: "Dans ce prototype, tout est conservé sur cet appareil. « Réinitialiser les données de démo » dans Réglages efface tout et relance l'accueil."),
+        FAQ(id: "credits", q: "Comment fonctionnent les crédits ?", a: "Chaque génération consomme des crédits : environ 10 par visuel produit, 4 par portrait Soul 2 et 11 par seconde de vidéo UGC. Les textes et accroches sont gratuits. Si une génération échoue, vos crédits sont rendus automatiquement."),
+        FAQ(id: "payment", q: "Comment recharger ?", a: "Choisissez un pack dans Crédits (dès 1 000 FCFA). Le paiement Mobile Money (Wave, Orange Money, MTN MoMo…) arrive bientôt ; en attendant, écrivez-nous sur WhatsApp pour recharger."),
+        FAQ(id: "ugc", q: "Les créateurs sont-ils de vraies personnes ?", a: "Non. Ce sont des créateurs IA africains. Chacun a une fiche personnage pour garder le même visage, la même coiffure et la même tenue dans toutes vos vidéos."),
+        FAQ(id: "product", q: "Ma photo produit doit-elle être professionnelle ?", a: "Non. Une photo nette prise au téléphone suffit : Sokozia garde votre produit identique et refait le décor, la lumière et le cadrage."),
+        FAQ(id: "whatsapp", q: "Comment publier sur WhatsApp ?", a: "Sur chaque résultat, touchez « WhatsApp » ou « Partager » : le fichier part directement dans vos statuts, groupes ou catalogue. Activez « Vidéos légères » dans Réglages pour des envois plus rapides."),
+        FAQ(id: "template", q: "Que se passe-t-il quand j'utilise un modèle ?", a: "Le modèle ouvre le bon outil (image, vidéo, UGC, pub ou texte) avec les réglages remplis. Ajoutez votre produit et générez."),
+        FAQ(id: "data", q: "Où sont stockées mes créations ?", a: "Les images et vidéos générées sont hébergées sur votre compte Sokozia. La liste de vos projets est enregistrée sur cet appareil."),
     ]
+
 
     private var filteredFAQs: [FAQ] {
         query.isEmpty ? faqs : faqs.filter { $0.q.localizedCaseInsensitiveContains(query) || $0.a.localizedCaseInsensitiveContains(query) }
@@ -77,13 +77,11 @@ struct HelpView: View {
                             }
                         }
                         HStack(spacing: 8) {
-                            MSButton(title: "Écrire à l'assistance", icon: "envelope", style: .secondary, size: .compact) {
-                                if let url = URL(string: "mailto:support@marketingstudio.app?subject=Assistance%20Sokozia") {
-                                    openURL(url) { ok in if !ok { router.toast("Mail n'est pas configuré sur cet appareil", style: .warning) } }
-                                }
+                            MSButton(title: "Écrire sur WhatsApp", icon: "message", style: .secondary, size: .compact) {
+                                if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: "Bonjour Sokozia, ") { openURL(url) }
                             }
                             MSButton(title: "Signaler un bug", icon: "ladybug", style: .ghost, size: .compact) {
-                                router.toast("Signalement de bug envoyé (simulation)", style: .success)
+                                if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: "Bonjour Sokozia, j'ai un problème avec l'app iPhone : ") { openURL(url) }
                             }
                         }
                     }

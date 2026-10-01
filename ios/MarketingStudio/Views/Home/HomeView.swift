@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// SPEC §8.
+/// Home: greeting, quick actions, upcoming promo moments (Tabaski, Noël…), real examples for new
+/// accounts, then the user's projects and creations.
 struct HomeView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
@@ -21,11 +22,13 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 28) {
                 brandMark
                 hero
+                quickActions
+                promoMoments
+                if store.assets.count < 4 { examples }
                 stats
                 recentProjects
                 continueCreating
                 templatesRow
-                trendingFormats
                 recentAssets
             }
             .padding(.top, 8)
@@ -134,12 +137,104 @@ struct HomeView: View {
         }
     }
 
+    private var quickActions: some View {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+            quickAction("Photo produit", "Votre produit dans un beau décor", icon: "camera.aperture") { router.push(.productShoot) }
+            quickAction("Vidéo UGC", "Un créateur présente votre produit", icon: "person.wave.2") { router.push(.ugcCreator) }
+            quickAction("Statuts WhatsApp", "5 statuts pour la semaine", icon: "message") { router.push(.copywriter) }
+            quickAction("Pub avec prix", "Visuels + textes en \(Market.currencies[store.country.currency]?.symbol ?? "FCFA")", icon: "megaphone") { router.push(.adCreator) }
+        }
+        .padding(.horizontal, MSSpacing.gutter)
+    }
+
+    private func quickAction(_ title: String, _ subtitle: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button { MSHaptic.tap(); action() } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                Image(systemName: icon).font(.system(size: 15, weight: .semibold)).foregroundStyle(MSColor.highlight)
+                    .frame(width: 34, height: 34).background(MSColor.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                Text(title).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                Text(subtitle).msCaption().lineLimit(2).multilineTextAlignment(.leading)
+            }
+            .frame(maxWidth: .infinity, minHeight: 118, alignment: .topLeading)
+            .padding(12)
+            .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
+        }
+        .buttonStyle(MSPressStyle())
+    }
+
+    /// Local promo calendar: each moment opens a matching template.
+    private var promoMoments: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Temps forts à préparer")
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(Market.upcomingMoments().prefix(4), id: \.moment.id) { item in
+                        let template = item.moment.templateIds.first.flatMap { store.template($0) }
+                        Button {
+                            MSHaptic.tap()
+                            if let template { router.push(.templateDetail(id: template.id)) } else { router.push(.templates) }
+                        } label: {
+                            HStack(spacing: 10) {
+                                RemoteImage(url: template?.thumbnailURL, cornerRadius: 10).frame(width: 56, height: 70)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(item.moment.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
+                                    Text(item.daysLeft == 0 ? "Aujourd'hui" : "Dans \(item.daysLeft) jours").font(MSFont.caption(12)).foregroundStyle(MSColor.highlight)
+                                    Text(item.moment.pitch).msCaption().lineLimit(2).multilineTextAlignment(.leading)
+                                }
+                                .frame(width: 180, alignment: .leading)
+                            }
+                            .padding(10)
+                            .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
+                        }
+                        .buttonStyle(MSPressStyle())
+                    }
+                }
+                .padding(.horizontal, MSSpacing.gutter)
+            }
+        }
+    }
+
+    /// Real results made with Sokozia, so a new account sees what it can get.
+    private var examples: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Exemples faits avec Sokozia", actionTitle: "Créateurs") { router.push(.creators) }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(Array(Catalog.creators.filter(\.featured).prefix(2))) { c in
+                        Button { store.pendingCreatorId = c.id; router.push(.ugcCreator) } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                CreatorIntroView(creator: c).frame(width: 120, height: 190)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                Text("UGC · \(c.name)").font(MSFont.caption(12)).foregroundStyle(MSColor.text)
+                            }
+                        }
+                        .buttonStyle(MSPressStyle())
+                    }
+                    ForEach(Catalog.styles.prefix(6)) { st in
+                        Button { router.push(.productShoot) } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                RemoteImage(url: st.imageURL, cornerRadius: 12).frame(width: 120, height: 190)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                Text("\(st.name) · \(st.product)").font(MSFont.caption(12)).foregroundStyle(MSColor.text).lineLimit(1).frame(width: 120, alignment: .leading)
+                            }
+                        }
+                        .buttonStyle(MSPressStyle())
+                    }
+                }
+                .padding(.horizontal, MSSpacing.gutter)
+            }
+        }
+    }
+
     private var trendingFormats: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHeader(title: "Formats tendance")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
-                    ForEach(Array(MockData.trendingFormats.enumerated()), id: \.offset) { _, f in
+                    ForEach(Array(Catalog.trendingFormats.enumerated()), id: \.offset) { _, f in
                         Button { router.select(.studio) } label: {
                             HStack(spacing: 10) {
                                 Image(systemName: f.icon)

@@ -189,7 +189,8 @@ struct ExportCenterView: View {
 
     private var qualityHint: String {
         switch quality {
-        case .standard: return "Prêt pour le web, fichiers les plus légers."
+        case .light: return "Compressé pour WhatsApp et les connexions lentes."
+        case .standard: return "Prêt pour le web et les réseaux sociaux."
         case .high: return "Équilibré pour les réseaux sociaux."
         case .maximum: return "Pleine résolution pour l'impression et la publicité."
         }
@@ -213,7 +214,7 @@ struct ExportCenterView: View {
                 Text("\(ids.count) fichier\(ids.count == 1 ? "" : "s") · \(format.rawValue) · \(quality.label)").msCaption()
             }
             MSProgressBar(progress: progress, height: 6).padding(.horizontal, 40)
-            ProgressIndicator(steps: MockAPI.exportSteps, currentStep: MockAPI.exportSteps.firstIndex(of: stepLabel) ?? 0)
+            ProgressIndicator(steps: API.exportSteps, currentStep: API.exportSteps.firstIndex(of: stepLabel) ?? 0)
                 .msCard()
                 .padding(.horizontal, MSSpacing.gutter)
         }
@@ -270,7 +271,7 @@ struct ExportCenterView: View {
         withAnimation(MSAnimation.gentle) { exporting = true }
         Task {
             do {
-                let a = try await MockAPI.exportAssets(ids: ids, format: format, quality: quality, store: store) { p, label in
+                let a = try await API.exportAssets(ids: ids, format: format, quality: quality, store: store) { p, label in
                     progress = p
                     stepLabel = label
                 }

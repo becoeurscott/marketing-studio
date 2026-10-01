@@ -1,14 +1,16 @@
 import SwiftUI
 
-/// SPEC §40 — Settings: Account, Workspace, Notifications, Appearance, Brand, Subscription, Security, Help.
+/// Settings: account (sign-out), market (country, language, light videos), notifications,
+/// appearance, Studio defaults, brand, credits, help.
 struct SettingsView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
 
+    @Environment(\.openURL) private var openURL
     @State private var confirmReset = false
+    @State private var confirmSignOut = false
     @State private var showDefaults = false
-    @State private var twoFactor = false
-    @State private var showSessions = false
+    @State private var showCountry = false
 
     private let ratios = ["1:1", "4:5", "9:16", "16:9", "3:2"]
     private let models = StudioOptions.models
@@ -22,7 +24,30 @@ struct SettingsView: View {
                 section("Compte") {
                     navRow("Profil", subtitle: store.user.email, icon: "person.crop.circle") { router.push(.profile) }
                     divider
-                    navRow("Espace de travail", subtitle: "\(store.members.count) membres", icon: "building.2") { router.push(.workspace) }
+                    navRow("Se déconnecter", subtitle: "Vos créations restent sur cet appareil", icon: "rectangle.portrait.and.arrow.right") { confirmSignOut = true }
+                }
+
+                section("Pays et langue") {
+                    navRow("Pays", subtitle: "\(store.country.flag) \(store.country.name) · prix en \(Market.currencies[store.country.currency]?.symbol ?? "FCFA")", icon: "globe.europe.africa") { showCountry = true }
+                    divider
+                    Menu {
+                        ForEach(Market.languages) { l in
+                            Button(l.label) { pref(\.language).wrappedValue = l.id }
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            icon("character.bubble")
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Langue des textes et vidéos").font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                                Text(Market.languageLabel(store.preferences.language)).msCaption()
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.up.chevron.down").font(.system(size: 12, weight: .semibold)).foregroundStyle(MSColor.muted)
+                        }
+                        .padding(.horizontal, 12).frame(minHeight: 56)
+                    }
+                    divider
+                    toggleRow("Vidéos légères", subtitle: "480p : plus rapides à envoyer sur WhatsApp", icon: "antenna.radiowaves.left.and.right", isOn: pref(\.lightVideos))
                 }
 
                 section("Notifications") {
@@ -78,29 +103,26 @@ struct SettingsView: View {
                 }
 
                 section("Abonnement") {
-                    navRow("Forfait", subtitle: "\(store.plan.title) · \(store.plan.monthlyPrice) $/mois", icon: "creditcard") { router.push(.pricing) }
+                    navRow("Forfait", subtitle: "Packs sans abonnement · forfaits dès \(store.price(Plan.starter.monthlyPriceXof))/mois", icon: "creditcard") { router.push(.pricing) }
                     divider
                     navRow("Crédits", subtitle: "\(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) disponibles", icon: "bolt") { router.push(.credits) }
                 }
 
-                section("Sécurité") {
-                    toggleRow("Double authentification", subtitle: twoFactor ? "Activée via une app d’authentification" : "Protégez votre compte", icon: "lock.shield", isOn: $twoFactor)
-                        .onChange(of: twoFactor) { _, on in router.toast(on ? "Double authentification activée (démo)" : "Double authentification désactivée", style: on ? .success : .info) }
-                    divider
-                    navRow("Changer le mot de passe", subtitle: "Modifié il y a 3 mois", icon: "key") { router.toast("E-mail de réinitialisation envoyé (démo)", style: .success) }
-                    divider
-                    navRow("Sessions actives", subtitle: "iPhone · Chrome sur Mac", icon: "iphone") { showSessions = true }
+                section("Configuration") {
+                    navRow("Revoir la configuration", subtitle: "Pays, activité, objectifs", icon: "arrow.uturn.backward.circle") { store.onboardingDone = false }
                 }
 
                 section("Aide") {
                     navRow("Centre d’aide", subtitle: "FAQ et contact", icon: "questionmark.circle") { router.push(.help) }
                     divider
-                    navRow("Envoyer un avis", subtitle: "Dites-nous quoi développer ensuite", icon: "bubble.left") { router.toast("Merci, avis bien reçu (démo)", style: .success) }
+                    navRow("Nous écrire sur WhatsApp", subtitle: "Questions, recharges, idées", icon: "message") {
+                        if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: "Bonjour Sokozia, ") { openURL(url) }
+                    }
                 }
 
                 VStack(spacing: 10) {
-                    MSButton(title: "Réinitialiser les données de démo", icon: "arrow.counterclockwise", style: .danger) { confirmReset = true }
-                    Text("Sokozia \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0") · Version prototype").msCaption()
+                    MSButton(title: "Effacer les données de cet appareil", icon: "trash", style: .danger) { confirmReset = true }
+                    Text("Sokozia \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")").msCaption()
                 }
                 .padding(.horizontal, MSSpacing.gutter)
                 .padding(.top, 6)
@@ -113,16 +135,22 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
         .msSheet(isPresented: $showDefaults, detents: [.large]) { defaultsSheet }
-        .msSheet(isPresented: $showSessions, detents: [.medium]) { sessionsSheet }
-        .confirmationDialog("Réinitialiser les données de démo ?", isPresented: $confirmReset, titleVisibility: .visible) {
-            Button("Tout réinitialiser", role: .destructive) {
+        .msSheet(isPresented: $showCountry, detents: [.large]) { countrySheet }
+        .confirmationDialog("Effacer les données de cet appareil ?", isPresented: $confirmReset, titleVisibility: .visible) {
+            Button("Tout effacer", role: .destructive) {
                 store.resetAll()
                 router.popToRoot(on: .more)
                 router.select(.home)
             }
             Button("Annuler", role: .cancel) {}
         } message: {
-            Text("Les projets, ressources, campagnes, crédits et préférences reviennent à la démo initiale et l’accueil recommence.")
+            Text("Projets, ressources et campagnes enregistrés sur cet iPhone seront supprimés. Vos crédits sont conservés sur votre compte.")
+        }
+        .confirmationDialog("Se déconnecter ?", isPresented: $confirmSignOut, titleVisibility: .visible) {
+            Button("Se déconnecter", role: .destructive) { Task { await AuthService.shared.signOut() } }
+            Button("Annuler", role: .cancel) {}
+        } message: {
+            Text("Vous pourrez vous reconnecter avec le même compte ; vos crédits sont gardés.")
         }
     }
 
@@ -154,32 +182,36 @@ struct SettingsView: View {
         }
     }
 
-    private var sessionsSheet: some View {
-        BottomSheetContainer(title: "Sessions actives") {
-            VStack(spacing: 10) {
-                sessionRow("Cet iPhone", "Actif maintenant", icon: "iphone", current: true)
-                sessionRow("Chrome sur Mac", "San Francisco · il y a 2 heures", icon: "laptopcomputer", current: false)
-                Spacer(minLength: 0)
-                MSButton(title: "Déconnecter les autres sessions", icon: "xmark.circle", style: .danger) {
-                    showSessions = false
-                    router.toast("Autres sessions déconnectées (démo)", style: .success)
+    private var countrySheet: some View {
+        BottomSheetContainer(title: "Pays", subtitle: "Change la devise et les moyens de paiement affichés.") {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 8) {
+                    ForEach(Market.countries) { c in
+                        Button {
+                            MSHaptic.tap()
+                            var p = store.preferences
+                            p.country = c.code
+                            if !c.languages.contains(p.language) { p.language = c.languages.first ?? "fr" }
+                            store.updatePreferences(p)
+                            showCountry = false
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text(c.flag).font(.system(size: 24))
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(c.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                                    Text(c.payments.compactMap { Market.paymentMethods[$0]?.label }.joined(separator: " · ")).msCaption().lineLimit(1)
+                                }
+                                Spacer()
+                                if store.preferences.country == c.code { Image(systemName: "checkmark.circle.fill").foregroundStyle(MSColor.accent) }
+                            }
+                            .padding(12)
+                            .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+                        }
+                        .buttonStyle(MSPressStyle())
+                    }
                 }
-            }
-            .padding(.horizontal, MSSpacing.gutter)
-            .padding(.bottom, 16)
-        }
-    }
-
-    private func sessionRow(_ title: String, _ subtitle: String, icon: String, current: Bool) -> some View {
-        MSCard(padding: 12) {
-            HStack(spacing: 12) {
-                self.icon(icon)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                    Text(subtitle).msCaption()
-                }
-                Spacer()
-                if current { MSBadge(text: "Actuelle", tone: .success) }
+                .padding(.horizontal, MSSpacing.gutter)
+                .padding(.bottom, 24)
             }
         }
     }

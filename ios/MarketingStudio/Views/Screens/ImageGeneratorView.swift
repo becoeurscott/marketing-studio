@@ -32,7 +32,7 @@ struct ImageGeneratorView: View {
                 if session.phase != .generating {
                     ImageOptionsForm(session: session, full: true) { showUpload = true }
                         .msCard()
-                    MSButton(title: "Générer · \(ImageGenSession.cost) crédits", icon: "sparkles", isDisabled: !session.canGenerate) { generate() }
+                    MSButton(title: "Générer · \(session.cost) crédits", icon: "sparkles", isDisabled: !session.canGenerate) { generate() }
                     Text("Solde : \(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits · 4 variantes par génération").msCaption()
                 }
             }

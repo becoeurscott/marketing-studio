@@ -2,14 +2,15 @@ import SwiftUI
 import Combine
 
 /// Single source of truth. Every screen reads from here and mutates through the action methods.
-/// State is persisted to UserDefaults as one JSON blob (debounced) and seeded from MockData on first launch.
+/// The workspace is persisted per account to UserDefaults as one JSON blob (debounced). Credits,
+/// plan and credit history are server truth (sokozia.com) and only cached here.
 @MainActor
 final class AppStore: ObservableObject {
 
     // MARK: - Persisted state
 
     private struct PersistedState: Codable {
-        var version = 1
+        var version = 2
         var user: User
         var onboardingDone: Bool
         var onboardingAnswers: OnboardingAnswers
@@ -54,28 +55,27 @@ final class AppStore: ObservableObject {
 
     /// Template chosen via "Use Template"; the Studio reads and clears it when it applies the preset. Not persisted.
     @Published var pendingTemplateId: String?
+    /// Creator chosen on the Creators screen ("Utiliser en UGC"); the UGC screens read and clear it. Not persisted.
+    @Published var pendingCreatorId: String?
 
     /// Additional (inactive) brand kits. `brand` is always the active one. Persisted under its own key.
     @Published var otherBrands: [Brand] = [] { didSet { saveOtherBrands() } }
-    private static let brandsKey = "marketingstudio.brands.v1"
 
     // Static catalog (not user-mutable, not persisted)
-    let templates: [Template] = MockData.templates
-    let creators: [Creator] = MockData.creators
+    let templates: [Template] = Catalog.templates
+    let creators: [Creator] = Catalog.creators
 
     // MARK: - Init / persistence
 
-    private static let storageKey = "marketingstudio.state.v1"
+    /// Account whose workspace is loaded (nil = signed out).
+    private(set) var accountId: String?
+    private var storageKey: String { "sokozia.state.v2.\(accountId ?? "guest")" }
+    private var brandsKey: String { "sokozia.brands.v2.\(accountId ?? "guest")" }
     private var saveTask: Task<Void, Never>?
     private var isLoading = true
 
-    init(userDefaults: UserDefaults = .standard) {
-        let seed = Self.seed()
-        var state = seed
-        if let data = userDefaults.data(forKey: Self.storageKey),
-           let decoded = try? Self.decoder.decode(PersistedState.self, from: data) {
-            state = decoded
-        }
+    init() {
+        let state = Self.seed(SessionUser(id: "guest", email: "", name: ""))
         user = state.user
         onboardingDone = state.onboardingDone
         onboardingAnswers = state.onboardingAnswers
@@ -94,8 +94,46 @@ final class AppStore: ObservableObject {
         currentProjectId = state.currentProjectId
         copyResults = state.copyResults
         savedHooks = state.savedHooks
-        if let d = userDefaults.data(forKey: Self.brandsKey), let b = try? Self.decoder.decode([Brand].self, from: d) { otherBrands = b }
         isLoading = false
+    }
+
+    /// Loads the workspace of the signed-in account (empty on first use on this device).
+    func load(for session: SessionUser) {
+        saveTask?.cancel()
+        isLoading = true
+        accountId = session.id
+        var state = Self.seed(session)
+        if let data = UserDefaults.standard.data(forKey: storageKey),
+           let decoded = try? Self.decoder.decode(PersistedState.self, from: data) {
+            state = decoded
+        }
+        apply(state)
+        user.email = session.email
+        if !session.name.isEmpty, user.name.isEmpty { user.name = session.name }
+        otherBrands = (UserDefaults.standard.data(forKey: brandsKey)).flatMap { try? Self.decoder.decode([Brand].self, from: $0) } ?? []
+        pendingTemplateId = nil
+        pendingCreatorId = nil
+        isLoading = false
+    }
+
+    /// Credits, plan and history from the server.
+    func applyAccount(_ summary: AccountSummary) {
+        credits = summary.credits
+        if let p = Plan(rawValue: summary.plan) { plan = p; user.plan = p }
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let plain = ISO8601DateFormatter()
+        transactions = summary.ledger.map { e in
+            CreditTransaction(id: e.id, amount: e.amount, reason: e.description, createdAt: iso.date(from: e.created_at) ?? plain.date(from: e.created_at) ?? Date())
+        }
+    }
+
+    private func apply(_ s: PersistedState) {
+        user = s.user; onboardingDone = s.onboardingDone; onboardingAnswers = s.onboardingAnswers
+        projects = s.projects; assets = s.assets; campaigns = s.campaigns; generations = s.generations
+        favorites = s.favorites; brand = s.brand; credits = s.credits; transactions = s.transactions
+        notifications = s.notifications; members = s.members; plan = s.plan; preferences = s.preferences
+        currentProjectId = s.currentProjectId; copyResults = s.copyResults; savedHooks = s.savedHooks
     }
 
     private static let encoder: JSONEncoder = {
@@ -109,29 +147,34 @@ final class AppStore: ObservableObject {
         return d
     }()
 
-    private static func seed() -> PersistedState {
-        var favs: [String: [String]] = [:]
-        favs[FavoriteKind.asset.rawValue] = MockData.assets.filter { $0.favorite }.map { $0.id }
-        favs[FavoriteKind.template.rawValue] = ["tpl_1", "tpl_2", "tpl_5"]
-        favs[FavoriteKind.creator.rawValue] = ["creator_maya", "creator_sofia"]
-        favs[FavoriteKind.prompt.rawValue] = ["gen_1", "gen_3"]
+    /// A new account starts empty: one project, a brand named after the shop, no fake content.
+    private static func seed(_ session: SessionUser) -> PersistedState {
+        let now = Date()
+        let shop = session.name.isEmpty ? "Ma boutique" : session.name
+        let project = Project(id: IDGen.make("proj"), name: "Mon premier projet", description: "Vos premiers visuels et vidéos.", brandId: "brand_main", thumbnailURL: "", status: .active, createdAt: now, updatedAt: now)
+        let user = User(id: session.id, name: session.name, email: session.email, company: shop, role: "Commerçant(e)", avatarURL: "", plan: .starter)
         return PersistedState(
-            user: MockData.user,
+            user: user,
             onboardingDone: false,
             onboardingAnswers: OnboardingAnswers(),
-            projects: MockData.projects,
-            assets: MockData.assets,
-            campaigns: MockData.campaigns,
-            generations: MockData.generations,
-            favorites: favs,
-            brand: MockData.brand,
-            credits: MockData.startingCredits,
-            transactions: MockData.transactions,
-            notifications: MockData.notifications,
-            members: MockData.members,
-            plan: MockData.user.plan,
+            projects: [project],
+            assets: [],
+            campaigns: [],
+            generations: [],
+            favorites: [:],
+            brand: Brand(
+                id: "brand_main", name: shop, logoURL: "", iconURL: "", colors: ["#F97316", "#FACC15", "#16A34A", "#0A0A0A"],
+                fonts: ["Inter"], website: "", description: "", industry: "", audience: "",
+                voice: BrandVoice(tone: "Friendly", writingStyle: "Clair, chaleureux et direct.", keywords: [], avoid: []),
+                assetIds: []
+            ),
+            credits: 0,
+            transactions: [],
+            notifications: [],
+            members: [WorkspaceMember(id: IDGen.make("mem"), name: session.name.isEmpty ? session.email : session.name, email: session.email, role: .owner, avatarURL: "", joinedAt: now)],
+            plan: .starter,
             preferences: UserPreferences(),
-            currentProjectId: "proj_luma_summer",
+            currentProjectId: project.id,
             copyResults: [],
             savedHooks: []
         )
@@ -148,7 +191,7 @@ final class AppStore: ObservableObject {
     }
 
     private func scheduleSave() {
-        guard !isLoading else { return }
+        guard !isLoading, accountId != nil else { return }
         saveTask?.cancel()
         saveTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(400))
@@ -158,25 +201,35 @@ final class AppStore: ObservableObject {
     }
 
     func saveNow() {
+        guard accountId != nil else { return }
         if let data = try? Self.encoder.encode(snapshot()) {
-            UserDefaults.standard.set(data, forKey: Self.storageKey)
+            UserDefaults.standard.set(data, forKey: storageKey)
         }
     }
 
-    /// Wipe persisted state and return to the seeded, pre-onboarding state.
+    /// Wipes this account's workspace on this device and returns to the empty, pre-onboarding state.
+    /// Credits are kept (they live on the server).
     func resetAll() {
-        UserDefaults.standard.removeObject(forKey: Self.storageKey)
-        let s = Self.seed()
+        guard let accountId else { return }
+        UserDefaults.standard.removeObject(forKey: storageKey)
+        UserDefaults.standard.removeObject(forKey: brandsKey)
+        let keepCredits = credits, keepPlan = plan, keepTx = transactions
         isLoading = true
-        user = s.user; onboardingDone = s.onboardingDone; onboardingAnswers = s.onboardingAnswers
-        projects = s.projects; assets = s.assets; campaigns = s.campaigns; generations = s.generations
-        favorites = s.favorites; brand = s.brand; credits = s.credits; transactions = s.transactions
-        notifications = s.notifications; members = s.members; plan = s.plan; preferences = s.preferences
-        currentProjectId = s.currentProjectId; copyResults = s.copyResults; savedHooks = s.savedHooks
+        apply(Self.seed(SessionUser(id: accountId, email: user.email, name: user.name)))
+        credits = keepCredits; plan = keepPlan; transactions = keepTx
         otherBrands = []; pendingTemplateId = nil
-        UserDefaults.standard.removeObject(forKey: Self.brandsKey)
         isLoading = false
         saveNow()
+    }
+
+    /// Saves and unloads the workspace (sign-out).
+    func unload() {
+        saveNow()
+        isLoading = true
+        accountId = nil
+        apply(Self.seed(SessionUser(id: "guest", email: "", name: "")))
+        otherBrands = []
+        isLoading = false
     }
 
     // MARK: - Derived
@@ -213,7 +266,7 @@ final class AppStore: ObservableObject {
     func createProject(name: String, description: String) -> Project {
         let p = Project(
             id: IDGen.make("proj"), name: name, description: description, brandId: brand.id,
-            thumbnailURL: MockData.image("proj-\(Int.random(in: 100...999))", w: 800, h: 600),
+            thumbnailURL: "",
             status: .active, createdAt: Date(), updatedAt: Date()
         )
         projects.insert(p, at: 0)
@@ -294,12 +347,12 @@ final class AppStore: ObservableObject {
     // MARK: - Assets
 
     @discardableResult
-    func addAsset(name: String, kind: AssetKind, imageURL: String, projectId: String?, tags: [String] = [], durationSeconds: Int? = nil) -> Asset {
+    func addAsset(name: String, kind: AssetKind, imageURL: String, projectId: String?, tags: [String] = [], durationSeconds: Int? = nil, videoURL: String? = nil) -> Asset {
         let a = Asset(
             id: IDGen.make("asset"), name: name, kind: kind, imageURL: imageURL,
             projectId: projectId ?? currentProjectId, favorite: false, createdAt: Date(),
             tags: tags, width: kind == .video ? 1080 : 1600, height: kind == .video ? 1920 : 2000,
-            durationSeconds: durationSeconds
+            durationSeconds: durationSeconds, videoURL: videoURL
         )
         assets.insert(a, at: 0)
         touchProject(a.projectId)
@@ -429,8 +482,8 @@ final class AppStore: ObservableObject {
     var allBrands: [Brand] { [brand] + otherBrands }
 
     private func saveOtherBrands() {
-        guard !isLoading else { return }
-        if let d = try? Self.encoder.encode(otherBrands) { UserDefaults.standard.set(d, forKey: Self.brandsKey) }
+        guard !isLoading, accountId != nil else { return }
+        if let d = try? Self.encoder.encode(otherBrands) { UserDefaults.standard.set(d, forKey: brandsKey) }
     }
 
     @discardableResult
@@ -438,7 +491,7 @@ final class AppStore: ObservableObject {
         let slug = name.lowercased().replacingOccurrences(of: " ", with: "-")
         let b = Brand(
             id: IDGen.make("brand"), name: name,
-            logoURL: MockData.image("\(slug)-logo", w: 600, h: 600), iconURL: MockData.image("\(slug)-icon", w: 300, h: 300),
+            logoURL: "", iconURL: "",
             colors: colors, fonts: fonts, website: website, description: description, industry: industry, audience: audience,
             voice: BrandVoice(tone: "Friendly", writingStyle: "Clair et direct. Chaleureux, jamais commercial.", keywords: [], avoid: []),
             assetIds: []
@@ -466,24 +519,14 @@ final class AppStore: ObservableObject {
 
     // MARK: - Credits
 
-    /// Returns false (and does nothing) when the balance is insufficient.
-    @discardableResult
-    func spendCredits(_ amount: Int, reason: String) -> Bool {
-        guard amount <= credits else { return false }
-        credits -= amount
-        transactions.insert(CreditTransaction(id: IDGen.make("tx"), amount: -amount, reason: reason, createdAt: Date()), at: 0)
-        if credits < 100 {
-            pushNotification(kind: .creditsLow, title: "Crédits bientôt épuisés", message: "Il vous reste \(credits) crédits. Rechargez pour continuer à générer.")
-        }
-        return true
-    }
-
+    /// Credits are debited and refunded on the server; this is only the instant pre-check.
     func canAfford(_ amount: Int) -> Bool { credits >= amount }
 
-    func buyCredits(_ amount: Int, price: Int) {
-        credits += amount
-        transactions.insert(CreditTransaction(id: IDGen.make("tx"), amount: amount, reason: "Achat de \(amount) crédits (\(price) $)", createdAt: Date()), at: 0)
-    }
+    /// The user's country (prices, Mobile Money, languages).
+    var country: Market.Country { Market.country(preferences.country) }
+
+    /// Price of an FCFA amount in the user's currency.
+    func price(_ amountXof: Int) -> String { Market.price(amountXof, country: preferences.country) }
 
     // MARK: - Notifications
 
@@ -506,7 +549,7 @@ final class AppStore: ObservableObject {
 
     @discardableResult
     func inviteMember(name: String, email: String, role: MemberRole) -> WorkspaceMember {
-        let m = WorkspaceMember(id: IDGen.make("mem"), name: name, email: email, role: role, avatarURL: MockData.avatar(Int.random(in: 1...70)), joinedAt: Date())
+        let m = WorkspaceMember(id: IDGen.make("mem"), name: name, email: email, role: role, avatarURL: "", joinedAt: Date())
         members.append(m)
         return m
     }
@@ -522,12 +565,6 @@ final class AppStore: ObservableObject {
 
     // MARK: - Plan / profile / preferences
 
-    func setPlan(_ p: Plan) {
-        plan = p
-        user.plan = p
-        credits += p.monthlyCredits
-        transactions.insert(CreditTransaction(id: IDGen.make("tx"), amount: p.monthlyCredits, reason: "Crédits du forfait \(p.title)", createdAt: Date()), at: 0)
-    }
 
     func updateUser(_ u: User) { user = u }
     func updatePreferences(_ p: UserPreferences) { preferences = p }

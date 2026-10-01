@@ -89,7 +89,7 @@ struct TemplateDetailView: View {
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                Text("Utiliser un modèle ouvre le Studio avec le prompt, le style et le format déjà renseignés.")
+                Text("Le modèle ouvre le bon outil (image, vidéo, UGC, pub ou texte) avec les réglages déjà remplis.")
                     .msCaption()
                     .padding(.horizontal, MSSpacing.gutter)
             }

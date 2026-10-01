@@ -1,7 +1,8 @@
 import SwiftUI
 import PhotosUI
 
-/// Mock upload: pick from existing product images, or from the photo library (PhotosPicker), then a fake upload progress.
+/// Pick an existing product image, or import one from Photos: it is uploaded to the account's space
+/// (a public URL the generation models can read).
 struct UploadProductSheet: View {
     var onUploaded: (Asset) -> Void
     @EnvironmentObject private var store: AppStore
@@ -40,7 +41,7 @@ struct UploadProductSheet: View {
                                     .background(MSColor.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Choisir dans Photos").msHeadline(15)
-                                    Text("PNG ou JPG, jusqu'à 20 Mo").msCaption()
+                                    Text("Une photo nette du produit, même prise au téléphone").msCaption()
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right").foregroundStyle(MSColor.muted)
@@ -49,11 +50,11 @@ struct UploadProductSheet: View {
                         }
                         .buttonStyle(MSPressStyle())
                         .onChange(of: pickerItem) { _, item in
-                            guard item != nil else { return }
-                            upload(name: "Import depuis la pellicule")
+                            guard let item else { return }
+                            upload(name: "Photo produit", item: item)
                         }
 
-                        SectionHeader(title: "Vos images produit")
+                        if !candidates.isEmpty { SectionHeader(title: "Vos images produit") }
                         LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                             ForEach(candidates) { a in
                                 Button {
@@ -81,7 +82,7 @@ struct UploadProductSheet: View {
         }
     }
 
-    private func upload(name: String, existing: Asset? = nil) {
+    private func upload(name: String, existing: Asset? = nil, item: PhotosPickerItem? = nil) {
         uploadName = name
         uploading = true
         progress = 0
@@ -94,13 +95,17 @@ struct UploadProductSheet: View {
                     }
                     finish(existing)
                 } else {
-                    let a = try await MockAPI.uploadProduct(name: name, store: store) { p in
+                    guard let data = try await item?.loadTransferable(type: Data.self), let image = UIImage(data: data) else {
+                        throw APIError.failed("Impossible de lire cette photo.")
+                    }
+                    let a = try await API.uploadProduct(image: image, name: name, store: store) { p in
                         withAnimation(MSAnimation.gentle) { progress = p }
                     }
                     finish(a)
                 }
             } catch {
                 uploading = false
+                pickerItem = nil
                 router.toast(error.localizedDescription, style: .error)
             }
         }

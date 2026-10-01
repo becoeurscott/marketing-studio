@@ -138,7 +138,7 @@ struct BrandVoiceView: View {
         let kw = parsed(keywords).first ?? "éclat"
         let samples: [String: [String]] = [
             "Luxury": [
-                "\(brand). Un sérum. Un vrai \(kw). Rien de superflu.",
+                "\(brand). La qualité, tout simplement. Un vrai \(kw).",
                 "Pensé pour les matins qui comptent. \(brand) ramène l'\(kw), en toute discrétion.",
             ],
             "Friendly": [
