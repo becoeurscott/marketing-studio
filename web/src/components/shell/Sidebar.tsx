@@ -17,7 +17,7 @@ export const SIDEBAR_W_COLLAPSED = 64;
 
 export function Sidebar() {
   const path = usePathname();
-  const { sidebarCollapsed: collapsed, setSidebarCollapsed } = useShell();
+  const { sidebarCollapsed: collapsed, sidebarLocked, setSidebarCollapsed } = useShell();
   const user = useStore((s) => s.user);
   const credits = useStore((s) => s.credits);
   const plan = useStore((s) => s.plan);
@@ -92,13 +92,14 @@ export function Sidebar() {
             <LogOut className="size-4" />{!collapsed && "Se déconnecter"}
           </button>
         </form>
-        <button
+        {/* Below 1280px the sidebar stays collapsed, so the toggle is only offered on wide screens */}
+        {!sidebarLocked && <button
           onClick={() => setSidebarCollapsed(!collapsed)}
           className={cn("flex items-center h-8 w-full rounded-md text-[12px] text-muted hover:text-text hover:bg-white/4 transition-colors", collapsed ? "justify-center" : "px-2.5 gap-3")}
           aria-label={collapsed ? "Déplier la barre latérale" : "Replier la barre latérale"}
         >
           {collapsed ? <ChevronsRight className="size-4" /> : <><ChevronsLeft className="size-4" /> Replier</>}
-        </button>
+        </button>}
       </div>
     </motion.aside>
   );

@@ -49,7 +49,7 @@ export function StudioControls({
       </Inspector>
 
       {/* Mobile / tablet floating bar */}
-      <div className="lg:hidden fixed z-40 left-4 right-4 bottom-[4.25rem] md:bottom-6 flex items-center gap-2 p-2 rounded-xl bg-elevated/95 backdrop-blur border border-border-strong shadow-float">
+      <div className="lg:hidden fixed z-40 left-4 right-4 md:left-[calc(var(--sb)+1rem)] bottom-[calc(4.25rem+env(safe-area-inset-bottom))] md:bottom-[calc(1.5rem+env(safe-area-inset-bottom))] flex items-center gap-2 p-2 rounded-xl bg-elevated/95 backdrop-blur border border-border-strong shadow-float">
         <Button variant="secondary" size="lg" leftIcon={<SlidersHorizontal className="size-4" />} onClick={() => setOpen(true)} className="shrink-0" aria-label="Paramètres"><span className="hidden sm:inline">Paramètres</span></Button>
         <div className="flex-1 min-w-0">{generate}</div>
       </div>
@@ -77,7 +77,7 @@ export function ControlField({ label, hint, children, className }: { label: stri
 /** Dominant canvas area that keeps a consistent frame across studio pages. */
 export function Canvas({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("relative rounded-xl border border-border bg-surface min-h-[60vh] lg:min-h-[calc(100dvh-12rem)] flex flex-col overflow-hidden", className)}>
+    <div className={cn("relative rounded-xl border border-border bg-surface min-h-[60dvh] lg:min-h-[calc(100dvh-12rem)] flex flex-col overflow-hidden", className)}>
       {children}
     </div>
   );

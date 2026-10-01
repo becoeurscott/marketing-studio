@@ -24,8 +24,8 @@ export function Card({ padded = true, interactive, elevated, className, ...rest 
 
 export function CardHeader({ title, subtitle, action, className }: { title: string; subtitle?: string; action?: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("flex items-start justify-between gap-3 mb-3", className)}>
-      <div>
+    <div className={cn("flex flex-wrap items-start justify-between gap-3 mb-3", className)}>
+      <div className="min-w-0 flex-1">
         <h3 className="text-[15px] font-semibold text-text">{title}</h3>
         {subtitle && <p className="text-[13px] text-text2 mt-0.5">{subtitle}</p>}
       </div>

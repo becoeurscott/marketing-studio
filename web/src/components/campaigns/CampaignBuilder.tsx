@@ -138,7 +138,7 @@ export function CampaignBuilder() {
             <Textarea value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="ex. Femmes et hommes de 20 à 35 ans qui veulent une routine de soin simple et efficace" rows={3} />
             <div className="flex flex-wrap gap-2 mt-3">
               {AUDIENCE_CHIPS.map((c) => (
-                <Chip key={c} size="sm" label={c} selected={audience === c} onClick={() => setAudience(c)} />
+                <Chip key={c} size="sm" label={c} selected={audience === c} onClick={() => setAudience(c)} className="whitespace-normal h-auto min-h-7 py-1 max-w-full text-left" />
               ))}
             </div>
           </StepShell>
@@ -231,10 +231,10 @@ function OptionCard({ selected, onClick, title, description, icon, center }: { s
 
 function ReviewRow({ label, children, onEdit }: { label: string; children: React.ReactNode; onEdit: () => void }) {
   return (
-    <div className="flex items-start gap-4 px-4 py-3">
-      <dt className="w-28 shrink-0 text-[13px] text-muted">{label}</dt>
-      <dd className="flex-1 text-sm text-text min-w-0">{children}</dd>
-      <button type="button" onClick={onEdit} className="text-[12px] text-text2 hover:text-text">Modifier</button>
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 sm:flex items-start sm:gap-4 px-4 py-3">
+      <dt className="col-start-1 row-start-1 sm:w-28 shrink-0 text-[13px] text-muted">{label}</dt>
+      <dd className="col-span-2 row-start-2 flex-1 text-sm text-text min-w-0 break-words">{children}</dd>
+      <button type="button" onClick={onEdit} className="col-start-2 row-start-1 text-[12px] text-text2 hover:text-text">Modifier</button>
     </div>
   );
 }

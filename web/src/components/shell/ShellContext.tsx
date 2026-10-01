@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useIsWide } from "@/components/studio/useMediaQuery";
 
 interface ShellContextValue {
   title: string | null;
@@ -10,7 +11,10 @@ interface ShellContextValue {
   setInspectorEl: (el: HTMLDivElement | null) => void;
   inspectorCount: number;
   registerInspector: (delta: 1 | -1) => void;
+  /** Effective state: the user's preference at ≥1280px, always collapsed below. */
   sidebarCollapsed: boolean;
+  /** True below 1280px, where the sidebar is forced collapsed (the toggle is hidden). */
+  sidebarLocked: boolean;
   setSidebarCollapsed: (v: boolean) => void;
   mobileMenuOpen: boolean;
   setMobileMenuOpen: (v: boolean) => void;
@@ -25,7 +29,9 @@ export function ShellProvider({ children }: { children: ReactNode }) {
   const [title, setTitle] = useState<string | null>(null);
   const [inspectorEl, setInspectorEl] = useState<HTMLDivElement | null>(null);
   const [inspectorCount, setInspectorCount] = useState(0);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [collapsedPref, setSidebarCollapsed] = useState(false);
+  const wide = useIsWide();
+  const sidebarCollapsed = collapsedPref || !wide;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [immersive, setImmersive] = useState(false);
   return (
@@ -33,7 +39,7 @@ export function ShellProvider({ children }: { children: ReactNode }) {
       value={{
         title, setTitle, inspectorEl, setInspectorEl, inspectorCount,
         registerInspector: (d) => setInspectorCount((c) => Math.max(0, c + d)),
-        sidebarCollapsed, setSidebarCollapsed, mobileMenuOpen, setMobileMenuOpen, immersive, setImmersive,
+        sidebarCollapsed, sidebarLocked: !wide, setSidebarCollapsed, mobileMenuOpen, setMobileMenuOpen, immersive, setImmersive,
       }}
     >
       {children}

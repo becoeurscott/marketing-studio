@@ -75,7 +75,7 @@ export default function ImageGeneratorPage() {
       <BottomSheet open={sheet} onClose={() => setSheet(false)} title="Créer">
         <ImageCreatePanel params={gen.params} update={gen.update} onGenerate={() => { setSheet(false); void gen.generate(); }} generating={gen.generating} templateName={gen.templateName} />
       </BottomSheet>
-      <div className="lg:hidden fixed inset-x-4 bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] z-40">
+      <div className="lg:hidden fixed left-4 right-4 md:left-[calc(var(--sb)+1rem)] bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] md:bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-40">
         <Button fullWidth size="lg" className="shadow-float" onClick={() => void gen.generate()} loading={gen.generating} disabled={!canGenerate} leftIcon={<Sparkles className="size-4" />}>
           {canGenerate ? `Générer · ${CREDIT_COSTS.image} crédits` : "Ajoutez un prompt pour générer"}
         </Button>

@@ -139,13 +139,13 @@ export default function AssetsPage() {
       )}
 
       {/* Selection bar */}
-      <div className={cn("fixed left-1/2 -translate-x-1/2 bottom-20 md:bottom-6 z-40 transition-all", selecting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")}>
-        <div className="flex items-center gap-2 rounded-xl bg-elevated border border-border-strong shadow-float px-3 py-2">
+      <div className={cn("fixed inset-x-3 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6 z-40 transition-all", selecting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")}>
+        <div className="flex flex-wrap items-center justify-center gap-2 rounded-xl bg-elevated border border-border-strong shadow-float px-3 py-2">
           <span className="text-[13px] font-medium px-1 whitespace-nowrap">{selected.length} sélectionnée{selected.length > 1 ? "s" : ""}</span>
           <Button size="sm" variant="ghost" onClick={() => setSelected(selected.length === list.length ? [] : list.map((a) => a.id))}>{selected.length === list.length ? "Aucune" : "Toutes"}</Button>
-          <Button size="sm" leftIcon={<Download className="size-4" />} disabled={selected.length === 0} onClick={() => setExportOpen(true)}>Exporter la sélection</Button>
+          <Button size="sm" leftIcon={<Download className="size-4" />} disabled={selected.length === 0} onClick={() => setExportOpen(true)} aria-label="Exporter la sélection"><span className="hidden sm:inline">Exporter la sélection</span></Button>
           <Button size="sm" variant="secondary" leftIcon={<FolderInput className="size-4" />} disabled={selected.length === 0} onClick={() => setMoving(selectedAssets)} className="hidden sm:inline-flex">Déplacer</Button>
-          <Button size="sm" variant="danger" leftIcon={<Trash2 className="size-4" />} disabled={selected.length === 0} onClick={() => setDeleting(selectedAssets)}>Supprimer</Button>
+          <Button size="sm" variant="danger" leftIcon={<Trash2 className="size-4" />} disabled={selected.length === 0} onClick={() => setDeleting(selectedAssets)} aria-label="Supprimer"><span className="hidden sm:inline">Supprimer</span></Button>
           <Button size="sm" variant="ghost" onClick={exitSelect} aria-label="Quitter la sélection"><X className="size-4" /></Button>
         </div>
       </div>

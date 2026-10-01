@@ -19,6 +19,8 @@ export interface GenerationRequest {
   upscale?: boolean;
   /** Image only: Higgsfield Marketing Studio preset (enhanced mode, needs a product photo in imageUrls[0]). */
   presetId?: string;
+  /** Video only: reference images (creator character sheet, product photo) for Seedance 2.5 reference-to-video. */
+  references?: string[];
   /** Image only, with a preset: optional model/person reference photo placed after the product. */
   modelReferenceUrl?: string;
 }

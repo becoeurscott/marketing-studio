@@ -179,13 +179,13 @@ export default function CopyPage() {
           {phase.kind === "error" ? (
             <ErrorState error={phase.error} onRetry={generate} />
           ) : phase.kind === "idle" ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 gap-4">
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-5 sm:p-8 gap-4 min-w-0">
               <span className="size-14 rounded-full bg-accent/15 text-highlight flex items-center justify-center">{isHooks ? <Zap className="size-6" /> : <PenLine className="size-6" />}</span>
               <div>
                 <h3 className="text-lg font-semibold">{isHooks ? "Des accroches qui stoppent le scroll pour votre prochaine vidéo" : toolMeta.label}</h3>
                 <p className="text-sm text-text2 mt-1 max-w-sm">{isHooks ? `Dix accroches pour ${product}, adaptées à : ${audience}.` : `${toolMeta.description} Rédigé avec le ton ${brand?.voice.tone.toLowerCase() ?? ""} de ${brand?.name ?? "votre marque"}.`}</p>
               </div>
-              <Button leftIcon={<Sparkles className="size-4" />} onClick={generate}>{isHooks ? "Générer 10 accroches" : `Générer : ${toolMeta.label}`} · {CREDIT_COSTS.copy} cr.</Button>
+              <Button className="max-w-full min-w-0" leftIcon={<Sparkles className="size-4 shrink-0" />} onClick={generate}><span className="truncate">{isHooks ? "Générer 10 accroches" : `Générer : ${toolMeta.label}`} · {CREDIT_COSTS.copy} cr.</span></Button>
             </div>
           ) : (
             <div className="flex-1 p-4 md:p-6 pb-28 lg:pb-6">
@@ -197,7 +197,7 @@ export default function CopyPage() {
                 </div>
               ) : isHooks ? (
                 <div className="max-w-2xl">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <p className="text-sm text-text2">{hooks.length} accroches pour <span className="text-text">{product}</span></p>
                     <Button size="sm" variant="secondary" leftIcon={<RefreshCw className="size-4" />} onClick={generate}>Régénérer</Button>
                   </div>
@@ -205,10 +205,10 @@ export default function CopyPage() {
                     {hooks.map((h, i) => {
                       const isSaved = savedHookTexts.has(h);
                       return (
-                        <li key={`${i}-${h}`} className="flex items-start gap-3 rounded-lg border border-border bg-card p-3">
-                          <span className="text-xs text-muted font-mono w-5 pt-0.5">{String(i + 1).padStart(2, "0")}</span>
-                          <p className="flex-1 text-sm leading-snug">{h}</p>
-                          <div className="flex items-center gap-0.5 shrink-0">
+                        <li key={`${i}-${h}`} className="flex flex-wrap items-start gap-x-3 gap-y-1 rounded-lg border border-border bg-card p-3">
+                          <span className="text-xs text-muted font-mono w-5 pt-0.5 shrink-0">{String(i + 1).padStart(2, "0")}</span>
+                          <p className="flex-1 min-w-[10rem] text-sm leading-snug break-words">{h}</p>
+                          <div className="flex items-center gap-0.5 shrink-0 ml-auto">
                             <IconButton label="Copier" size="sm" onClick={() => copyText(h)}><ClipboardCopy /></IconButton>
                             <IconButton label={isSaved ? "Enregistrée" : "Enregistrer"} size="sm" active={isSaved} onClick={() => { saveHook(h, product); toast.success("Accroche enregistrée"); }}>{isSaved ? <Check className="text-success" /> : <Bookmark />}</IconButton>
                             <IconButton label="Utiliser dans un script" size="sm" onClick={() => openInScript(h)}><Clapperboard /></IconButton>
@@ -245,15 +245,16 @@ function CopyCard({ result, index, saved, onCopy, onSave, onRegenerate }: { resu
   const isVoice = result.tool === "voice-note";
   return (
     <Card padded={false} className="overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border">
+      <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-border">
         <span className="text-xs font-medium">{index === 0 ? "Résultat" : `Variante ${index + 1}`}</span>
         <Badge tone="outline">{TONES.find((t) => t.id === result.tone)?.label ?? result.tone}</Badge>
         {result.language && <Badge tone="outline">{languageLabel(result.language)}</Badge>}
-        <span className="flex-1" />
+        <div className="ml-auto flex items-center">
         <a href={shareOnWhatsApp(result.text)} target="_blank" rel="noreferrer" aria-label="Partager sur WhatsApp" title="Partager sur WhatsApp" className="inline-flex size-8 items-center justify-center rounded-md text-[#25D366] hover:bg-white/5"><MessageCircle className="size-4" /></a>
         <IconButton label="Copier dans le presse-papiers" size="sm" onClick={onCopy}><ClipboardCopy /></IconButton>
         <IconButton label={saved ? "Enregistré" : "Enregistrer"} size="sm" active={saved} onClick={onSave}>{saved ? <Check className="text-success" /> : <Bookmark />}</IconButton>
         <IconButton label="Régénérer" size="sm" disabled={busy} onClick={async () => { setBusy(true); await onRegenerate(); setBusy(false); }}><RefreshCw className={cn(busy && "animate-spin")} /></IconButton>
+        </div>
       </div>
       {isVoice && <VoiceNotePreview language={result.language ?? "fr"} />}
       <pre className="px-4 py-4 text-sm leading-relaxed whitespace-pre-wrap font-sans text-text">{result.text}</pre>
@@ -270,7 +271,7 @@ function VoiceNotePreview({ language }: { language: LanguageId }) {
       <button type="button" onClick={() => setPlaying((p) => !p)} aria-label={playing ? "Pause" : "Écouter"} className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-black">
         <Play className="size-3.5 fill-black" />
       </button>
-      <div className="flex flex-1 items-center gap-[3px] h-6" aria-hidden>
+      <div className="flex flex-1 min-w-0 overflow-hidden items-center gap-[3px] h-6" aria-hidden>
         {bars.map((h, i) => <span key={i} className={cn("w-[3px] rounded-full bg-[#25D366]/70", playing && "animate-pulse")} style={{ height: h + 4 }} />)}
       </div>
       <span className="text-[11px] text-text2 tabular-nums shrink-0">0:20 · {languageLabel(language)}</span>
@@ -290,10 +291,13 @@ function SavedView({ copy, hooks, onCopy, onRemoveCopy, onRemoveHook, onUseInScr
           <div className="space-y-3">
             {copy.map((c) => (
               <Card key={c.id} padded={false}>
-                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border">
-                  <span className="text-xs font-medium truncate">{c.title}</span><Badge tone="outline">{toneLabel(c.tone)}</Badge><span className="text-[11px] text-muted ml-auto shrink-0">{timeAgo(c.createdAt)}</span>
-                  <IconButton label="Copier" size="sm" onClick={() => onCopy(c.text)}><ClipboardCopy /></IconButton>
-                  <IconButton label="Supprimer" size="sm" onClick={() => onRemoveCopy(c.id)}><Trash2 /></IconButton>
+                <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-border">
+                  <span className="text-xs font-medium truncate min-w-0">{c.title}</span><Badge tone="outline">{toneLabel(c.tone)}</Badge>
+                  <div className="ml-auto flex items-center gap-1 shrink-0">
+                    <span className="text-[11px] text-muted">{timeAgo(c.createdAt)}</span>
+                    <IconButton label="Copier" size="sm" onClick={() => onCopy(c.text)}><ClipboardCopy /></IconButton>
+                    <IconButton label="Supprimer" size="sm" onClick={() => onRemoveCopy(c.id)}><Trash2 /></IconButton>
+                  </div>
                 </div>
                 <pre className="px-4 py-3 text-[13px] leading-relaxed whitespace-pre-wrap font-sans text-text2 line-clamp-6">{c.text}</pre>
               </Card>
@@ -306,9 +310,9 @@ function SavedView({ copy, hooks, onCopy, onRemoveCopy, onRemoveHook, onUseInScr
         {hooks.length ? (
           <ul className="space-y-2">
             {hooks.map((h) => (
-              <li key={h.id} className="flex items-start gap-3 rounded-lg border border-border bg-card p-3">
-                <div className="flex-1 min-w-0"><p className="text-sm leading-snug">{h.text}</p><p className="text-[11px] text-muted mt-1">{h.product} · {timeAgo(h.createdAt)}</p></div>
-                <div className="flex items-center gap-0.5 shrink-0">
+              <li key={h.id} className="flex flex-wrap items-start gap-x-3 gap-y-1 rounded-lg border border-border bg-card p-3">
+                <div className="flex-1 min-w-[10rem]"><p className="text-sm leading-snug break-words">{h.text}</p><p className="text-[11px] text-muted mt-1">{h.product} · {timeAgo(h.createdAt)}</p></div>
+                <div className="flex items-center gap-0.5 shrink-0 ml-auto">
                   <IconButton label="Copier" size="sm" onClick={() => onCopy(h.text)}><ClipboardCopy /></IconButton>
                   <IconButton label="Utiliser dans un script" size="sm" onClick={() => onUseInScript(h.text)}><Clapperboard /></IconButton>
                   <IconButton label="Supprimer" size="sm" onClick={() => onRemoveHook(h.id)}><Trash2 /></IconButton>

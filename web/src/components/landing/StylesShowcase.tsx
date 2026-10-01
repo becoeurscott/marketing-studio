@@ -9,7 +9,7 @@ export function StylesShowcase() {
         <SectionTitle
           eyebrow="Styles Sokozia"
           title="Une photo, dix styles"
-          text="Le même pot de karité, photographié au téléphone, puis placé dans dix styles pensés pour vendre en Afrique. Votre produit reste identique : seul le décor change."
+          text="Dix styles pensés pour vendre en Afrique, chacun montré sur un produit différent. Votre produit reste identique : seul le décor change."
         />
         <div className="mt-14 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {SOKOZIA_STYLES.map((s, i) => (
@@ -19,6 +19,7 @@ export function StylesShowcase() {
                 <img src={`/styles/${s.id}.jpg`} alt={`Style ${s.name}`} loading="lazy" className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <figcaption className="p-3">
                   <p className="text-sm font-medium">{s.name}</p>
+                  <p className="text-[11px] text-highlight">{s.product}</p>
                   <p className="mt-0.5 text-xs text-text2 leading-snug">{s.description}</p>
                 </figcaption>
               </figure>

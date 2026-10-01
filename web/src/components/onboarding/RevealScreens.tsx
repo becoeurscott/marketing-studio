@@ -172,7 +172,7 @@ export function CopyScreen({ product, onNext }: RevealProps) {
           <Appear key={b.t} delay={i * 0.1} className="rounded-xl bg-surface border border-border-strong p-4">
             <p className="text-[11px] uppercase tracking-wider text-highlight mb-1">{b.t}</p>
             <p className="text-sm">{b.v}</p>
-            <div className="flex gap-1 mt-2 -ml-2">
+            <div className="flex flex-wrap gap-1 mt-2 -ml-2">
               <Button variant="ghost" size="sm" leftIcon={copied === b.t ? <Check className="size-3.5" /> : <Copy className="size-3.5" />} onClick={() => copy(b)}>
                 {copied === b.t ? "Copié" : "Copier"}
               </Button>
@@ -251,15 +251,15 @@ export function ValueScreen({ product, onNext }: RevealProps) {
   return (
     <div className="w-full max-w-xl text-center">
       <ScreenTitle title="Regardez ce que vous venez de créer." />
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
         <div className="text-center">
-          <div className="size-20 rounded-xl overflow-hidden border border-border-strong mx-auto"><Img src={product.image} alt={product.name} /></div>
+          <div className="size-16 sm:size-20 rounded-xl overflow-hidden border border-border-strong mx-auto"><Img src={product.image} alt={product.name} /></div>
           <p className="text-xs text-muted mt-1.5">1 photo</p>
         </div>
-        <ArrowRight className="size-5 text-highlight" />
+        <ArrowRight className="size-5 text-highlight shrink-0" />
         <div className="grid grid-cols-3 gap-1">
           {[...MEDIA.photos, ...MEDIA.photos.slice(0, 2)].map((m, i) => (
-            <div key={i} className="size-9 md:size-11 rounded-md overflow-hidden"><Img src={m} /></div>
+            <div key={i} className="size-8 sm:size-9 md:size-11 rounded-md overflow-hidden"><Img src={m} /></div>
           ))}
         </div>
         <span className="text-2xl font-semibold text-highlight">= {TOTAL}</span>

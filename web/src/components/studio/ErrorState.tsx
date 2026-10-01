@@ -26,7 +26,7 @@ export function StudioError({ message, code = "failed", onRetry, backHref = "/st
       </div>
       <h3 className="text-[15px] font-semibold">{credits ? "Crédits insuffisants" : "Une erreur est survenue."}</h3>
       <p className="text-sm text-text2 mt-1 max-w-sm">{message ?? (credits ? "Rechargez pour continuer à générer." : "La génération n'a pas abouti. Aucun crédit n'a été débité.")}</p>
-      <div className="mt-5 flex items-center gap-2">
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
         {credits ? (
           <Link href="/credits"><Button size="md" leftIcon={<Coins className="size-4" />}>Obtenir des crédits</Button></Link>
         ) : (

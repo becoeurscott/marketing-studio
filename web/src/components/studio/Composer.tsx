@@ -6,7 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import { createPortal } from "react-dom";
 import { creators } from "@/data";
 import { useStore } from "@/lib/store";
-import { CREDIT_COSTS, RATIOS, type AspectRatio, type Asset, type Creator } from "@/lib/types";
+import { RATIOS, type AspectRatio, type Asset, type Creator } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { videoCredits, imageModel } from "@/lib/higgsfield/models";
 import { DURATIONS, modelOptions, type DurationSec, type ModelId } from "./constants";
@@ -50,7 +50,7 @@ const TEMPLATES: Record<ComposeMode, { segments: Segment[]; placeholder: string 
 /** Credits for the current settings: per image, or per second of video on the chosen model. */
 function costFor(mode: ComposeMode, model: ModelId, duration = 5, withPhoto = false): number {
   if (mode === "image") return imageModel(model).credits;
-  return videoCredits(mode === "ugc" ? "seedance-2.5" : model, duration, withPhoto || mode === "ugc") + (mode === "ugc" ? CREDIT_COSTS.image : 0);
+  return videoCredits(mode === "ugc" ? "seedance-2.5" : model, duration, withPhoto || mode === "ugc");
 }
 
 /**
@@ -96,7 +96,7 @@ export function Composer(p: ComposerProps) {
           {wantsCreator && (
             <MediaSlot label={creator ? creator.name : "Ajouter un créateur"} src={creator?.avatarUrl} icon={<UserRound className="size-6 text-white/45" />} onClick={() => setCreatorPicker(true)} onClear={creator ? () => p.onCreator?.(null) : undefined} />
           )}
-          <button onClick={addMedia} onDragOver={(e) => e.preventDefault()} onDrop={onDrop} disabled={uploading} className="relative size-[84px] shrink-0 rounded-[18px] border border-dashed border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30 flex items-center justify-center transition-colors" aria-label="Ajouter un média">
+          <button onClick={addMedia} onDragOver={(e) => e.preventDefault()} onDrop={onDrop} disabled={uploading} className="relative size-16 md:size-[84px] shrink-0 rounded-2xl md:rounded-[18px] border border-dashed border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30 flex items-center justify-center transition-colors" aria-label="Ajouter un média">
             {uploading ? <span className="text-[11px] text-white/70 tabular-nums">{progress ?? 0}%</span> : <ImageIcon className="size-6 text-white/45" />}
           </button>
           {p.templateName && (
@@ -161,11 +161,11 @@ export function Composer(p: ComposerProps) {
 function MediaSlot({ label, src, icon, onClick, onClear }: { label: string; src?: string; icon: ReactNode; onClick: () => void; onClear?: () => void }) {
   return (
     <div className="relative shrink-0">
-      <button onClick={onClick} className={cn("size-[84px] rounded-[18px] overflow-hidden border flex items-center justify-center transition-colors", src ? "border-white/10 bg-white/5" : "border-dashed border-white/15 bg-white/[0.04] hover:bg-white/[0.08]")} aria-label={label} title={label}>
+      <button onClick={onClick} className={cn("size-16 md:size-[84px] rounded-2xl md:rounded-[18px] overflow-hidden border flex items-center justify-center transition-colors", src ? "border-white/10 bg-white/5" : "border-dashed border-white/15 bg-white/[0.04] hover:bg-white/[0.08]")} aria-label={label} title={label}>
         {src ? <img src={src} alt="" className="size-full object-cover" /> : icon}
       </button>
       {onClear && (
-        <button onClick={onClear} className="absolute -top-1.5 -right-1.5 size-6 rounded-full bg-black border border-white/20 text-white/80 hover:text-white flex items-center justify-center shadow-card" aria-label={`Retirer ${label}`}>
+        <button onClick={onClear} className="absolute -top-2 -right-2 size-8 rounded-full bg-black border border-white/20 text-white/80 hover:text-white flex items-center justify-center shadow-card" aria-label={`Retirer ${label}`}>
           <X className="size-3.5" />
         </button>
       )}
@@ -183,7 +183,7 @@ function InlineChip({ name, src, empty, onClick }: { name?: string; src?: string
   return (
     <button
       onClick={onClick}
-      className={cn("inline-flex items-center gap-1.5 h-7 rounded-full pl-1 pr-2.5 align-middle text-[13px] font-medium transition-colors", name ? "bg-white/10 border border-white/10 text-white hover:bg-white/15" : "border border-dashed border-white/25 text-white/60 hover:text-white hover:border-white/40")}
+      className={cn("inline-flex items-center gap-1.5 h-8 rounded-full pl-1 pr-2.5 align-middle text-[13px] font-medium transition-colors", name ? "bg-white/10 border border-white/10 text-white hover:bg-white/15" : "border border-dashed border-white/25 text-white/60 hover:text-white hover:border-white/40")}
       aria-label={name ? `${l.change} : ${name}` : l.choose}
     >
       {src ? <img src={src} alt="" className="size-5 rounded-full object-cover" /> : <span className="size-5 rounded-full bg-white/10 flex items-center justify-center"><Plus className="size-3" /></span>}
@@ -212,7 +212,7 @@ function GrowingInput({ value, onChange, placeholder, onFocus, onBlur, onSubmit 
       onBlur={onBlur}
       onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSubmit(); } }}
       placeholder={placeholder}
-      className="flex-1 min-w-[8rem] basis-32 resize-none bg-transparent outline-none placeholder:text-white/35 text-white leading-7 py-0"
+      className="flex-1 min-w-[8rem] basis-32 max-h-32 overflow-y-auto resize-none bg-transparent outline-none placeholder:text-white/35 text-white leading-7 py-0"
       aria-label="Prompt"
     />
   );
@@ -258,7 +258,7 @@ function ModelPill({ value, onChange, mode }: { value: ModelId; onChange: (m: Mo
             role="listbox"
             initial={{ opacity: 0, y: 6, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 6, scale: 0.98 }} transition={{ duration: 0.15 }}
             style={{ position: "fixed", left: pos.left, bottom: pos.bottom }}
-            className="w-60 rounded-xl bg-[#111]/95 backdrop-blur-xl border border-white/10 shadow-float p-1 z-[120]"
+            className="w-60 max-h-[min(60dvh,24rem)] overflow-y-auto rounded-xl bg-[#111]/95 backdrop-blur-xl border border-white/10 shadow-float p-1 z-[120]"
           >
             {options.map((m) => {
               const sel = m.id === value;

@@ -50,3 +50,21 @@ next-env.d.ts
 
 # Template listing required variables (no secrets)
 !.env.example
+
+# InsForge link (contains the admin API key)
+.insforge/
+
+# InsForge & AI agent skills
+.insforge
+.agent
+.agents
+.augment
+.claude
+.cline
+.github/copilot*
+.kilocode
+.qoder
+.qwen
+.roo
+.trae
+.windsurf

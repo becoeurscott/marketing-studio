@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { plans } from "@/data";
-import { delay } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import type { Plan } from "@/lib/types";
 import { USAGE_PACKS, type UsagePack } from "@/lib/market";
@@ -36,8 +35,6 @@ const priceFor = (p: Plan, cycle: Cycle) => (cycle === "yearly" ? Math.round((p.
 
 export default function PricingPage() {
   const current = useStore((s) => s.plan);
-  const setPlan = useStore((s) => s.setPlan);
-  const buyCredits = useStore((s) => s.buyCredits);
   const toast = useToast();
   const money = useMoney();
   const [payment, setPayment] = usePaymentChoice();
@@ -45,29 +42,17 @@ export default function PricingPage() {
 
   const [cycle, setCycle] = useState<Cycle>("monthly");
   const [target, setTarget] = useState<Plan | null>(null);
-  const [working, setWorking] = useState(false);
+  const [working] = useState(false);
   const [success, setSuccess] = useState<Plan | null>(null);
 
+  // Real payments are not wired yet (credits are server-owned): never grant credits or plans here.
   const confirm = async () => {
-    if (!target) return;
-    setWorking(true);
-    await delay(900, 1400);
-    const upgrade = planRank(target.id) > planRank(current);
-    setPlan(target.id);
-    if (upgrade) buyCredits(target.credits, `Crédits du forfait ${target.name}`);
-    setWorking(false);
-    setSuccess(target);
+    toast.info("Paiement Mobile Money bientôt disponible", "Pour recharger dès maintenant, écrivez-nous sur WhatsApp : nous créditons votre compte après paiement.");
     setTarget(null);
-    toast.success(upgrade ? `Vous êtes passé à ${target.name}` : `Forfait changé pour ${target.name}`);
   };
 
   const confirmPack = async () => {
-    if (!pack) return;
-    setWorking(true);
-    await delay(900, 1400);
-    buyCredits(pack.credits, `${pack.name} · ${money(pack.priceXof)} via ${paymentSummary(payment)}`);
-    setWorking(false);
-    toast.success(`${pack.name} activé`, `+${formatNumber(pack.credits)} crédits`);
+    toast.info("Paiement Mobile Money bientôt disponible", "Pour recharger dès maintenant, écrivez-nous sur WhatsApp : nous créditons votre compte après paiement.");
     setPack(null);
   };
 
@@ -113,7 +98,7 @@ export default function PricingPage() {
               className={cn("relative text-left rounded-xl border p-4 transition-colors hover:border-white/25", p.popular ? "bg-accent/8 border-accent/50" : "bg-card border-border")}
             >
               {p.popular && <Badge tone="accent" className="absolute top-3 right-3">Le plus pris</Badge>}
-              <p className="text-[13px] text-text2">{p.name}</p>
+              <p className={cn("text-[13px] text-text2", p.popular && "pr-24")}>{p.name}</p>
               <p className="text-2xl font-bold tracking-tight tabular-nums mt-1">{money(p.priceXof)}</p>
               <p className="text-[13px] mt-1">{p.pitch}</p>
               <p className="text-[12px] text-muted mt-2">{formatNumber(p.credits)} crédits{p.validityDays ? ` · valables ${p.validityDays} jours` : " · sans expiration"}</p>
@@ -124,7 +109,7 @@ export default function PricingPage() {
 
       <h2 className="text-[15px] font-semibold mb-3">Abonnements mensuels</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-4 mb-8">
         {plans.map((p) => {
           const isCurrent = p.id === current;
           const rank = planRank(p.id) - planRank(current);
@@ -138,15 +123,15 @@ export default function PricingPage() {
                 isCurrent && "ring-1 ring-success/40",
               )}
             >
-              <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <h3 className="text-base font-semibold">{p.name}</h3>
                 {isCurrent ? <Badge tone="success" dot>Forfait actuel</Badge> : p.popular ? <Badge tone="accent">Le plus populaire</Badge> : null}
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold tracking-tight tabular-nums">{money(price)}</span>
+              <div className="flex flex-wrap items-baseline gap-x-1">
+                <span className="text-2xl 2xl:text-3xl font-bold tracking-tight tabular-nums">{money(price)}</span>
                 <span className="text-sm text-text2">/mois</span>
               </div>
-              <p className="text-[12px] text-muted mt-1 h-4">{cycle === "yearly" ? `Facturé ${money(price * 12)}/an` : "Facturé mensuellement"}</p>
+              <p className="text-[12px] text-muted mt-1 min-h-4">{cycle === "yearly" ? `Facturé ${money(price * 12)}/an` : "Facturé mensuellement"}</p>
               <p className="text-[13px] text-text2 mt-3 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" />{formatNumber(p.credits)} crédits / mois</p>
 
               <ul className="mt-4 space-y-2 text-[13px]">

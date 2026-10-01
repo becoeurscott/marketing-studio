@@ -89,11 +89,11 @@ function Form({ campaign, item, defaultDate, onClose }: { campaign: Campaign; it
           ))}
         </div>
       </div>
-      <div className="flex items-center justify-between gap-2 pt-2 border-t border-border">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
         {item ? (
           <Button variant="ghost" className="text-danger hover:text-danger" leftIcon={<Trash2 className="size-4" />} onClick={() => { removeCalendarItem(campaign.id, item.id); toast.info("Élément retiré"); onClose(); }}>Retirer</Button>
         ) : <span />}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 ml-auto">
           <Button variant="ghost" onClick={onClose}>Annuler</Button>
           <Button onClick={save}>{item ? "Enregistrer" : "Ajouter au calendrier"}</Button>
         </div>

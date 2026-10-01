@@ -7,9 +7,9 @@ import { useStore } from "./store";
 import { CREDIT_COSTS, type AdVariation, type AspectRatio, type Asset, type Campaign, type CopyResult, type CopyTool, type Generation, type ID, type ImageStyle, type Platform, type AdFormat, type Tone, type CampaignFormat, type CampaignObjective } from "./types";
 import { hooks as hookBank } from "@/data/copy";
 import { uid } from "./utils";
-import { runJob, uploadPhoto } from "./higgsfield/client";
+import { GenerationError, runJob, uploadPhoto } from "./higgsfield/client";
 import { imageModel, videoCredits, type ImageModelId, type VideoModelId } from "./higgsfield/models";
-import { creators as creatorsSeed } from "@/data/creators";
+import { creators as creatorsSeed, creatorSheetUrl } from "@/data/creators";
 import { languageLabel, type LanguageId } from "./market";
 
 export class ApiError extends Error {
@@ -26,11 +26,31 @@ export function delay(ms = 800, max?: number): Promise<void> {
   return new Promise((r) => setTimeout(r, t));
 }
 
-function charge(action: keyof typeof CREDIT_COSTS, description: string, multiplier = 1) {
-  const cost = CREDIT_COSTS[action] * multiplier;
-  if (cost === 0) return;
-  const ok = useStore.getState().spendCredits(action, cost, description);
-  if (!ok) throw new ApiError("insufficient-credits", `Il vous faut ${cost} crédits pour cette action. Vous en avez ${useStore.getState().credits}.`);
+/**
+ * Credits are debited and refunded on the server, per Higgsfield job (see /api/hf/generate).
+ * The browser only pre-checks the balance it knows, for an instant "not enough credits" message.
+ */
+function precheck(cost: number) {
+  const credits = useStore.getState().credits;
+  if (cost > credits) throw new ApiError("insufficient-credits", `Il vous faut ${cost} crédits pour cette action. Vous en avez ${credits}.`);
+}
+
+/** Text tools use built-in templates (no AI model yet), so they are free. */
+function charge(_action: keyof typeof CREDIT_COSTS, _description: string) {}
+
+/** Reloads the balance and credit history from the server. */
+export async function refreshAccount(): Promise<void> {
+  try {
+    const res = await fetch("/api/account", { cache: "no-store" });
+    if (res.ok) useStore.getState().setAccount(await res.json());
+  } catch {
+    // offline: keep the last known balance
+  }
+}
+
+function asApiError(error: unknown): never {
+  if (error instanceof GenerationError && error.status === 402) throw new ApiError("insufficient-credits", error.message);
+  throw error;
 }
 
 function record(gen: Omit<Generation, "id" | "createdAt">) {
@@ -39,28 +59,20 @@ function record(gen: Omit<Generation, "id" | "createdAt">) {
 
 /* ---------- Real generation helpers (Higgsfield via /api/hf) ---------- */
 
-/** Charges an exact credit amount (model-based pricing); refunds it if `work` fails. */
-async function chargedExact<T>(action: keyof typeof CREDIT_COSTS, description: string, amount: number, work: () => Promise<T>): Promise<T> {
-  const store = useStore.getState();
-  if (!store.spendCredits(action, amount, description)) throw new ApiError("insufficient-credits", `Il vous faut ${amount} crédits pour cette action. Vous en avez ${store.credits}.`);
+/** Pre-checks the expected cost, runs the jobs (charged server-side), then syncs the balance. */
+async function chargedExact<T>(_action: keyof typeof CREDIT_COSTS, _description: string, amount: number, work: () => Promise<T>): Promise<T> {
+  precheck(amount);
   try {
     return await work();
   } catch (error) {
-    useStore.getState().buyCredits(amount, `Remboursement — ${description}`);
-    throw error;
+    asApiError(error);
+  } finally {
+    void refreshAccount();
   }
 }
 
-/** Runs `work` after charging credits; refunds them if it fails, then rethrows. */
 async function charged<T>(action: keyof typeof CREDIT_COSTS, description: string, multiplier: number, work: () => Promise<T>): Promise<T> {
-  charge(action, description, multiplier);
-  try {
-    return await work();
-  } catch (error) {
-    const cost = CREDIT_COSTS[action] * multiplier;
-    if (cost > 0) useStore.getState().buyCredits(cost, `Remboursement — ${description}`);
-    throw error;
-  }
+  return chargedExact(action, description, CREDIT_COSTS[action] * multiplier, work);
 }
 
 /** marketing-studio/image supports these ratios; the app's 4:5 maps to the closest one. */
@@ -159,8 +171,8 @@ export async function generateVideo(params: GenerateVideoParams, onProgress?: Pr
 }
 
 /* ---------- UGC ---------- */
-/** UGC = one creator photo (Marketing Studio) + Seedance 2.5 animation. */
-export const ugcCredits = (durationSec: number) => imageModel("marketing-studio").credits + videoCredits("seedance-2.5", durationSec, true);
+/** UGC = one Seedance 2.5 reference-to-video job (creator sheet + product). */
+export const ugcCredits = (durationSec: number) => videoCredits("seedance-2.5", durationSec, true);
 
 export interface GenerateUGCParams {
   productAssetId?: ID | null;
@@ -175,28 +187,25 @@ export interface GenerateUGCParams {
 }
 
 /**
- * Two steps: 1) an image of the virtual creator holding the product (from the product photo),
- * 2) that image animated into a selfie-style talking video with audio.
+ * One Seedance 2.5 reference-to-video job: the creator's character sheet (+ the product photo)
+ * keeps the same face, hair and outfit in every video; the prompt repeats the creator's look.
  */
 export async function generateUGC(params: GenerateUGCParams, onProgress?: Progress): Promise<VideoResult> {
-  const creator = creatorsSeed.find((c) => c.id === params.creatorId);
+  const creator = creatorsSeed.find((c) => c.id === params.creatorId) ?? creatorsSeed[0];
   const product = assetUrl(params.productAssetId);
-  const persona = creator ? `${creator.gender === "male" ? "un créateur" : "une créatrice"} africain(e) d’environ ${creator.age} ans${creator.country ? ` (${creator.country})` : ""}, style ${creator.style}` : "une créatrice de contenu africaine";
-  const place = params.location ? `, dans un décor : ${params.location}` : "";
+  const place = params.location ? ` Setting: ${params.location}.` : "";
   const lang = languageLabel(params.language ?? "fr");
   const cost = ugcCredits(params.durationSec);
-  const result = await chargedExact("ugc", `Vidéo UGC — ${creator?.name ?? "créateur"}`, cost, async () => {
+  const references = [creatorSheetUrl(creator), ...(product ? [product] : [])];
+  const prompt = `Vertical selfie-style UGC video. The person is exactly the one in the character sheet: ${creator.look}.${product ? " She/he holds and shows the product from the product photo, keeping it identical." : ""}${place} Talking naturally to the camera in ${lang}, tone ${params.tone ?? "authentic"}, says: « ${params.script} »`;
+  const result = await chargedExact("ugc", `Vidéo UGC — ${creator.name}`, cost, async () => {
     onProgress?.(VIDEO_STEPS[0], 0, 20);
-    const frame = await runJob({
-      kind: "image",
-      prompt: `Photo verticale façon selfie UGC : ${persona} tient ce produit face caméra${place}, lumière naturelle, authentique, smartphone.`,
-      aspectRatio: "9:16",
-      imageUrls: product ? [product] : undefined,
-    });
-    onProgress?.(VIDEO_STEPS[1], 1, 40);
-    return video({ prompt: `Vidéo UGC selfie : la personne parle face caméra en ${lang}, ton ${params.tone ?? "authentique"}, et montre le produit. Ce qu’elle dit : « ${params.script} »`, imageUrl: frame.images[0], durationSec: params.durationSec, ratio: "9:16" }, onProgress, 1);
+    const light = useStore.getState().preferences.lightVideos ?? true;
+    const job = await runJob({ kind: "video", prompt, references, durationSec: params.durationSec, aspectRatio: "9:16", light }, stepper(onProgress));
+    const poster = product ?? creator.portrait;
+    return { id: uid("res"), url: job.videoUrl!, thumbnail: poster, poster, durationSec: params.durationSec, ratio: "9:16" as AspectRatio };
   });
-  record({ type: "video", prompt: params.script, status: "completed", thumbnails: result.thumbnail ? [result.thumbnail] : [], projectId: params.projectId ?? null, params: { creator: params.creatorId, tone: params.tone ?? "", language: params.language ?? "fr", durationSec: params.durationSec }, creditsUsed: cost });
+  record({ type: "video", prompt: params.script, status: "completed", thumbnails: [result.thumbnail], projectId: params.projectId ?? null, params: { creator: params.creatorId, tone: params.tone ?? "", language: params.language ?? "fr", durationSec: params.durationSec }, creditsUsed: cost });
   return result;
 }
 
@@ -292,7 +301,7 @@ export async function generateCopy(params: GenerateCopyParams): Promise<CopyResu
   // Mock: the real model writes directly in the target language.
   const text = lang === "fr" ? body : `[${languageLabel(lang)}]\n${body}`;
   const result: CopyResult = { id: uid("copy"), tool: params.tool, title: `${labelFor(params.tool)} — ${params.product}`, text, tone: params.tone, platform: params.platform, language: lang, createdAt: new Date().toISOString() };
-  record({ type: "copy", prompt: `${labelFor(params.tool)} pour ${params.product}, ${params.audience}, ton ${params.tone}, objectif : ${params.goal}`, status: "completed", thumbnails: [], projectId: params.projectId ?? null, params: { tool: params.tool, tone: params.tone }, creditsUsed: CREDIT_COSTS.copy });
+  record({ type: "copy", prompt: `${labelFor(params.tool)} pour ${params.product}, ${params.audience}, ton ${params.tone}, objectif : ${params.goal}`, status: "completed", thumbnails: [], projectId: params.projectId ?? null, params: { tool: params.tool, tone: params.tone }, creditsUsed: 0 });
   return result;
 }
 
@@ -301,7 +310,7 @@ export async function generateHooks(params: { product: string; audience?: string
   await delay(600, 1200);
   const shuffled = [...hookBank].sort(() => Math.random() - 0.5).slice(0, 10);
   const out = shuffled;
-  record({ type: "copy", prompt: `10 accroches pour ${params.product}`, status: "completed", thumbnails: [], projectId: params.projectId ?? null, params: { tone: params.tone ?? "bold" }, creditsUsed: CREDIT_COSTS.copy });
+  record({ type: "copy", prompt: `10 accroches pour ${params.product}`, status: "completed", thumbnails: [], projectId: params.projectId ?? null, params: { tone: params.tone ?? "bold" }, creditsUsed: 0 });
   return out;
 }
 

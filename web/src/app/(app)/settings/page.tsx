@@ -185,7 +185,7 @@ function AccountSection() {
           <Input label="Entreprise" name="company" value={company} onChange={(e) => setCompany(e.target.value)} />
           <Input label="Poste" name="role" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Fondateur" />
         </div>
-        <div className="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-border">
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-border">
           <p className="text-[12px] text-muted">Membre depuis le {formatDate(user.createdAt)} · <Link href="/profile" className="text-text2 hover:text-text underline-offset-2 hover:underline">Voir le profil</Link></p>
           <Button type="submit" disabled={!dirty}>Enregistrer les modifications</Button>
         </div>
@@ -287,7 +287,7 @@ function NotificationsSection() {
             <p className="text-sm font-medium">Boîte de réception</p>
             <p className="text-[13px] text-text2">{unread === 0 ? "Vous êtes à jour." : `${unread} notification${unread > 1 ? "s" : ""} non lue${unread > 1 ? "s" : ""}.`}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="ghost" disabled={unread === 0} onClick={() => { markAll(); toast.success("Toutes les notifications sont marquées comme lues"); }}>Tout marquer comme lu</Button>
             <Link href="/notifications"><Button size="sm" variant="secondary">Ouvrir la boîte de réception</Button></Link>
           </div>
@@ -462,7 +462,7 @@ function SubscriptionSection() {
             <p className="text-2xl font-bold tracking-tight">{current.name} <span className="text-base font-medium text-text2">{money(current.priceXof)}/mois</span></p>
             <p className="text-[12px] text-muted mt-1">Renouvellement le {formatDate(renew.toISOString())} · {formatNumber(current.credits)} crédits par mois</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link href="/pricing"><Button variant={next ? "primary" : "secondary"}>{next ? `Passer à ${next.name}` : "Gérer le forfait"}</Button></Link>
             <Link href="/pricing"><Button variant="ghost">Comparer les forfaits</Button></Link>
           </div>
@@ -531,12 +531,12 @@ function SecuritySection() {
       <form onSubmit={changePassword}>
         <Card>
           <CardHeader title="Changer de mot de passe" />
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
             <Input label="Mot de passe actuel" name="currentPassword" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
             <Input label="Nouveau mot de passe" name="newPassword" type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} hint="Au moins 8 caractères." />
             <Input label="Confirmer le nouveau mot de passe" name="confirmPassword" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           </div>
-          <div className="flex items-center justify-between gap-3 mt-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
             <p className="text-xs text-danger min-h-4">{error}</p>
             <Button type="submit" loading={saving} leftIcon={<KeyRound className="size-4" />}>Mettre à jour le mot de passe</Button>
           </div>

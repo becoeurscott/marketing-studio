@@ -124,9 +124,9 @@ function UGCPage() {
         {phase.kind === "error" ? (
           <ErrorState error={phase.error} onRetry={generate} />
         ) : (
-          <div className="flex-1 grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_320px] gap-0 min-w-0">
+          <div className="flex-1 grid grid-cols-[minmax(0,1fr)] 2xl:grid-cols-[minmax(0,1fr)_300px] gap-0 min-w-0">
             {/* Video / preview column */}
-            <div className="flex items-center justify-center p-4 md:p-8 min-h-[420px]">
+            <div className="flex items-center justify-center p-4 xl:p-8 min-h-[420px]">
               <div className="relative w-full max-w-[300px] aspect-[9/16] rounded-2xl overflow-hidden border border-border-strong bg-elevated shadow-float">
                 {phase.kind === "done" ? (
                   <>
@@ -157,7 +157,7 @@ function UGCPage() {
             </div>
 
             {/* Summary column */}
-            <aside className="min-w-0 border-t lg:border-t-0 lg:border-l border-border p-4 md:p-5 space-y-5 pb-28 lg:pb-5">
+            <aside className="min-w-0 border-t 2xl:border-t-0 2xl:border-l border-border p-4 md:p-5 space-y-5 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-5">
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-muted mb-2">Créateur</p>
                 <CreatorCard creator={creator} compact selected={false} />

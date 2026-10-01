@@ -18,7 +18,7 @@ export function ResultImageCard({
       </button>
       {badge && <span className="absolute top-2 left-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-text">{badge}</span>}
       {selected && <span className="absolute top-2 right-2 size-6 rounded-full bg-accent text-on-accent flex items-center justify-center"><Check className="size-3.5" /></span>}
-      <div className="absolute inset-x-0 bottom-0 p-2 flex items-center justify-end gap-1 bg-gradient-to-t from-black/70 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+      <div className="absolute inset-x-0 bottom-0 p-2 flex flex-wrap items-center justify-end gap-1 bg-gradient-to-t from-black/70 to-transparent opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
         {onFavorite && <IconButton label="Favori" size="sm" variant="solid" active={favorite} onClick={onFavorite}><Heart className={cn("size-4", favorite && "fill-danger text-danger")} /></IconButton>}
         {onDownload && <IconButton label="Télécharger" size="sm" variant="solid" onClick={onDownload}><Download className="size-4" /></IconButton>}
         {onSave && <IconButton label={saved ? "Enregistré" : "Enregistrer dans le projet"} size="sm" variant="solid" active={saved} onClick={onSave}>{saved ? <Check className="size-4 text-success" /> : <Save className="size-4" />}</IconButton>}

@@ -41,16 +41,16 @@ function CostChart() {
       <p className="mt-1 flex items-center gap-1 text-xs text-danger">
         <TrendingDown className="size-3.5 rotate-180" /> Le coût grimpe à chaque étape
       </p>
-      <div className="mt-5 flex h-28 items-end gap-2.5">
+      <div className="mt-5 flex h-28 items-end gap-1.5 sm:gap-2.5">
         {bars.map((b, i) => (
-          <div key={b.label} className="flex flex-1 flex-col items-center gap-1.5">
+          <div key={b.label} className="flex flex-1 min-w-0 flex-col items-center gap-1.5">
             <motion.div
               className="w-full rounded-md bg-gradient-to-t from-accent2/40 to-highlight"
               initial={{ height: 0 }}
               animate={inView ? { height: `${b.h}%` } : {}}
               transition={{ duration: 1, delay: 0.2 + i * 0.12, ease: EASE }}
             />
-            <span className="text-[10px] text-muted">{b.label}</span>
+            <span className="max-w-full truncate text-[9px] min-[360px]:text-[10px] text-muted">{b.label}</span>
           </div>
         ))}
       </div>

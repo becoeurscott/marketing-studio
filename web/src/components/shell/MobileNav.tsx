@@ -27,9 +27,9 @@ export function MobileNav() {
           {tabs.map((item) => {
             const active = isActive(item, path);
             return (
-              <Link key={item.href} href={item.href} className={cn("flex flex-col items-center justify-center gap-0.5 text-[10.5px] font-medium", active ? "text-highlight" : "text-muted")}>
-                <item.icon className="size-5" />
-                {item.label}
+              <Link key={item.href} href={item.href} className={cn("flex flex-col items-center justify-center gap-0.5 min-w-0 text-[10.5px] font-medium", active ? "text-highlight" : "text-muted")}>
+                <item.icon className="size-5 shrink-0" />
+                <span className="max-w-full truncate px-0.5">{item.label}</span>
               </Link>
             );
           })}

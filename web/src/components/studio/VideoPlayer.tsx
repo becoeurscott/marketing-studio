@@ -14,7 +14,7 @@ function fmt(s: number) {
 }
 
 /** Mock player: <video> with the sample clip, poster fallback, play overlay, scrubber and duration. Playback is clamped to the generated duration. */
-export function VideoPlayer({ result, className, heightClass = "h-[70vh]", maxHeightClass = "max-h-[70vh]" }: { result: VideoResult; className?: string; heightClass?: string; maxHeightClass?: string }) {
+export function VideoPlayer({ result, className, heightClass = "h-[max(14rem,70dvh)]", maxHeightClass = "max-h-[max(14rem,70dvh)]" }: { result: VideoResult; className?: string; heightClass?: string; maxHeightClass?: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -37,7 +37,7 @@ export function VideoPlayer({ result, className, heightClass = "h-[70vh]", maxHe
 
   return (
     <div className={cn("relative rounded-xl overflow-hidden bg-black border border-border shadow-card group", className)}>
-      <div className={cn("relative mx-auto", maxHeightClass, RATIO_CLASS[result.ratio], result.ratio === "9:16" || result.ratio === "4:5" ? heightClass : "w-full")}>
+      <div className={cn("relative mx-auto max-w-full", maxHeightClass, RATIO_CLASS[result.ratio], result.ratio === "9:16" || result.ratio === "4:5" ? heightClass : "w-full")}>
         {!failed ? (
           <video
             ref={ref}

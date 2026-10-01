@@ -9,6 +9,8 @@ export async function proxy(request: NextRequest) {
   await updateSession({ requestCookies: request.cookies, responseCookies: response.cookies });
 
   const { pathname, search } = request.nextUrl;
+  // API routes: refresh the session cookies above, but answer with 401 themselves (no redirect).
+  if (pathname.startsWith("/api/")) return response;
   const signedIn = response.cookies.get("insforge_access_token")?.value || request.cookies.get("insforge_access_token")?.value || request.cookies.get("insforge_refresh_token")?.value;
   const onboarding = /^\/onboarding(\/|$)/.test(pathname);
   if ((PROTECTED.test(pathname) || onboarding) && !signedIn) {
@@ -20,4 +22,4 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: ["/((?!_next/|api/|favicon.ico|showcase/|styles/|.*\\.(?:png|jpg|jpeg|webp|svg|mp4|ico)$).*)"] };
+export const config = { matcher: ["/((?!_next/|api/auth/|favicon.ico|showcase/|styles/|.*\\.(?:png|jpg|jpeg|webp|svg|mp4|ico)$).*)"] };

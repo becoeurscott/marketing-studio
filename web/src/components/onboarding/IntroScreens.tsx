@@ -24,7 +24,7 @@ export function OpeningScreen({ onStart, onLogin }: { onStart: () => void; onLog
         title={<>Transformez une photo produit en <span className="text-highlight">campagne complète.</span></>}
         subtitle="Photos produit, vidéos UGC, pubs et textes, générés pour votre marque en quelques minutes."
       />
-      <div className="flex items-center justify-center gap-2 md:gap-3 overflow-hidden py-4">
+      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 py-4">
         {chain.map((c, i) => (
           <motion.div
             key={c.label}
@@ -34,12 +34,12 @@ export function OpeningScreen({ onStart, onLogin }: { onStart: () => void; onLog
             transition={{ delay: reduce ? 0 : 0.2 + i * 0.25 }}
           >
             <div className="flex flex-col items-center gap-1.5">
-              <div className="w-[64px] md:w-[120px] aspect-[3/4] rounded-xl overflow-hidden border border-border-strong">
+              <div className="w-[56px] sm:w-[88px] md:w-[120px] aspect-[3/4] rounded-xl overflow-hidden border border-border-strong">
                 {c.video ? <Video src={c.media} /> : <Img src={c.media} />}
               </div>
               <span className="text-[10px] md:text-xs text-text2 whitespace-nowrap">{c.label}</span>
             </div>
-            <ArrowRight className="size-3.5 text-muted shrink-0 -mt-5" />
+            <ArrowRight className="hidden sm:block size-3.5 text-muted shrink-0 -mt-5" />
           </motion.div>
         ))}
         <motion.div
@@ -48,7 +48,7 @@ export function OpeningScreen({ onStart, onLogin }: { onStart: () => void; onLog
           transition={{ delay: reduce ? 0 : 1.3 }}
           className="flex flex-col items-center gap-1.5"
         >
-          <div className="w-[52px] md:w-[96px] aspect-[3/4] rounded-xl bg-gradient-to-br from-accent to-accent2 shadow-glow flex items-center justify-center text-on-accent text-lg md:text-2xl font-semibold">41</div>
+          <div className="w-[48px] sm:w-[72px] md:w-[96px] aspect-[3/4] rounded-xl bg-gradient-to-br from-accent to-accent2 shadow-glow flex items-center justify-center text-on-accent text-lg md:text-2xl font-semibold">41</div>
           <span className="text-[10px] md:text-xs text-highlight">Campagne</span>
         </motion.div>
       </div>

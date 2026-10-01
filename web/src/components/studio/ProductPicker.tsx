@@ -103,15 +103,15 @@ export function ProductField({ asset, onChange, onClear, label = "Produit" }: { 
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-[13px] font-medium text-text2">{label}</span>
-      <div className="flex items-center gap-3 rounded-md border border-border-strong bg-surface p-2">
+      <div className="flex flex-wrap items-center gap-3 rounded-md border border-border-strong bg-surface p-2">
         <button onClick={onChange} className="size-12 rounded-sm overflow-hidden bg-elevated border border-border flex items-center justify-center shrink-0" aria-label="Changer le produit">
           {asset ? <img src={asset.thumbnail} alt="" className="size-full object-cover" /> : <ImagePlus className="size-5 text-muted" />}
         </button>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-[8rem] flex-1">
           <p className="text-sm truncate">{asset ? asset.name : "Aucun produit sélectionné"}</p>
           <p className="text-xs text-muted">{asset ? `${asset.width ?? "—"}×${asset.height ?? "—"}` : "Facultatif — génération à partir du prompt seul"}</p>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 ml-auto">
           {asset && onClear && <Button size="sm" variant="ghost" onClick={onClear}>Retirer</Button>}
           <Button size="sm" variant="secondary" onClick={onChange}>{asset ? "Changer" : "Ajouter"}</Button>
         </div>

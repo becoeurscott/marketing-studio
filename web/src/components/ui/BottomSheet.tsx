@@ -11,10 +11,12 @@ export interface BottomSheetProps {
   title?: string;
   children: ReactNode;
   className?: string;
+  /** Extra classes for the scrolling body (e.g. `flex-1 min-h-0 flex flex-col` to pin a footer). */
+  bodyClassName?: string;
 }
 
 /** Mobile bottom sheet. On md+ screens it renders as a centered panel. */
-export function BottomSheet({ open, onClose, title, children, className }: BottomSheetProps) {
+export function BottomSheet({ open, onClose, title, children, className, bodyClassName }: BottomSheetProps) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -30,7 +32,7 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
         <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center">
           <motion.div className="absolute inset-0 bg-black/60" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
           <motion.div
-            className={cn("relative w-full md:max-w-md bg-card border border-border-strong rounded-t-2xl md:rounded-xl shadow-float max-h-[85vh] flex flex-col pb-[env(safe-area-inset-bottom)]", className)}
+            className={cn("relative w-full md:max-w-md bg-card border border-border-strong rounded-t-2xl md:rounded-xl shadow-float max-h-[85dvh] flex flex-col pb-[env(safe-area-inset-bottom)]", className)}
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -44,7 +46,7 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
           >
             <div className="flex justify-center pt-2 md:hidden"><span className="h-1 w-10 rounded-full bg-white/20" /></div>
             {title && <h2 className="px-5 pt-3 pb-2 text-[15px] font-semibold">{title}</h2>}
-            <div className="px-4 pb-4 overflow-y-auto">{children}</div>
+            <div className={cn("px-4 pb-4 overflow-y-auto", bodyClassName)}>{children}</div>
           </motion.div>
         </div>
       )}

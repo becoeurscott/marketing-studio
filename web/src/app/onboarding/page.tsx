@@ -126,13 +126,13 @@ export default function OnboardingPage() {
   })();
 
   return (
-    <div className="min-h-dvh bg-bg flex flex-col overflow-x-hidden">
+    <div className="min-h-dvh bg-bg flex flex-col overflow-x-clip">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 size-[640px] rounded-full bg-accent2/20 blur-[140px]" />
       </div>
 
       <header className="relative z-10 flex items-center justify-between h-14 md:h-16 px-4 md:px-8">
-        <div className="w-10">
+        <div className="w-20">
           {canGoBack && (
             <button type="button" onClick={back} aria-label="Retour" className="size-9 rounded-full flex items-center justify-center text-text2 hover:text-text hover:bg-white/5">
               <ArrowLeft className="size-5" />
@@ -145,7 +145,7 @@ export default function OnboardingPage() {
           </span>
           <span className="text-[15px] font-semibold tracking-tight">Sokozia</span>
         </div>
-        <div className="w-10 flex justify-end">
+        <div className="w-20 flex justify-end">
           {qIndex >= 0 && <StepDots total={QUESTION_STEPS.length} current={qIndex} className="hidden sm:flex" />}
         </div>
       </header>

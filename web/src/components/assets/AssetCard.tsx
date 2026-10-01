@@ -89,7 +89,7 @@ export function AssetCard({ asset, favorite, onToggleFavorite, selectable, selec
       </div>
 
       {/* Hover actions */}
-      <div className={cn("absolute top-2 right-2 flex items-center gap-1 transition-opacity", favorite || menu ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100")}>
+      <div className={cn("absolute top-2 right-2 flex items-center gap-1 transition-opacity", favorite || menu ? "opacity-100" : "opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100")}>
         <IconButton
           label={favorite ? "Retirer des favoris" : "Ajouter aux favoris"}
           size="sm"
@@ -105,7 +105,7 @@ export function AssetCard({ asset, favorite, onToggleFavorite, selectable, selec
         )}
       </div>
       {menu && (
-        <div className="absolute right-2 top-11 w-52 rounded-md bg-elevated border border-border-strong shadow-float py-1 z-20">
+        <div className="absolute left-2 right-2 w-auto sm:left-auto sm:w-52 top-11 rounded-md bg-elevated border border-border-strong shadow-float py-1 z-20">
           {item("Aperçu", Eye, onPreview)}
           {item("Télécharger", Download, onDownload)}
           {item("Renommer", Pencil, onRename)}

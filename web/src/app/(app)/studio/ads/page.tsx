@@ -149,13 +149,13 @@ export default function AdsPage() {
         {phase.kind === "error" ? (
           <ErrorState error={phase.error} onRetry={generate} />
         ) : phase.kind === "idle" ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 gap-4">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-5 sm:p-8 gap-4 min-w-0">
             <span className="size-14 rounded-full bg-accent/15 text-highlight flex items-center justify-center"><Megaphone className="size-6" /></span>
             <div>
               <h3 className="text-lg font-semibold">Prêt à créer vos pubs {platformLabel} · {formatLabel(format)}</h3>
               <p className="text-sm text-text2 mt-1 max-w-sm">{product} · {offer} · {audience} · &ldquo;{cta}&rdquo;</p>
             </div>
-            <Button leftIcon={<Sparkles className="size-4" />} onClick={generate}>Générer 4 variantes · {CREDIT_COSTS.ads} cr.</Button>
+            <Button className="max-w-full min-w-0" leftIcon={<Sparkles className="size-4 shrink-0" />} onClick={generate}><span className="truncate">Générer 4 variantes · {CREDIT_COSTS.ads} cr.</span></Button>
           </div>
         ) : (
           <div className="flex-1 p-4 md:p-6 pb-28 lg:pb-6">
@@ -164,7 +164,7 @@ export default function AdsPage() {
               <span className="flex-1" />
               {phase.kind === "done" && <Button variant="secondary" size="sm" leftIcon={<RefreshCw className="size-4" />} onClick={generate}>Régénérer</Button>}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4">
               {loading
                 ? Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="space-y-3"><Skeleton className={cn("w-full rounded-lg", frame.ratio)} /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-3 w-full" /><Skeleton className="h-3 w-2/3" /></div>
@@ -174,10 +174,10 @@ export default function AdsPage() {
                       {/* Platform-aware frame */}
                       <div className="p-3 pb-0">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="size-6 rounded-full bg-elevated border border-border-strong" />
-                          <span className="text-xs font-medium">{product.toLowerCase().replace(/\s+/g, "")}</span>
-                          <span className="text-[10px] text-muted">Sponsorisé</span>
-                          <Badge tone="accent" className="ml-auto">Création {v.label}</Badge>
+                          <span className="size-6 shrink-0 rounded-full bg-elevated border border-border-strong" />
+                          <span className="text-xs font-medium min-w-0 truncate">{product.toLowerCase().replace(/\s+/g, "")}</span>
+                          <span className="hidden sm:inline shrink-0 text-[10px] text-muted">Sponsorisé</span>
+                          <Badge tone="accent" className="ml-auto shrink-0">Création {v.label}</Badge>
                         </div>
                         <div className={cn("relative rounded-md overflow-hidden bg-elevated", frame.ratio)}>
                           <img src={v.visual} alt={`Création ${v.label}`} className="size-full object-cover" />

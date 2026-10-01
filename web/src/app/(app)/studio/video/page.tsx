@@ -76,7 +76,7 @@ export default function VideoGeneratorPage() {
       <BottomSheet open={sheet} onClose={() => setSheet(false)} title="Créer">
         <VideoCreatePanel params={vid.params} update={vid.update} onGenerate={() => { setSheet(false); void vid.generate(); }} generating={vid.generating} />
       </BottomSheet>
-      <div className="lg:hidden fixed inset-x-4 bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] z-40">
+      <div className="lg:hidden fixed left-4 right-4 md:left-[calc(var(--sb)+1rem)] bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] md:bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-40">
         <Button fullWidth size="lg" className="shadow-float" onClick={() => void vid.generate()} loading={vid.generating} disabled={!canGenerate} leftIcon={<Clapperboard className="size-4" />}>
           {canGenerate ? `Générer la vidéo · ${videoCredits(vid.params.model, vid.params.durationSec, !!vid.source)} crédits` : "Ajoutez un concept pour générer"}
         </Button>

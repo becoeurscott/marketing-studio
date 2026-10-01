@@ -13,7 +13,7 @@ export function Tooltip({ label, children, side = "top", className }: { label: s
       <span
         role="tooltip"
         className={cn(
-          "pointer-events-none absolute z-50 whitespace-nowrap rounded-sm bg-elevated border border-border-strong px-2 py-1 text-[11px] text-text shadow-float opacity-0 transition-opacity duration-150 group-hover/tt:opacity-100 group-focus-within/tt:opacity-100",
+          "pointer-events-none absolute z-50 w-max max-w-[60vw] whitespace-normal rounded-sm bg-elevated border border-border-strong px-2 py-1 text-[11px] text-text shadow-float opacity-0 transition-opacity duration-150 group-hover/tt:opacity-100 group-focus-within/tt:opacity-100",
           pos,
         )}
       >

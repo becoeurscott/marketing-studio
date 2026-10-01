@@ -62,6 +62,11 @@ export function CreatorDetailModal({ creator, onClose }: { creator: Creator | nu
                 <dd className="mt-1 font-medium">{creator.languages.join(", ")}</dd>
               </div>
             </dl>
+            <figure className="mt-4">
+              <img src={creator.sheet} alt={`Fiche personnage de ${creator.name}`} loading="lazy" className="w-full rounded-md border border-border bg-surface" />
+              <figcaption className="text-[11px] text-muted mt-1.5">Fiche personnage : la même personne dans toutes vos vidéos.</figcaption>
+            </figure>
+            {creator.intro && <video src={creator.intro} controls playsInline preload="none" poster={creator.portrait} className="mt-3 w-full max-h-72 rounded-md border border-border bg-black" />}
             <p className="text-[11px] text-muted mt-3">Créateur IA. Persona fictif ; son apparence est générée par synthèse.</p>
             <div className="mt-auto pt-5 flex items-center gap-2 justify-end">
               <Button variant="ghost" onClick={onClose}>Fermer</Button>

@@ -127,7 +127,7 @@ export default function BrandPage() {
                   <div className="min-w-0">
                     <h2 className="text-xl font-bold tracking-tight truncate">{brand.name}</h2>
                     {brand.website ? (
-                      <a href={brand.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[13px] text-text2 hover:text-text mt-0.5">
+                      <a href={brand.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[13px] text-text2 hover:text-text mt-0.5 break-all">
                         {brand.website.replace(/^https?:\/\//, "")} <ExternalLink className="size-3" />
                       </a>
                     ) : <p className="text-[13px] text-muted mt-0.5">Aucun site web</p>}
@@ -187,7 +187,7 @@ export default function BrandPage() {
                               <img src={a.url} alt={a.name} className="size-full object-cover" />
                             </div>
                             <p className="text-[11px] text-text2 mt-1.5 truncate" title={a.name}>{a.name}</p>
-                            <IconButton label="Supprimer la ressource" size="sm" className="absolute top-1.5 right-1.5 bg-black/60 text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100" onClick={() => setRemovingAsset(a)}><Trash2 /></IconButton>
+                            <IconButton label="Supprimer la ressource" size="sm" className="absolute top-1.5 right-1.5 bg-black/60 text-white opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100" onClick={() => setRemovingAsset(a)}><Trash2 /></IconButton>
                           </div>
                         ))}
                       </div>

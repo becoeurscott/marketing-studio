@@ -62,12 +62,12 @@ export default function StudioPage() {
   } else {
     if (vid.generating) overlay = <GeneratingOverlay label={mode === "ugc" ? "Tournage avec votre créateur…" : "Génération de votre vidéo…"} steps={vid.steps} step={vid.step} />;
     else if (vid.error) overlay = <StudioError code={vid.error.code} message={vid.error.message} onRetry={generate} />;
-    else if (vid.result) overlay = <VideoPlayer result={vid.result} className="mx-auto" heightClass="h-[calc(100dvh-28rem)] md:h-[calc(100dvh-26.5rem)]" maxHeightClass="max-h-[calc(100dvh-28rem)] md:max-h-[calc(100dvh-26.5rem)]" />;
+    else if (vid.result) overlay = <VideoPlayer result={vid.result} className="mx-auto" heightClass="h-[max(14rem,calc(100dvh-28rem))] md:h-[max(14rem,calc(100dvh-26.5rem))]" maxHeightClass="max-h-[max(14rem,calc(100dvh-28rem))] md:max-h-[max(14rem,calc(100dvh-26.5rem))]" />;
     else if (vid.source || (mode === "ugc" && vid.creator)) overlay = (
       <div className="flex flex-col items-center justify-center text-center p-6 gap-4 bg-[radial-gradient(circle_at_50%_40%,rgba(249,115,22,0.10),transparent_60%)]">
-        <div className="flex items-end justify-center gap-3">
-          {mode === "ugc" && vid.creator && <img src={vid.creator.avatarUrl} alt={vid.creator.name} className="size-28 md:size-40 rounded-2xl object-cover shadow-float border border-white/10" />}
-          {vid.source && <img src={vid.source.thumbnail} alt={vid.source.name} className="max-h-[32vh] max-w-[60vw] rounded-2xl shadow-float object-contain border border-white/10" />}
+        <div className="flex items-end justify-center gap-3 w-full min-w-0">
+          {mode === "ugc" && vid.creator && <img src={vid.creator.avatarUrl} alt={vid.creator.name} className="size-20 sm:size-28 md:size-40 shrink-0 rounded-2xl object-cover shadow-float border border-white/10" />}
+          {vid.source && <img src={vid.source.thumbnail} alt={vid.source.name} className="max-h-[32dvh] max-w-[calc(100%-6rem)] sm:max-w-[60vw] min-w-0 rounded-2xl shadow-float object-contain border border-white/10" />}
         </div>
         <p className="text-sm text-text2 max-w-sm">
           {mode === "ugc"
@@ -102,8 +102,8 @@ export default function StudioPage() {
           center={<ModeTabs value={mode} onChange={setMode} compact composeOnly />}
         />
       </div>
-      {/* Mobile: floating segmented mode pill */}
-      <div className="md:hidden absolute top-14 left-3 right-14 z-20 flex justify-center">
+      {/* Below lg: floating segmented mode pill (kept clear of the Assistant button on the right) */}
+      <div className="lg:hidden absolute top-14 left-3 right-[4.75rem] sm:right-48 md:right-3 z-20 flex justify-center">
         <ModeTabs value={mode} onChange={setMode} compact composeOnly />
       </div>
 
@@ -172,7 +172,7 @@ export default function StudioPage() {
         </Inspector>
       )}
       <BottomSheet open={advanced && !isDesktop} onClose={() => setAdvanced(false)} title="Options avancées">
-        <div className="px-4 pb-4 overflow-y-auto">{advancedPanel}</div>
+        {advancedPanel}
       </BottomSheet>
 
       <AssistantButton className="!bottom-auto !top-14 md:!top-[calc(3.5rem+3rem+0.75rem)] !h-10 md:!h-11" />

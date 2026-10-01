@@ -13,7 +13,6 @@ import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { PaymentMethodPicker, isPaymentReady, paymentSummary, useMoney, usePaymentChoice } from "@/components/account/PaymentMethodPicker";
 import { plans } from "@/data";
-import { delay } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import { TOP_UP_PACKS, USAGE_PACKS, type UsagePack } from "@/lib/market";
 import { IMAGE_MODELS, VIDEO_MODELS, videoCredits } from "@/lib/higgsfield/models";
@@ -43,14 +42,13 @@ export default function CreditsPage() {
   const credits = useStore((s) => s.credits);
   const plan = useStore((s) => s.plan);
   const transactions = useStore((s) => s.transactions);
-  const buyCredits = useStore((s) => s.buyCredits);
   const toast = useToast();
   const money = useMoney();
   const [payment, setPayment] = usePaymentChoice();
 
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const [pack, setPack] = useState<Pack | null>(null);
-  const [buying, setBuying] = useState(false);
+  const [buying] = useState(false);
   const [success, setSuccess] = useState<Pack | null>(null);
 
   const planInfo = plans.find((p) => p.id === plan) ?? plans[1];
@@ -67,15 +65,10 @@ export default function CreditsPage() {
   const list = useMemo(() => transactions.filter((t) => (filter === "all" ? true : filter === "spent" ? t.amount < 0 : t.amount > 0)), [transactions, filter]);
   const counts = { all: transactions.length, spent: transactions.filter((t) => t.amount < 0).length, added: transactions.filter((t) => t.amount > 0).length };
 
+  // Real payments are not wired yet (credits are server-owned): never grant credits here.
   const confirmBuy = async () => {
-    if (!pack) return;
-    setBuying(true);
-    await delay(900, 1400);
-    buyCredits(pack.credits, `${pack.name} · ${money(pack.priceXof)} via ${paymentSummary(payment)}`);
-    setBuying(false);
-    setSuccess(pack);
+    toast.info("Paiement Mobile Money bientôt disponible", "Pour recharger dès maintenant, écrivez-nous sur WhatsApp : nous créditons votre compte après paiement.");
     setPack(null);
-    toast.success("Crédits ajoutés", `+${formatNumber(pack.credits)} crédits`);
   };
 
   return (
@@ -118,7 +111,7 @@ export default function CreditsPage() {
                   className={cn("relative text-left rounded-lg border p-4 transition-colors hover:border-white/20", p.popular ? "bg-accent/8 border-accent/50" : "bg-card border-border")}
                 >
                   {p.popular && <Badge tone="accent" className="absolute top-3 right-3">Le plus pris</Badge>}
-                  <p className="text-[13px] text-text2">{p.name}</p>
+                  <p className={cn("text-[13px] text-text2", p.popular && "pr-24")}>{p.name}</p>
                   <p className="text-2xl font-bold tracking-tight tabular-nums mt-0.5">{money(p.priceXof)}</p>
                   <p className="text-[13px] mt-1">{p.pitch}</p>
                   <p className="text-[11px] text-muted mt-2">{formatNumber(p.credits)} crédits{p.validityDays ? ` · valables ${p.validityDays} jours` : ""}</p>

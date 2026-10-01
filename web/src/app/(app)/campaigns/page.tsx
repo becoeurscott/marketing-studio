@@ -54,8 +54,8 @@ export default function CampaignsPage() {
         <EmptyState icon={Megaphone} title="Aucune campagne pour l'instant" description="Répondez à cinq questions rapides et nous générerons vos visuels, vos textes et un premier calendrier." cta={{ label: "Nouvelle campagne", href: "/campaigns/new" }} />
       ) : (
         <>
-          <div className="flex flex-col md:flex-row md:items-center gap-3 mb-5">
-            <SearchBar value={q} onChange={setQ} placeholder="Rechercher une campagne…" className="md:w-72" />
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-5">
+            <SearchBar value={q} onChange={setQ} placeholder="Rechercher une campagne…" className="lg:w-72" />
             <FilterBar
               className="flex-1"
               options={[

@@ -52,7 +52,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             aria-modal="true"
             aria-label={title}
             className={cn(
-              "relative w-full bg-card border border-border-strong shadow-float rounded-t-xl md:rounded-xl max-h-[92vh] flex flex-col",
+              "relative w-full bg-card border border-border-strong shadow-float rounded-t-xl md:rounded-xl max-h-[92dvh] flex flex-col",
               sizes[size],
               className,
             )}
@@ -63,7 +63,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
           >
             {(title || description) && (
               <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-3">
-                <div>
+                <div className="min-w-0">
                   {title && <h2 className="text-lg font-semibold text-text">{title}</h2>}
                   {description && <p className="text-sm text-text2 mt-0.5">{description}</p>}
                 </div>
@@ -71,7 +71,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
               </div>
             )}
             <div className="px-5 pb-5 overflow-y-auto flex-1">{children}</div>
-            {footer && <div className="px-5 py-4 border-t border-border flex items-center justify-end gap-2">{footer}</div>}
+            {footer && <div className="px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border flex flex-wrap items-center justify-end gap-2">{footer}</div>}
           </motion.div>
         </div>
       )}

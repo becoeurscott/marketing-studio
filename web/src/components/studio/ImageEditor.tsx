@@ -31,7 +31,7 @@ export interface ImageEditorProps {
 /** SPEC §13: tool list + inspector (prompt, strength, ratio) + mock Apply Changes. */
 export function ImageEditor({ open, onClose, result, onApply }: ImageEditorProps) {
   return (
-    <Modal open={open} onClose={onClose} size="xl" className="md:max-h-[90vh]">
+    <Modal open={open} onClose={onClose} title="Modifier l'image" size="xl" className="md:max-h-[90dvh]">
       {result && <EditorBody key={result.id} result={result} onApply={onApply} onClose={onClose} />}
     </Modal>
   );
@@ -79,8 +79,8 @@ function EditorBody({ result, onApply, onClose }: { result: ImageResult; onApply
 
       {/* Canvas */}
       <div className="flex-1 min-w-0">
-        <div className="rounded-lg bg-surface border border-border p-3 flex items-center justify-center min-h-[280px] lg:min-h-[440px]">
-          <div className={cn("relative max-h-[52vh] w-auto overflow-hidden rounded-md shadow-card", RATIO_CLASS[ratio], ratio === "16:9" || ratio === "3:2" ? "w-full" : "h-[52vh]")}>
+        <div className="rounded-lg bg-surface border border-border p-3 flex items-center justify-center min-h-[240px] lg:min-h-[440px] overflow-hidden">
+          <div className={cn("relative max-h-[40dvh] md:max-h-[52dvh] max-w-full w-auto overflow-hidden rounded-md shadow-card", RATIO_CLASS[ratio], ratio === "16:9" || ratio === "3:2" ? "w-full" : "h-[40dvh] md:h-[52dvh]")}>
             <img src={preview.url} alt="Image en cours d'édition" className={cn("size-full object-cover transition-opacity", applying && "opacity-40")} />
             {tool === "Crop" && !applying && (
               <div className="absolute inset-[10%] border-2 border-highlight/80 pointer-events-none">

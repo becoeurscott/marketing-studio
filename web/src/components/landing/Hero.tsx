@@ -8,7 +8,7 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
-import { Camera, Clapperboard, Megaphone, Sparkles } from "lucide-react";
+import { Camera, Clapperboard, Megaphone, Menu, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,16 @@ export function Logo() {
 export function SiteHeader() {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 24));
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
+    const onDoc = (e: Event) => { if (!(e.target as Element | null)?.closest?.("[data-site-header]")) setMenuOpen(false); };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onDoc);
+    return () => { document.removeEventListener("keydown", onKey); document.removeEventListener("pointerdown", onDoc); };
+  }, [menuOpen]);
 
   return (
     <motion.header
@@ -48,17 +57,18 @@ export function SiteHeader() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: EASE }}
       className="fixed inset-x-0 top-0 z-50 px-4 pt-4"
+      data-site-header
     >
       <div
         className={cn(
           "mx-auto flex h-14 items-center justify-between rounded-2xl border px-3 pl-4 transition-all duration-500",
-          scrolled
+          scrolled || menuOpen
             ? "max-w-5xl border-white/10 bg-black/60 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
             : "max-w-6xl border-transparent bg-transparent",
         )}
       >
         <Logo />
-        <nav className="hidden md:flex items-center gap-7 text-sm text-text2">
+        <nav className="hidden lg:flex items-center gap-7 text-sm text-text2">
           {NAV.map((n) => (
             <a key={n.href} href={n.href} className="hover:text-text transition-colors">
               {n.label}
@@ -76,8 +86,37 @@ export function SiteHeader() {
           Commencer
           <span className="transition-transform group-hover:translate-x-0.5">↗</span>
         </Link>
+        {/* Section menu for phones/tablets (the nav links are hidden below lg) */}
+        <button
+          type="button"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-expanded={menuOpen}
+          aria-controls="landing-section-menu"
+          aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          className="lg:hidden inline-flex size-9 items-center justify-center rounded-full text-text2 hover:text-text hover:bg-white/10 transition-colors"
+        >
+          {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+        </button>
         </div>
       </div>
+      {menuOpen && (
+          <motion.nav
+            id="landing-section-menu"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: EASE }}
+            className="lg:hidden mx-auto mt-2 max-w-5xl rounded-2xl border border-white/10 bg-black/85 backdrop-blur-xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
+          >
+            {NAV.map((n) => (
+              <a key={n.href} href={n.href} onClick={() => setMenuOpen(false)} className="flex h-11 items-center rounded-xl px-3 text-[15px] text-text2 hover:text-text hover:bg-white/5 transition-colors">
+                {n.label}
+              </a>
+            ))}
+            <Link href="/connexion" onClick={() => setMenuOpen(false)} className="sm:hidden flex h-11 items-center rounded-xl px-3 text-[15px] text-text2 hover:text-text hover:bg-white/5 transition-colors border-t border-white/5 mt-1 pt-1">
+              Connexion
+            </Link>
+          </motion.nav>
+      )}
     </motion.header>
   );
 }
@@ -173,9 +212,9 @@ export function Hero() {
           initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-xs text-text2 backdrop-blur"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[11px] sm:px-3.5 sm:py-1.5 sm:text-xs text-text2 backdrop-blur max-w-full"
         >
-          <span className="size-1.5 rounded-full bg-green shadow-[0_0_8px_#16a34a]" />
+          <span className="size-1.5 shrink-0 rounded-full bg-green shadow-[0_0_8px_#16a34a]" />
           Le studio marketing IA des commerçants africains
         </motion.span>
 

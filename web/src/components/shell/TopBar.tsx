@@ -31,7 +31,7 @@ export function TopBar() {
       <Link href="/home" className="md:hidden size-7 rounded-md bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shrink-0">
         <Sparkles className="size-4 text-on-accent" />
       </Link>
-      <h1 className="text-[15px] md:text-base font-semibold tracking-tight truncate flex-1 md:flex-none">{title ?? titleForPath(path)}</h1>
+      <h1 className="text-[15px] md:text-base font-semibold tracking-tight truncate min-w-0 flex-1 md:flex-none md:max-w-[12rem] lg:max-w-xs">{title ?? titleForPath(path)}</h1>
 
       <form onSubmit={submit} className={cn("hidden md:block md:flex-1 max-w-md md:mx-auto")}>
         <SearchBar value={q} onChange={setQ} placeholder="Rechercher projets, ressources, modèles…" />

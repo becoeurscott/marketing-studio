@@ -94,7 +94,7 @@ export default function FavoritesPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {favCreators.map((c) => (
                   <Card key={c.id} className="relative">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 pr-8">
                       <Avatar src={c.avatarUrl} name={c.name} size={48} />
                       <div className="min-w-0">
                         <p className="text-sm font-semibold">{c.name}</p>

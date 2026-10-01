@@ -34,7 +34,7 @@ export function CampaignCard({ campaign, assets }: { campaign: Campaign; assets:
           </div>
           <PlatformIcons platforms={campaign.platforms} />
         </div>
-        <div className="flex items-center gap-4 mt-3 text-xs text-text2">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-xs text-text2">
           <span className="inline-flex items-center gap-1"><Images className="size-3.5" /> {campaign.assetIds.length} ressources</span>
           <span className="inline-flex items-center gap-1"><Layers className="size-3.5" /> {campaign.variations.length} variantes</span>
           <span className="ml-auto text-muted">{timeAgo(campaign.updatedAt)}</span>

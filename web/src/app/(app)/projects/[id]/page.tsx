@@ -95,7 +95,7 @@ export default function ProjectDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="lg:col-span-2 overflow-hidden" padded={false}>
             <div className="aspect-[21/9] bg-elevated"><img src={project.thumbnail} alt="" className="size-full object-cover" /></div>
-            <div className="p-5 grid grid-cols-3 gap-4">
+            <div className="p-5 grid grid-cols-1 min-[400px]:grid-cols-3 gap-4">
               {overviewStats.map(([label, value, Icon]) => (
                 <div key={label} className="flex items-center gap-3">
                   <span className="size-9 rounded-md bg-elevated border border-border flex items-center justify-center text-text2"><Icon className="size-4" /></span>

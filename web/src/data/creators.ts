@@ -1,11 +1,11 @@
 import type { Creator } from "@/lib/types";
-import { avatar } from "@/lib/utils";
+import { CREATOR_LOOKS } from "./creatorLooks";
 
 // [id, name, gender, age, style, languages, country, avatar, bio, featured]
 // Ids are kept from the previous seed so existing references stay valid.
 type R = [string, string, Creator["gender"], number, string, string[], string, number, string, boolean];
 
-// Avatars are initials placeholders; replace with generated African portraits (Higgsfield) before launch.
+// Portraits and character sheets are generated with Higgsfield and stored in /public/creators/<id>/.
 const rows: R[] = [
   ["creator_maya", "Aïcha", "female", 24, "Beauté", ["Français", "Dioula"], "Côte d'Ivoire", 47, "Routines karité, soins naturels et conseils peau. Ton chaleureux de grande sœur.", true],
   ["creator_jordan", "Kofi", "male", 29, "Tech & téléphones", ["Français", "Anglais"], "Côte d'Ivoire", 33, "Déballages de téléphones et tests honnêtes, du marché d'Adjamé à la boutique.", true],
@@ -29,5 +29,16 @@ export const creators: Creator[] = rows.map(([id, name, gender, age, style, lang
   id,
   name, gender, age, style, languages, country, bio, featured,
   ageRange: age < 25 ? "18–24" : age < 30 ? "25–29" : age < 35 ? "30–34" : "35+",
-  avatarUrl: avatar(name),
+  avatarUrl: `/creators/${id}/portrait.jpg`,
+  portrait: `/creators/${id}/portrait.jpg`,
+  sheet: `/creators/${id}/sheet.jpg`,
+  look: CREATOR_LOOKS[id] ?? "",
 }));
+
+/** Absolute URL of a creator's sheet, so Higgsfield can fetch it as a reference image. */
+export function creatorSheetUrl(c: Pick<Creator, "sheet">) {
+  const app = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  // Higgsfield can't reach localhost: in development, use the published copy of the sheet.
+  const origin = app.startsWith("https://") ? app : "https://www.sokozia.com";
+  return new URL(c.sheet, origin).toString();
+}

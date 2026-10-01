@@ -79,18 +79,18 @@ export default function HomePage() {
 
       {moments.length > 0 && (
         <Section title="Prochains temps forts" description="Préparez vos promos trois semaines avant : c’est là que tout se joue.">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             {moments.map((m) => (
               <Card key={m.id} className={cn("flex flex-col gap-3", m.daysLeft <= 21 && "border-accent/50 bg-accent/8")}>
-                <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold flex items-center gap-1.5"><CalendarHeart className="size-4 text-highlight shrink-0" />{m.name}</p>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-semibold flex items-center gap-1.5 min-w-0"><CalendarHeart className="size-4 text-highlight shrink-0" />{m.name}</p>
                   <Badge tone={m.daysLeft <= 21 ? "accent" : "outline"}>J-{m.daysLeft}</Badge>
                 </div>
                 <p className="text-[13px] text-text2 flex-1">{m.pitch}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {m.templateIds.map((id) => {
                     const t = templates.find((x) => x.id === id);
-                    return t ? <Button key={id} size="sm" variant="secondary" onClick={() => openTemplate(id)}>{t.title}</Button> : null;
+                    return t ? <Button key={id} size="sm" variant="secondary" className="max-w-full h-auto min-h-8 py-1 whitespace-normal text-left" onClick={() => openTemplate(id)}>{t.title}</Button> : null;
                   })}
                 </div>
               </Card>

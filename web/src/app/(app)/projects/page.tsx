@@ -53,8 +53,8 @@ export default function ProjectsPage() {
         actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => { setEditing(null); setFormOpen(true); }}>Nouveau projet</Button>}
       />
 
-      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-5">
-        <SearchBar value={q} onChange={setQ} placeholder="Rechercher un projet…" className="md:w-72" />
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-5">
+        <SearchBar value={q} onChange={setQ} placeholder="Rechercher un projet…" className="lg:w-72" />
         <FilterBar
           className="flex-1"
           options={[{ value: "all", label: "Tous", count: counts.all }, { value: "active", label: "Actifs", count: counts.active }, { value: "archived", label: "Archivés", count: counts.archived }]}

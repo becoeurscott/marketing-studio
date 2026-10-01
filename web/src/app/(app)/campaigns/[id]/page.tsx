@@ -219,7 +219,7 @@ export default function CampaignWorkspacePage() {
 
       {tab === "calendar" && (
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <p className="text-sm text-text2">{campaign.calendar.length} éléments · {published} publié(s) · {scheduled} programmé(s)</p>
             <Link href={`/campaigns/${campaign.id}/calendar`}><Button size="sm" variant="secondary" leftIcon={<CalendarDays className="size-4" />}>Ouvrir le calendrier complet</Button></Link>
           </div>

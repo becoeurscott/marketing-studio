@@ -48,7 +48,7 @@ export function StudioTopBar({ saveStatus, onUndo, onRedo, canUndo, canRedo, get
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <button onClick={() => setPickerOpen(true)} className="flex items-center gap-2 h-9 pl-2 pr-2.5 rounded-md hover:bg-white/5 min-w-0 flex-1 md:flex-none md:max-w-[40%]" aria-haspopup="dialog">
+      <button onClick={() => setPickerOpen(true)} className="flex items-center gap-2 h-9 pl-2 pr-2.5 rounded-md hover:bg-white/5 min-w-0 flex-1 md:flex-initial md:min-w-0 md:max-w-[40%]" aria-haspopup="dialog">
         <span className="size-6 rounded-sm bg-elevated border border-border overflow-hidden shrink-0">{project && <img src={project.thumbnail} alt="" className="size-full object-cover" />}</span>
         <span className="text-sm font-semibold truncate max-w-[40vw] sm:max-w-[9rem] xl:max-w-xs">{project?.name ?? "Aucun projet"}</span>
         <ChevronDown className="size-4 text-muted shrink-0" />
@@ -57,7 +57,7 @@ export function StudioTopBar({ saveStatus, onUndo, onRedo, canUndo, canRedo, get
         {saveStatus === "saved" ? <Cloud className="size-3.5" /> : <CloudUpload className={cn("size-3.5", saveStatus === "saving" && "animate-pulse")} />}
         {saveStatus === "saved" ? "Enregistré" : saveStatus === "saving" ? "Enregistrement…" : "Modifications non enregistrées"}
       </span>
-      {center && <div className="hidden md:flex flex-1 justify-center min-w-0 shrink-0">{center}</div>}
+      {center && <div className="hidden lg:flex flex-1 justify-center min-w-0">{center}</div>}
 
       <div className="ml-auto flex items-center gap-1 shrink-0">
         <IconButton size="sm" label="Annuler" onClick={onUndo} disabled={!canUndo}><Undo2 /></IconButton>
@@ -124,7 +124,7 @@ export function ExportModal({ open, onClose, getAsset, kind }: { open: boolean; 
 
   return (
     <Modal open={open} onClose={onClose} title="Exporter" description="Exportez le résultat sélectionné." size="sm" footer={<><Button variant="ghost" onClick={onClose}>Fermer</Button><Button onClick={run} loading={!!progress} leftIcon={<Download className="size-4" />}>Exporter</Button></>}>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Select label="Format" name="format" value={format} onChange={(e) => setFormat(e.target.value as ExportParams["format"])} options={formats} />
         <Select label="Qualité" name="quality" value={quality} onChange={(e) => setQuality(e.target.value as ExportParams["quality"])} options={[{ value: "light", label: "Légère (WhatsApp, data réduite)" }, { value: "standard", label: "Standard" }, { value: "high", label: "Haute" }, { value: "maximum", label: "Maximale" }]} />
       </div>

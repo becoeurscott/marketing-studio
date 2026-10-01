@@ -52,7 +52,7 @@ export function AssistantButton({ className }: { className?: string }) {
       {desktop ? (
         <Drawer open={open} onClose={() => setOpen(false)} title="Assistant IA" width={420}><AssistantChat /></Drawer>
       ) : (
-        <BottomSheet open={open} onClose={() => setOpen(false)} title="Assistant IA" className="h-[85vh]"><AssistantChat /></BottomSheet>
+        <BottomSheet open={open} onClose={() => setOpen(false)} title="Assistant IA" className="h-[85dvh]" bodyClassName="flex-1 min-h-0 flex flex-col overflow-hidden"><AssistantChat /></BottomSheet>
       )}
     </>
   );
@@ -92,8 +92,9 @@ export function AssistantChat() {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-[50vh]">
-      <div className="flex-1 overflow-y-auto flex flex-col gap-3 pr-1">
+    <div className="flex flex-col h-full min-h-0 flex-1">
+      {/* Messages scroll; the input stays pinned at the bottom of the sheet/drawer */}
+      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3 pr-1">
         {msgs.map((m) => (
           <div key={m.id} className={cn("flex flex-col gap-2", m.role === "user" ? "items-end" : "items-start")}>
             <div className={cn("max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed", m.role === "user" ? "bg-accent text-on-accent rounded-br-sm" : "bg-surface border border-border rounded-bl-sm")}>
@@ -102,7 +103,7 @@ export function AssistantChat() {
             {m.actions && m.actions.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {m.actions.map((a) => (
-                  <button key={a} onClick={() => act(a)} className="h-7 px-2.5 rounded-full border border-accent/40 bg-accent/10 text-highlight text-xs font-medium hover:bg-accent/20">{ACTION_LABELS[a] ?? a}</button>
+                  <button key={a} onClick={() => act(a)} className="h-8 px-2.5 rounded-full border border-accent/40 bg-accent/10 text-highlight text-xs font-medium hover:bg-accent/20">{ACTION_LABELS[a] ?? a}</button>
                 ))}
               </div>
             )}
@@ -115,8 +116,8 @@ export function AssistantChat() {
         )}
         <div ref={endRef} />
       </div>
-      <form onSubmit={(e) => { e.preventDefault(); void send(input); }} className="mt-3 flex items-center gap-2 border-t border-border pt-3">
-        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Demandez une campagne, une vidéo, un texte…" className="flex-1 h-10 bg-surface border border-border-strong rounded-md px-3 text-sm placeholder:text-muted focus:border-accent focus:outline-none" />
+      <form onSubmit={(e) => { e.preventDefault(); void send(input); }} className="mt-3 flex items-center gap-2 border-t border-border pt-3 shrink-0">
+        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Demandez une campagne, une vidéo, un texte…" className="flex-1 min-w-0 h-10 bg-surface border border-border-strong rounded-md px-3 text-sm placeholder:text-muted focus:border-accent focus:outline-none" />
         <button type="submit" disabled={!input.trim() || typing} className="size-10 rounded-md bg-accent text-on-accent flex items-center justify-center disabled:opacity-50" aria-label="Envoyer"><Send className="size-4" /></button>
       </form>
     </div>

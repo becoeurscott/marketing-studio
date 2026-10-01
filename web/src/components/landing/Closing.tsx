@@ -267,7 +267,7 @@ export function Platforms() {
         title="Vos contenus, sur tous les réseaux qui comptent"
         text="Chaque création sort au bon format pour chaque plateforme. Plus besoin de redimensionner à la main."
       />
-      <Reveal className="relative mx-auto mt-16 size-[320px] sm:size-[440px]">
+      <Reveal className="relative mx-auto mt-16 size-[272px] min-[360px]:size-[320px] sm:size-[440px]">
         <div aria-hidden className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(249,115,22,0.35),transparent_65%)] blur-xl" />
         <div className="absolute inset-[12%] rounded-full border border-white/10" />
         <div className="absolute inset-[30%] rounded-full border border-white/[0.06]" />
@@ -282,7 +282,7 @@ export function Platforms() {
             const top = (50 + 50 * Math.sin(a)).toFixed(2);
             return (
               <div key={p} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${left}%`, top: `${top}%` }}>
-                <span className="block animate-[spin_40s_linear_infinite_reverse] whitespace-nowrap rounded-full border border-white/10 bg-black/70 px-3.5 py-1.5 text-xs sm:text-sm backdrop-blur">
+                <span className="block animate-[spin_40s_linear_infinite_reverse] whitespace-nowrap rounded-full border border-white/10 bg-black/70 px-2.5 py-1 text-[11px] min-[360px]:px-3.5 min-[360px]:py-1.5 min-[360px]:text-xs sm:text-sm backdrop-blur">
                   {p}
                 </span>
               </div>

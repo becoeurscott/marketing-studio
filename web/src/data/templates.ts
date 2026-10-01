@@ -1,5 +1,4 @@
 import type { Template, TemplateCategory, Platform, AdFormat, TemplatePreset } from "@/lib/types";
-import { img } from "@/lib/utils";
 
 type T = [string, string, TemplateCategory, Platform, AdFormat, TemplatePreset, boolean, number];
 
@@ -34,7 +33,7 @@ const rows: T[] = [
 export const templates: Template[] = rows.map(([title, description, category, platform, format, preset, popular, uses], i) => ({
   id: `tpl_${i + 1}`,
   title, description, category, platform, format, preset, popular, uses,
-  thumbnail: img(`template-${title}`, 800, 1000, title.split(" ").slice(0, 3).join(" ")),
+  thumbnail: `/templates/tpl_${i + 1}.jpg`,
 }));
 
 export const TEMPLATE_CATEGORIES: TemplateCategory[] = [

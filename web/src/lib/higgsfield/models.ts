@@ -15,6 +15,8 @@ export interface VideoModel {
   t2v: string;
   /** Image-to-video endpoint (animate a product photo). Models without one fall back to Seedance 2.5 for photos. */
   i2v?: string;
+  /** Reference-to-video endpoint (several reference images: character sheet + product). */
+  ref?: string;
   creditsPerSecond: number;
   minSec: number;
   maxSec: number;
@@ -28,7 +30,7 @@ export interface VideoModel {
 export const VIDEO_MODELS: VideoModel[] = [
   {
     id: "seedance-2.5", label: "Seedance 2.5", hint: "Le plus réaliste, anime vos photos produit, son inclus",
-    t2v: "bytedance/seedance-2.5/text-to-video", i2v: "bytedance/seedance-2.5/image-to-video",
+    t2v: "bytedance/seedance-2.5/text-to-video", i2v: "bytedance/seedance-2.5/image-to-video", ref: "bytedance/seedance-2.5/reference-to-video",
     creditsPerSecond: 11, minSec: 4, maxSec: 15, ratios: ["16:9", "4:3", "1:1", "3:4", "9:16", "21:9"], audio: "generate_audio",
     resolution: (light) => (light ? "480p" : "720p"),
   },

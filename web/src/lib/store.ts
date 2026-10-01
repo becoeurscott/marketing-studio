@@ -15,6 +15,8 @@ import { DEFAULT_COUNTRY, type CountryCode } from "./market";
 /* ---------- State shape ---------- */
 export interface StoreState {
   version: number;
+  /** InsForge user id this cached state belongs to (null before the first sign-in sync). */
+  ownerId: ID | null;
   user: User;
   onboardingDone: boolean;
   onboarding: OnboardingAnswers;
@@ -80,6 +82,10 @@ export interface StoreActions {
   updateBrandVoice: (id: ID, patch: Partial<BrandVoice>) => void;
   /* credits */
   spendCredits: (action: CreditAction, amount: number, description: string) => boolean;
+  /** Server truth for balance, plan and credit history (see /api/account). */
+  setAccount: (account: { credits: number; plan: string; ledger: { id: string; amount: number; action: string; description: string; created_at: string }[] }) => void;
+  /** Replaces the synced workspace slices with the account's saved document. */
+  applyRemoteState: (ownerId: ID, remote: Partial<StoreState> | null) => void;
   buyCredits: (amount: number, description?: string) => void;
   /* notifications */
   markNotificationRead: (id: ID, read?: boolean) => void;
@@ -113,6 +119,7 @@ const SEED_VERSION = 3;
 function initialState(): StoreState {
   return {
     version: SEED_VERSION,
+    ownerId: null,
     user: seed.currentUser,
     onboardingDone: false,
     onboarding: { creating: null, role: null, wants: [], platforms: [], goal: null, style: null, boldness: null, brandKit: false, product: null },
@@ -293,6 +300,25 @@ export const useStore = create<Store>()(
         }));
         return true;
       },
+      setAccount: ({ credits, plan, ledger }) =>
+        set({
+          credits,
+          plan: (["starter", "creator", "studio", "agency"].includes(plan) ? plan : "starter") as PlanId,
+          transactions: ledger.map((l) => ({
+            id: l.id,
+            action: (l.action === "refund" ? "bonus" : l.action) as CreditAction,
+            amount: l.amount,
+            description: l.description,
+            createdAt: l.created_at,
+          })),
+        }),
+      applyRemoteState: (ownerId, remote) =>
+        set((s) => {
+          // Another account used this browser before: start from a clean workspace.
+          const base = s.ownerId && s.ownerId !== ownerId ? { ...initialState(), credits: s.credits, plan: s.plan, transactions: s.transactions } : {};
+          const picked = Object.fromEntries(Object.entries(remote ?? {}).filter(([k]) => (SYNCED_KEYS as readonly string[]).includes(k)));
+          return { ...base, ...picked, ownerId };
+        }),
       buyCredits: (amount, description) =>
         set((s) => ({
           credits: s.credits + amount,
@@ -348,12 +374,12 @@ export const useStore = create<Store>()(
       partialize: (s) => {
         // Persist state only; functions are re-attached by create().
         const {
-          version, user, onboardingDone, onboarding, projects, assets, campaigns, generations, favorites,
+          version, ownerId, user, onboardingDone, onboarding, projects, assets, campaigns, generations, favorites,
           brands, currentBrandId, credits, transactions, notifications, members, workspaceName, preferences,
           currentProjectId, plan, country, savedCopy, savedHooks,
         } = s;
         return {
-          version, user, onboardingDone, onboarding, projects, assets, campaigns, generations, favorites,
+          version, ownerId, user, onboardingDone, onboarding, projects, assets, campaigns, generations, favorites,
           brands, currentBrandId, credits, transactions, notifications, members, workspaceName, preferences,
           currentProjectId, plan, country, savedCopy, savedHooks,
         } as Store;
@@ -382,6 +408,17 @@ export function useHydrated(): boolean {
     if (!useStore.persist.hasHydrated()) void useStore.persist.rehydrate();
   }, []);
   return hydrated;
+}
+
+/** Workspace slices saved to the account (credits, plan and history are server-owned). */
+export const SYNCED_KEYS = [
+  "user", "onboardingDone", "onboarding", "projects", "assets", "campaigns", "generations", "favorites", "brands",
+  "currentBrandId", "notifications", "members", "workspaceName", "preferences", "currentProjectId", "country",
+  "savedCopy", "savedHooks",
+] as const;
+
+export function pickSynced(s: StoreState): Record<string, unknown> {
+  return Object.fromEntries(SYNCED_KEYS.map((k) => [k, s[k]]));
 }
 
 /* ---------- Convenience selectors ---------- */

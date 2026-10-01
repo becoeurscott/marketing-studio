@@ -190,6 +190,14 @@ export interface Creator {
   languages: string[];
   country?: string;
   avatarUrl: string;
+  /** Generated portrait (also used as avatar). */
+  portrait: string;
+  /** Character reference sheet (front, 3/4, profile, full body), sent as reference for videos. */
+  sheet: string;
+  /** Short intro clip, when generated. */
+  intro?: string;
+  /** Fixed appearance description, repeated in every generation prompt. */
+  look: string;
   bio: string;
   featured: boolean;
 }
@@ -291,7 +299,7 @@ export const CREDIT_COSTS: Record<Exclude<CreditAction, "purchase" | "bonus">, n
   image: 10,
   video: 50,
   upscale: 15,
-  copy: 2,
+  copy: 0, // template-based text, free until a real text model is wired
   ads: 20,
   ugc: 60,
   "product-shoot": 30,

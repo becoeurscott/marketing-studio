@@ -245,7 +245,7 @@ export function Trust() {
                   Devenir ambassadeur
                 </motion.a>
               </div>
-              <ol className="grid gap-3 sm:grid-cols-3">
+              <ol className="grid gap-3 md:grid-cols-3">
                 {AMBASSADOR_STEPS.map(({ icon: Icon, title, text }, i) => (
                   <li key={title} className="rounded-2xl border border-white/10 bg-black/40 p-5">
                     <span className="font-mono text-xs text-highlight">0{i + 1}</span>

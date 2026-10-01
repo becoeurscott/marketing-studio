@@ -131,19 +131,19 @@ export default function ProductShootPage() {
           <ErrorState error={phase.error} onRetry={generate} />
         ) : phase.kind === "idle" && !product ? (
           /* Upload zone */
-          <div className="flex-1 flex items-center justify-center p-6">
+          <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
             <div
               onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
               onDragLeave={() => setDrag(false)}
               onDrop={onDrop}
-              className={cn("w-full max-w-lg rounded-2xl border-2 border-dashed p-10 text-center transition-colors", drag ? "border-accent bg-accent/10" : "border-border-strong")}
+              className={cn("w-full max-w-lg rounded-2xl border-2 border-dashed p-6 sm:p-10 text-center transition-colors", drag ? "border-accent bg-accent/10" : "border-border-strong")}
             >
               <span className="mx-auto size-14 rounded-full bg-accent/15 text-highlight flex items-center justify-center mb-4">{uploading !== null ? <Loader2 className="size-6 animate-spin" /> : <ImagePlus className="size-6" />}</span>
               <h3 className="text-lg font-semibold">{uploading !== null ? `Import… ${uploading} %` : "Déposez l'image produit ici"}</h3>
               <p className="text-sm text-text2 mt-1">PNG ou JPG, un seul produit ; un fond uni donne les meilleurs résultats.</p>
               <div className="flex flex-wrap justify-center gap-2 mt-5">
-                <Button leftIcon={<Upload className="size-4" />} onClick={() => fileRef.current?.click()} loading={uploading !== null}>Importer un produit</Button>
-                <Button variant="secondary" onClick={() => { const first = assets.find((a) => a.type === "image"); if (first) setProductId(first.id); }}>Choisir dans les ressources</Button>
+                <Button className="w-full sm:w-auto" leftIcon={<Upload className="size-4" />} onClick={() => fileRef.current?.click()} loading={uploading !== null}>Importer un produit</Button>
+                <Button variant="secondary" className="w-full sm:w-auto" onClick={() => { const first = assets.find((a) => a.type === "image"); if (first) setProductId(first.id); }}>Choisir dans les ressources</Button>
               </div>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
             </div>
@@ -158,7 +158,7 @@ export default function ProductShootPage() {
                 <p className="text-xs text-text2">{style.name} · {lighting} · {camera}</p>
               </div>
               {phase.kind === "done" && (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button variant="secondary" size="sm" leftIcon={<Save className="size-4" />} onClick={saveAll}>Tout enregistrer</Button>
                   <Button variant="secondary" size="sm" leftIcon={<RefreshCw className="size-4" />} onClick={generate}>Régénérer</Button>
                 </div>
@@ -168,11 +168,11 @@ export default function ProductShootPage() {
             {phase.kind === "loading" ? (
               <div>
                 <p className="text-sm text-text2 mb-3 flex items-center gap-2"><Loader2 className="size-4 animate-spin text-highlight" /> Création de vos visuels…</p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="aspect-[4/5] rounded-lg" />)}</div>
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="aspect-[4/5] rounded-lg" />)}</div>
               </div>
             ) : phase.kind === "done" ? (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
                   {phase.results.map((r, i) => (
                     <ResultImageCard
                       key={r.id} src={r.thumbnail} alt={`Photo ${i + 1}`} badge={`${i + 1} / ${phase.results.length}`}

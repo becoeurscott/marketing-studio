@@ -81,24 +81,24 @@ export function CalendarView({ campaign, compact }: { campaign: Campaign; compac
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant="secondary" onClick={() => shift(-1)} aria-label="Précédent"><ChevronLeft className="size-4" /></Button>
           <Button size="sm" variant="secondary" onClick={() => setCursor(today)}>Aujourd’hui</Button>
           <Button size="sm" variant="secondary" onClick={() => shift(1)} aria-label="Suivant"><ChevronRight className="size-4" /></Button>
-          <h3 className="text-sm font-semibold ml-1 whitespace-nowrap">{title}</h3>
+          <h3 className="text-sm font-semibold ml-1">{title}</h3>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Tabs variant="pill" layoutId={compact ? "cal-view-compact" : "cal-view"} items={[{ value: "week", label: "Semaine" }, { value: "month", label: "Mois" }]} value={view} onChange={setView} />
           <Button size="sm" leftIcon={<Plus className="size-4" />} onClick={() => { setNewDate(today); setEditing("new"); }}>Ajouter</Button>
         </div>
       </div>
 
       {/* Weekday header */}
-      <div className={cn("grid grid-cols-7 text-[11px] uppercase tracking-wide text-muted mb-1", view === "week" && "hidden md:grid")}>
+      <div className={cn("grid grid-cols-7 text-[11px] uppercase tracking-wide text-muted mb-1", view === "week" && "hidden lg:grid")}>
         {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((d) => <div key={d} className="px-2 py-1">{d}</div>)}
       </div>
 
-      <div className={cn("grid gap-px bg-border rounded-lg overflow-hidden border border-border", view === "week" ? "grid-cols-1 md:grid-cols-7" : "grid-cols-7")}>
+      <div className={cn("grid gap-px bg-border rounded-lg overflow-hidden border border-border", view === "week" ? "grid-cols-1 lg:grid-cols-7" : "grid-cols-7")}>
         {days.map((day) => {
           const k = dayKey(day);
           const items = byDay.get(k) ?? [];
@@ -112,17 +112,17 @@ export function CalendarView({ campaign, compact }: { campaign: Campaign; compac
               onDrop={(e) => onDrop(e, day)}
               className={cn(
                 "bg-card p-1.5 md:p-2 flex flex-col gap-1 transition-colors",
-                view === "week" ? "min-h-24 md:min-h-44" : compact ? "min-h-16 md:min-h-24" : "min-h-20 md:min-h-32",
+                view === "week" ? "min-h-24 lg:min-h-44" : compact ? "min-h-16 md:min-h-24" : "min-h-20 md:min-h-32",
                 outside && "bg-surface/60",
                 dragOver === k && "bg-accent/10",
               )}
             >
               <div className="flex items-center justify-between">
                 <span className={cn("text-[12px] font-medium", isToday ? "h-6 min-w-6 px-1.5 rounded-full bg-accent text-on-accent flex items-center justify-center whitespace-nowrap" : outside ? "text-muted" : "text-text2")}>
-                  <span className="md:hidden">{view === "week" ? day.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" }) : day.getDate()}</span>
-                  <span className="hidden md:inline">{day.getDate()}</span>
+                  <span className="lg:hidden">{view === "week" ? day.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" }) : day.getDate()}</span>
+                  <span className="hidden lg:inline">{day.getDate()}</span>
                 </span>
-                <button aria-label="Ajouter un élément ce jour-là" onClick={() => { setNewDate(day); setEditing("new"); }} className="size-5 rounded text-muted hover:text-text hover:bg-white/5 flex items-center justify-center"><Plus className="size-3" /></button>
+                <button aria-label="Ajouter un élément ce jour-là" onClick={() => { setNewDate(day); setEditing("new"); }} className={cn("size-5 rounded text-muted hover:text-text hover:bg-white/5 items-center justify-center", view === "month" ? "hidden md:flex" : "flex")}><Plus className="size-3" /></button>
               </div>
               {items.map((it) => (
                 <CalendarChip key={it.id} item={it} thumb={assets.find((a) => a.id === it.assetId)?.thumbnail} dense={view === "month"} onClick={() => setEditing(it)} />
@@ -167,7 +167,8 @@ function CalendarChip({ item, thumb, dense, onClick }: { item: CalendarItem; thu
             <span className={cn(dense && "hidden lg:inline")}>{adFormatLabel(item.format)}</span>
           </div>
         </div>
-        {!dense && <Badge tone={tone} dot className="hidden sm:inline-flex">{statusLabel(item.status)}</Badge>}
+        {/* Status badge only where the day cell is wide enough (single-column week below lg, or 2xl) */}
+        {!dense && <Badge tone={tone} dot className="hidden sm:inline-flex lg:hidden 2xl:inline-flex shrink-0">{statusLabel(item.status)}</Badge>}
         {dense && <span className={cn("size-1.5 rounded-full shrink-0", tone === "success" ? "bg-success" : tone === "accent" ? "bg-accent" : "bg-muted")} />}
       </div>
     </button>

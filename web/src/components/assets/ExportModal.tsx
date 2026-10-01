@@ -96,7 +96,7 @@ export function ExportForm({ assetIds, campaignId, onClose, onComplete, embedded
         <CheckCircle2 className="size-12 text-success mx-auto" />
         <h3 className="text-lg font-semibold mt-3">Export prêt</h3>
         <p className="text-sm text-text2 mt-1">{done.name} · {itemCount(ids.length)} · {format.toUpperCase()} · {qualityLabel(quality)}</p>
-        <div className="flex items-center justify-center gap-2 mt-6">
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
           <Button leftIcon={<Download className="size-4" />} onClick={() => { exportFiles(done).forEach((u) => window.open(u, "_blank", "noopener")); toast.info("Téléchargement lancé", done.name); }}>Télécharger</Button>
           <Link href={`/assets/${done.id}`}><Button variant="secondary" onClick={onClose}>Voir dans les ressources</Button></Link>
         </div>

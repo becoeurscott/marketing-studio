@@ -12,7 +12,7 @@ function BootScreen() {
       <div className="hidden md:block w-[240px] border-r border-border bg-surface" />
       <div className="flex-1 p-6 space-y-4">
         <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-80" />
+        <Skeleton className="h-4 w-full max-w-80" />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         </div>

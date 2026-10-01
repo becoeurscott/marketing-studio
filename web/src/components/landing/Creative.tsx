@@ -76,12 +76,12 @@ function Overlay({ data, compact }: { data: CreativeData; compact?: boolean }) {
     <>
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
       <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
-        <span className="rounded-full bg-black/45 backdrop-blur px-2 py-0.5 text-[10px] font-medium text-white">{data.platform}</span>
-        {data.price && !data.video && (
-          <span className="ml-auto rotate-3 rounded-md bg-highlight px-2 py-0.5 text-[11px] font-extrabold text-on-accent shadow-lg">{data.price}</span>
+        <span className="min-w-0 truncate rounded-full bg-black/45 backdrop-blur px-2 py-0.5 text-[10px] font-medium text-white">{data.platform}</span>
+        {data.price && !data.video && !compact && (
+          <span className="ml-auto shrink-0 whitespace-nowrap rotate-3 rounded-md bg-highlight px-2 py-0.5 text-[11px] font-extrabold text-on-accent shadow-lg">{data.price}</span>
         )}
         {data.video && (
-          <span className="size-6 rounded-full bg-white/25 backdrop-blur flex items-center justify-center">
+          <span className="size-6 shrink-0 rounded-full bg-white/25 backdrop-blur flex items-center justify-center">
             <Play className="size-3 text-white fill-white" />
           </span>
         )}

@@ -225,7 +225,7 @@ function InviteForm({ onClose, onInvite }: { onClose: () => void; onInvite: (i: 
     <form onSubmit={submit} className="space-y-4">
       <Input label="E-mail" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="collegue@entreprise.com" leftIcon={<Mail />} error={error} autoFocus />
       <Select label="Rôle" name="role" value={role} onChange={(e) => setRole(e.target.value as WorkspaceRole)} options={ROLES.filter((r) => r.id !== "owner").map((r) => ({ value: r.id, label: `${r.label} — ${r.description}` }))} />
-      <div className="flex items-center justify-end gap-2 pt-2">
+      <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
         <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
         <Button type="submit" leftIcon={<UserPlus className="size-4" />}>Envoyer l’invitation</Button>
       </div>

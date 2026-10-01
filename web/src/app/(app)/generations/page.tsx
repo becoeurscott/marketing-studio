@@ -55,8 +55,8 @@ export default function GenerationsPage() {
         <EmptyState icon={History} title="Aucune génération pour l'instant" description="Votre historique de générations apparaîtra ici, avec les prompts et les résultats." cta={{ label: "Ouvrir le Studio", href: "/studio" }} />
       ) : (
         <>
-          <div className="flex flex-col md:flex-row md:items-center gap-3 mb-5">
-            <SearchBar value={q} onChange={setQ} placeholder="Rechercher un prompt…" className="md:w-72" />
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-5">
+            <SearchBar value={q} onChange={setQ} placeholder="Rechercher un prompt…" className="lg:w-72" />
             <FilterBar
               className="flex-1"
               options={[
