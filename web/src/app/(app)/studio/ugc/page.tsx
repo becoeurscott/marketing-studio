@@ -138,9 +138,13 @@ function UGCPage() {
                   </>
                 ) : (
                   <>
-                    <img src={creator.avatarUrl} alt={creator.name} className={cn("size-full object-cover transition-opacity", loading ? "opacity-40" : "opacity-80")} />
-                    {product && <img src={product.thumbnail} alt={product.name} className="absolute bottom-16 right-3 w-20 aspect-[4/5] object-cover rounded-md border border-white/30 shadow-float" />}
-                    <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
+                    {creator.intro ? (
+                      <video key={creator.id} src={creator.intro} poster={creator.portrait} autoPlay muted loop playsInline controls className={cn("size-full object-cover transition-opacity", loading && "opacity-40")} aria-label={`Présentation de ${creator.name}`} />
+                    ) : (
+                      <img src={creator.portrait} alt={creator.name} className={cn("size-full object-cover transition-opacity", loading ? "opacity-40" : "opacity-80")} />
+                    )}
+                    {product && <img src={product.thumbnail} alt={product.name} className="pointer-events-none absolute bottom-24 right-3 w-20 aspect-[4/5] object-cover rounded-md border border-white/30 shadow-float" />}
+                    <div className="pointer-events-none absolute top-0 inset-x-0 p-3 bg-gradient-to-b from-black/70 to-transparent">
                       <p className="text-xs font-semibold">@{creator.name.toLowerCase()} · {location}</p>
                       <p className="text-[11px] text-white/70 line-clamp-2">{script}</p>
                     </div>
