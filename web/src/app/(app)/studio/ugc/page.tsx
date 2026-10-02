@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
 import { creators } from "@/data";
 import { generateUGC, ugcCredits, VIDEO_STEPS, type VideoResult } from "@/lib/api";
+import { UGC_TYPES } from "@/lib/creative-presets";
 import { capitalize, useTemplatePreset } from "@/components/studio/useTemplatePreset";
 import { VIDEO_STEP_LABELS } from "@/components/studio/constants";
 import { LANGUAGES, countryOf, languageLabel, type LanguageId } from "@/lib/market";
@@ -52,6 +53,15 @@ function UGCPage() {
   });
   const [script, setScript] = useState(() => params.get("script") || DEFAULT_SCRIPT);
   const [location, setLocation] = useState(LOCATIONS[0]);
+  const [ugcTypeId, setUgcTypeId] = useState(UGC_TYPES[0].id);
+  const ugcType = UGC_TYPES.find((t) => t.id === ugcTypeId) ?? UGC_TYPES[0];
+  const pickUgcType = (id: string) => {
+    const next = UGC_TYPES.find((t) => t.id === id);
+    if (!next) return;
+    // Swap the script only if it is still the default or another format's starter script.
+    if (script === DEFAULT_SCRIPT || UGC_TYPES.some((t) => t.script === script)) setScript(next.script);
+    setUgcTypeId(id);
+  };
   const [tone, setTone] = useState<UgcTone>(() => {
     const t = preset?.tone ? capitalize(preset.tone) : "";
     return (TONES as readonly string[]).includes(t) ? (t as UgcTone) : "Authentic";
@@ -77,7 +87,7 @@ function UGCPage() {
     setSavedId(null);
     try {
       const result = await generateUGC(
-        { creatorId, script, durationSec: Number(duration) as 5 | 10 | 15, location, tone, language, productAssetId: productId, projectId: currentProjectId },
+        { creatorId, script, durationSec: Number(duration) as 5 | 10 | 15, location, tone, language, productAssetId: productId, projectId: currentProjectId, formatDirection: ugcType.direction },
         (_step, index) => setPhase({ kind: "loading", step: index }),
       );
       setPhase({ kind: "done", result });
@@ -110,6 +120,9 @@ function UGCPage() {
         <div className="grid grid-cols-1 gap-2">
           {featured.map((c) => <CreatorCard key={c.id} creator={c} compact selected={c.id === creatorId} onSelect={() => setCreatorId(c.id)} />)}
         </div>
+      </ControlField>
+      <ControlField label="Type de vidéo" hint={ugcType.hint}>
+        <ChipGroup size="sm" options={UGC_TYPES.map((t) => ({ value: t.id, label: t.label }))} value={ugcTypeId} onChange={pickUgcType} />
       </ControlField>
       <Textarea label="Script" value={script} onChange={(e) => setScript(e.target.value)} rows={4} hint={`${script.length} caractères`} />
       <Select label="Lieu" value={location} onChange={(e) => setLocation(e.target.value)} options={LOCATIONS.map((l) => ({ value: l, label: l }))} />

@@ -18,12 +18,13 @@ export async function loadState(): Promise<{ state: SyncedState | null; updatedA
 }
 
 /** Saves the workspace document (last write wins). */
-export async function saveState(state: SyncedState): Promise<{ ok: boolean; error?: string }> {
+export async function saveState(state: SyncedState): Promise<{ ok: boolean; error?: string; updatedAt?: string }> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: "not-signed-in" };
   const json = JSON.stringify(state);
   if (json.length > MAX_BYTES) return { ok: false, error: "too-large" };
+  const updatedAt = new Date().toISOString();
   const { error } = await adminClient().database.from("ms_state")
-    .upsert([{ user_id: user.id, state, updated_at: new Date().toISOString() }], { onConflict: "user_id" });
-  return error ? { ok: false, error: error.message } : { ok: true };
+    .upsert([{ user_id: user.id, state, updated_at: updatedAt }], { onConflict: "user_id" });
+  return error ? { ok: false, error: error.message } : { ok: true, updatedAt };
 }

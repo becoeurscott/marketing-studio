@@ -41,6 +41,7 @@ export function SiteHeader() {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 24));
   useEffect(() => {
     if (!menuOpen) return;
@@ -68,10 +69,20 @@ export function SiteHeader() {
         )}
       >
         <Logo />
-        <nav className="hidden lg:flex items-center gap-7 text-sm text-text2">
+        <nav className="hidden lg:flex items-center gap-1 text-sm text-text2" onMouseLeave={() => setHovered(null)}>
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} className="hover:text-text transition-colors">
-              {n.label}
+            <a
+              key={n.href}
+              href={n.href}
+              onMouseEnter={() => setHovered(n.href)}
+              onFocus={() => setHovered(n.href)}
+              className="group relative px-3.5 py-2 rounded-full hover:text-text focus-visible:text-text transition-colors"
+            >
+              {hovered === n.href && (
+                <motion.span layoutId="nav-hover" className="absolute inset-0 rounded-full bg-white/10 ring-1 ring-white/10" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
+              )}
+              <span className="relative">{n.label}</span>
+              <span className="pointer-events-none absolute inset-x-3.5 -bottom-0.5 h-px origin-left scale-x-0 bg-gradient-to-r from-accent to-highlight transition-transform duration-300 group-hover:scale-x-100" />
             </a>
           ))}
         </nav>
@@ -102,17 +113,17 @@ export function SiteHeader() {
       {menuOpen && (
           <motion.nav
             id="landing-section-menu"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.2, ease: EASE }}
-            className="lg:hidden mx-auto mt-2 max-w-5xl rounded-2xl border border-white/10 bg-black/85 backdrop-blur-xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
+            className="lg:hidden ml-auto mt-2 w-60 origin-top-right rounded-2xl border border-white/10 bg-black/85 backdrop-blur-xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
           >
             {NAV.map((n) => (
-              <a key={n.href} href={n.href} onClick={() => setMenuOpen(false)} className="flex h-11 items-center rounded-xl px-3 text-[15px] text-text2 hover:text-text hover:bg-white/5 transition-colors">
+              <a key={n.href} href={n.href} onClick={() => setMenuOpen(false)} className="flex h-11 items-center justify-end rounded-xl px-3 text-[15px] text-text2 hover:text-text hover:bg-white/5 transition-colors">
                 {n.label}
               </a>
             ))}
-            <Link href="/connexion" onClick={() => setMenuOpen(false)} className="sm:hidden flex h-11 items-center rounded-xl px-3 text-[15px] text-text2 hover:text-text hover:bg-white/5 transition-colors border-t border-white/5 mt-1 pt-1">
+            <Link href="/connexion" onClick={() => setMenuOpen(false)} className="sm:hidden flex h-11 items-center justify-end rounded-xl px-3 text-[15px] text-text2 hover:text-text hover:bg-white/5 transition-colors border-t border-white/5 mt-1 pt-1">
               Connexion
             </Link>
           </motion.nav>

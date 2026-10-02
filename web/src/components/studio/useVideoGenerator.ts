@@ -8,8 +8,15 @@ import { useStore } from "@/lib/store";
 import type { Asset } from "@/lib/types";
 import { VIDEO_CAMERAS, VIDEO_STYLES, type DurationSec, type VideoParams } from "./constants";
 import type { GenError } from "./useImageGenerator";
+import { MULTI_SHOT_PRESETS } from "@/lib/creative-presets";
 
 /** Video-generation state for Studio VIDEO mode and /studio/video (SPEC §14). */
+/** Kling custom shots for the selected multi-shot preset (the concept is the shared subject of every shot). */
+export function multiShotsFor(params: VideoParams): { prompt: string; duration: number }[] | undefined {
+  const preset = params.multiShotId && params.model === "kling-3.0" && !params.sourceAssetId ? MULTI_SHOT_PRESETS.find((p) => p.id === params.multiShotId) : undefined;
+  return preset?.shots.map((s) => ({ prompt: `${params.concept.trim() || "The product"}. ${s.prompt}`, duration: s.duration }));
+}
+
 export function useVideoGenerator() {
   const currentProjectId = useStore((s) => s.currentProjectId);
   const assets = useStore((s) => s.assets);
@@ -19,7 +26,7 @@ export function useVideoGenerator() {
 
   const [params, setParams] = useState<VideoParams>(() => {
     const firstImage = assets.find((a) => a.type === "image");
-    const base: VideoParams = { concept: "", model: "seedance-2.5", creatorId: creators.find((c) => c.featured)?.id ?? null, durationSec: 10, ratio: "9:16", camera: "Slow zoom", style: "Commercial", sourceAssetId: firstImage?.id ?? null };
+    const base: VideoParams = { concept: "", model: "kling-3.0", creatorId: creators.find((c) => c.featured)?.id ?? null, durationSec: 10, ratio: "9:16", camera: "Slow zoom", style: "Commercial", sourceAssetId: firstImage?.id ?? null };
     const tpl = pendingTemplateId ? templates.find((t) => t.id === pendingTemplateId)?.preset : undefined;
     if (!tpl || tpl.mode !== "video") return base;
     return {
@@ -51,7 +58,7 @@ export function useVideoGenerator() {
       const src = assets.find((a) => a.id === params.sourceAssetId);
       const out = kind === "ugc" && creatorId
         ? await generateUGC({ creatorId, script: params.concept, durationSec: params.durationSec, productAssetId: params.sourceAssetId, tone: params.style, projectId: currentProjectId }, (_label, index) => setStep(index))
-        : await generateVideo({ ...params, sourceUrl: src?.url, projectId: currentProjectId }, (_label, index) => setStep(index));
+        : await generateVideo({ ...params, sourceUrl: src?.url, projectId: currentProjectId, shots: multiShotsFor(params) }, (_label, index) => setStep(index));
       setResult({ ...out, poster: out.poster || src?.url || "", thumbnail: out.thumbnail || src?.thumbnail || "" });
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "failed";

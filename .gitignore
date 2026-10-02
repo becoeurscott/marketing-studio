@@ -4,3 +4,22 @@ DerivedData/
 *.xcuserstate
 xcuserdata/
 .DS_Store
+
+# InsForge & AI agent skills
+.insforge
+.agent
+.agents
+.augment
+.claude
+.cline
+.github/copilot*
+.kilocode
+.qoder
+.qwen
+.roo
+.trae
+.windsurf
+
+# Local secrets (never commit keys)
+.env*
+!.env.example

@@ -11,7 +11,7 @@ import { CtaBar, Img, MEDIA, ScreenTitle, type ProductInfo } from "./shared";
 /* 21. Paywall */
 /** Prices in FCFA, shown in the user's currency. "free" = pay-as-you-go pack, no subscription. */
 const PLANS = [
-  { id: "free", name: "Pack Découverte", priceXof: 1000, per: " sans abonnement", features: ["5 visuels", "Paiement Mobile Money", "Sans engagement"], cta: "Commencer avec 5 visuels" },
+  { id: "free", name: "Pack Découverte", priceXof: 1000, per: " sans abonnement", features: ["1 photo produit + 1 portrait", "Paiement Mobile Money", "Sans engagement"], cta: "Commencer petit" },
   { id: "creator", name: "Creator", priceXof: 14900, per: "/mois", features: ["1 000 crédits / mois", "Vidéos UGC", "Statuts et catalogue WhatsApp", "Sans filigrane"], cta: "Lancer ma campagne" },
   { id: "studio", name: "Studio", priceXof: 29900, per: "/mois", popular: true, features: ["Campagnes illimitées", "3 000 crédits / mois", "Calendrier des fêtes", "Flyers imprimables"], cta: "Lancer ma campagne" },
   { id: "agency", name: "Agency", priceXof: 79900, per: "/mois", features: ["Multi-marques", "Collaboration d'équipe", "Exports en marque blanche", "Support prioritaire"], cta: "Lancer ma campagne" },

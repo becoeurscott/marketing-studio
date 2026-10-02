@@ -45,10 +45,10 @@ enum Plan: String, Codable, CaseIterable, Identifiable {
     }
     var features: [String] {
         switch self {
-        case .starter: return ["300 générations IA / mois", "3 projets", "1 kit de marque", "Générateur d'images", "Rédacteur IA", "Modèles par secteur"]
-        case .creator: return ["1 000 générations IA / mois", "Projets illimités", "Créateur vidéo + UGC", "Shooting produit IA", "Statuts et catalogue WhatsApp", "Tous les modèles"]
-        case .studio: return ["3 000 générations IA / mois", "Campagnes illimitées", "Création de campagnes + calendrier", "Centre d'export (4K)", "Rendu prioritaire", "5 membres"]
-        case .agency: return ["10 000 générations IA / mois", "Kits de marque illimités", "Espaces clients", "Rôles + permissions", "Support dédié", "Membres illimités"]
+        case .starter: return ["300 crédits / mois (≈ 30 photos IA)", "≈ 6 vidéos de 5 s", "3 projets", "1 kit de marque", "Générateur d'images", "Rédacteur IA"]
+        case .creator: return ["1 000 crédits / mois (≈ 100 photos IA)", "≈ 20 vidéos de 5 s", "Projets illimités", "Créateur vidéo + UGC", "Statuts et catalogue WhatsApp", "Tous les modèles"]
+        case .studio: return ["3 000 crédits / mois (≈ 300 photos IA)", "≈ 60 vidéos de 5 s", "Campagnes illimitées", "Création de campagnes + calendrier", "Rendu prioritaire", "10 kits de marque"]
+        case .agency: return ["10 000 crédits / mois (≈ 1 000 photos IA)", "≈ 200 vidéos de 5 s", "Kits de marque illimités", "Campagnes illimitées", "Support dédié", "Projets illimités"]
         }
     }
 }
@@ -361,10 +361,10 @@ enum GenerationKind: String, Codable, CaseIterable, Identifiable {
     /// Typical cost shown in lists (the exact cost depends on the model and duration, see AIModels).
     var creditCost: Int {
         switch self {
-        case .image: return 10
+        case .image: return AIModels.imageModel(nil).credits
         case .video: return AIModels.videoCredits(AIModels.defaultVideo, seconds: 10)
         case .copy: return 0
-        case .ad: return 20
+        case .ad: return AIModels.imageModel(nil).credits * 2
         }
     }
 }

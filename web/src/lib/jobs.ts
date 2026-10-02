@@ -13,14 +13,15 @@ interface JobRow {
   outputs: { url: string; key: string; type: "image" | "video" }[];
   finalized: boolean;
   refunded: boolean;
+  updated_at: string;
 }
 
-const COLS = "id, user_id, hf_request_id, kind, status, outputs, finalized, refunded";
+const COLS = "id, user_id, hf_request_id, kind, status, outputs, finalized, refunded, updated_at";
 
 function toJob(row: JobRow, status?: JobStatus): GenerationJob {
   const images = row.outputs.filter((o) => o.type === "image").map((o) => o.url);
   const video = row.outputs.find((o) => o.type === "video")?.url ?? null;
-  return { requestId: row.id, status: status ?? (row.status as JobStatus), images, videoUrl: video };
+  return { requestId: row.id, status: status ?? (!row.finalized && row.status === "completed" ? "in_progress" : row.status as JobStatus), images, videoUrl: video };
 }
 
 /** Copies each output from Higgsfield's CDN (kept ~7 days) into our bucket. */
@@ -32,7 +33,7 @@ async function rehost(row: JobRow, hf: GenerationJob) {
   ];
   const outputs: JobRow["outputs"] = [];
   for (const [i, s] of sources.entries()) {
-    const file = await fetch(s.url);
+    const file = await fetch(s.url, { signal: AbortSignal.timeout(45_000) });
     if (!file.ok) throw new Error(`Téléchargement impossible (${file.status})`);
     const blob = await file.blob();
     const ext = s.type === "video" ? "mp4" : (blob.type.split("/")[1] || "png").replace("jpeg", "jpg");
@@ -49,29 +50,37 @@ async function rehost(row: JobRow, hf: GenerationJob) {
  */
 export async function syncJob(userId: string, jobId: string): Promise<GenerationJob | null> {
   const db = adminClient().database;
-  const { data } = await db.from("ms_jobs").select(COLS).eq("id", jobId).eq("user_id", userId).limit(1);
+  const { data, error } = await db.from("ms_jobs").select(COLS).eq("id", jobId).eq("user_id", userId).limit(1);
+  if (error) throw new Error("Impossible de lire la génération.");
   const row = data?.[0] as JobRow | undefined;
   if (!row) return null;
   if (row.finalized || !row.hf_request_id) return toJob(row);
 
   const hf = await getJob(row.hf_request_id);
   if (hf.status === "completed" && (hf.images.length || hf.videoUrl)) {
-    // Claim the job so concurrent polls don't upload twice.
-    const { data: claimed } = await db.from("ms_jobs").update({ finalized: true, status: "completed", updated_at: new Date().toISOString() })
-      .eq("id", row.id).eq("finalized", false).select("id");
-    if (!claimed?.length) {
-      const { data: fresh } = await db.from("ms_jobs").select(COLS).eq("id", row.id).limit(1);
-      return toJob(fresh?.[0] as JobRow);
+    // Completed + not finalized is a five-minute storage lease, never a client success.
+    // Match updated_at so only one concurrent poll acquires it; an expired lease retries
+    // after a crashed worker or a temporary storage outage.
+    if (row.status === "completed" && Date.now() - Date.parse(row.updated_at) < 300_000) {
+      return toJob(row, "in_progress");
     }
+    const leaseAt = new Date().toISOString();
+    const { data: claimed, error: claimError } = await db.from("ms_jobs")
+      .update({ status: "completed", updated_at: leaseAt })
+      .eq("id", row.id).eq("finalized", false).eq("updated_at", row.updated_at).select("id");
+    if (claimError) throw new Error("Impossible de préparer le résultat.");
+    if (!claimed?.length) return toJob(row, "in_progress");
     try {
       const outputs = await rehost(row, hf);
-      await db.from("ms_jobs").update({ outputs, updated_at: new Date().toISOString() }).eq("id", row.id);
-      return toJob({ ...row, outputs, status: "completed" });
+      const { data: saved, error: saveError } = await db.from("ms_jobs")
+        .update({ outputs, finalized: true, status: "completed", updated_at: new Date().toISOString() })
+        .eq("id", row.id).eq("finalized", false).eq("updated_at", leaseAt).select("id");
+      if (saveError) throw new Error("Impossible de sauvegarder le résultat.");
+      if (!saved?.length) return toJob(row, "in_progress");
+      return toJob({ ...row, outputs, finalized: true, status: "completed" });
     } catch {
-      // Storage failed: keep the provider URLs so the user still gets the result now.
-      const outputs = [...hf.images.map((url) => ({ url, key: "", type: "image" as const })), ...(hf.videoUrl ? [{ url: hf.videoUrl, key: "", type: "video" as const }] : [])];
-      await db.from("ms_jobs").update({ outputs }).eq("id", row.id);
-      return toJob({ ...row, outputs, status: "completed" });
+      // Keep the lease retryable. Expiring provider URLs must not become saved assets.
+      return toJob(row, "in_progress");
     }
   }
   if (hf.status === "failed" || hf.status === "nsfw" || hf.status === "canceled" || (hf.status === "completed")) {
@@ -85,5 +94,6 @@ export async function syncJob(userId: string, jobId: string): Promise<Generation
 }
 
 export async function attachRequest(jobId: string, hfRequestId: string, status: JobStatus) {
-  await adminClient().database.from("ms_jobs").update({ hf_request_id: hfRequestId, status, updated_at: new Date().toISOString() }).eq("id", jobId);
+  const { error } = await adminClient().database.from("ms_jobs").update({ hf_request_id: hfRequestId, status, updated_at: new Date().toISOString() }).eq("id", jobId);
+  if (error) throw new Error("Impossible de sauvegarder la génération acceptée.");
 }

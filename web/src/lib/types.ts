@@ -296,13 +296,13 @@ export interface SavedHook {
 export type CreditAction = "image" | "video" | "upscale" | "copy" | "ads" | "ugc" | "product-shoot" | "export" | "purchase" | "bonus";
 
 export const CREDIT_COSTS: Record<Exclude<CreditAction, "purchase" | "bonus">, number> = {
-  image: 10,
-  video: 50,
-  upscale: 15,
+  image: 44,
+  video: 65,
+  upscale: 72,
   copy: 0, // template-based text, free until a real text model is wired
-  ads: 20,
-  ugc: 60,
-  "product-shoot": 30,
+  ads: 88,
+  ugc: 168,
+  "product-shoot": 132,
   export: 0,
 };
 

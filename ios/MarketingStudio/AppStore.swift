@@ -46,7 +46,7 @@ final class AppStore: ObservableObject {
     @Published var notifications: [AppNotification] { didSet { scheduleSave() } }
     @Published var members: [WorkspaceMember] { didSet { scheduleSave() } }
     @Published var plan: Plan { didSet { scheduleSave() } }
-    @Published var preferences: UserPreferences { didSet { scheduleSave() } }
+    @Published var preferences: UserPreferences { didSet { scheduleSave(); applyDevicePreferences() } }
     @Published var currentProjectId: String? { didSet { scheduleSave() } }
     @Published var copyResults: [CopyResult] { didSet { scheduleSave() } }
     @Published var savedHooks: [HookResult] { didSet { scheduleSave() } }
@@ -126,6 +126,12 @@ final class AppStore: ObservableObject {
         transactions = summary.ledger.map { e in
             CreditTransaction(id: e.id, amount: e.amount, reason: e.description, createdAt: iso.date(from: e.created_at) ?? plain.date(from: e.created_at) ?? Date())
         }
+    }
+
+    /// Haptics and reduced motion take effect immediately.
+    private func applyDevicePreferences() {
+        MSHaptic.enabled = preferences.haptics
+        MSAnimation.reduced = preferences.reduceMotion
     }
 
     private func apply(_ s: PersistedState) {

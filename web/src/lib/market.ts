@@ -113,8 +113,8 @@ export interface UsagePack {
 
 /** Sold without subscription: many merchants manage cash day to day. 1 visual = 10 credits. */
 export const USAGE_PACKS: UsagePack[] = [
-  { id: "pack_decouverte", name: "Pack Découverte", pitch: "5 visuels", priceXof: 1000, credits: 50 },
-  { id: "pack_boutique", name: "Pack Boutique", pitch: "15 visuels + 1 vidéo", priceXof: 3500, credits: 200, popular: true },
+  { id: "pack_decouverte", name: "Pack Découverte", pitch: "1 photo produit + 1 portrait", priceXof: 1000, credits: 50 },
+  { id: "pack_boutique", name: "Pack Boutique", pitch: "4 photos produit", priceXof: 3500, credits: 200, popular: true },
   { id: "pass_semaine", name: "Pass Semaine", pitch: "7 jours pour tout créer", priceXof: 5000, credits: 400, validityDays: 7 },
 ];
 

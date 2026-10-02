@@ -11,6 +11,7 @@ import { ChipGroup } from "@/components/ui/Chip";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { generateProductShoot, uploadProduct, type ImageResult } from "@/lib/api";
+import { SHOT_TYPES } from "@/lib/creative-presets";
 import { useTemplatePreset } from "@/components/studio/useTemplatePreset";
 import { useStore } from "@/lib/store";
 import { CREDIT_COSTS, type Asset } from "@/lib/types";
@@ -33,6 +34,8 @@ export default function ProductShootPage() {
   const { template, preset } = useTemplatePreset("product-shoot");
   const [lighting, setLighting] = useState(() => (preset?.style === "Studio" ? "Studio" : LIGHTING[0]));
   const [camera, setCamera] = useState(CAMERAS[1]);
+  const [shotId, setShotId] = useState(SHOT_TYPES[0].id);
+  const shot = SHOT_TYPES.find((s) => s.id === shotId) ?? SHOT_TYPES[0];
   const [styleId, setStyleId] = useState<string>(SOKOZIA_STYLES[0].id);
   const style = styleById(styleId)!;
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
@@ -67,7 +70,7 @@ export default function ProductShootPage() {
     setPhase({ kind: "loading" });
     setSelected(null);
     try {
-      const results = await generateProductShoot({ productUrl: product.url, environment: style.name, lighting, camera, styleDirection: style.direction, styleName: style.name, projectId: currentProjectId });
+      const results = await generateProductShoot({ productUrl: product.url, environment: style.name, lighting, camera, styleDirection: style.direction, styleName: `${style.name} · ${shot.label}`, shotDirection: shot.direction, projectId: currentProjectId });
       setPhase({ kind: "done", results });
       setSelected(results[0]?.id ?? null);
       toast.success("Shooting produit prêt", `${results.length} photos · ${style.name}`);
@@ -111,6 +114,9 @@ export default function ProductShootPage() {
             </button>
           ))}
         </div>
+      </ControlField>
+      <ControlField label="Type de plan" hint={shot.hint}>
+        <ChipGroup size="sm" options={SHOT_TYPES.map((s) => ({ value: s.id, label: s.label }))} value={shotId} onChange={setShotId} />
       </ControlField>
       <ControlField label="Éclairage">
         <ChipGroup size="sm" options={LIGHTING.map((l) => ({ value: l, label: l }))} value={lighting} onChange={setLighting} />

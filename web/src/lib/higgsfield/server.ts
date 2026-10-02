@@ -86,6 +86,13 @@ export function toModelInput(req: GenerationRequest): [string, Record<string, un
       const m = images.length && !chosen.i2v ? videoModel(DEFAULT_VIDEO_MODEL) : chosen;
       const duration = clampDuration(m, Number(req.durationSec) || 5);
       const input: Record<string, unknown> = { prompt, duration };
+      // Multi-shot ad (Kling 3.0 only): 1–6 custom shots, total ≤ 15 s.
+      const shots = sanitizeShots(req.shots);
+      if (shots.length && !images.length && m.id === "kling-3.0") {
+        input.multi_shots = true;
+        input.multi_prompt = shots;
+        input.duration = shots.reduce((s, x) => s + x.duration, 0);
+      }
       const resolution = m.resolution(!!req.light);
       if (resolution) input.resolution = resolution;
       if (m.audio === "generate_audio") input.generate_audio = req.audio ?? true;
@@ -97,6 +104,21 @@ export function toModelInput(req: GenerationRequest): [string, Record<string, un
     default:
       throw new Error("Type de génération inconnu.");
   }
+}
+
+/** Valid Kling custom shots: up to 6, each 1–15 s and ≤ 512 characters, total ≤ 15 s. */
+export function sanitizeShots(raw: unknown): { prompt: string; duration: number }[] {
+  if (!Array.isArray(raw)) return [];
+  const out: { prompt: string; duration: number }[] = [];
+  let total = 0;
+  for (const s of raw.slice(0, 6)) {
+    const p = clampText((s as { prompt?: unknown })?.prompt, 512);
+    const d = Math.max(1, Math.min(15, Math.round(Number((s as { duration?: unknown })?.duration) || 0)));
+    if (!p || total + d > 15) break;
+    out.push({ prompt: p, duration: d });
+    total += d;
+  }
+  return out;
 }
 
 /* ---------- Jobs ---------- */
@@ -201,4 +223,32 @@ export function errorResponse(error: unknown): Response {
   if (name === "ValidationError" || name === "BadInputError") return Response.json({ error: "Paramètres refusés par le modèle." }, { status: 422 });
   const message = error instanceof Error ? error.message : "Erreur inconnue.";
   return Response.json({ error: message }, { status: 400 });
+}
+
+/* ---------- Price estimates (free: nothing is generated) ---------- */
+
+export interface Estimate { ok: boolean; credits?: number; usd?: number; status?: number; error?: string }
+
+/** Asks Higgsfield what a request would cost, without generating it. */
+export async function estimateRaw(endpoint: string, input: Record<string, unknown>): Promise<Estimate> {
+  try {
+    const res = await hfFetch(`/estimate/${endpoint}`, { method: "POST", body: JSON.stringify(input) });
+    const text = await res.text();
+    if (!res.ok) return { ok: false, status: res.status, error: text.slice(0, 160) };
+    const j = JSON.parse(text) as { credits?: string | number; usd?: string | number };
+    if (j.credits === undefined || j.usd === undefined) return { ok: false, status: res.status, error: `Réponse inattendue : ${text.slice(0, 900)}` };
+    return { ok: true, credits: Number(j.credits), usd: Number(j.usd) };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "estimate failed" };
+  }
+}
+
+/** Estimate for an app request, mapped exactly like a real generation. */
+export async function estimateRequest(req: GenerationRequest): Promise<Estimate & { endpoint?: string }> {
+  try {
+    const [endpoint, input] = toModelInput(req);
+    return { ...(await estimateRaw(endpoint, input)), endpoint };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "invalid request" };
+  }
 }

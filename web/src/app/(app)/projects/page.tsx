@@ -1,10 +1,10 @@
 "use client";
 
-import { FolderKanban, Plus } from "lucide-react";
+import { ArrowRight, FolderKanban, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ProjectFormModal } from "@/components/projects/NewProjectModal";
 import { ProjectCard } from "@/components/projects/ProjectCard";
-import { PageHeader } from "@/components/shell/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterBar } from "@/components/ui/FilterBar";
@@ -24,7 +24,10 @@ export default function ProjectsPage() {
   const duplicateProject = useStore((s) => s.duplicateProject);
   const archiveProject = useStore((s) => s.archiveProject);
   const deleteProject = useStore((s) => s.deleteProject);
+  const addProject = useStore((s) => s.addProject);
   const toast = useToast();
+  const router = useRouter();
+  const [newName, setNewName] = useState("");
 
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("updated");
@@ -44,14 +47,44 @@ export default function ProjectsPage() {
   }, [projects, filter, q, sort]);
 
   const assetCount = (id: string) => assets.filter((a) => a.projectId === id).length;
+  const covers = (id: string) =>
+    assets
+      .filter((a) => a.projectId === id && (a.type === "image" || a.type === "video") && a.thumbnail)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+      .slice(0, 3)
+      .map((a) => a.thumbnail);
+
+  const create = (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = newName.trim();
+    if (!name) { setEditing(null); setFormOpen(true); return; }
+    const p = addProject({ name });
+    toast.success("Projet créé", p.name);
+    setNewName("");
+    router.push(`/projects/${p.id}`);
+  };
 
   return (
     <>
-      <PageHeader
-        title="Projets"
-        description="Tout ce sur quoi vous travaillez, regroupé par produit ou par lancement."
-        actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => { setEditing(null); setFormOpen(true); }}>Nouveau projet</Button>}
-      />
+      <section className="relative -mx-4 sm:mx-0 px-4 pt-6 pb-10 sm:pt-10 text-center overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-24 mx-auto h-64 max-w-2xl rounded-full bg-accent/20 blur-[90px]" />
+        <p className="relative inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-text2">Projets</p>
+        <h1 className="relative mt-4 text-3xl sm:text-5xl font-black uppercase leading-[0.95] tracking-tight">
+          Un produit, un projet.
+          <span className="block text-text2/70">Tout son contenu au même endroit.</span>
+        </h1>
+        <form onSubmit={create} className="relative mx-auto mt-8 flex max-w-2xl items-center gap-2 rounded-2xl border border-white/10 bg-card/80 p-2 pl-4 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.45)] focus-within:border-white/25 transition-colors">
+          <Plus className="size-4 shrink-0 text-muted" />
+          <input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Nommez votre projet, ex : Promo Tabaski"
+            aria-label="Nom du nouveau projet"
+            className="min-w-0 flex-1 bg-transparent text-[15px] text-text placeholder:text-muted outline-none h-10"
+          />
+          <Button type="submit" rightIcon={<ArrowRight className="size-4" />}>Créer</Button>
+        </form>
+      </section>
 
       <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-5">
         <SearchBar value={q} onChange={setQ} placeholder="Rechercher un projet…" className="lg:w-72" />
@@ -65,12 +98,13 @@ export default function ProjectsPage() {
       </div>
 
       {list.length ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {list.map((p) => (
             <ProjectCard
               key={p.id}
               project={p}
               assetCount={assetCount(p.id)}
+              covers={covers(p.id)}
               onRename={(pr) => { setEditing(pr); setFormOpen(true); }}
               onDuplicate={(pr) => { const c = duplicateProject(pr.id); if (c) toast.success("Projet dupliqué", c.name); }}
               onArchive={(pr) => { const arch = pr.status !== "archived"; archiveProject(pr.id, arch); toast.info(arch ? "Projet archivé" : "Projet restauré", pr.name); }}

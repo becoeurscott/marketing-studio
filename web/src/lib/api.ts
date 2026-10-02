@@ -94,9 +94,9 @@ function assetUrl(id?: ID | null): string | undefined {
   return a?.url.startsWith("https://") ? a.url : undefined;
 }
 
-async function images(prompt: string, count: number, opts: { ratio?: AspectRatio; imageUrls?: string[]; upscale?: boolean; model?: ImageModelId }): Promise<ImageResult[]> {
+async function images(prompt: string, count: number, opts: { ratio?: AspectRatio; imageUrls?: string[]; upscale?: boolean; model?: ImageModelId; presetId?: string }): Promise<ImageResult[]> {
   const jobs = await Promise.all(
-    Array.from({ length: count }, () => runJob({ kind: "image", model: opts.model, prompt, aspectRatio: imageRatio(opts.ratio), imageUrls: opts.imageUrls, upscale: opts.upscale })),
+    Array.from({ length: count }, () => runJob({ kind: "image", model: opts.model, prompt, aspectRatio: imageRatio(opts.ratio), imageUrls: opts.imageUrls, upscale: opts.upscale, presetId: opts.presetId })),
   );
   return jobs.flatMap((j) => j.images).map((url) => ({ id: uid("res"), url, thumbnail: url, ratio: opts.ratio ?? "4:5", seed: url }));
 }
@@ -167,6 +167,8 @@ export interface GenerateVideoParams {
   style?: string;
   model?: VideoModelId;
   projectId?: ID | null;
+  /** Multi-shot ad (Kling 3.0): shots rendered as one video; durationSec is ignored. */
+  shots?: { prompt: string; duration: number }[];
 }
 export interface VideoResult { id: ID; url: string; thumbnail: string; poster: string; durationSec: number; ratio: AspectRatio }
 
@@ -180,10 +182,10 @@ function stepper(onProgress?: Progress, offset = 0) {
   };
 }
 
-async function video(req: { prompt: string; imageUrl?: string; durationSec: number; ratio?: AspectRatio; model?: VideoModelId }, onProgress?: Progress, offset = 0): Promise<VideoResult> {
+async function video(req: { prompt: string; imageUrl?: string; durationSec: number; ratio?: AspectRatio; model?: VideoModelId; shots?: { prompt: string; duration: number }[] }, onProgress?: Progress, offset = 0): Promise<VideoResult> {
   const light = useStore.getState().preferences.lightVideos ?? true;
   const ratio = req.ratio === "4:5" ? "3:4" : (req.ratio ?? "9:16");
-  const job = await runJob({ kind: "video", model: req.model, prompt: req.prompt, imageUrls: req.imageUrl ? [req.imageUrl] : undefined, durationSec: req.durationSec, aspectRatio: ratio, light }, stepper(onProgress, offset));
+  const job = await runJob({ kind: "video", model: req.model, prompt: req.prompt, imageUrls: req.imageUrl ? [req.imageUrl] : undefined, durationSec: req.durationSec, aspectRatio: ratio, light, shots: req.shots }, stepper(onProgress, offset));
   const url = job.videoUrl!;
   const poster = req.imageUrl ?? "";
   return { id: uid("res"), url, thumbnail: poster, poster, durationSec: req.durationSec, ratio: req.ratio ?? "9:16" };
@@ -193,15 +195,17 @@ export async function generateVideo(params: GenerateVideoParams, onProgress?: Pr
   onProgress?.(VIDEO_STEPS[0], 0, 20);
   const source = params.sourceUrl?.startsWith("https://") ? params.sourceUrl : assetUrl(params.sourceAssetId);
   const prompt = [params.concept, params.camera && `mouvement de caméra : ${params.camera}`, params.style && `style ${params.style}`].filter(Boolean).join(". ") + projectContext(params.projectId);
-  const cost = videoCredits(params.model, params.durationSec, !!source);
-  const result = await chargedExact("video", `Vidéo — ${params.concept.slice(0, 40)}`, cost, () => video({ prompt, imageUrl: source, durationSec: params.durationSec, ratio: params.ratio, model: params.model }, onProgress));
+  const shots = !source && params.model === "kling-3.0" && params.shots?.length ? params.shots : undefined;
+  const seconds = shots ? shots.reduce((s, x) => s + x.duration, 0) : params.durationSec;
+  const cost = videoCredits(params.model, seconds, !!source, useStore.getState().preferences.lightVideos ?? true);
+  const result = await chargedExact("video", `${shots ? `Pub ${shots.length} plans` : "Vidéo"} — ${params.concept.slice(0, 40)}`, cost, () => video({ prompt, imageUrl: source, durationSec: seconds, ratio: params.ratio, model: params.model, shots }, onProgress));
   record({ type: "video", prompt: params.concept, status: "completed", thumbnails: result.thumbnail ? [result.thumbnail] : [], projectId: params.projectId ?? null, params: { durationSec: params.durationSec, camera: params.camera ?? "", style: params.style ?? "", model: params.model ?? "seedance-2.5" }, creditsUsed: cost });
   return result;
 }
 
 /* ---------- UGC ---------- */
 /** UGC = one Seedance 2.5 reference-to-video job (creator sheet + product). */
-export const ugcCredits = (durationSec: number) => videoCredits("seedance-2.5", durationSec, true);
+export const ugcCredits = (durationSec: number) => videoCredits("seedance-2.5", durationSec, true, useStore.getState().preferences.lightVideos ?? true);
 
 export interface GenerateUGCParams {
   productAssetId?: ID | null;
@@ -213,6 +217,8 @@ export interface GenerateUGCParams {
   language?: LanguageId;
   durationSec: 5 | 10 | 15;
   projectId?: ID | null;
+  /** UGC format direction (review, tutorial, try-on…), see lib/creative-presets.ts. */
+  formatDirection?: string;
 }
 
 /**
@@ -226,7 +232,7 @@ export async function generateUGC(params: GenerateUGCParams, onProgress?: Progre
   const lang = languageLabel(params.language ?? "fr");
   const cost = ugcCredits(params.durationSec);
   const references = [creatorSheetUrl(creator), ...(product ? [product] : [])];
-  const prompt = `Vertical selfie-style UGC video. The person is exactly the one in the character sheet: ${creator.look}.${product ? " She/he holds and shows the product from the product photo, keeping it identical." : ""}${place} Talking naturally to the camera in ${lang}, tone ${params.tone ?? "authentic"}, says: « ${params.script} ».${projectContext(params.projectId)}`;
+  const prompt = `Vertical selfie-style UGC video. The person is exactly the one in the character sheet: ${creator.look}.${product ? " She/he holds and shows the product from the product photo, keeping it identical." : ""}${place} Talking naturally to the camera in ${lang}, tone ${params.tone ?? "authentic"}, says: « ${params.script} ».${params.formatDirection ? ` ${params.formatDirection}` : ""}${projectContext(params.projectId)}`;
   const result = await chargedExact("ugc", `Vidéo UGC — ${creator.name}`, cost, async () => {
     onProgress?.(VIDEO_STEPS[0], 0, 20);
     const light = useStore.getState().preferences.lightVideos ?? true;
@@ -246,6 +252,8 @@ export interface ProductShootParams {
   camera: string;
   /** Sokozia style art direction (lib/styles.ts); replaces the generic décor prompt when set. */
   styleDirection?: string;
+  /** Framing direction (packshot, close-up, faceless, full body…), see SHOT_TYPES. */
+  shotDirection?: string;
   styleName?: string;
   count?: number;
   projectId?: ID | null;
@@ -254,7 +262,7 @@ export async function generateProductShoot(params: ProductShootParams): Promise<
   if (!params.productUrl.startsWith("https://")) throw new ApiError("failed", "Importez d’abord une photo de votre produit.");
   const count = Math.min(params.count ?? 3, 4);
   const scene = params.styleDirection ?? `Place the product in this setting: ${params.environment}.`;
-  const prompt = `${scene} Lighting: ${params.lighting}. Framing: ${params.camera}. Keep the product from the photo exactly identical (shape, label, colors).${phoneCleanup()} Sharp, realistic advertising photo.${projectContext(params.projectId)}`;
+  const prompt = `${scene}${params.shotDirection ? ` ${params.shotDirection}` : ""} Lighting: ${params.lighting}. Framing: ${params.camera}. Keep the product from the photo exactly identical (shape, label, colors).${phoneCleanup()} Sharp, realistic advertising photo.${projectContext(params.projectId)}`;
   const results = await charged("product-shoot", `Shooting produit — ${params.styleName ?? params.environment}`, 1, () => images(prompt, count, { ratio: "4:5", imageUrls: [params.productUrl] }));
   record({ type: "image", prompt: `Shooting produit : ${params.environment}, éclairage ${params.lighting}, ${params.camera}`, status: "completed", thumbnails: results.map((r) => r.thumbnail), projectId: params.projectId ?? null, params: { environment: params.environment, lighting: params.lighting, camera: params.camera }, creditsUsed: CREDIT_COSTS["product-shoot"] });
   return results;
@@ -273,6 +281,8 @@ export interface GenerateAdsParams {
   /** Product photo used as the base of the visuals. */
   productAssetId?: ID | null;
   projectId?: ID | null;
+  /** Higgsfield Marketing Studio ad template (needs a product photo). */
+  presetId?: string;
 }
 
 function adRatio(platform: Platform, format: AdFormat): AspectRatio {
@@ -301,7 +311,7 @@ export async function generateAds(params: GenerateAdsParams): Promise<AdVariatio
   const product = assetUrl(params.productAssetId);
   const prompt = `Visuel publicitaire ${params.format === "flyer" ? "de flyer imprimable" : `pour ${params.platform}`} : ${params.product}. ${params.offer}. Pour ${params.audience}. Laisse de l’espace libre pour le texte et le prix, style marketing africain moderne, couleurs vives.${product ? ` Garde le produit de la photo identique.${phoneCleanup()}` : ""}${projectContext(params.projectId)}`;
   // Two visuals shared by the four copy variants (A/C, B/D) to halve generation cost.
-  const visuals = await charged("ads", `Variantes d’annonce — ${params.platform} ${params.format}`, 1, () => images(prompt, 2, { ratio: adRatio(params.platform, params.format), imageUrls: product ? [product] : undefined }));
+  const visuals = await charged("ads", `Variantes d’annonce — ${params.platform} ${params.format}`, 1, () => images(prompt, 2, { ratio: adRatio(params.platform, params.format), imageUrls: product ? [product] : undefined, presetId: product && params.presetId ? params.presetId : undefined, model: product && params.presetId ? "marketing-studio" : undefined }));
   const results = labels.map((label, i) => ({
     id: uid("var"), label, visual: visuals[i % visuals.length].url, headline: headlines[i], primaryText: texts[i], cta: ctas[i], platform: params.platform, format: params.format,
   }));

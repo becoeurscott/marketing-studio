@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/Toast";
 import { useStore } from "@/lib/store";
+import { shotsDuration } from "@/lib/creative-presets";
+import { multiShotsFor } from "@/components/studio/useVideoGenerator";
 import { videoCredits } from "@/lib/higgsfield/models";
 import { VIDEO_CAMERA_LABELS, VIDEO_STYLE_LABELS } from "@/components/studio/constants";
 import { downloadUrl } from "@/lib/utils";
@@ -60,7 +62,7 @@ export default function VideoGeneratorPage() {
         <EmptyState
           icon={Clapperboard}
           title="Aucune vidéo pour l'instant"
-          description={vid.source ? `Source : ${vid.source.name}. Décrivez le mouvement et générez un clip de ${vid.params.durationSec} s (${videoCredits(vid.params.model, vid.params.durationSec, !!vid.source)} crédits).` : "Choisissez une image source dans vos ressources, décrivez le concept et lancez la génération."}
+          description={vid.source ? `Source : ${vid.source.name}. Décrivez le mouvement et générez un clip de ${vid.params.durationSec} s (${videoCredits(vid.params.model, vid.params.durationSec, !!vid.source, useStore.getState().preferences.lightVideos ?? true)} crédits).` : "Choisissez une image source dans vos ressources, décrivez le concept et lancez la génération."}
           cta={{ label: "Ouvrir les options", onClick: () => setSheet(true) }}
           className="lg:[&_button]:hidden"
         />
@@ -78,7 +80,7 @@ export default function VideoGeneratorPage() {
       </BottomSheet>
       <div className="lg:hidden fixed left-4 right-4 md:left-[calc(var(--sb)+1rem)] bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] md:bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-40">
         <Button fullWidth size="lg" className="shadow-float" onClick={() => void vid.generate()} loading={vid.generating} disabled={!canGenerate} leftIcon={<Clapperboard className="size-4" />}>
-          {canGenerate ? `Générer la vidéo · ${videoCredits(vid.params.model, vid.params.durationSec, !!vid.source)} crédits` : "Ajoutez un concept pour générer"}
+          {canGenerate ? `Générer la vidéo · ${videoCredits(vid.params.model, shotsDuration(multiShotsFor(vid.params) ?? []) || vid.params.durationSec, !!vid.source, useStore.getState().preferences.lightVideos ?? true)} crédits` : "Ajoutez un concept pour générer"}
         </Button>
       </div>
 

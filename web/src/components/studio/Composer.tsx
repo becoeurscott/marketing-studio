@@ -50,7 +50,7 @@ const TEMPLATES: Record<ComposeMode, { segments: Segment[]; placeholder: string 
 /** Credits for the current settings: per image, or per second of video on the chosen model. */
 function costFor(mode: ComposeMode, model: ModelId, duration = 5, withPhoto = false): number {
   if (mode === "image") return imageModel(model).credits;
-  return videoCredits(mode === "ugc" ? "seedance-2.5" : model, duration, withPhoto || mode === "ugc");
+  return videoCredits(mode === "ugc" ? "seedance-2.5" : model, duration, withPhoto || mode === "ugc", useStore.getState().preferences.lightVideos ?? true);
 }
 
 /**

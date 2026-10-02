@@ -1,26 +1,40 @@
-import "server-only";
-
-/**
- * Minimal abuse guard for the generation routes (there are no user accounts yet):
- * same-origin requests only, plus a per-IP hourly limit. The limit is per server instance,
- * so it slows abuse down but is not a substitute for real authentication.
- */
+/** Per-instance abuse protection. Authentication and durable credits remain server enforced. */
 const WINDOW_MS = 60 * 60 * 1000;
-const hits = new Map<string, number[]>();
+const MAX_CLIENTS = 10_000;
 
-export function guard(request: Request, { limit }: { limit: number }): Response | null {
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  if (origin && host && new URL(origin).host !== host) {
-    return Response.json({ error: "Origine non autorisée." }, { status: 403 });
-  }
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (recent.length >= limit) {
-    return Response.json({ error: "Trop de générations cette heure-ci. Réessayez plus tard." }, { status: 429 });
-  }
-  recent.push(now);
-  hits.set(ip, recent);
-  return null;
+export function createGuard(now: () => number = Date.now) {
+  const hits = new Map<string, { start: number; count: number }>();
+  return (request: Request, { limit }: { limit: number }): Response | null => {
+    const origin = request.headers.get("origin");
+    if (origin) {
+      try {
+        const supplied = new URL(origin);
+        if (origin !== supplied.origin || supplied.origin !== new URL(request.url).origin) {
+          return Response.json({ error: "Origine non autorisée." }, { status: 403 });
+        }
+      } catch {
+        return Response.json({ error: "Origine non autorisée." }, { status: 403 });
+      }
+    }
+    const time = now();
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+    if (hits.size >= MAX_CLIENTS) {
+      for (const [key, entry] of hits) if (time - entry.start >= WINDOW_MS) hits.delete(key);
+      if (!hits.has(ip) && hits.size >= MAX_CLIENTS) {
+        return Response.json({ error: "Service occupé. Réessayez plus tard." }, { status: 429, headers: { "Retry-After": "60" } });
+      }
+    }
+    const previous = hits.get(ip);
+    const recent = previous && time - previous.start < WINDOW_MS ? previous : { start: time, count: 0 };
+    const allowed = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 60;
+    if (recent.count >= allowed) {
+      const retry = Math.max(1, Math.ceil((WINDOW_MS - time + recent.start) / 1000));
+      return Response.json({ error: "Trop de demandes cette heure-ci. Réessayez plus tard." }, { status: 429, headers: { "Retry-After": String(retry) } });
+    }
+    recent.count++;
+    hits.set(ip, recent);
+    return null;
+  };
 }
+
+export const guard = createGuard();

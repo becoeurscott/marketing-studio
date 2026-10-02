@@ -1,12 +1,13 @@
 import "server-only";
 import { adminClient } from "./insforge/admin";
-import { imageModel, videoCredits } from "./higgsfield/models";
+import { imageModel, videoCredits, videoModel } from "./higgsfield/models";
+import { sanitizeShots } from "./higgsfield/server";
 import type { GenerationRequest } from "./higgsfield/types";
 
 /** Credits given once, when the account is first created. */
-export const WELCOME_CREDITS = 100;
+export const WELCOME_CREDITS = 50;
 /** Extra cost of a 4k upscale over a normal image. */
-const UPSCALE_EXTRA = 5;
+const UPSCALE_EXTRA = 28;
 
 export interface LedgerEntry {
   id: string;
@@ -40,7 +41,9 @@ export async function accountSummary(userId: string): Promise<AccountSummary> {
 export function jobCost(req: GenerationRequest): number {
   if (req.kind === "image") return imageModel(req.model).credits + (req.upscale ? UPSCALE_EXTRA : 0);
   const withPhoto = (req.imageUrls?.length ?? 0) > 0 || (req.references?.length ?? 0) > 0;
-  return videoCredits(req.model, Number(req.durationSec) || 5, withPhoto);
+  const shots = !withPhoto && videoModel(req.model).id === "kling-3.0" ? sanitizeShots(req.shots) : [];
+  const seconds = shots.length ? shots.reduce((s, x) => s + x.duration, 0) : Number(req.durationSec) || 5;
+  return videoCredits(req.kind === "video" && (req.references?.length ?? 0) > 0 ? "seedance-2.5" : req.model, seconds, withPhoto, req.light === true);
 }
 
 export class InsufficientCreditsError extends Error {
@@ -53,7 +56,7 @@ export class InsufficientCreditsError extends Error {
 export async function startJob(userId: string, req: GenerationRequest, cost: number, description: string): Promise<string> {
   await accountSummary(userId); // make sure the account exists
   const { data, error } = await adminClient().database.rpc("ms_start_job", {
-    p_user: userId, p_kind: req.kind, p_model: req.model ?? "default", p_cost: cost, p_description: description.slice(0, 200),
+    p_user: userId, p_kind: req.kind, p_model: req.kind === "image" ? imageModel(req.model).id : videoModel(req.model).id, p_cost: cost, p_description: description.slice(0, 200),
   });
   if (error) {
     if (/insufficient_credits/.test(error.message)) throw new InsufficientCreditsError();

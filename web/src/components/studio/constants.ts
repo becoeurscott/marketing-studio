@@ -48,6 +48,8 @@ export interface VideoParams {
   camera: (typeof VIDEO_CAMERAS)[number];
   style: (typeof VIDEO_STYLES)[number];
   sourceAssetId: string | null;
+  /** Multi-shot ad preset id (Kling 3.0, no source image), see MULTI_SHOT_PRESETS. */
+  multiShotId?: string | null;
 }
 
 export const RATIO_CLASS: Record<AspectRatio, string> = {

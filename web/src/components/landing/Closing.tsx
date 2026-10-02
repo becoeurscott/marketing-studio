@@ -60,20 +60,20 @@ const PLANS = [
     name: "Starter",
     desc: "Pour lancer vos premiers contenus",
     priceXof: 4900,
-    features: ["300 crédits / mois (30 visuels)", "Générateur d'images", "Rédaction en langues locales", "1 kit de marque", "5 vidéos / mois"],
+    features: ["300 crédits / mois (≈ 7 photos produit)", "Générateur d'images", "Rédaction en langues locales", "1 kit de marque", "ou ≈ 4 vidéos de 5 s / mois"],
   },
   {
     name: "Creator",
     desc: "Pour les boutiques qui publient chaque semaine",
     priceXof: 14900,
     popular: true,
-    features: ["1 000 crédits / mois", "Vidéos UGC avec créatrices africaines", "Statuts et catalogue WhatsApp", "3 kits de marque", "30 vidéos / mois", "Tous les modèles par secteur"],
+    features: ["1 000 crédits / mois", "Vidéos UGC avec créatrices africaines", "Statuts et catalogue WhatsApp", "3 kits de marque", "ou ≈ 15 vidéos de 5 s / mois", "Tous les modèles par secteur"],
   },
   {
     name: "Studio",
     desc: "Pour les équipes et les agences",
     priceXof: 29900,
-    features: ["3 000 crédits / mois", "Campagnes + calendrier des fêtes", "Flyers et affiches imprimables", "10 kits de marque", "100 vidéos / mois", "5 membres d'équipe"],
+    features: ["3 000 crédits / mois", "Campagnes + calendrier des fêtes", "Flyers et affiches imprimables", "10 kits de marque", "ou ≈ 46 vidéos de 5 s / mois", "5 membres d'équipe"],
   },
 ];
 

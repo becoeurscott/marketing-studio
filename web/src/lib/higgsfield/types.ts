@@ -23,6 +23,8 @@ export interface GenerationRequest {
   references?: string[];
   /** Image only, with a preset: optional model/person reference photo placed after the product. */
   modelReferenceUrl?: string;
+  /** Video only (Kling 3.0): custom shots rendered as one video; durations are summed for generation and billing. */
+  shots?: { prompt: string; duration: number }[];
 }
 
 export interface HfPreset {

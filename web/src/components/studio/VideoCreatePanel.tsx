@@ -1,4 +1,6 @@
 "use client";
+import { MULTI_SHOT_PRESETS, shotsDuration } from "@/lib/creative-presets";
+import { multiShotsFor } from "./useVideoGenerator";
 
 import { Clapperboard } from "lucide-react";
 import { useState } from "react";
@@ -29,7 +31,10 @@ export function VideoCreatePanel({ params, update, onGenerate, generating, hideG
   const source = assets.find((a) => a.id === params.sourceAssetId) ?? null;
   const canGenerate = !!params.concept.trim() || !!params.sourceAssetId;
   const model = videoModel(params.model);
-  const cost = videoCredits(params.model, params.durationSec, !!source);
+  const light = useStore((s) => s.preferences.lightVideos ?? true);
+  const shots = multiShotsFor(params);
+  const cost = videoCredits(params.model, shots ? shotsDuration(shots) : params.durationSec, !!source, light);
+  const multiShotAvailable = params.model === "kling-3.0" && !source;
 
   return (
     <div className={cn("flex flex-col gap-5", className)}>
@@ -43,7 +48,25 @@ export function VideoCreatePanel({ params, update, onGenerate, generating, hideG
         <p className="text-[12px] text-muted mt-1.5">{model.hint}{source && !model.i2v ? " · Avec une image source, la vidéo est rendue avec Seedance 2.5." : ""}</p>
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      {multiShotAvailable && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[13px] font-medium text-text2">Pub multi-plans</span>
+          <div className="grid gap-1.5">
+            {[{ id: null, label: "Un seul plan", hint: "Une vidéo continue" }, ...MULTI_SHOT_PRESETS].map((p) => {
+              const sel = (params.multiShotId ?? null) === p.id;
+              return (
+                <button key={p.id ?? "single"} type="button" role="radio" aria-checked={sel} onClick={() => update("multiShotId", p.id)} className={cn("flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-left transition-colors", sel ? "bg-accent/15 border-accent/60" : "bg-surface border-border-strong hover:border-white/25")}>
+                  <span className="min-w-0"><span className={cn("block text-sm font-medium", sel ? "text-highlight" : "text-text")}>{p.label}</span><span className="block text-[12px] text-muted truncate">{p.hint}</span></span>
+                  {"shots" in p && <span className="shrink-0 text-[11px] text-muted">{p.shots.length} plans</span>}
+                </button>
+              );
+            })}
+          </div>
+          {shots && <p className="text-[12px] text-muted">Plans : {MULTI_SHOT_PRESETS.find((p) => p.id === params.multiShotId)?.shots.map((s) => `${s.name} (${s.duration} s)`).join(" → ")}. Le concept est le sujet de chaque plan.</p>}
+        </div>
+      )}
+
+      <div className={cn("flex flex-col gap-1.5", shots && "hidden")}>
         <span className="text-[13px] font-medium text-text2">Durée</span>
         <div role="radiogroup" className="grid grid-cols-3 gap-1.5">
           {DURATIONS.map((d) => {

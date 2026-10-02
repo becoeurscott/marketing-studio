@@ -17,6 +17,10 @@ export interface StoreState {
   version: number;
   /** InsForge user id this cached state belongs to (null before the first sign-in sync). */
   ownerId: ID | null;
+  /** Server `updated_at` of the last workspace save/load this browser saw. */
+  syncedAt: string | null;
+  /** When this browser last changed synced data (ISO). Newer than `syncedAt` = unsaved local edits. */
+  localChangedAt: string | null;
   user: User;
   onboardingDone: boolean;
   onboarding: OnboardingAnswers;
@@ -120,6 +124,8 @@ function initialState(): StoreState {
   return {
     version: SEED_VERSION,
     ownerId: null,
+    syncedAt: null,
+    localChangedAt: null,
     user: seed.currentUser,
     onboardingDone: false,
     onboarding: { creating: null, role: null, wants: [], platforms: [], goal: null, style: null, boldness: null, brandKit: false, product: null },
@@ -374,12 +380,12 @@ export const useStore = create<Store>()(
       partialize: (s) => {
         // Persist state only; functions are re-attached by create().
         const {
-          version, ownerId, user, onboardingDone, onboarding, projects, assets, campaigns, generations, favorites,
+          version, ownerId, syncedAt, localChangedAt, user, onboardingDone, onboarding, projects, assets, campaigns, generations, favorites,
           brands, currentBrandId, credits, transactions, notifications, members, workspaceName, preferences,
           currentProjectId, plan, country, savedCopy, savedHooks,
         } = s;
         return {
-          version, ownerId, user, onboardingDone, onboarding, projects, assets, campaigns, generations, favorites,
+          version, ownerId, syncedAt, localChangedAt, user, onboardingDone, onboarding, projects, assets, campaigns, generations, favorites,
           brands, currentBrandId, credits, transactions, notifications, members, workspaceName, preferences,
           currentProjectId, plan, country, savedCopy, savedHooks,
         } as Store;

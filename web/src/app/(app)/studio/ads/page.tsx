@@ -2,7 +2,8 @@
 
 import { Copy, Download, Megaphone, MessageCircle, Pencil, RefreshCw, Save, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { Canvas, ControlField, ErrorState, StudioControls } from "@/components/creative";
+import { Canvas, ControlField, ErrorState, ProductPicker, StudioControls } from "@/components/creative";
+import { AdTemplatePicker } from "@/components/studio/AdTemplatePicker";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -59,6 +60,9 @@ export default function AdsPage() {
   const [offer, setOffer] = useState("Livraison offerte cette semaine");
   const [audience, setAudience] = useState("Femmes 25–45 ans");
   const [cta, setCta] = useState("Commander sur WhatsApp");
+  const [productId, setProductId] = useState<string | null>(null);
+  const [adTemplate, setAdTemplate] = useState<{ id: string; name: string } | null>(null);
+  const productAsset = useStore((s) => s.assets.find((a) => a.id === productId));
   const [waButton, setWaButton] = useState(true);
   const [waNumber, setWaNumber] = useState(brand?.whatsapp ?? `+${country.dialCode} `);
   const priceLabel = price.trim() ? formatMoney(Number(price.replace(/\D/g, "")) || 0, country.currency) : "";
@@ -77,7 +81,7 @@ export default function AdsPage() {
     if (!product.trim()) { toast.error("Ajoutez d'abord un nom de produit"); return; }
     setPhase({ kind: "loading" });
     try {
-      const results = await generateAds({ platform, format, product, offer, audience, cta, price: priceLabel || undefined, projectId: currentProjectId });
+      const results = await generateAds({ platform, format, product, offer, audience, cta, price: priceLabel || undefined, projectId: currentProjectId, productAssetId: productId, presetId: productId ? adTemplate?.id : undefined });
       setVariations(results);
       setSaved([]);
       setPhase({ kind: "done" });
@@ -127,6 +131,12 @@ export default function AdsPage() {
       </ControlField>
       <ControlField label="Format">
         <ChipGroup size="sm" options={FORMATS} value={format} onChange={setFormat} />
+      </ControlField>
+      <ControlField label="Photo du produit" hint={productAsset?.name ?? "Recommandée : vos pubs montrent votre vrai produit"}>
+        <ProductPicker value={productId} onChange={(a) => setProductId(a.id)} onClear={() => { setProductId(null); setAdTemplate(null); }} />
+      </ControlField>
+      <ControlField label="Modèle de pub" hint={adTemplate ? "Votre photo est placée dans ce modèle" : undefined}>
+        <AdTemplatePicker value={adTemplate?.id ?? null} onChange={(p) => setAdTemplate(p ? { id: p.id, name: p.name } : null)} disabled={!productId} />
       </ControlField>
       <Input label="Produit" value={product} onChange={(e) => setProduct(e.target.value)} placeholder="Pagne wax 6 yards" />
       <Input label={`Prix affiché sur le visuel (${currency.symbol})`} inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="15000" hint={priceLabel ? `Affiché : ${priceLabel}` : "Laissez vide pour ne pas afficher de prix."} />

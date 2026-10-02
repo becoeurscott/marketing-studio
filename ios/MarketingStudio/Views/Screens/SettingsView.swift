@@ -51,9 +51,7 @@ struct SettingsView: View {
                 }
 
                 section("Notifications") {
-                    toggleRow("Notifications push", subtitle: "Suivi des générations et des exports", icon: "bell", isOn: pref(\.pushNotifications))
-                    divider
-                    toggleRow("Résumé par e-mail", subtitle: "Récapitulatif hebdomadaire de l’activité", icon: "envelope", isOn: pref(\.emailDigest))
+                    navRow("Dans l’app", subtitle: "Générations, campagnes et exports prêts (cloche)", icon: "bell") { router.push(.notifications) }
                     divider
                     toggleRow("Retour haptique", subtitle: "Vibrations lors des actions et des résultats", icon: "hand.tap", isOn: pref(\.haptics))
                 }

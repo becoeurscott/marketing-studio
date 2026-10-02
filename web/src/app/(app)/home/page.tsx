@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PageHeader, Section } from "@/components/shell/PageHeader";
+import { ShowcaseBanner } from "@/components/home/ShowcaseBanner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -58,6 +59,8 @@ export default function HomePage() {
         description="Que créons-nous aujourd’hui ?"
         actions={<Button size="lg" leftIcon={<Wand2 className="size-4" />} onClick={() => router.push("/studio")}>Créer quelque chose</Button>}
       />
+
+      <ShowcaseBanner />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         {stats.map((s, i) => (
