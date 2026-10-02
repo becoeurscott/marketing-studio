@@ -115,7 +115,7 @@ export interface UsagePack {
 export const USAGE_PACKS: UsagePack[] = [
   { id: "pack_decouverte", name: "Pack Découverte", pitch: "1 photo produit + 1 portrait", priceXof: 1000, credits: 50 },
   { id: "pack_boutique", name: "Pack Boutique", pitch: "4 photos produit", priceXof: 3500, credits: 200, popular: true },
-  { id: "pass_semaine", name: "Pass Semaine", pitch: "7 jours pour tout créer", priceXof: 5000, credits: 400, validityDays: 7 },
+  { id: "pack_pro", name: "Pack Pro", pitch: "9 photos produit ou 6 vidéos de 5 s", priceXof: 5000, credits: 400 },
 ];
 
 /** Bigger one-off top-ups for regular users (credits never expire). */

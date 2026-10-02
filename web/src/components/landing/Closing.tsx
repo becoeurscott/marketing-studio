@@ -1,10 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Briefcase, Check, Minus, Plus, Store, Users } from "lucide-react";
+import { Briefcase, Minus, Plus, Store, Users } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { COUNTRIES, DEFAULT_COUNTRY, PAYMENT_METHODS, USAGE_PACKS, countryOf, priceIn, type CountryCode, type PaymentMethodId } from "@/lib/market";
+import { COUNTRIES, DEFAULT_COUNTRY, PAYMENT_METHODS, TOP_UP_PACKS, USAGE_PACKS, countryOf, priceIn, type CountryCode, type PaymentMethodId } from "@/lib/market";
 import { cn } from "@/lib/utils";
 import { DEMO_HREF, Logo } from "./Hero";
 import { CtaButton, EASE, Particles, Reveal, ScrollText, SectionTitle } from "./motion";
@@ -54,29 +54,6 @@ export function Audiences() {
 
 /* ───────────────────────── Pricing ───────────────────────── */
 
-/** Monthly prices in FCFA, converted per country (same values as the in-app plans). */
-const PLANS = [
-  {
-    name: "Starter",
-    desc: "Pour lancer vos premiers contenus",
-    priceXof: 4900,
-    features: ["300 crédits / mois (≈ 7 photos produit)", "Générateur d'images", "Rédaction en langues locales", "1 kit de marque", "ou ≈ 4 vidéos de 5 s / mois"],
-  },
-  {
-    name: "Creator",
-    desc: "Pour les boutiques qui publient chaque semaine",
-    priceXof: 14900,
-    popular: true,
-    features: ["1 000 crédits / mois", "Vidéos UGC avec créatrices africaines", "Statuts et catalogue WhatsApp", "3 kits de marque", "ou ≈ 15 vidéos de 5 s / mois", "Tous les modèles par secteur"],
-  },
-  {
-    name: "Studio",
-    desc: "Pour les équipes et les agences",
-    priceXof: 29900,
-    features: ["3 000 crédits / mois", "Campagnes + calendrier des fêtes", "Flyers et affiches imprimables", "10 kits de marque", "ou ≈ 46 vidéos de 5 s / mois", "5 membres d'équipe"],
-  },
-];
-
 const LANDING_PAYMENTS: PaymentMethodId[] = ["wave", "orange-money", "mtn-momo", "moov-money", "mpesa", "card"];
 
 export function Pricing() {
@@ -94,7 +71,7 @@ export function Pricing() {
               en Mobile Money
             </>
           }
-          text="Commencez sans abonnement dès 1 000 FCFA. Passez à un forfait mensuel quand vous publiez tous les jours."
+          text="Sans abonnement, dès 1 000 FCFA. Vos crédits n'expirent pas, rechargez quand vous voulez."
         />
         <Reveal className="mt-8 flex flex-col items-center gap-4">
           <label className="flex items-center gap-2 text-sm text-text2">
@@ -138,46 +115,19 @@ export function Pricing() {
           ))}
         </div>
 
-        <p className="mt-14 text-center text-sm text-text2">Ou un forfait mensuel, résiliable à tout moment</p>
-        <div className="mt-6 grid gap-4 lg:grid-cols-3 lg:items-stretch">
-          {PLANS.map((p, i) => (
-            <Reveal key={p.name} delay={i * 0.12}>
-              <GlowCard
-                className={cn(
-                  "h-full p-7 transition-transform duration-500 hover:-translate-y-1",
-                  p.popular && "border-accent/40 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.25),transparent_70%)]",
-                )}
-              >
+        <p className="mt-14 text-center text-sm text-text2">Vous publiez beaucoup ? Les grosses recharges donnent des crédits en plus</p>
+        <div className="mx-auto mt-6 grid max-w-3xl gap-4 sm:grid-cols-2">
+          {TOP_UP_PACKS.map((p, i) => (
+            <Reveal key={p.id} delay={i * 0.12}>
+              <GlowCard className="h-full p-7 transition-transform duration-500 hover:-translate-y-1">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-medium">{p.name}</h3>
-                  {p.popular && <span className="rounded-full bg-accent/20 border border-accent/40 px-2.5 py-0.5 text-[11px] text-highlight">Populaire</span>}
+                  <span className="rounded-full bg-accent/20 border border-accent/40 px-2.5 py-0.5 text-[11px] text-highlight">{p.pitch}</span>
                 </div>
-                <p className="mt-2 text-sm text-text2">{p.desc}</p>
-                <p className="mt-8 flex flex-col">
-                  <span className="whitespace-nowrap text-4xl font-light tracking-tight text-white tabular-nums">{priceIn(p.priceXof, country)}</span>
-                  <span className="mt-1 text-sm text-text2">par mois</span>
-                </p>
-                <div className="my-7 h-px bg-white/10" />
-                <ul className="space-y-3">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-center gap-3 text-sm text-text2">
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/20">
-                        <Check className="size-3 text-highlight" />
-                      </span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={DEMO_HREF}
-                  className={cn(
-                    "mt-8 flex h-11 w-full items-center justify-center rounded-full text-sm font-medium transition-all duration-300",
-                    p.popular
-                      ? "bg-gradient-to-b from-highlight to-accent2 text-on-accent shadow-[0_8px_30px_rgba(249,115,22,0.4)] hover:shadow-[0_10px_40px_rgba(249,115,22,0.6)]"
-                      : "border border-white/10 bg-white/[0.04] hover:bg-white/[0.08]",
-                  )}
-                >
-                  Essayer la démo
+                <p className="mt-6 whitespace-nowrap text-4xl font-light tracking-tight text-white tabular-nums">{priceIn(p.priceXof, country)}</p>
+                <p className="mt-1 text-sm text-text2">{p.credits.toLocaleString("fr-FR")} crédits · sans abonnement, sans expiration</p>
+                <Link href={DEMO_HREF} className="mt-8 flex h-11 w-full items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-sm font-medium transition-all duration-300 hover:bg-white/[0.08]">
+                  Commencer gratuitement
                 </Link>
               </GlowCard>
             </Reveal>

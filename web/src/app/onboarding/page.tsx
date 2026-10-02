@@ -76,9 +76,10 @@ export default function OnboardingPage() {
     setAnswers({ product: { name: p.name, category: p.category, description: p.description, sample: p.sample } });
   };
 
-  const finish = (plan: string) => {
+  /** packId = a credit pack to buy now (goes to payment), null = continue with the welcome credits. */
+  const finish = (packId: string | null) => {
     setFinished(true);
-    setPlan((plan === "free" ? "starter" : plan) as PlanId);
+    setPlan("starter" as PlanId);
     let target = "/campaigns";
     if (projectId) {
       const c = createCampaign({
@@ -92,7 +93,7 @@ export default function OnboardingPage() {
       target = `/campaigns/${c.id}`;
     }
     complete();
-    router.push(target);
+    router.push(packId ? `/credits?pack=${packId}` : target);
   };
 
   if (!hydrated) return <div className="min-h-dvh bg-bg" />;

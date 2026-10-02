@@ -2,7 +2,7 @@
 
 import { ArrowDownRight, ArrowUpRight, Check, CreditCard, Gift, History, Image as ImageIcon, Megaphone, Sparkles, Video, Wand2, Camera, Type, Users, Download, type LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader, Section } from "@/components/shell/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -12,8 +12,7 @@ import { FilterBar } from "@/components/ui/FilterBar";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { PaymentMethodPicker, isPaymentReady, paymentSummary, useMoney, usePaymentChoice } from "@/components/account/PaymentMethodPicker";
-import { plans } from "@/data";
-import { useStore } from "@/lib/store";
+import { selectCountry, useStore } from "@/lib/store";
 import { TOP_UP_PACKS, USAGE_PACKS, type UsagePack } from "@/lib/market";
 import { IMAGE_MODELS, VIDEO_MODELS, videoCredits } from "@/lib/higgsfield/models";
 import { ugcCredits } from "@/lib/api";
@@ -40,7 +39,6 @@ const PACKS: Pack[] = [...USAGE_PACKS, ...TOP_UP_PACKS];
 
 export default function CreditsPage() {
   const credits = useStore((s) => s.credits);
-  const plan = useStore((s) => s.plan);
   const transactions = useStore((s) => s.transactions);
   const toast = useToast();
   const money = useMoney();
@@ -48,12 +46,18 @@ export default function CreditsPage() {
 
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const [pack, setPack] = useState<Pack | null>(null);
-  const [buying] = useState(false);
+  const [buying, setBuying] = useState(false);
+  const country = useStore(selectCountry);
   const [success, setSuccess] = useState<Pack | null>(null);
 
-  const planInfo = plans.find((p) => p.id === plan) ?? plans[1];
-  const monthly = planInfo.credits;
-  const pct = Math.min(100, Math.round((credits / Math.max(monthly, credits)) * 100));
+  // /credits?pack=<id> (from Tarifs or the onboarding) opens the purchase of that pack directly.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("pack");
+    const p = id ? [...USAGE_PACKS, ...TOP_UP_PACKS].find((x) => x.id === id) : undefined;
+    if (p) setPack(p as Pack);
+  }, []);
+
+  const pct = Math.min(100, Math.round((credits / Math.max(400, credits)) * 100));
   const low = credits < 200;
 
   const [cutoff] = useState(() => Date.now() - 30 * 86400000);
@@ -65,10 +69,20 @@ export default function CreditsPage() {
   const list = useMemo(() => transactions.filter((t) => (filter === "all" ? true : filter === "spent" ? t.amount < 0 : t.amount > 0)), [transactions, filter]);
   const counts = { all: transactions.length, spent: transactions.filter((t) => t.amount < 0).length, added: transactions.filter((t) => t.amount > 0).length };
 
-  // Real payments are not wired yet (credits are server-owned): never grant credits here.
+  // Mobile Money via pawaPay: the server prices the pack, pawaPay's page asks the operator to confirm,
+  // and credits are added on the server once the deposit is confirmed (see /credits/paiement).
   const confirmBuy = async () => {
-    toast.info("Paiement Mobile Money bientôt disponible", "Pour recharger dès maintenant, écrivez-nous sur WhatsApp : nous créditons votre compte après paiement.");
-    setPack(null);
+    if (!pack) return;
+    setBuying(true);
+    try {
+      const res = await fetch("/api/pay", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ packId: pack.id, country, phone: payment.phone }) });
+      const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok || !data.url) throw new Error(data.error ?? "Le paiement n'a pas pu démarrer.");
+      window.location.href = data.url;
+    } catch (e) {
+      toast.error("Paiement impossible", e instanceof Error ? e.message : "Réessayez dans un instant.");
+      setBuying(false);
+    }
   };
 
   return (
@@ -87,13 +101,13 @@ export default function CreditsPage() {
                 <div className={cn("h-full rounded-full transition-all", low ? "bg-warning" : "bg-accent")} style={{ width: `${pct}%` }} />
               </div>
               <p className="text-[12px] text-muted mt-1.5">
-                {low ? "Solde faible. Chaque génération vidéo coûte 50 crédits." : `${formatNumber(monthly)} crédits inclus chaque mois avec ${planInfo.name}.`}
+                {low ? "Solde faible : rechargez pour continuer à créer." : "Vos crédits n'expirent pas. Rechargez quand vous voulez."}
               </p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 md:w-[300px]">
             <Stat label="Dépensés · 30 jours" value={formatNumber(spentThisMonth)} />
-            <Stat label="Forfait" value={planInfo.name} sub={<Link href="/pricing" className="text-highlight hover:underline">Changer</Link>} />
+            <Stat label="Tarifs" value="Sans abonnement" sub={<Link href="/pricing" className="text-highlight hover:underline">Voir les packs</Link>} />
           </div>
         </div>
       </Card>
@@ -196,7 +210,7 @@ export default function CreditsPage() {
         open={!!pack}
         onClose={() => !buying && setPack(null)}
         title="Confirmer l’achat"
-        description="Paiement simulé : aucun montant n’est débité."
+        description="Vous allez confirmer le paiement sur la page sécurisée pawaPay, puis sur votre téléphone."
         size="sm"
         footer={
           <>
