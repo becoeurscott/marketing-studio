@@ -26,11 +26,11 @@ struct ProfileView: View {
                     divider
                     infoRow("E-mail", store.user.email, icon: "envelope")
                     divider
-                    infoRow("Entreprise", store.user.company, icon: "building.2")
+                    infoRow("Boutique", store.user.company, icon: "storefront")
                     divider
-                    infoRow("Rôle", store.user.role, icon: "briefcase")
+                    infoRow("Activité", store.user.role, icon: "briefcase")
                     divider
-                    infoRow("Forfait", "\(store.plan.title) · \(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits", icon: "creditcard")
+                    infoRow("Crédits", "\(store.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) disponibles · sans abonnement", icon: "bolt")
                 }
                 .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
@@ -166,7 +166,11 @@ struct EditProfileSheet: View {
                         u.role = role
                         u.avatarURL = ""
                         store.updateUser(u)
-                        router.toast("Profil mis à jour", style: .success)
+                        // Also saved on the account, so the website shows the same name.
+                        Task {
+                            let ok = await AuthService.shared.updateProfileName(u.name)
+                            router.toast(ok ? "Profil mis à jour" : "Enregistré sur cet iPhone (connexion impossible)", style: ok ? .success : .warning)
+                        }
                         dismiss()
                     }
                     .padding(.top, 6)

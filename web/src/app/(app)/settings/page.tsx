@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
 import { uploadPhoto } from "@/lib/higgsfield/client";
+import { imageModel } from "@/lib/higgsfield/models";
 import { COUNTRIES, CURRENCIES, LANGUAGES, PAYMENT_METHODS, SOKOZIA_WHATSAPP, USAGE_PACKS, countryOf, whatsappLink, type CountryCode, type LanguageId } from "@/lib/market";
 import { selectCountry, selectCurrentBrand, useStore } from "@/lib/store";
 import { IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
@@ -412,7 +413,7 @@ function CreditsSection({ account }: { account: AccountDetails | null }) {
         </div>
       </Card>
       <Card>
-        <CardHeader title="Packs" subtitle="Payez seulement ce que vous utilisez. 1 visuel ≈ 10 crédits." />
+        <CardHeader title="Packs" subtitle={`Payez seulement ce que vous utilisez. 1 photo produit = ${imageModel("marketing-studio").credits} crédits, 1 portrait Soul 2 = ${imageModel("soul-2").credits} crédits.`} />
         <ul className="divide-y divide-border">
           {USAGE_PACKS.map((p) => (
             <li key={p.id} className="flex items-center gap-3 py-2.5">

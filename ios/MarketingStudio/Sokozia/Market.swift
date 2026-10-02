@@ -9,7 +9,7 @@ enum SokoziaConfig {
     static let oauthReturnURL = "https://www.sokozia.com/api/auth/mobile-callback"
     static let callbackScheme = "sokozia"
     /// Credits granted by the server on the first sign-in.
-    static let welcomeCredits = 100
+    static let welcomeCredits = 20
 }
 
 /// African-market config, same values as the web app (lib/market.ts): countries, currencies,
@@ -130,10 +130,10 @@ enum Market {
         var popular = false
     }
 
-    /// Sold without subscription: many merchants manage cash day to day. 1 visual = 10 credits.
+    /// Sold without subscription: many merchants manage cash day to day.
     static let usagePacks: [UsagePack] = [
-        UsagePack(id: "pack_decouverte", name: "Pack Découverte", pitch: "5 visuels", priceXof: 1_000, credits: 50),
-        UsagePack(id: "pack_boutique", name: "Pack Boutique", pitch: "15 visuels + 1 vidéo", priceXof: 3_500, credits: 200, popular: true),
+        UsagePack(id: "pack_decouverte", name: "Pack Découverte", pitch: "5 photos IA", priceXof: 1_000, credits: 50),
+        UsagePack(id: "pack_boutique", name: "Pack Boutique", pitch: "4 visuels produit + 1 vidéo", priceXof: 3_500, credits: 200, popular: true),
         UsagePack(id: "pass_semaine", name: "Pass Semaine", pitch: "7 jours pour tout créer", priceXof: 5_000, credits: 400, validityDays: 7),
     ]
 

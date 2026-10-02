@@ -161,16 +161,20 @@ extension View {
 
 // MARK: - Animation
 
+/// App animations. "Réduire les animations" (Réglages) turns them into instant changes.
 enum MSAnimation {
-    static let snappy = Animation.spring(response: 0.32, dampingFraction: 0.86)
-    static let gentle = Animation.easeInOut(duration: 0.25)
-    static let slow = Animation.easeInOut(duration: 0.45)
+    nonisolated(unsafe) static var reduced = false
+    static var snappy: Animation { reduced ? .linear(duration: 0) : .spring(response: 0.32, dampingFraction: 0.86) }
+    static var gentle: Animation { reduced ? .linear(duration: 0) : .easeInOut(duration: 0.25) }
+    static var slow: Animation { reduced ? .linear(duration: 0) : .easeInOut(duration: 0.45) }
 }
 
 // MARK: - Haptics
 
+/// Haptics, off when "Retour haptique" is disabled in Réglages.
 enum MSHaptic {
-    static func tap() { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
-    static func success() { UINotificationFeedbackGenerator().notificationOccurred(.success) }
-    static func warning() { UINotificationFeedbackGenerator().notificationOccurred(.warning) }
+    nonisolated(unsafe) static var enabled = true
+    static func tap() { if enabled { UIImpactFeedbackGenerator(style: .light).impactOccurred() } }
+    static func success() { if enabled { UINotificationFeedbackGenerator().notificationOccurred(.success) } }
+    static func warning() { if enabled { UINotificationFeedbackGenerator().notificationOccurred(.warning) } }
 }

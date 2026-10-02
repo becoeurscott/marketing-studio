@@ -87,7 +87,7 @@ struct CreditsView: View {
                 .foregroundStyle(MSColor.text)
                 .contentTransition(.numericText())
                 .animation(MSAnimation.snappy, value: store.credits)
-            Text(store.credits < 20 ? "Solde faible. Rechargez pour continuer à générer." : "Environ \(store.credits / 10) visuels ou \(store.credits / AIModels.ugcCredits(seconds: 8)) vidéos UGC de 8 s.")
+            Text(store.credits < 20 ? "Solde faible. Rechargez pour continuer à générer." : "Environ \(store.credits / AIModels.imageModel(nil).credits) photos produit ou \(store.credits / AIModels.ugcCredits(seconds: 8)) vidéos UGC de 8 s.")
                 .msBody(14)
             HStack(spacing: 10) {
                 MSButton(title: "Recharger", icon: "plus") { router.present(.buyCredits) }

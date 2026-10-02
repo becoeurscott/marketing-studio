@@ -164,6 +164,26 @@ final class AuthService: NSObject, ObservableObject {
         try await postVoid("/api/auth/email/reset-password", ["newPassword": newPassword, "otp": token])
     }
 
+    // MARK: Profile
+
+    /// Saves the display name on the InsForge account (same profile as the website).
+    func updateProfileName(_ name: String) async -> Bool {
+        guard let token = try? await validAccessToken() else { return false }
+        var req = URLRequest(url: SokoziaConfig.authURL.appendingPathComponent("api/auth/profiles/current"))
+        req.httpMethod = "PATCH"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.httpBody = try? JSONSerialization.data(withJSONObject: ["profile": ["name": name]])
+        guard let (_, response) = try? await URLSession.shared.data(for: req),
+              let status = (response as? HTTPURLResponse)?.statusCode, (200..<300).contains(status) else { return false }
+        if var u = user {
+            u.name = name
+            user = u
+            if let accessToken, let data = try? JSONEncoder().encode(StoredSession(user: u, accessToken: accessToken, refreshToken: refreshToken)) { Keychain.write(data) }
+        }
+        return true
+    }
+
     // MARK: Session
 
     func signOut() async {
