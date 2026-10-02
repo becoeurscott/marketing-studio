@@ -1,4 +1,5 @@
 import "server-only";
+import { headers } from "next/headers";
 import { adminClient } from "./insforge/admin";
 import { imageModel, videoCredits, videoModel } from "./higgsfield/models";
 import { sanitizeShots } from "./higgsfield/server";
@@ -18,10 +19,24 @@ export interface LedgerEntry {
   created_at: string;
 }
 
+export type WelcomeStatus = "granted" | "already" | "unverified" | "ip_limit";
+
 export interface AccountSummary {
   credits: number;
   plan: string;
   ledger: LedgerEntry[];
+  /** What happened to the welcome bonus on this call. */
+  welcome: WelcomeStatus;
+}
+
+/** Caller IP (first x-forwarded-for hop), "" outside a request. */
+async function clientIp(): Promise<string> {
+  try {
+    const h = await headers();
+    return (h.get("x-forwarded-for")?.split(",")[0] ?? h.get("x-real-ip") ?? "").trim();
+  } catch {
+    return "";
+  }
 }
 
 /** Creates the account on first use (with welcome credits) and returns its summary. */
@@ -29,12 +44,14 @@ export async function accountSummary(userId: string): Promise<AccountSummary> {
   const db = adminClient().database;
   const { error } = await db.rpc("ms_ensure_account", { p_user: userId, p_welcome: WELCOME_CREDITS });
   if (error) throw new Error(`Compte indisponible : ${error.message}`);
+  // Welcome bonus: once, verified e-mails only, max 3 per IP address per 24 h (enforced in SQL).
+  const { data: welcome } = await db.rpc("ms_grant_welcome", { p_user: userId, p_welcome: WELCOME_CREDITS, p_ip: await clientIp() });
   const [{ data: acc }, { data: ledger }] = await Promise.all([
     db.from("ms_accounts").select("credits, plan").eq("user_id", userId).limit(1),
     db.from("ms_credit_ledger").select("id, amount, balance_after, action, description, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(50),
   ]);
   const row = (acc?.[0] as { credits: number; plan: string } | undefined) ?? { credits: 0, plan: "starter" };
-  return { credits: row.credits, plan: row.plan, ledger: (ledger ?? []) as LedgerEntry[] };
+  return { credits: row.credits, plan: row.plan, ledger: (ledger ?? []) as LedgerEntry[], welcome: (welcome as WelcomeStatus | null) ?? "already" };
 }
 
 /** Server-side price of one generation job, from the same catalog the UI shows. */
