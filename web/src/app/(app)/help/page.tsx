@@ -1,5 +1,6 @@
 "use client";
 
+import { LEGAL } from "@/lib/legal";
 import { BookOpen, ChevronDown, CreditCard, ExternalLink, Keyboard, LifeBuoy, Mail, MessageCircle, Palette, Send, Sparkles, Wand2, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -99,7 +100,7 @@ export default function HelpPage() {
             <h3 className="text-[15px] font-semibold mb-1 flex items-center gap-2"><LifeBuoy className="size-4 text-highlight" /> Contact</h3>
             <p className="text-[13px] text-text2">Nous répondons sous un jour ouvré.</p>
             <div className="mt-3 space-y-2 text-[13px]">
-              <a href="mailto:support@sokozia.example" className="flex items-center gap-2 text-text2 hover:text-text"><Mail className="size-4" /> support@sokozia.example</a>
+              <a href={`mailto:${LEGAL.supportEmail}`} className="flex items-center gap-2 text-text2 hover:text-text"><Mail className="size-4" /> {LEGAL.supportEmail}</a>
               <a href="#" onClick={(e) => { e.preventDefault(); toast.info("Communauté", "Le forum de la communauté sera disponible dans la version complète."); }} className="flex items-center gap-2 text-text2 hover:text-text"><ExternalLink className="size-4" /> Forum de la communauté</a>
             </div>
             <Button fullWidth variant="secondary" className="mt-4" leftIcon={<Send className="size-4" />} onClick={() => setContact(true)}>Envoyer un message</Button>

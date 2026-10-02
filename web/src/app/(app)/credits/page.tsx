@@ -227,6 +227,7 @@ export default function CreditsPage() {
               <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-text2">Nouveau solde</span><span className="font-semibold">{formatNumber(credits + pack.credits)}</span></div>
             </div>
             <PaymentMethodPicker value={payment} onChange={setPayment} />
+            <p className="text-[11px] text-muted">Paiement sécurisé par pawaPay. Voir la <Link href="/remboursement" className="underline">politique de remboursement</Link>.</p>
           </div>
         )}
       </Modal>

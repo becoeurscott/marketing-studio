@@ -145,7 +145,7 @@ const FAQS = [
   { q: "Faut-il savoir faire du design ou du marketing ?", a: "Non. Vous choisissez un style et une plateforme, Sokozia s'occupe du cadrage, du décor, des accroches et des formats." },
   { q: "Sur quelles plateformes puis-je publier ?", a: "Les contenus sont adaptés à TikTok, Instagram, Facebook, YouTube, Pinterest et Google : bons formats, bons ratios, bons textes." },
   { q: "Est-ce que les contenus respectent ma marque ?", a: "Oui. Vous enregistrez votre logo, vos couleurs et votre ton de voix dans le kit de marque, et ils sont appliqués à chaque création." },
-  { q: "Est-ce disponible dès maintenant ?", a: "Sokozia est actuellement en démo. Vous pouvez explorer le studio gratuitement dès aujourd'hui pour découvrir tout ce qu'il pourra créer pour vous." },
+  { q: "Comment je paie ?", a: "En Mobile Money (Wave, Orange Money, MTN, Moov…), par packs de crédits dès 1 000 FCFA. Pas d'abonnement, et vos crédits n'expirent pas. 50 crédits sont offerts à l'inscription pour essayer." },
 ];
 
 function FaqItem({ q, a, open, onToggle }: { q: string; a: string; open: boolean; onToggle: () => void }) {
@@ -293,6 +293,14 @@ export function SiteFooter() {
             <li><a href="#creations" className="hover:text-text transition-colors">Créations</a></li>
             <li><a href="#tarifs" className="hover:text-text transition-colors">Tarifs</a></li>
             <li><a href="#faq" className="hover:text-text transition-colors">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <p className="text-sm font-medium">Légal</p>
+          <ul className="mt-4 space-y-2.5 text-sm text-text2">
+            <li><Link href="/conditions" className="hover:text-text transition-colors">Conditions d&apos;utilisation</Link></li>
+            <li><Link href="/confidentialite" className="hover:text-text transition-colors">Confidentialité</Link></li>
+            <li><Link href="/remboursement" className="hover:text-text transition-colors">Remboursement</Link></li>
           </ul>
         </div>
       </div>
