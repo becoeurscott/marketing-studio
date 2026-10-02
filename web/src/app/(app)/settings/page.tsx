@@ -1,14 +1,13 @@
 "use client";
 
 import {
-  Bell, Building2, Check, CreditCard, ExternalLink, Globe2, KeyRound, LifeBuoy, Monitor, Palette, RotateCcw,
-  Shield, Smartphone, Sparkles, User as UserIcon, Users, type LucideIcon,
+  Bell, Building2, Camera, Check, CreditCard, ExternalLink, Globe2, KeyRound, LifeBuoy, LogOut, MessageCircle, Palette,
+  Shield, Sparkles, User as UserIcon, type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
+import { signOut } from "@/app/(auth)/actions";
 import { industryLabel, toneLabel } from "@/components/account/BrandEditModal";
-import { ConfirmModal } from "@/components/account/ConfirmModal";
 import { Toggle } from "@/components/account/Toggle";
 import { useMoney } from "@/components/account/PaymentMethodPicker";
 import { PageHeader } from "@/components/shell/PageHeader";
@@ -20,56 +19,45 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
-import { plans } from "@/data";
-import { delay } from "@/lib/api";
-import { COUNTRIES, CURRENCIES, LANGUAGES, PAYMENT_METHODS, countryOf, type CountryCode, type LanguageId } from "@/lib/market";
+import { uploadPhoto } from "@/lib/higgsfield/client";
+import { COUNTRIES, CURRENCIES, LANGUAGES, PAYMENT_METHODS, SOKOZIA_WHATSAPP, USAGE_PACKS, countryOf, whatsappLink, type CountryCode, type LanguageId } from "@/lib/market";
 import { selectCountry, selectCurrentBrand, useStore } from "@/lib/store";
 import { IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
-import { avatar, cn, formatDate, formatNumber } from "@/lib/utils";
-
-const ROLE_LABELS: Record<string, string> = { owner: "Propriétaire", admin: "Admin", editor: "Éditeur", viewer: "Lecteur" };
+import { cn, formatDate, formatNumber } from "@/lib/utils";
+import { accountDetails, changePassword, sendPasswordCode, updateProfile, type AccountDetails } from "./actions";
 
 const STYLE_LABELS: Record<string, string> = {
   "Product Photography": "Photo produit", Luxury: "Luxe", Minimal: "Minimaliste", Street: "Street", Lifestyle: "Lifestyle", Editorial: "Éditorial",
   Cinematic: "Cinématique", UGC: "UGC", Studio: "Studio", Fashion: "Mode", Food: "Culinaire", Tech: "Tech",
 };
 
-type SectionId = "account" | "market" | "workspace" | "notifications" | "appearance" | "brand" | "subscription" | "security" | "help";
+type SectionId = "account" | "market" | "workspace" | "notifications" | "appearance" | "brand" | "credits" | "security" | "help";
 
 const SECTIONS: { id: SectionId; label: string; icon: LucideIcon; description: string }[] = [
-  { id: "account", label: "Compte", icon: UserIcon, description: "Votre nom, votre e-mail et votre avatar." },
+  { id: "account", label: "Compte", icon: UserIcon, description: "Votre nom, votre photo et l’e-mail de connexion." },
   { id: "market", label: "Pays et langues", icon: Globe2, description: "Monnaie, Mobile Money, langues et mode économie de data." },
-  { id: "workspace", label: "Espace de travail", icon: Building2, description: "Nom de l’espace de travail et équipe." },
-  { id: "notifications", label: "Notifications", icon: Bell, description: "Ce dont nous vous informons, et où." },
-  { id: "appearance", label: "Apparence", icon: Palette, description: "Thème, animations et réglages par défaut du Studio." },
+  { id: "workspace", label: "Boutique", icon: Building2, description: "Le nom de votre boutique ou de votre espace." },
+  { id: "notifications", label: "Notifications", icon: Bell, description: "Les alertes que vous recevez dans Sokozia." },
+  { id: "appearance", label: "Apparence", icon: Palette, description: "Barre latérale, animations et réglages par défaut du Studio." },
   { id: "brand", label: "Marque", icon: Sparkles, description: "Kit de marque actif et ton de marque." },
-  { id: "subscription", label: "Abonnement", icon: CreditCard, description: "Forfait, crédits et facturation." },
-  { id: "security", label: "Sécurité", icon: Shield, description: "Mot de passe, double authentification et sessions." },
-  { id: "help", label: "Aide", icon: LifeBuoy, description: "Documentation, support et à propos." },
+  { id: "credits", label: "Crédits et paiement", icon: CreditCard, description: "Solde, historique et recharge." },
+  { id: "security", label: "Sécurité", icon: Shield, description: "Mot de passe et connexion." },
+  { id: "help", label: "Aide", icon: LifeBuoy, description: "Questions fréquentes, support et à propos." },
 ];
 
 export default function SettingsPage() {
   const [section, setSection] = useState<SectionId>("account");
-  const [resetting, setResetting] = useState(false);
-  const reset = useStore((s) => s.reset);
-  const router = useRouter();
-  const toast = useToast();
+  const [account, setAccount] = useState<AccountDetails | null>(null);
   const current = SECTIONS.find((s) => s.id === section)!;
 
-  const doReset = () => {
-    reset();
-    try { localStorage.removeItem("ms-store"); } catch { /* ignore */ }
-    setResetting(false);
-    toast.info("Données de démo réinitialisées", "Tout est revenu au contenu d’exemple.");
-    router.replace("/onboarding");
-  };
+  useEffect(() => { void accountDetails().then(setAccount).catch(() => setAccount(null)); }, []);
 
   return (
     <>
       <PageHeader
         title="Paramètres"
-        description="Compte, espace de travail, notifications, apparence, marque, abonnement, sécurité et aide."
-        actions={<Button variant="secondary" leftIcon={<RotateCcw className="size-4" />} onClick={() => setResetting(true)}>Réinitialiser la démo</Button>}
+        description="Compte, pays et langues, boutique, notifications, apparence, marque, crédits, sécurité et aide."
+        actions={<form action={signOut}><Button type="submit" variant="secondary" leftIcon={<LogOut className="size-4" />}>Se déconnecter</Button></form>}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-start">
@@ -103,121 +91,123 @@ export default function SettingsPage() {
             <h2 className="text-lg font-semibold tracking-tight">{current.label}</h2>
             <p className="text-[13px] text-text2">{current.description}</p>
           </div>
-          {section === "account" && <AccountSection />}
+          {section === "account" && <AccountSection account={account} onSaved={setAccount} />}
           {section === "market" && <MarketSection />}
-          {section === "workspace" && <WorkspaceSection />}
+          {section === "workspace" && <WorkspaceSection account={account} />}
           {section === "notifications" && <NotificationsSection />}
           {section === "appearance" && <AppearanceSection />}
           {section === "brand" && <BrandSection />}
-          {section === "subscription" && <SubscriptionSection />}
-          {section === "security" && <SecuritySection />}
+          {section === "credits" && <CreditsSection account={account} />}
+          {section === "security" && <SecuritySection account={account} />}
           {section === "help" && <HelpSection />}
-
-          <Card className="border-danger/30">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium">Réinitialiser les données de démo</p>
-                <p className="text-[13px] text-text2">Rétablit le contenu d’exemple pour les projets, ressources, campagnes, marque, crédits et préférences sur cet appareil.</p>
-              </div>
-              <Button variant="danger" leftIcon={<RotateCcw className="size-4" />} onClick={() => setResetting(true)}>Réinitialiser</Button>
-            </div>
-          </Card>
         </div>
       </div>
-
-      <ConfirmModal
-        open={resetting}
-        onClose={() => setResetting(false)}
-        onConfirm={doReset}
-        danger
-        title="Réinitialiser les données de démo ?"
-        description="Toutes les modifications effectuées sur cet appareil seront perdues et vous repasserez par l’onboarding."
-        confirmLabel="Tout réinitialiser"
-      />
     </>
   );
 }
 
 /* ---------- Account ---------- */
 
-function AccountSection() {
+function AccountSection({ account, onSaved }: { account: AccountDetails | null; onSaved: (a: AccountDetails) => void }) {
   const user = useStore((s) => s.user);
   const updateUser = useStore((s) => s.updateUser);
   const toast = useToast();
+  const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
   const [company, setCompany] = useState(user.company);
   const [role, setRole] = useState(user.role);
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [saving, startSaving] = useTransition();
 
-  const dirty = name !== user.name || email !== user.email || company !== user.company || role !== user.role || avatarUrl !== user.avatarUrl;
+  // The account's real name/photo win over the local copy once loaded.
+  useEffect(() => {
+    if (!account) return;
+    if (account.name && !user.name) setName(account.name);
+    if (account.avatarUrl && !user.avatarUrl) setAvatarUrl(account.avatarUrl);
+  }, [account, user.name, user.avatarUrl]);
+
+  const dirty = name !== user.name || company !== user.company || role !== user.role || avatarUrl !== user.avatarUrl;
+
+  const pickPhoto = async (file: File | undefined) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      setAvatarUrl(await uploadPhoto(file));
+    } catch (e) {
+      toast.error("Photo non importée", e instanceof Error ? e.message : "Réessayez.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim()) { setError("Le nom est obligatoire."); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Saisissez une adresse e-mail valide."); return; }
     setError("");
-    updateUser({ name: name.trim(), email: email.trim(), company: company.trim(), role: role.trim(), avatarUrl });
-    toast.success("Compte mis à jour");
+    startSaving(async () => {
+      const res = await updateProfile({ name: name.trim(), avatarUrl });
+      if (!res.ok) { toast.error("Profil non enregistré", res.error); return; }
+      updateUser({ name: name.trim(), email: account?.email ?? user.email, company: company.trim(), role: role.trim(), avatarUrl });
+      if (account) onSaved({ ...account, name: name.trim(), avatarUrl });
+      toast.success("Compte mis à jour");
+    });
   };
 
   return (
     <form onSubmit={submit}>
       <Card>
-        <CardHeader title="Profil" subtitle="Affiché dans votre espace de travail et dans les campagnes partagées." />
+        <CardHeader title="Profil" subtitle="Enregistré sur votre compte Sokozia : visible sur tous vos appareils." />
         <div className="flex items-center gap-4 mb-5">
           <Avatar src={avatarUrl} name={name || "?"} size={64} />
-          <div>
-            <p className="text-[13px] text-text2 mb-1.5">Choisissez un avatar</p>
-            <div className="flex flex-wrap gap-2">
-              {[12, 47, 33, 20, 5, 58].map((n) => (
-                <button key={n} type="button" onClick={() => setAvatarUrl(avatar(n))} aria-label={`Choisir l’avatar ${n}`} aria-pressed={avatarUrl === avatar(n)} className="rounded-full ring-2 ring-transparent aria-pressed:ring-accent">
-                  <Avatar src={avatar(n)} name="" size={32} />
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" variant="secondary" loading={uploading} leftIcon={<Camera className="size-4" />} onClick={() => fileRef.current?.click()}>
+              {avatarUrl ? "Changer la photo" : "Ajouter une photo"}
+            </Button>
+            {avatarUrl && <Button type="button" size="sm" variant="ghost" onClick={() => setAvatarUrl("")}>Retirer</Button>}
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { void pickPhoto(e.target.files?.[0]); e.target.value = ""; }} aria-label="Choisir une photo de profil" />
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input label="Nom complet" name="name" value={name} onChange={(e) => setName(e.target.value)} error={error && !name.trim() ? error : undefined} />
-          <Input label="E-mail" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error && name.trim() ? error : undefined} />
-          <Input label="Entreprise" name="company" value={company} onChange={(e) => setCompany(e.target.value)} />
-          <Input label="Poste" name="role" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Fondateur" />
+          <Input label="Nom complet" name="name" value={name} onChange={(e) => setName(e.target.value)} error={error || undefined} />
+          <Input label="E-mail de connexion" name="email" type="email" value={account?.email ?? user.email} readOnly disabled hint="L’e-mail de votre compte ne peut pas être modifié ici." />
+          <Input label="Boutique ou entreprise" name="company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Ex. Chez Awa Couture" />
+          <Input label="Activité" name="role" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Ex. Couturière, revendeur de téléphones" />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-border">
-          <p className="text-[12px] text-muted">Membre depuis le {formatDate(user.createdAt)} · <Link href="/profile" className="text-text2 hover:text-text underline-offset-2 hover:underline">Voir le profil</Link></p>
-          <Button type="submit" disabled={!dirty}>Enregistrer les modifications</Button>
+          <p className="text-[12px] text-muted">
+            {account?.createdAt ? `Compte créé le ${formatDate(account.createdAt)}` : "Compte Sokozia"} · <Link href="/profile" className="text-text2 hover:text-text underline-offset-2 hover:underline">Voir le profil</Link>
+          </p>
+          <Button type="submit" loading={saving} disabled={!dirty || uploading}>Enregistrer les modifications</Button>
         </div>
       </Card>
     </form>
   );
 }
 
-/* ---------- Workspace ---------- */
+/* ---------- Workspace (shop) ---------- */
 
-function WorkspaceSection() {
+function WorkspaceSection({ account }: { account: AccountDetails | null }) {
   const workspaceName = useStore((s) => s.workspaceName);
   const setWorkspaceName = useStore((s) => s.setWorkspaceName);
-  const members = useStore((s) => s.members);
-  const plan = useStore((s) => s.plan);
+  const user = useStore((s) => s.user);
   const toast = useToast();
   const [draft, setDraft] = useState(workspaceName);
-  const planInfo = plans.find((p) => p.id === plan);
 
   const save = (e: FormEvent) => {
     e.preventDefault();
     const v = draft.trim();
     if (!v) return;
     setWorkspaceName(v);
-    toast.success("Espace de travail renommé", v);
+    toast.success("Nom enregistré", v);
   };
 
   return (
     <>
       <form onSubmit={save}>
         <Card>
-          <CardHeader title="Nom de l’espace de travail" subtitle="Affiché dans la barre latérale et sur les invitations." />
+          <CardHeader title="Nom de la boutique" subtitle="Affiché dans la barre latérale. Enregistré sur votre compte." />
           <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
             <Input label="Nom" name="workspaceName" value={draft} onChange={(e) => setDraft(e.target.value)} className="flex-1" />
             <Button type="submit" disabled={!draft.trim() || draft.trim() === workspaceName}>Enregistrer</Button>
@@ -225,24 +215,16 @@ function WorkspaceSection() {
         </Card>
       </form>
       <Card>
-        <CardHeader
-          title="Équipe"
-          subtitle={`${members.length} membre${members.length > 1 ? "s" : ""} · ${planInfo?.features.teamMembers ?? ""} inclus dans votre forfait`}
-          action={<Link href="/workspace"><Button size="sm" variant="secondary" leftIcon={<Users className="size-4" />}>Gérer l’équipe</Button></Link>}
-        />
-        <ul className="divide-y divide-border">
-          {members.slice(0, 5).map((m) => (
-            <li key={m.id} className="flex items-center gap-3 py-2.5">
-              <Avatar src={m.avatarUrl} name={m.name} size={32} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{m.name}</p>
-                <p className="text-[12px] text-muted truncate">{m.email}</p>
-              </div>
-              <Badge tone={m.role === "owner" ? "accent" : "neutral"}>{ROLE_LABELS[m.role] ?? m.role}</Badge>
-              {m.status === "invited" && <Badge tone="warning">Invité</Badge>}
-            </li>
-          ))}
-        </ul>
+        <CardHeader title="Accès" subtitle="Votre espace est personnel : vous seul y avez accès." />
+        <div className="flex items-center gap-3">
+          <Avatar src={user.avatarUrl} name={user.name || account?.email || "?"} size={32} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{user.name || "Vous"}</p>
+            <p className="text-[12px] text-muted truncate">{account?.email ?? user.email}</p>
+          </div>
+          <Badge tone="accent">Propriétaire</Badge>
+        </div>
+        <p className="text-[12px] text-muted mt-3">Le partage avec des collaborateurs (vendeuses, agence) arrivera plus tard.</p>
       </Card>
     </>
   );
@@ -250,42 +232,28 @@ function WorkspaceSection() {
 
 /* ---------- Notifications ---------- */
 
-const NOTIFY_KINDS = [
-  { id: "generation", label: "Génération terminée", description: "Rendu terminé pour vos images, vidéos, publicités et textes." },
-  { id: "campaign", label: "Campagne prête", description: "La création d’une campagne est terminée." },
-  { id: "export", label: "Export terminé", description: "Votre export est prêt à être téléchargé." },
-  { id: "credits", label: "Crédits faibles", description: "Me prévenir quand il me reste moins de 200 crédits." },
-  { id: "template", label: "Nouveaux modèles", description: "Récapitulatif hebdomadaire des nouveaux modèles." },
-  { id: "share", label: "Projet partagé", description: "Quelqu’un a partagé un projet avec vous." },
-] as const;
-
 function NotificationsSection() {
-  const prefs = useStore((s) => s.preferences);
-  const setPreference = useStore((s) => s.setPreference);
   const unread = useStore((s) => s.notifications.filter((n) => !n.read).length);
+  const total = useStore((s) => s.notifications.length);
   const markAll = useStore((s) => s.markAllNotificationsRead);
   const toast = useToast();
-  const [kinds, setKinds] = useState<Record<string, boolean>>(() => Object.fromEntries(NOTIFY_KINDS.map((k) => [k.id, true])));
-  const channelsOff = !prefs.emailNotifications && !prefs.pushNotifications;
 
   return (
     <>
       <Card>
-        <CardHeader title="Canaux" subtitle="Où vos notifications sont envoyées. Les notifications dans l’application restent toujours actives." />
-        <Toggle label="E-mail" description="Recevoir une copie des notifications importantes dans votre boîte mail." checked={prefs.emailNotifications} onChange={(v) => setPreference("emailNotifications", v)} />
-        <Toggle label="Push" description="Notifications push du navigateur lorsque Sokozia est fermé." checked={prefs.pushNotifications} onChange={(v) => setPreference("pushNotifications", v)} className="border-t border-border" />
-      </Card>
-      <Card className={cn(channelsOff && "opacity-60")}>
-        <CardHeader title="Me notifier pour" subtitle={channelsOff ? "Activez un canal ci-dessus pour les recevoir en dehors de l’application." : "Choisissez les événements qui vous sont envoyés par e-mail ou push."} />
-        {NOTIFY_KINDS.map((k, i) => (
-          <Toggle key={k.id} label={k.label} description={k.description} checked={kinds[k.id]} onChange={(v) => setKinds((s) => ({ ...s, [k.id]: v }))} className={cn(i > 0 && "border-t border-border")} />
-        ))}
+        <CardHeader title="Dans Sokozia" subtitle="Vous êtes prévenu ici (cloche en haut) quand :" />
+        <ul className="space-y-2 text-[13px] text-text2">
+          {["Une image, une vidéo ou une pub est prête", "Une campagne est créée", "Un export est prêt à partager"].map((t) => (
+            <li key={t} className="flex items-center gap-2"><Check className="size-3.5 text-success shrink-0" />{t}</li>
+          ))}
+        </ul>
+        <p className="text-[12px] text-muted mt-3">Les alertes par e-mail et sur téléphone arriveront avec l’application mobile.</p>
       </Card>
       <Card>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Boîte de réception</p>
-            <p className="text-[13px] text-text2">{unread === 0 ? "Vous êtes à jour." : `${unread} notification${unread > 1 ? "s" : ""} non lue${unread > 1 ? "s" : ""}.`}</p>
+            <p className="text-[13px] text-text2">{total === 0 ? "Aucune notification pour l’instant." : unread === 0 ? "Vous êtes à jour." : `${unread} notification${unread > 1 ? "s" : ""} non lue${unread > 1 ? "s" : ""}.`}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="ghost" disabled={unread === 0} onClick={() => { markAll(); toast.success("Toutes les notifications sont marquées comme lues"); }}>Tout marquer comme lu</Button>
@@ -302,49 +270,22 @@ function NotificationsSection() {
 function AppearanceSection() {
   const prefs = useStore((s) => s.preferences);
   const setPreference = useStore((s) => s.setPreference);
-  const { setSidebarCollapsed } = useShell();
+  const { setSidebarCollapsed, sidebarLocked } = useShell();
 
   return (
     <>
       <Card>
-        <CardHeader title="Thème" subtitle="Sokozia est conçu comme un espace créatif sombre." />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {[
-            { id: "dark", label: "Sombre", available: true },
-            { id: "light", label: "Clair", available: false },
-            { id: "system", label: "Système", available: false },
-          ].map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              disabled={!t.available}
-              aria-pressed={t.id === "dark"}
-              className={cn(
-                "rounded-lg border p-3 text-left transition-colors",
-                t.id === "dark" ? "border-accent bg-accent/10" : "border-border bg-surface",
-                !t.available && "opacity-50 cursor-not-allowed",
-              )}
-            >
-              <div className={cn("h-14 rounded-md border border-border mb-2 overflow-hidden", t.id === "light" ? "bg-white" : "bg-bg")}>
-                <div className={cn("h-3 w-full", t.id === "light" ? "bg-black/5" : "bg-white/5")} />
-                <div className="p-1.5 flex gap-1">
-                  <div className={cn("h-6 w-6 rounded-xs", t.id === "light" ? "bg-black/10" : "bg-white/10")} />
-                  <div className={cn("h-6 flex-1 rounded-xs", t.id === "light" ? "bg-black/5" : "bg-white/5")} />
-                </div>
-              </div>
-              <p className="text-[13px] font-medium flex items-center justify-between">{t.label}{t.id === "dark" && <Check className="size-3.5 text-highlight" />}</p>
-              {!t.available && <p className="text-[11px] text-muted">Bientôt disponible</p>}
-            </button>
-          ))}
-        </div>
+        <CardHeader title="Interface" subtitle="Sokozia utilise un thème sombre, pensé pour mettre vos visuels en valeur." />
+        <Toggle
+          label="Barre latérale compacte"
+          description={sidebarLocked ? "S’applique sur les grands écrans (la barre est déjà réduite sur cet écran)." : "Réduire la barre latérale aux icônes."}
+          checked={prefs.compactSidebar ?? false}
+          onChange={(v) => setSidebarCollapsed(v)}
+        />
+        <Toggle label="Réduire les animations" description="Coupe les animations et transitions dans toute l’application." checked={prefs.reducedMotion ?? false} onChange={(v) => setPreference("reducedMotion", v)} className="border-t border-border" />
       </Card>
       <Card>
-        <CardHeader title="Interface" />
-        <Toggle label="Barre latérale compacte" description="Réduire la barre latérale aux icônes sur ordinateur." checked={prefs.compactSidebar} onChange={(v) => { setPreference("compactSidebar", v); setSidebarCollapsed(v); }} />
-        <Toggle label="Réduire les animations" description="Limiter les animations et transitions dans toute l’application." checked={prefs.reducedMotion} onChange={(v) => setPreference("reducedMotion", v)} className="border-t border-border" />
-      </Card>
-      <Card>
-        <CardHeader title="Réglages par défaut du Studio" subtitle="Présélectionnés lorsque vous lancez une nouvelle génération." />
+        <CardHeader title="Réglages par défaut du Studio" subtitle="Présélectionnés quand vous ouvrez le générateur d’images." />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Select label="Format par défaut" name="defaultRatio" value={prefs.defaultRatio} onChange={(e) => setPreference("defaultRatio", e.target.value as AspectRatio)} options={RATIOS.map((r) => ({ value: r, label: r }))} />
           <Select label="Style par défaut" name="defaultStyle" value={prefs.defaultStyle} onChange={(e) => setPreference("defaultStyle", e.target.value as ImageStyle)} options={IMAGE_STYLES.map((s) => ({ value: s, label: STYLE_LABELS[s] ?? s }))} />
@@ -367,11 +308,11 @@ function MarketSection() {
   return (
     <>
       <Card>
-        <CardHeader title="Pays" subtitle="Vos prix s’affichent dans votre monnaie et vous payez avec le Mobile Money de votre pays." />
+        <CardHeader title="Pays" subtitle="Vos prix s’affichent dans votre monnaie, avec les moyens de paiement de votre pays." />
         <Select label="Pays de vente" name="country" value={country} onChange={(e) => setCountry(e.target.value as CountryCode)} options={COUNTRIES.map((c) => ({ value: c.code, label: `${c.flag} ${c.name}` }))} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 text-[13px]">
           <div className="rounded-md border border-border bg-surface p-3"><p className="text-muted text-[12px]">Monnaie</p><p className="font-medium mt-0.5">{currency.label} ({currency.symbol})</p></div>
-          <div className="rounded-md border border-border bg-surface p-3"><p className="text-muted text-[12px]">Paiements acceptés</p><p className="font-medium mt-0.5">{info.payments.map((m) => PAYMENT_METHODS[m].label).join(", ")}</p></div>
+          <div className="rounded-md border border-border bg-surface p-3"><p className="text-muted text-[12px]">Moyens de paiement</p><p className="font-medium mt-0.5">{info.payments.map((m) => PAYMENT_METHODS[m].label).join(", ")}</p></div>
         </div>
       </Card>
       <Card>
@@ -380,8 +321,8 @@ function MarketSection() {
       </Card>
       <Card>
         <CardHeader title="Téléphone et connexion" subtitle="Pensé pour les photos prises au téléphone et les forfaits data limités." />
-        <Toggle label="Mode photo prise au téléphone" description="Détourage, lumière et netteté corrigés automatiquement, même avec une photo floue ou sombre." checked={prefs.phonePhotoMode ?? true} onChange={(v) => setPreference("phonePhotoMode", v)} />
-        <Toggle label="Vidéos légères" description="Fichiers jusqu’à 4 fois plus petits, pour les connexions lentes et le partage sur WhatsApp." checked={prefs.lightVideos ?? true} onChange={(v) => setPreference("lightVideos", v)} className="border-t border-border" />
+        <Toggle label="Mode photo prise au téléphone" description="Sokozia demande au modèle de détourer le produit et de corriger la lumière et la netteté de votre photo." checked={prefs.phonePhotoMode ?? true} onChange={(v) => setPreference("phonePhotoMode", v)} />
+        <Toggle label="Vidéos légères" description="Vidéos en 480p, plus rapides à générer et à envoyer sur WhatsApp." checked={prefs.lightVideos ?? true} onChange={(v) => setPreference("lightVideos", v)} className="border-t border-border" />
       </Card>
     </>
   );
@@ -407,9 +348,11 @@ function BrandSection() {
   return (
     <>
       <Card>
-        <CardHeader title="Marque active" subtitle="Utilisée pour les textes générés, les publicités et les exports." action={<Link href="/brand"><Button size="sm" variant="secondary" rightIcon={<ExternalLink className="size-3.5" />}>Modifier le kit de marque</Button></Link>} />
+        <CardHeader title="Marque active" subtitle="Utilisée pour les textes générés et les publicités." action={<Link href="/brand"><Button size="sm" variant="secondary" rightIcon={<ExternalLink className="size-3.5" />}>Modifier le kit de marque</Button></Link>} />
         <div className="flex items-center gap-4">
-          <img src={brand.logoUrl} alt="" className="size-14 rounded-lg object-cover border border-border" />
+          {brand.logoUrl
+            ? <img src={brand.logoUrl} alt="" className="size-14 rounded-lg object-cover border border-border" />
+            : <Avatar name={brand.name} size={56} />}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold truncate">{brand.name}</p>
             <p className="text-[13px] text-text2 truncate">{brand.industry ? industryLabel(brand.industry) : "Aucun secteur"} · {brand.audience || "Aucune audience définie"}</p>
@@ -440,17 +383,17 @@ function BrandSection() {
   );
 }
 
-/* ---------- Subscription ---------- */
+/* ---------- Credits & payment ---------- */
 
-function SubscriptionSection() {
-  const plan = useStore((s) => s.plan);
+function CreditsSection({ account }: { account: AccountDetails | null }) {
   const credits = useStore((s) => s.credits);
   const transactions = useStore((s) => s.transactions);
-  const current = plans.find((p) => p.id === plan) ?? plans[1];
-  const next = plans[plans.findIndex((p) => p.id === current.id) + 1];
+  const country = useStore(selectCountry);
+  const user = useStore((s) => s.user);
   const money = useMoney();
-  const payment = PAYMENT_METHODS[countryOf(useStore(selectCountry)).payments[0]];
-  const renew = new Date(); renew.setMonth(renew.getMonth() + 1, 1);
+  const info = countryOf(country);
+  const mobile = info.payments.filter((m) => PAYMENT_METHODS[m].mobile).map((m) => PAYMENT_METHODS[m].label);
+  const email = account?.email ?? user.email;
 
   return (
     <>
@@ -458,40 +401,41 @@ function SubscriptionSection() {
         <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-accent/10 to-transparent pointer-events-none" />
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-[13px] text-text2">Forfait actuel</p>
-            <p className="text-2xl font-bold tracking-tight">{current.name} <span className="text-base font-medium text-text2">{money(current.priceXof)}/mois</span></p>
-            <p className="text-[12px] text-muted mt-1">Renouvellement le {formatDate(renew.toISOString())} · {formatNumber(current.credits)} crédits par mois</p>
+            <p className="text-[13px] text-text2 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" /> Crédits disponibles</p>
+            <p className="text-3xl font-bold tracking-tight tabular-nums">{formatNumber(credits)}</p>
+            <p className="text-[12px] text-muted">Sans abonnement · {transactions.length} opération{transactions.length > 1 ? "s" : ""} dans l’historique</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href="/pricing"><Button variant={next ? "primary" : "secondary"}>{next ? `Passer à ${next.name}` : "Gérer le forfait"}</Button></Link>
-            <Link href="/pricing"><Button variant="ghost">Comparer les forfaits</Button></Link>
+            <Link href="/credits"><Button>Recharger</Button></Link>
+            <Link href="/credits"><Button variant="ghost">Voir l’historique</Button></Link>
           </div>
         </div>
-        <ul className="relative grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-5 pt-4 border-t border-border text-[13px] text-text2">
-          {Object.values(current.features).map((f) => <li key={f} className="flex items-center gap-2"><Check className="size-3.5 text-success shrink-0" />{f}</li>)}
+      </Card>
+      <Card>
+        <CardHeader title="Packs" subtitle="Payez seulement ce que vous utilisez. 1 visuel ≈ 10 crédits." />
+        <ul className="divide-y divide-border">
+          {USAGE_PACKS.map((p) => (
+            <li key={p.id} className="flex items-center gap-3 py-2.5">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{p.name} {p.popular && <Badge tone="accent">Le plus pris</Badge>}</p>
+                <p className="text-[12px] text-muted">{formatNumber(p.credits)} crédits · {p.pitch}</p>
+              </div>
+              <p className="text-sm font-semibold tabular-nums">{money(p.priceXof)}</p>
+            </li>
+          ))}
         </ul>
       </Card>
       <Card>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <p className="text-[13px] text-text2 flex items-center gap-1.5"><Sparkles className="size-3.5 text-highlight" /> Crédits</p>
-            <p className="text-2xl font-bold tracking-tight tabular-nums">{formatNumber(credits)}</p>
-            <p className="text-[12px] text-muted">{transactions.length} transaction{transactions.length > 1 ? "s" : ""} dans l’historique</p>
-          </div>
-          <Link href="/credits"><Button variant="secondary">Acheter des crédits</Button></Link>
-        </div>
-      </Card>
-      <Card>
-        <CardHeader title="Facturation" subtitle="Moyen de paiement et factures (simulés)." />
-        <div className="flex items-center gap-3 rounded-md border border-border bg-surface p-3">
-          <div className="h-8 w-12 rounded-xs flex items-center justify-center text-[10px] font-bold tracking-wider text-black" style={{ background: payment.color }}>{payment.short}</div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">{payment.label} · •• •• 42</p>
-            <p className="text-[12px] text-muted">Confirmation sur votre téléphone · Par défaut</p>
-          </div>
-          <Badge tone="success" dot>Active</Badge>
-        </div>
-        <p className="text-[12px] text-muted mt-3">Les paiements sont simulés dans ce prototype. Aucun montant n’est débité.</p>
+        <CardHeader title="Paiement" subtitle={`Mobile Money dans votre pays : ${mobile.join(", ") || "carte bancaire"}.`} />
+        <p className="text-[13px] text-text2">Le paiement Mobile Money directement dans Sokozia arrive bientôt. En attendant, écrivez-nous sur WhatsApp : nous rechargeons votre compte dès réception du paiement.</p>
+        <a
+          href={whatsappLink(SOKOZIA_WHATSAPP, `Bonjour Sokozia, je veux recharger des crédits pour le compte ${email}.`)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mt-3"
+        >
+          <Button variant="secondary" leftIcon={<MessageCircle className="size-4" />}>Recharger via WhatsApp</Button>
+        </a>
       </Card>
     </>
   );
@@ -499,77 +443,71 @@ function SubscriptionSection() {
 
 /* ---------- Security ---------- */
 
-function SecuritySection() {
+function SecuritySection({ account }: { account: AccountDetails | null }) {
   const toast = useToast();
-  const [current, setCurrent] = useState("");
-  const [next, setNext] = useState("");
+  const [step, setStep] = useState<"idle" | "code">("idle");
+  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [twoFactor, setTwoFactor] = useState(false);
-  const [sessions, setSessions] = useState([
-    { id: "s1", device: "Cet appareil · Chrome sur macOS", location: "New York, États-Unis", current: true, icon: Monitor },
-    { id: "s2", device: "iPhone · application Sokozia", location: "New York, États-Unis", current: false, icon: Smartphone },
-    { id: "s3", device: "Safari sur macOS", location: "Los Angeles, États-Unis", current: false, icon: Monitor },
-  ]);
+  const [pending, startTransition] = useTransition();
 
-  const changePassword = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!current) { setError("Saisissez votre mot de passe actuel."); return; }
-    if (next.length < 8) { setError("Le nouveau mot de passe doit contenir au moins 8 caractères."); return; }
-    if (next !== confirm) { setError("Les mots de passe ne correspondent pas."); return; }
+  const sendCode = () => {
     setError("");
-    setSaving(true);
-    await delay(900);
-    setSaving(false);
-    setCurrent(""); setNext(""); setConfirm("");
-    toast.success("Mot de passe mis à jour", "Utilisez votre nouveau mot de passe lors de votre prochaine connexion.");
+    startTransition(async () => {
+      const res = await sendPasswordCode();
+      if (!res.ok) { setError(res.error ?? "Envoi impossible."); return; }
+      setStep("code");
+      toast.success("Code envoyé", `Un code à 6 chiffres a été envoyé à ${res.email}.`);
+    });
+  };
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(code.trim())) { setError("Entrez le code à 6 chiffres reçu par e-mail."); return; }
+    if (password.length < 6) { setError("Le mot de passe doit faire au moins 6 caractères."); return; }
+    if (password !== confirm) { setError("Les mots de passe ne correspondent pas."); return; }
+    setError("");
+    startTransition(async () => {
+      const res = await changePassword({ code, password });
+      if (!res.ok) { setError(res.error ?? "Échec."); return; }
+      setStep("idle"); setCode(""); setPassword(""); setConfirm("");
+      toast.success("Mot de passe modifié", "Utilisez-le à votre prochaine connexion.");
+    });
   };
 
   return (
     <>
-      <form onSubmit={changePassword}>
-        <Card>
-          <CardHeader title="Changer de mot de passe" />
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-            <Input label="Mot de passe actuel" name="currentPassword" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
-            <Input label="Nouveau mot de passe" name="newPassword" type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} hint="Au moins 8 caractères." />
-            <Input label="Confirmer le nouveau mot de passe" name="confirmPassword" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-            <p className="text-xs text-danger min-h-4">{error}</p>
-            <Button type="submit" loading={saving} leftIcon={<KeyRound className="size-4" />}>Mettre à jour le mot de passe</Button>
-          </div>
-        </Card>
-      </form>
       <Card>
-        <CardHeader title="Double authentification" />
-        <Toggle
-          label="Application d’authentification"
-          description={twoFactor ? "Activée. Un code vous sera demandé lors de la connexion sur un nouvel appareil." : "Ajoutez une seconde étape lors de la connexion."}
-          checked={twoFactor}
-          onChange={(v) => { setTwoFactor(v); toast.success(v ? "Double authentification activée" : "Double authentification désactivée"); }}
-        />
+        <CardHeader title="Mot de passe" subtitle={`Par sécurité, on vous envoie d’abord un code à ${account?.email ?? "votre e-mail"}. Marche aussi si vous vous connectez avec Google ou par code.`} />
+        {step === "idle" ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-danger min-h-4">{error}</p>
+            <Button loading={pending} leftIcon={<KeyRound className="size-4" />} onClick={sendCode}>Recevoir un code</Button>
+          </div>
+        ) : (
+          <form onSubmit={submit}>
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+              <Input label="Code reçu par e-mail" name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />
+              <Input label="Nouveau mot de passe" name="newPassword" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} hint="Au moins 6 caractères." />
+              <Input label="Confirmer" name="confirmPassword" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+              <p className="text-xs text-danger min-h-4">{error}</p>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="ghost" disabled={pending} onClick={sendCode}>Renvoyer le code</Button>
+                <Button type="submit" loading={pending} leftIcon={<KeyRound className="size-4" />}>Changer le mot de passe</Button>
+              </div>
+            </div>
+          </form>
+        )}
       </Card>
       <Card>
-        <CardHeader
-          title="Sessions actives"
-          action={sessions.length > 1 && <Button size="sm" variant="ghost" onClick={() => { setSessions((s) => s.filter((x) => x.current)); toast.success("Autres sessions déconnectées"); }}>Déconnecter les autres</Button>}
-        />
-        <ul className="divide-y divide-border">
-          {sessions.map((s) => (
-            <li key={s.id} className="flex items-center gap-3 py-2.5">
-              <s.icon className="size-4 text-muted shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{s.device}</p>
-                <p className="text-[12px] text-muted">{s.location}</p>
-              </div>
-              {s.current ? <Badge tone="success" dot>Actuelle</Badge> : (
-                <Button size="sm" variant="ghost" onClick={() => { setSessions((list) => list.filter((x) => x.id !== s.id)); toast.success("Session déconnectée"); }}>Déconnecter</Button>
-              )}
-            </li>
-          ))}
-        </ul>
+        <CardHeader title="Connexion" subtitle="Vous êtes connecté sur cet appareil." />
+        <form action={signOut} className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[13px] text-text2">Sur un appareil partagé, pensez à vous déconnecter. Vos créations et vos crédits restent sur votre compte.</p>
+          <Button type="submit" variant="danger" leftIcon={<LogOut className="size-4" />}>Se déconnecter</Button>
+        </form>
       </Card>
     </>
   );
@@ -579,9 +517,9 @@ function SecuritySection() {
 
 function HelpSection() {
   const links = [
-    { label: "Centre d’aide et FAQ", description: "Guides, raccourcis et réponses aux questions fréquentes.", href: "/help" },
-    { label: "Contacter le support", description: "Envoyez-nous un message. Nous répondons sous 24 h.", href: "/help" },
-    { label: "Crédits et tarifs", description: "Le fonctionnement des crédits et le contenu de chaque forfait.", href: "/pricing" },
+    { label: "Centre d’aide et FAQ", description: "Guides et réponses aux questions fréquentes.", href: "/help", external: false },
+    { label: "Écrire au support sur WhatsApp", description: "Questions, recharges, problèmes : on vous répond sur WhatsApp.", href: whatsappLink(SOKOZIA_WHATSAPP, "Bonjour Sokozia, "), external: true },
+    { label: "Crédits et tarifs", description: "Le fonctionnement des crédits et le prix des packs.", href: "/pricing", external: false },
   ];
   return (
     <>
@@ -589,23 +527,23 @@ function HelpSection() {
         <ul className="divide-y divide-border">
           {links.map((l) => (
             <li key={l.label}>
-              <Link href={l.href} className="flex items-center gap-3 px-4 md:px-5 py-3.5 hover:bg-surface transition-colors">
+              <a href={l.href} {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="flex items-center gap-3 px-4 md:px-5 py-3.5 hover:bg-surface transition-colors">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{l.label}</p>
                   <p className="text-[13px] text-text2">{l.description}</p>
                 </div>
                 <ExternalLink className="size-4 text-muted" />
-              </Link>
+              </a>
             </li>
           ))}
         </ul>
       </Card>
       <Card>
         <CardHeader title="À propos" />
-        <dl className="grid grid-cols-2 gap-y-2 text-[13px]">
-          <dt className="text-text2">Version</dt><dd>0.10.0 (bêta)</dd>
-          <dt className="text-text2">Build</dt><dd>Next.js · génération Higgsfield (images Marketing Studio, vidéos Seedance 2.5)</dd>
-          <dt className="text-text2">Données</dt><dd>Stockées localement dans ce navigateur</dd>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[13px]">
+          <dt className="text-text2">Application</dt><dd>Sokozia (bêta)</dd>
+          <dt className="text-text2">Génération</dt><dd>Images Marketing Studio et Soul 2, vidéos Seedance 2.5, Kling, Wan, MiniMax</dd>
+          <dt className="text-text2">Vos données</dt><dd>Enregistrées sur votre compte Sokozia, disponibles sur tous vos appareils</dd>
         </dl>
       </Card>
     </>

@@ -262,7 +262,7 @@ function ModelPill({ value, onChange, mode }: { value: ModelId; onChange: (m: Mo
           >
             {options.map((m) => {
               const sel = m.id === value;
-              const recommended = m.id === "marketing-studio" || m.id === "seedance-2.5";
+              const recommended = m.id === "marketing-studio" || m.id === "kling-3.0";
               return (
                 <li key={m.id}>
                   <button role="option" aria-selected={sel} onClick={() => { onChange(m.id); setOpen(false); }} className={cn("w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-white/8", sel && "bg-white/8")}>

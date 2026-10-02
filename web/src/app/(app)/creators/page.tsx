@@ -1,7 +1,8 @@
 "use client";
 
 import { Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { CreatorCard } from "@/components/library/CreatorCard";
 import { CreatorDetailModal } from "@/components/library/CreatorDetailModal";
 import { PageHeader } from "@/components/shell/PageHeader";
@@ -22,6 +23,16 @@ export default function CreatorsPage() {
   const [gender, setGender] = useState<Gender>("all");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Creator | null>(null);
+  const router = useRouter();
+  /** Choosing a creator opens the Studio in UGC mode with this creator. */
+  const chooseCreator = (c: Creator) => router.push(`/studio?mode=ugc&creator=${encodeURIComponent(c.id)}`);
+
+  // Deep link from the global search: /creators?creator=<id> opens that profile.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("creator");
+    const c = id ? creators.find((x) => x.id === id) : undefined;
+    if (c) setOpen(c);
+  }, []);
 
   const styles = useMemo(() => ["All", "Favorites", ...Array.from(new Set(creators.map((c) => c.style)))], []);
 
@@ -59,7 +70,7 @@ export default function CreatorsPage() {
 
       {list.length ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-          {list.map((c) => <CreatorCard key={c.id} creator={c} onOpen={setOpen} />)}
+          {list.map((c) => <CreatorCard key={c.id} creator={c} onOpen={chooseCreator} onProfile={setOpen} />)}
         </div>
       ) : (
         <EmptyState

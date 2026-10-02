@@ -1,7 +1,7 @@
 "use client";
 
 import { Clapperboard, ImageIcon, UserRound, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Inspector, useImmersive, usePageTitle } from "@/components/shell/ShellContext";
 import { AssistantButton } from "@/components/studio/Assistant";
 import { Composer } from "@/components/studio/Composer";
@@ -21,7 +21,7 @@ import { VideoPlayer } from "@/components/studio/VideoPlayer";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
-import { templates } from "@/data";
+import { creators, templates } from "@/data";
 import { useStore } from "@/lib/store";
 import type { Asset } from "@/lib/types";
 import { IMAGE_STYLE_LABELS, label } from "@/components/studio/constants";
@@ -42,6 +42,17 @@ export default function StudioPage() {
   });
   const gen = useImageGenerator();
   const vid = useVideoGenerator();
+
+  // Links like /studio?mode=ugc&creator=<id> (Créateurs → "Utiliser en UGC") open the right mode and creator.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const m = q.get("mode");
+    if (m === "ugc" || m === "video" || m === "image") setMode(m);
+    const c = q.get("creator");
+    if (c && creators.some((x) => x.id === c)) { setMode("ugc"); vid.update("creatorId", c); }
+    if (m || c) window.history.replaceState(null, "", "/studio");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [picker, setPicker] = useState(false);
   const [advanced, setAdvanced] = useState(false);
 
@@ -66,7 +77,9 @@ export default function StudioPage() {
     else if (vid.source || (mode === "ugc" && vid.creator)) overlay = (
       <div className="flex flex-col items-center justify-center text-center p-6 gap-4 bg-[radial-gradient(circle_at_50%_40%,rgba(249,115,22,0.10),transparent_60%)]">
         <div className="flex items-end justify-center gap-3 w-full min-w-0">
-          {mode === "ugc" && vid.creator && <img src={vid.creator.avatarUrl} alt={vid.creator.name} className="size-20 sm:size-28 md:size-40 shrink-0 rounded-2xl object-cover shadow-float border border-white/10" />}
+          {mode === "ugc" && vid.creator && (vid.creator.intro
+            ? <video key={vid.creator.id} src={vid.creator.intro} poster={vid.creator.portrait} autoPlay muted loop playsInline className="h-40 sm:h-52 md:h-64 aspect-[9/16] shrink-0 rounded-2xl object-cover shadow-float border border-white/10" aria-label={`Présentation de ${vid.creator.name}`} />
+            : <img src={vid.creator.avatarUrl} alt={vid.creator.name} className="size-20 sm:size-28 md:size-40 shrink-0 rounded-2xl object-cover shadow-float border border-white/10" />)}
           {vid.source && <img src={vid.source.thumbnail} alt={vid.source.name} className="max-h-[32dvh] max-w-[calc(100%-6rem)] sm:max-w-[60vw] min-w-0 rounded-2xl shadow-float object-contain border border-white/10" />}
         </div>
         <p className="text-sm text-text2 max-w-sm">

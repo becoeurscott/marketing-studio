@@ -20,9 +20,9 @@ export function CreatorDetailModal({ creator, onClose }: { creator: Creator | nu
 
   const useInUGC = () => {
     if (!creator) return;
-    toast.success(`${creator.name} sélectionné(e)`, "Ouverture du créateur UGC.");
+    toast.success(`${creator.name} sélectionné(e)`, "Ouverture du Studio en mode UGC.");
     onClose();
-    router.push(`/studio/ugc?creator=${encodeURIComponent(creator.id)}`);
+    router.push(`/studio?mode=ugc&creator=${encodeURIComponent(creator.id)}`);
   };
 
   return (

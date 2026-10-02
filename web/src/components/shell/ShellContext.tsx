@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useIsWide } from "@/components/studio/useMediaQuery";
+import { useStore } from "@/lib/store";
 
 interface ShellContextValue {
   title: string | null;
@@ -29,7 +30,14 @@ export function ShellProvider({ children }: { children: ReactNode }) {
   const [title, setTitle] = useState<string | null>(null);
   const [inspectorEl, setInspectorEl] = useState<HTMLDivElement | null>(null);
   const [inspectorCount, setInspectorCount] = useState(0);
-  const [collapsedPref, setSidebarCollapsed] = useState(false);
+  // Sidebar and motion preferences come from Paramètres (saved with the account).
+  const collapsedPref = useStore((s) => s.preferences.compactSidebar ?? false);
+  const reducedMotion = useStore((s) => s.preferences.reducedMotion ?? false);
+  const setPreference = useStore((s) => s.setPreference);
+  const setSidebarCollapsed = (v: boolean) => setPreference("compactSidebar", v);
+  useEffect(() => {
+    document.documentElement.classList.toggle("reduce-motion", reducedMotion);
+  }, [reducedMotion]);
   const wide = useIsWide();
   const sidebarCollapsed = collapsedPref || !wide;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

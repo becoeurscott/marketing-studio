@@ -10,7 +10,7 @@ import { uid } from "./utils";
 import { GenerationError, runJob, uploadPhoto } from "./higgsfield/client";
 import { imageModel, videoCredits, type ImageModelId, type VideoModelId } from "./higgsfield/models";
 import { creators as creatorsSeed, creatorSheetUrl } from "@/data/creators";
-import { languageLabel, type LanguageId } from "./market";
+import { countryOf, languageLabel, type LanguageId } from "./market";
 
 export class ApiError extends Error {
   code: "insufficient-credits" | "failed";
@@ -81,6 +81,13 @@ function imageRatio(r?: AspectRatio): string {
   return r === "4:5" ? "3:4" : r;
 }
 
+/** "Mode photo prise au téléphone" (Paramètres): asks the model to clean up a phone photo of the product. */
+function phoneCleanup(): string {
+  return useStore.getState().preferences.phonePhotoMode ?? true
+    ? " The product photo may be taken with a phone: cut the product out cleanly, fix the lighting, colors and sharpness, remove reflections and clutter, without changing the product itself."
+    : "";
+}
+
 function assetUrl(id?: ID | null): string | undefined {
   if (!id) return undefined;
   const a = useStore.getState().assets.find((x) => x.id === id);
@@ -92,6 +99,28 @@ async function images(prompt: string, count: number, opts: { ratio?: AspectRatio
     Array.from({ length: count }, () => runJob({ kind: "image", model: opts.model, prompt, aspectRatio: imageRatio(opts.ratio), imageUrls: opts.imageUrls, upscale: opts.upscale })),
   );
   return jobs.flatMap((j) => j.images).map((url) => ({ id: uid("res"), url, thumbnail: url, ratio: opts.ratio ?? "4:5", seed: url }));
+}
+
+/* ---------- Project context ---------- */
+/**
+ * Art-direction context from the project the user works in (its name and brief),
+ * its brand (description, audience, style, colors) and the user's market, appended
+ * to every generation prompt so results fit the project without retyping it.
+ */
+export function projectContext(projectId?: ID | null): string {
+  const s = useStore.getState();
+  const project = s.projects.find((p) => p.id === (projectId ?? s.currentProjectId));
+  const brand = s.brands.find((b) => b.id === (project?.brandId ?? s.currentBrandId));
+  const parts: string[] = [];
+  if (project) parts.push(`projet « ${project.name} »${project.description ? ` : ${project.description}` : ""}`);
+  if (brand) {
+    parts.push(`marque ${brand.name}${brand.description ? ` (${brand.description})` : ""}`);
+    if (brand.audience) parts.push(`public visé : ${brand.audience}`);
+    if (brand.styleTags?.length) parts.push(`univers visuel : ${brand.styleTags.join(", ")}`);
+    if (brand.colors?.length) parts.push(`couleurs de marque : ${brand.colors.slice(0, 3).join(", ")}`);
+  }
+  parts.push(`marché : ${countryOf(s.country).name}`);
+  return ` Contexte de la campagne, à respecter : ${parts.join(" ; ")}.`;
 }
 
 /* ---------- Image ---------- */
@@ -114,7 +143,7 @@ export async function generateImage(params: GenerateImageParams): Promise<ImageR
   const count = Math.min(params.count ?? 2, 4);
   const product = assetUrl(params.productAssetId);
   const details = [params.style && `style ${params.style}`, params.background && `décor : ${params.background}`, params.lighting && `lumière : ${params.lighting}`, params.camera && `cadrage : ${params.camera}`, params.composition && `composition : ${params.composition}`].filter(Boolean).join(", ");
-  const prompt = `${params.prompt}${details ? `. ${details}` : ""}${product ? ". Garde le produit de la photo fourni exactement identique (forme, couleurs, étiquette)." : ""}`;
+  const prompt = `${params.prompt}${details ? `. ${details}` : ""}${product ? `. Garde le produit de la photo fourni exactement identique (forme, couleurs, étiquette).${phoneCleanup()}` : ""}${projectContext(params.projectId)}`;
   // Soul 2 can't use a product photo: it renders from the text only.
   const model = imageModel(params.model);
   const refs = product && model.acceptsImages ? [product] : undefined;
@@ -163,7 +192,7 @@ async function video(req: { prompt: string; imageUrl?: string; durationSec: numb
 export async function generateVideo(params: GenerateVideoParams, onProgress?: Progress): Promise<VideoResult> {
   onProgress?.(VIDEO_STEPS[0], 0, 20);
   const source = params.sourceUrl?.startsWith("https://") ? params.sourceUrl : assetUrl(params.sourceAssetId);
-  const prompt = [params.concept, params.camera && `mouvement de caméra : ${params.camera}`, params.style && `style ${params.style}`].filter(Boolean).join(". ");
+  const prompt = [params.concept, params.camera && `mouvement de caméra : ${params.camera}`, params.style && `style ${params.style}`].filter(Boolean).join(". ") + projectContext(params.projectId);
   const cost = videoCredits(params.model, params.durationSec, !!source);
   const result = await chargedExact("video", `Vidéo — ${params.concept.slice(0, 40)}`, cost, () => video({ prompt, imageUrl: source, durationSec: params.durationSec, ratio: params.ratio, model: params.model }, onProgress));
   record({ type: "video", prompt: params.concept, status: "completed", thumbnails: result.thumbnail ? [result.thumbnail] : [], projectId: params.projectId ?? null, params: { durationSec: params.durationSec, camera: params.camera ?? "", style: params.style ?? "", model: params.model ?? "seedance-2.5" }, creditsUsed: cost });
@@ -197,7 +226,7 @@ export async function generateUGC(params: GenerateUGCParams, onProgress?: Progre
   const lang = languageLabel(params.language ?? "fr");
   const cost = ugcCredits(params.durationSec);
   const references = [creatorSheetUrl(creator), ...(product ? [product] : [])];
-  const prompt = `Vertical selfie-style UGC video. The person is exactly the one in the character sheet: ${creator.look}.${product ? " She/he holds and shows the product from the product photo, keeping it identical." : ""}${place} Talking naturally to the camera in ${lang}, tone ${params.tone ?? "authentic"}, says: « ${params.script} »`;
+  const prompt = `Vertical selfie-style UGC video. The person is exactly the one in the character sheet: ${creator.look}.${product ? " She/he holds and shows the product from the product photo, keeping it identical." : ""}${place} Talking naturally to the camera in ${lang}, tone ${params.tone ?? "authentic"}, says: « ${params.script} ».${projectContext(params.projectId)}`;
   const result = await chargedExact("ugc", `Vidéo UGC — ${creator.name}`, cost, async () => {
     onProgress?.(VIDEO_STEPS[0], 0, 20);
     const light = useStore.getState().preferences.lightVideos ?? true;
@@ -225,7 +254,7 @@ export async function generateProductShoot(params: ProductShootParams): Promise<
   if (!params.productUrl.startsWith("https://")) throw new ApiError("failed", "Importez d’abord une photo de votre produit.");
   const count = Math.min(params.count ?? 3, 4);
   const scene = params.styleDirection ?? `Place the product in this setting: ${params.environment}.`;
-  const prompt = `${scene} Lighting: ${params.lighting}. Framing: ${params.camera}. Keep the product from the photo exactly identical (shape, label, colors). Sharp, realistic advertising photo.`;
+  const prompt = `${scene} Lighting: ${params.lighting}. Framing: ${params.camera}. Keep the product from the photo exactly identical (shape, label, colors).${phoneCleanup()} Sharp, realistic advertising photo.${projectContext(params.projectId)}`;
   const results = await charged("product-shoot", `Shooting produit — ${params.styleName ?? params.environment}`, 1, () => images(prompt, count, { ratio: "4:5", imageUrls: [params.productUrl] }));
   record({ type: "image", prompt: `Shooting produit : ${params.environment}, éclairage ${params.lighting}, ${params.camera}`, status: "completed", thumbnails: results.map((r) => r.thumbnail), projectId: params.projectId ?? null, params: { environment: params.environment, lighting: params.lighting, camera: params.camera }, creditsUsed: CREDIT_COSTS["product-shoot"] });
   return results;
@@ -270,7 +299,7 @@ export async function generateAds(params: GenerateAdsParams): Promise<AdVariatio
   ];
   const ctas = [params.cta, params.platform === "whatsapp" ? "Commander sur WhatsApp" : "En savoir plus", "Profiter de l’offre", params.cta];
   const product = assetUrl(params.productAssetId);
-  const prompt = `Visuel publicitaire ${params.format === "flyer" ? "de flyer imprimable" : `pour ${params.platform}`} : ${params.product}. ${params.offer}. Pour ${params.audience}. Laisse de l’espace libre pour le texte et le prix, style marketing africain moderne, couleurs vives.${product ? " Garde le produit de la photo identique." : ""}`;
+  const prompt = `Visuel publicitaire ${params.format === "flyer" ? "de flyer imprimable" : `pour ${params.platform}`} : ${params.product}. ${params.offer}. Pour ${params.audience}. Laisse de l’espace libre pour le texte et le prix, style marketing africain moderne, couleurs vives.${product ? ` Garde le produit de la photo identique.${phoneCleanup()}` : ""}${projectContext(params.projectId)}`;
   // Two visuals shared by the four copy variants (A/C, B/D) to halve generation cost.
   const visuals = await charged("ads", `Variantes d’annonce — ${params.platform} ${params.format}`, 1, () => images(prompt, 2, { ratio: adRatio(params.platform, params.format), imageUrls: product ? [product] : undefined }));
   const results = labels.map((label, i) => ({
@@ -331,7 +360,7 @@ export async function createCampaign(params: CreateCampaignParams, onProgress?: 
   }
   const store = useStore.getState();
   const assetIds = store.assets.filter((a) => a.type === "image").slice(0, 8).map((a) => a.id);
-  const variations = await generateAds({ platform: params.platforms[0] ?? "instagram", format: "image", product: "Beurre de karité pur", offer: "Livraison offerte cette semaine", audience: params.audience, cta: "Commander sur WhatsApp", projectId: params.projectId });
+  const variations = await generateAds({ platform: params.platforms[0] ?? "instagram", format: "image", product: useStore.getState().projects.find((p) => p.id === params.projectId)?.name ?? params.name ?? "notre produit", offer: "Livraison offerte cette semaine", audience: params.audience, cta: "Commander sur WhatsApp", projectId: params.projectId });
   const campaign = store.createCampaign({
     ...params,
     status: "draft",

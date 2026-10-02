@@ -11,7 +11,8 @@ import { GENDER_LABELS } from "@/lib/labels";
 /** Only one creator talks at a time: unmuting one card mutes the others. */
 const SOUND_EVENT = "creator-sound";
 
-export function CreatorCard({ creator, onOpen, className }: { creator: Creator; onOpen?: (c: Creator) => void; className?: string }) {
+/** `onOpen`: main click (choose the creator). `onProfile`: optional "Voir le profil" link. */
+export function CreatorCard({ creator, onOpen, onProfile, className }: { creator: Creator; onOpen?: (c: Creator) => void; onProfile?: (c: Creator) => void; className?: string }) {
   const favorites = useStore((s) => s.favorites.creator);
   const toggleFavorite = useStore((s) => s.toggleFavorite);
   const fav = favorites.includes(creator.id);
@@ -71,6 +72,11 @@ export function CreatorCard({ creator, onOpen, className }: { creator: Creator; 
           <p className="text-[11px] text-muted flex items-center gap-1 truncate"><Languages className="size-3 shrink-0" />{creator.languages.join(", ")}</p>
         </div>
       </button>
+      {onProfile && (
+        <button type="button" onClick={() => onProfile(creator)} className="absolute right-3 bottom-2.5 text-[11px] font-medium text-text2 hover:text-text underline-offset-2 hover:underline">
+          Voir le profil
+        </button>
+      )}
       <button
         type="button"
         aria-label={fav ? "Retirer des favoris" : "Ajouter aux favoris"}
