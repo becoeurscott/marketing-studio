@@ -63,7 +63,7 @@ export function toModelInput(req: GenerationRequest): [string, Record<string, un
         return [imageModel("soul-2").endpoint, { prompt, batch_size: 1, resolution: "1080p", aspect_ratio: soulRatios.includes(req.aspectRatio ?? "") ? req.aspectRatio : "3:4", enhance_prompt: true }];
       }
       const ratio = IMAGE_RATIOS.has(req.aspectRatio ?? "") ? req.aspectRatio : "auto";
-      const resolution = req.upscale ? "4k" : "2k";
+      const resolution = req.upscale ? "4k" : imageModel(req.model).resolution ?? "2k";
       if (req.presetId) {
         // Preset (enhanced) mode: product photo first, optional model reference second.
         if (!UUID.test(req.presetId)) throw new Error("Style inconnu.");

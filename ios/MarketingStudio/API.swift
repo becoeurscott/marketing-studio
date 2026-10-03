@@ -14,7 +14,7 @@ struct ImageGenParams {
     var productAssetId: String? = nil
     var projectId: String? = nil
     /// Image model id or label ("Marketing Studio", "Soul 2").
-    var model: String = "marketing-studio"
+    var model: String = "marketing-studio-1k"
     var count: Int = 2
 }
 
@@ -201,11 +201,11 @@ enum API {
     /// Same image re-rendered in very high definition.
     static func upscaleImage(url: String, store: AppStore) async throws -> GeneratedImage {
         guard url.hasPrefix("https://") else { throw APIError.failed("Cette image ne peut pas être agrandie : générez-la ou importez-la d’abord.") }
-        let cost = AIModels.imageModel(nil).credits + AIModels.upscaleExtra
+        let cost = AIModels.imageModel("marketing-studio").credits + AIModels.upscaleExtra
         let urls = try await charged(store, cost: cost) {
-            try await images("Même image, identique, en très haute définition : détails plus nets, sans rien changer.", count: 1, ratio: nil, imageUrls: [url], upscale: true)
+            try await images("Même image, identique, en très haute définition : détails plus nets, sans rien changer.", count: 1, ratio: nil, imageUrls: [url], model: "marketing-studio", upscale: true)
         }
-        let g = store.addGeneration(kind: .image, prompt: "Agrandissement HD", thumbnails: urls, model: "Marketing Studio", credits: cost)
+        let g = store.addGeneration(kind: .image, prompt: "Agrandissement HD", thumbnails: urls, model: "HD", credits: cost)
         return GeneratedImage(id: IDGen.make("out"), url: urls[0], generationId: g.id)
     }
 
@@ -216,7 +216,7 @@ enum API {
         let prompt = "\(base)\(instruction.map { " : \($0)" } ?? "."). Garde le produit identique."
         let cost = AIModels.imageModel(nil).credits
         let urls = try await charged(store, cost: cost) { try await images(prompt, count: 1, ratio: ratio, imageUrls: [url]) }
-        let g = store.addGeneration(kind: .image, prompt: "Retouche · \(StudioOptions.label(tool))", thumbnails: urls, model: "Marketing Studio", credits: cost)
+        let g = store.addGeneration(kind: .image, prompt: "Retouche · \(StudioOptions.label(tool))", thumbnails: urls, model: "Standard", credits: cost)
         return GeneratedImage(id: IDGen.make("out"), url: urls[0], generationId: g.id)
     }
 
@@ -264,7 +264,7 @@ enum API {
             try await APIClient.run(GenerationRequest(kind: .video, prompt: prompt, aspectRatio: "9:16", durationSec: p.duration, light: store.preferences.lightVideos, references: references), onStatus: stepper(progress))
         }
         let poster = product ?? creator.avatarURL
-        let g = store.addGeneration(kind: .video, prompt: "UGC · \(creator.name) · \(p.script)", thumbnails: [poster], projectId: p.projectId, model: "Seedance 2.5", credits: cost)
+        let g = store.addGeneration(kind: .video, prompt: "UGC · \(creator.name) · \(p.script)", thumbnails: [poster], projectId: p.projectId, model: "UGC", credits: cost)
         store.pushNotification(kind: .generationComplete, title: "Vidéo UGC prête", message: "\(creator.name) présente votre produit en \(lang).")
         return GeneratedVideo(id: IDGen.make("out"), posterURL: poster, videoURL: job.videoUrl ?? "", duration: p.duration, generationId: g.id)
     }
@@ -281,7 +281,7 @@ enum API {
         let urls = try await charged(store, cost: cost) {
             try await images(prompt, count: count, ratio: style?.ratio ?? "4:5", imageUrls: [product])
         }
-        let g = store.addGeneration(kind: .image, prompt: "Shooting produit · \(style?.name ?? p.environment) · \(p.lighting) · \(p.camera)", thumbnails: urls, projectId: p.projectId, model: "Marketing Studio", credits: cost)
+        let g = store.addGeneration(kind: .image, prompt: "Shooting produit · \(style?.name ?? p.environment) · \(p.lighting) · \(p.camera)", thumbnails: urls, projectId: p.projectId, model: "Standard", credits: cost)
         return urls.map { GeneratedImage(id: IDGen.make("out"), url: $0, generationId: g.id) }
     }
 
@@ -316,7 +316,7 @@ enum API {
         let vars = ["A", "B", "C", "D"].enumerated().map { i, l in
             AdVariation(id: IDGen.make("var"), label: "Création \(l)", visualURL: visuals[i % visuals.count], headline: headlines[i], primaryText: texts[i], cta: ctas[i], platform: p.platform)
         }
-        store.addGeneration(kind: .ad, prompt: "Pub \(p.platform.title) \(p.format) · \(p.product) · \(p.audience) · \(p.offer)", thumbnails: visuals, projectId: p.projectId, model: "Marketing Studio", credits: cost)
+        store.addGeneration(kind: .ad, prompt: "Pub \(p.platform.title) \(p.format) · \(p.product) · \(p.audience) · \(p.offer)", thumbnails: visuals, projectId: p.projectId, model: "Standard", credits: cost)
         return vars
     }
 

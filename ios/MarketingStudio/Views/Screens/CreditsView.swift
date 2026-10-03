@@ -107,15 +107,15 @@ struct CreditsView: View {
 
     private var costTable: some View {
         VStack(spacing: 0) {
-            costRow("Image produit", "Marketing Studio · garde votre produit", cost: AIModels.imageModel("marketing-studio").credits, icon: "photo.on.rectangle.angled", each: "par image")
+            costRow("Photo produit Standard", "Votre produit reste identique", cost: AIModels.imageModel("marketing-studio-1k").credits, icon: "photo.on.rectangle.angled", each: "par image")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Portrait / mode", "Soul 2 · sans photo produit", cost: AIModels.imageModel("soul-2").credits, icon: "person.crop.square", each: "par image")
+            costRow("Image Éco", "Idées et portraits, très économique", cost: AIModels.imageModel("soul-2").credits, icon: "person.crop.square", each: "par image")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Vidéo UGC", "Seedance 2.5 · 8 secondes", cost: AIModels.ugcCredits(seconds: 8), icon: "video", each: "par vidéo")
+            costRow("Vidéo UGC", "Créateur IA · 8 secondes", cost: AIModels.ugcCredits(seconds: 8), icon: "video", each: "par vidéo")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Vidéo économique", "Kling 3.0 · 8 secondes", cost: AIModels.videoCredits("kling-3.0", seconds: 8), icon: "film", each: "par vidéo")
+            costRow("Vidéo Éco", "8 secondes", cost: AIModels.videoCredits("wan-3.0-prime", seconds: 8), icon: "film", each: "par vidéo")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Agrandissement HD", "Même image, plus nette", cost: AIModels.imageModel(nil).credits + AIModels.upscaleExtra, icon: "arrow.up.left.and.arrow.down.right", each: "par image")
+            costRow("Agrandissement 4K", "Même image, plus nette", cost: AIModels.imageModel("marketing-studio").credits + AIModels.upscaleExtra, icon: "arrow.up.left.and.arrow.down.right", each: "par image")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
             costRow("Textes et accroches", "Tous les outils de rédaction", cost: 0, icon: "text.alignleft", each: "gratuit")
         }

@@ -7,7 +7,10 @@ struct VideoModel: Identifiable, Hashable {
     let id: String
     let label: String
     let hint: String
+    /// 480p price ("vidéos légères").
     let creditsPerSecond: Int
+    /// 720p price when light videos are off (nil = same price).
+    let creditsPerSecondHD: Int?
     let minSec: Int
     let maxSec: Int
     /// Can animate a product photo. Models without it fall back to Seedance 2.5 for photos.
@@ -24,23 +27,28 @@ struct ImageModel: Identifiable, Hashable {
 }
 
 enum AIModels {
+    // Users see quality levels, never provider names (same tiers and prices as the web app).
     static let video: [VideoModel] = [
-        VideoModel(id: "seedance-2.5", label: "Seedance 2.5", hint: "Le plus réaliste, anime vos photos produit, son inclus", creditsPerSecond: 28, minSec: 4, maxSec: 15, animatesPhotos: true),
-        VideoModel(id: "kling-3.0", label: "Kling 3.0", hint: "Rapide et économique, plans multiples, son inclus", creditsPerSecond: 10, minSec: 3, maxSec: 15, animatesPhotos: false),
-        VideoModel(id: "wan-3.0-prime", label: "Wan 3.0 Prime", hint: "Économique, jusqu’à 30 s", creditsPerSecond: 10, minSec: 2, maxSec: 30, animatesPhotos: false),
-        VideoModel(id: "minimax-h3", label: "MiniMax H3", hint: "Très haute définition (2K)", creditsPerSecond: 18, minSec: 5, maxSec: 15, animatesPhotos: false),
-        VideoModel(id: "seedance-2.0", label: "Seedance 2.0", hint: "Bon équilibre qualité / crédits", creditsPerSecond: 20, minSec: 4, maxSec: 15, animatesPhotos: false),
-        VideoModel(id: "cinema-studio-4.0", label: "Cinema Studio 4.0", hint: "Rendu cinéma, mise en scène automatique", creditsPerSecond: 38, minSec: 4, maxSec: 15, animatesPhotos: false),
+        VideoModel(id: "seedance-2.5", label: "Premium", hint: "Le plus réaliste, anime vos photos produit, son inclus", creditsPerSecond: 21, creditsPerSecondHD: 46, minSec: 4, maxSec: 15, animatesPhotos: true),
+        VideoModel(id: "kling-3.0", label: "Rapide", hint: "Économique, plusieurs plans, son inclus", creditsPerSecond: 13, creditsPerSecondHD: nil, minSec: 3, maxSec: 15, animatesPhotos: false),
+        VideoModel(id: "wan-3.0-prime", label: "Éco", hint: "Le moins cher, jusqu’à 30 s", creditsPerSecond: 7, creditsPerSecondHD: 15, minSec: 2, maxSec: 30, animatesPhotos: false),
+        VideoModel(id: "minimax-h3", label: "Ultra HD", hint: "Très haute définition (2K)", creditsPerSecond: 13, creditsPerSecondHD: nil, minSec: 5, maxSec: 15, animatesPhotos: false),
+        VideoModel(id: "seedance-2.0", label: "Standard", hint: "Bon équilibre qualité / crédits", creditsPerSecond: 14, creditsPerSecondHD: 30, minSec: 4, maxSec: 15, animatesPhotos: false),
+        VideoModel(id: "cinema-studio-4.0", label: "Cinéma", hint: "Rendu cinéma, mise en scène automatique", creditsPerSecond: 21, creditsPerSecondHD: 46, minSec: 4, maxSec: 15, animatesPhotos: false),
     ]
 
+    /// First entry = default (Standard keeps the product identical at 1K, half the price of HD).
     static let image: [ImageModel] = [
-        ImageModel(id: "marketing-studio", label: "Marketing Studio", hint: "Photos produit et pubs, garde votre produit identique", credits: 25, acceptsImages: true),
-        ImageModel(id: "soul-2", label: "Soul 2", hint: "Portraits et mode réalistes, sans photo produit", credits: 10, acceptsImages: false),
+        ImageModel(id: "marketing-studio-1k", label: "Standard", hint: "Votre produit reste identique · idéal WhatsApp et réseaux", credits: 23, acceptsImages: true),
+        ImageModel(id: "marketing-studio", label: "HD", hint: "Même rendu en haute définition · affiches et impression", credits: 44, acceptsImages: true),
+        ImageModel(id: "soul-2", label: "Éco", hint: "Idées, portraits et mode · très économique, le produit peut changer un peu", credits: 4, acceptsImages: false),
     ]
 
     static let defaultVideo = "seedance-2.5"
     /// Extra credits for the "very high definition" option.
-    static let upscaleExtra = 13
+    static let upscaleExtra = 28
+    /// Light videos (480p) use the lower per-second price; set from Réglages.
+    nonisolated(unsafe) static var lightVideos = true
 
     static func videoModel(_ id: String?) -> VideoModel { video.first { $0.id == id } ?? video[0] }
     /// Accepts an id or a display label.
@@ -52,7 +60,7 @@ enum AIModels {
     static func videoCredits(_ modelId: String?, seconds: Int, withPhoto: Bool = false) -> Int {
         let picked = videoModel(modelId)
         let m = withPhoto && !picked.animatesPhotos ? videoModel(defaultVideo) : picked
-        return m.creditsPerSecond * clamp(m, seconds)
+        return (lightVideos ? m.creditsPerSecond : (m.creditsPerSecondHD ?? m.creditsPerSecond)) * clamp(m, seconds)
     }
 
     /// UGC = one Seedance 2.5 reference-to-video job (creator sheet + product).

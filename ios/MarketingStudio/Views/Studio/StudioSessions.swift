@@ -31,7 +31,7 @@ enum StudioOptions {
     }
     /// UGC always renders with Seedance 2.5 reference-to-video (keeps the creator identical).
     static let personaModels: [StudioModel] = [
-        StudioModel(name: "Seedance 2.5", tagline: "Le créateur reste identique d'une vidéo à l'autre, son inclus", icon: "sparkle", speed: "\(AIModels.videoModel(AIModels.defaultVideo).creditsPerSecond) cr / s"),
+        StudioModel(name: "Créateur IA", tagline: "Le créateur reste identique d'une vidéo à l'autre, son inclus", icon: "sparkle", speed: "\(AIModels.videoModel(AIModels.defaultVideo).creditsPerSecond) cr / s"),
     ]
 
     static func videoModelId(_ label: String) -> String { AIModels.video.first { $0.label == label }?.id ?? AIModels.defaultVideo }

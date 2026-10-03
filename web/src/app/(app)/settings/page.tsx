@@ -413,7 +413,7 @@ function CreditsSection({ account }: { account: AccountDetails | null }) {
         </div>
       </Card>
       <Card>
-        <CardHeader title="Packs" subtitle={`Payez seulement ce que vous utilisez. 1 photo produit = ${imageModel("marketing-studio").credits} crédits, 1 portrait Soul 2 = ${imageModel("soul-2").credits} crédits.`} />
+        <CardHeader title="Packs" subtitle={`Payez seulement ce que vous utilisez. 1 photo produit Standard = ${imageModel("marketing-studio-1k").credits} crédits, 1 image Éco = ${imageModel("soul-2").credits} crédits.`} />
         <ul className="divide-y divide-border">
           {USAGE_PACKS.map((p) => (
             <li key={p.id} className="flex items-center gap-3 py-2.5">
@@ -543,7 +543,7 @@ function HelpSection() {
         <CardHeader title="À propos" />
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[13px]">
           <dt className="text-text2">Application</dt><dd>Sokozia (bêta)</dd>
-          <dt className="text-text2">Génération</dt><dd>Images Marketing Studio et Soul 2, vidéos Seedance 2.5, Kling, Wan, MiniMax</dd>
+          <dt className="text-text2">Qualités</dt><dd>Images Éco, Standard et HD · vidéos Éco, Rapide, Standard, Premium, Ultra HD et Cinéma</dd>
           <dt className="text-text2">Vos données</dt><dd>Enregistrées sur votre compte Sokozia, disponibles sur tous vos appareils</dd>
         </dl>
       </Card>

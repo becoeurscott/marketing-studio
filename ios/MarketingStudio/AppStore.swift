@@ -132,6 +132,7 @@ final class AppStore: ObservableObject {
     private func applyDevicePreferences() {
         MSHaptic.enabled = preferences.haptics
         MSAnimation.reduced = preferences.reduceMotion
+        AIModels.lightVideos = preferences.lightVideos
     }
 
     private func apply(_ s: PersistedState) {

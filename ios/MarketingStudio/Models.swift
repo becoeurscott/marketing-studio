@@ -491,7 +491,7 @@ struct UserPreferences: Codable, Hashable {
     var pushNotifications: Bool = true
     var emailDigest: Bool = false
     var defaultRatio: String = "4:5"
-    var defaultModel: String = "Marketing Studio"
+    var defaultModel: String = "Standard"
     var defaultStyle: String = "Product Photography"
     var reduceMotion: Bool = false
 }

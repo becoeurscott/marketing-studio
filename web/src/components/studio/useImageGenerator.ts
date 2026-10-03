@@ -29,7 +29,7 @@ export function useImageGenerator() {
 
   const [params, setParams] = useState<ImageParams>(() => {
     const base: ImageParams = {
-      prompt: "", style: prefs.defaultStyle, ratio: prefs.defaultRatio, model: "marketing-studio",
+      prompt: "", style: prefs.defaultStyle, ratio: prefs.defaultRatio, model: "marketing-studio-1k",
       background: BACKGROUNDS[0], lighting: LIGHTING[0], camera: IMAGE_CAMERAS[1], composition: COMPOSITIONS[0], productAssetId: null, count: 1,
     };
     const tpl = pendingTemplateId ? templates.find((t) => t.id === pendingTemplateId) : undefined;

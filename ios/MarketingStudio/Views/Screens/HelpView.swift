@@ -16,7 +16,7 @@ struct HelpView: View {
     }
 
     private let faqs: [FAQ] = [
-        FAQ(id: "credits", q: "Comment fonctionnent les crédits ?", a: "Chaque génération consomme des crédits : \(AIModels.imageModel(nil).credits) par photo produit, \(AIModels.imageModel("soul-2").credits) par portrait Soul 2 et \(AIModels.videoModel(nil).creditsPerSecond) par seconde de vidéo UGC. Les textes et accroches sont gratuits. Si une génération échoue, vos crédits sont rendus automatiquement."),
+        FAQ(id: "credits", q: "Comment fonctionnent les crédits ?", a: "Chaque génération consomme des crédits : \(AIModels.imageModel(nil).credits) par photo produit Standard, \(AIModels.imageModel("soul-2").credits) par image Éco et \(AIModels.videoModel(nil).creditsPerSecond) par seconde de vidéo UGC. Les textes et accroches sont gratuits. Si une génération échoue, vos crédits sont rendus automatiquement."),
         FAQ(id: "payment", q: "Comment recharger ?", a: "Choisissez un pack dans Crédits (dès 1 000 FCFA). Le paiement Mobile Money (Wave, Orange Money, MTN MoMo…) arrive bientôt ; en attendant, écrivez-nous sur WhatsApp pour recharger."),
         FAQ(id: "ugc", q: "Les créateurs sont-ils de vraies personnes ?", a: "Non. Ce sont des créateurs IA africains. Chacun a une fiche personnage pour garder le même visage, la même coiffure et la même tenue dans toutes vos vidéos."),
         FAQ(id: "product", q: "Ma photo produit doit-elle être professionnelle ?", a: "Non. Une photo nette prise au téléphone suffit : Sokozia garde votre produit identique et refait le décor, la lumière et le cadrage."),

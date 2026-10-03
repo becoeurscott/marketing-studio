@@ -311,7 +311,7 @@ export async function generateAds(params: GenerateAdsParams): Promise<AdVariatio
   const product = assetUrl(params.productAssetId);
   const prompt = `Visuel publicitaire ${params.format === "flyer" ? "de flyer imprimable" : `pour ${params.platform}`} : ${params.product}. ${params.offer}. Pour ${params.audience}. Laisse de l’espace libre pour le texte et le prix, style marketing africain moderne, couleurs vives.${product ? ` Garde le produit de la photo identique.${phoneCleanup()}` : ""}${projectContext(params.projectId)}`;
   // Two visuals shared by the four copy variants (A/C, B/D) to halve generation cost.
-  const visuals = await charged("ads", `Variantes d’annonce — ${params.platform} ${params.format}`, 1, () => images(prompt, 2, { ratio: adRatio(params.platform, params.format), imageUrls: product ? [product] : undefined, presetId: product && params.presetId ? params.presetId : undefined, model: product && params.presetId ? "marketing-studio" : undefined }));
+  const visuals = await charged("ads", `Variantes d’annonce — ${params.platform} ${params.format}`, 1, () => images(prompt, 2, { ratio: adRatio(params.platform, params.format), imageUrls: product ? [product] : undefined, presetId: product && params.presetId ? params.presetId : undefined, model: product && params.presetId ? "marketing-studio-1k" : undefined }));
   const results = labels.map((label, i) => ({
     id: uid("var"), label, visual: visuals[i % visuals.length].url, headline: headlines[i], primaryText: texts[i], cta: ctas[i], platform: params.platform, format: params.format,
   }));
@@ -441,7 +441,7 @@ export async function editImage(params: { url: string; tool: string; instruction
 
 /* ---------- Upscale ---------- */
 export async function upscaleImage(params: { url: string; assetId?: ID; projectId?: ID | null }): Promise<ImageResult> {
-  const [result] = await charged("upscale", "Agrandissement d’image", 1, () => images("Même image, identique, en très haute définition : détails plus nets, sans rien changer.", 1, { imageUrls: [params.url], upscale: true }));
+  const [result] = await charged("upscale", "Agrandissement d’image", 1, () => images("Même image, identique, en très haute définition : détails plus nets, sans rien changer.", 1, { imageUrls: [params.url], upscale: true, model: "marketing-studio" }));
   return result;
 }
 
