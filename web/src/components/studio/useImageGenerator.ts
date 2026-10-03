@@ -30,7 +30,7 @@ export function useImageGenerator() {
   const [params, setParams] = useState<ImageParams>(() => {
     const base: ImageParams = {
       prompt: "", style: prefs.defaultStyle, ratio: prefs.defaultRatio, model: "marketing-studio",
-      background: BACKGROUNDS[0], lighting: LIGHTING[0], camera: IMAGE_CAMERAS[1], composition: COMPOSITIONS[0], productAssetId: null,
+      background: BACKGROUNDS[0], lighting: LIGHTING[0], camera: IMAGE_CAMERAS[1], composition: COMPOSITIONS[0], productAssetId: null, count: 1,
     };
     const tpl = pendingTemplateId ? templates.find((t) => t.id === pendingTemplateId) : undefined;
     return applyPreset(base, tpl?.preset);
@@ -87,7 +87,7 @@ export function useImageGenerator() {
     if (!params.prompt.trim() && !params.productAssetId) return;
     setGenerating(true); setError(null);
     try {
-      const out = await generateImage({ ...params, projectId: currentProjectId, count: 2 });
+      const out = await generateImage({ ...params, projectId: currentProjectId, count: params.count });
       commit(out);
       markSaved();
     } catch (err) {

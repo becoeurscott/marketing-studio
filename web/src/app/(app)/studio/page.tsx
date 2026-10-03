@@ -150,6 +150,7 @@ export default function StudioPage() {
             productId={gen.params.productAssetId} onProduct={setProduct}
             model={gen.params.model} onModel={(m) => gen.update("model", m as ImageModelId)}
             ratio={gen.params.ratio} onRatio={(r) => gen.update("ratio", r)}
+            count={gen.params.count} onCount={(n) => gen.update("count", n)}
             onGenerate={generate} generating={gen.generating}
             onMore={() => setAdvanced((v) => !v)} moreActive={advanced}
             templateName={gen.templateName}

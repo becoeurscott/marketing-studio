@@ -1,4 +1,4 @@
-import { IMAGE_MODELS, VIDEO_MODELS, type ImageModelId, type VideoModelId } from "@/lib/higgsfield/models";
+import { IMAGE_MODELS, VIDEO_MODELS, imageModel, type ImageModelId, type VideoModelId } from "@/lib/higgsfield/models";
 import type { AspectRatio, ImageStyle } from "@/lib/types";
 
 /** Image generator options (SPEC §11). */
@@ -36,7 +36,15 @@ export interface ImageParams {
   camera: (typeof IMAGE_CAMERAS)[number];
   composition: (typeof COMPOSITIONS)[number];
   productAssetId: string | null;
+  /** Images per generation (each one is charged). */
+  count: ImageCount;
 }
+
+export const IMAGE_COUNTS = [1, 2, 3, 4] as const;
+export type ImageCount = (typeof IMAGE_COUNTS)[number];
+
+/** Exact credits for one image generation: price of the model × number of images (what the server charges). */
+export const imageCost = (p: Pick<ImageParams, "model" | "count">) => imageModel(p.model).credits * p.count;
 
 export interface VideoParams {
   concept: string;

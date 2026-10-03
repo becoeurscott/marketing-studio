@@ -9,7 +9,7 @@ import { useStore } from "@/lib/store";
 import { RATIOS, type AspectRatio, type Asset, type Creator } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { videoCredits, imageModel } from "@/lib/higgsfield/models";
-import { DURATIONS, modelOptions, type DurationSec, type ModelId } from "./constants";
+import { DURATIONS, IMAGE_COUNTS, modelOptions, type DurationSec, type ImageCount, type ModelId } from "./constants";
 import { CreatorPicker } from "./CreatorPicker";
 import type { ComposeMode } from "./ModeTabs";
 import { ProductPicker, useProductUpload } from "./ProductPicker";
@@ -29,6 +29,9 @@ export interface ComposerProps {
   onRatio: (r: AspectRatio) => void;
   duration?: DurationSec;
   onDuration?: (d: DurationSec) => void;
+  /** Image mode: images per generation (each is charged). */
+  count?: ImageCount;
+  onCount?: (n: ImageCount) => void;
   onGenerate: () => void;
   generating?: boolean;
   /** Opens advanced options (Inspector on desktop, BottomSheet on mobile). */
@@ -47,9 +50,9 @@ const TEMPLATES: Record<ComposeMode, { segments: Segment[]; placeholder: string 
   ugc: { segments: [{ kind: "text", text: "Créer une vidéo UGC où" }, { kind: "slot", slot: "creator" }, { kind: "text", text: "profite du produit" }, { kind: "slot", slot: "product" }], placeholder: "pendant sa routine du matin…" },
 };
 
-/** Credits for the current settings: per image, or per second of video on the chosen model. */
-function costFor(mode: ComposeMode, model: ModelId, duration = 5, withPhoto = false): number {
-  if (mode === "image") return imageModel(model).credits;
+/** Exact credits the server will charge: price per image × count, or per second of video on the chosen model. */
+function costFor(mode: ComposeMode, model: ModelId, duration = 5, withPhoto = false, count = 1): number {
+  if (mode === "image") return imageModel(model).credits * count;
   return videoCredits(mode === "ugc" ? "seedance-2.5" : model, duration, withPhoto || mode === "ugc", useStore.getState().preferences.lightVideos ?? true);
 }
 
@@ -135,6 +138,9 @@ export function Composer(p: ComposerProps) {
           {p.duration && p.onDuration && (
             <Pill onClick={() => p.onDuration?.(DURATIONS[(DURATIONS.indexOf(p.duration!) + 1) % DURATIONS.length])} label="Durée"><Clock className="size-4" />{p.duration}s</Pill>
           )}
+          {p.mode === "image" && p.count && p.onCount && (
+            <Pill onClick={() => p.onCount?.(IMAGE_COUNTS[(IMAGE_COUNTS.indexOf(p.count!) + 1) % IMAGE_COUNTS.length])} label="Nombre d'images"><ImageIcon className="size-4" />×{p.count}</Pill>
+          )}
           <Pill onClick={() => p.onRatio(RATIOS[(RATIOS.indexOf(p.ratio) + 1) % RATIOS.length])} label="Format d'image"><Scan className="size-4" />{p.ratio}</Pill>
           <Pill onClick={p.onMore} label="Plus d'options" active={p.moreActive} className="px-2.5"><SlidersHorizontal className="size-4" /></Pill>
           </div>
@@ -142,10 +148,10 @@ export function Composer(p: ComposerProps) {
             onClick={p.onGenerate}
             disabled={!canGenerate}
             className={cn("shrink-0 h-10 md:h-11 px-3.5 md:px-4 rounded-full bg-accent text-on-accent font-bold text-[15px] inline-flex items-center gap-2 shadow-[0_8px_24px_-6px_rgba(249,115,22,0.7)] transition-[transform,opacity,background] hover:bg-highlight active:scale-95 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed", p.generating && "animate-pulse")}
-            aria-label={`Générer · ${costFor(p.mode, p.model, p.duration, !!p.productId)} crédits`}
+            aria-label={`Générer · ${costFor(p.mode, p.model, p.duration, !!p.productId, p.count)} crédits`}
           >
             <SendHorizontal className="size-[18px]" />
-            <span className="tabular-nums">{costFor(p.mode, p.model, p.duration, !!p.productId)}</span>
+            <span className="tabular-nums">{costFor(p.mode, p.model, p.duration, !!p.productId, p.count)}</span>
           </button>
         </div>
       </motion.div>
