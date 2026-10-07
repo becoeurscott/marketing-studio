@@ -58,7 +58,7 @@ struct ProfileView: View {
             }
         }
         .msSheet(isPresented: $showEdit, detents: [.large]) { EditProfileSheet() }
-        .confirmationDialog("Se déconnecter de Sokozia ?", isPresented: $confirmSignOut, titleVisibility: .visible) {
+        .confirmationDialog("Se déconnecter de Marketing Studio ?", isPresented: $confirmSignOut, titleVisibility: .visible) {
             Button("Se déconnecter", role: .destructive) { Task { await AuthService.shared.signOut() } }
             Button("Annuler", role: .cancel) {}
         } message: {

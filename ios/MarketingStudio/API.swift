@@ -326,7 +326,7 @@ enum API {
         try? await Task.sleep(for: .milliseconds(Int.random(in: 500...1000)))
         let body = buildCopy(p)
         let text = p.language == "fr" ? body : "[\(Market.languageLabel(p.language))]\n\(body)"
-        store.addGeneration(kind: .copy, prompt: "\(p.tool) · \(p.product) · \(p.tone)", thumbnails: [], model: "Modèles Sokozia", credits: 0, resultText: text)
+        store.addGeneration(kind: .copy, prompt: "\(p.tool) · \(p.product) · \(p.tone)", thumbnails: [], model: "Modèles intégrés", credits: 0, resultText: text)
         store.addCopyResult(tool: p.tool, tone: p.tone, text: text)
         return CopyResult(id: IDGen.make("copy"), tool: p.tool, tone: p.tone, text: text, createdAt: Date())
     }
@@ -337,7 +337,7 @@ enum API {
         let hooks = Array(Catalog.hookLibrary.shuffled().prefix(10)).enumerated().map { i, t in
             HookResult(id: IDGen.make("hook"), text: t, category: cats[i % cats.count])
         }
-        store.addGeneration(kind: .copy, prompt: "10 accroches · \(product) · \(audience)", thumbnails: [], model: "Modèles Sokozia", credits: 0, resultText: hooks.map(\.text).joined(separator: "\n"))
+        store.addGeneration(kind: .copy, prompt: "10 accroches · \(product) · \(audience)", thumbnails: [], model: "Modèles intégrés", credits: 0, resultText: hooks.map(\.text).joined(separator: "\n"))
         return hooks
     }
 

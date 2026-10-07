@@ -432,7 +432,7 @@ struct ModelPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        BottomSheetContainer(title: "Modèle", subtitle: "Prix en crédits Sokozia. Les modèles vidéo sont facturés à la seconde.") {
+        BottomSheetContainer(title: "Modèle", subtitle: "Prix en crédits Marketing Studio. Les modèles vidéo sont facturés à la seconde.") {
             VStack(spacing: 8) {
                 ForEach(models) { m in
                     let on = m.name == selection

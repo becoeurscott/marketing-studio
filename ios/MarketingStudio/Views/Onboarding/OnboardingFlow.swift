@@ -125,7 +125,7 @@ struct OnboardingFlow: View {
             }
             .padding(.top, 20)
             VStack(alignment: .leading, spacing: 8) {
-                Text(firstName.isEmpty ? "Bienvenue sur Sokozia" : "Bienvenue, \(firstName) !").msTitle(30)
+                Text(firstName.isEmpty ? "Bienvenue sur Marketing Studio" : "Bienvenue, \(firstName) !").msTitle(30)
                 Text("En une minute, on prépare votre espace : pays, activité et réseaux. Ensuite, vos photos produit deviennent des pubs, des statuts WhatsApp et des vidéos UGC.").msBody(15)
             }
         }
@@ -205,7 +205,7 @@ struct OnboardingFlow: View {
 
     private var examplesStep: some View {
         VStack(alignment: .leading, spacing: 18) {
-            title("Ce que vous pouvez créer", "De vrais exemples faits avec Sokozia. Vous ferez pareil avec vos produits.")
+            title("Ce que vous pouvez créer", "De vrais exemples faits avec Marketing Studio. Vous ferez pareil avec vos produits.")
             Text("Styles photo").msHeadline(16)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {

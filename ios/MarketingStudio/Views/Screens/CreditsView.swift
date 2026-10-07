@@ -250,7 +250,7 @@ struct BuyCreditsSheet: View {
 
     /// Mobile Money checkout isn't connected yet: hand over to WhatsApp with the chosen pack.
     private func pay() {
-        let message = "Bonjour Sokozia, je veux le \(selected.name) (\(selected.credits) crédits, \(store.price(selected.priceXof))) pour le compte \(store.user.email)."
+        let message = "Bonjour Marketing Studio, je veux le \(selected.name) (\(selected.credits) crédits, \(store.price(selected.priceXof))) pour le compte \(store.user.email)."
         router.toast("Mobile Money bientôt disponible", style: .info, icon: "clock")
         if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: message) { openURL(url) }
     }

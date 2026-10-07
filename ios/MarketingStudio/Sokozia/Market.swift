@@ -3,13 +3,13 @@ import Foundation
 /// Backend endpoints. Generation, credits and uploads go through sokozia.com (same API as the web
 /// app, authenticated with the InsForge access token); sign-in talks to InsForge directly.
 enum SokoziaConfig {
-    static let siteURL = URL(string: "https://www.sokozia.com")!
+    static let siteURL = URL(string: "https://sokozia.vercel.app")!
     static let authURL = URL(string: "https://h8fj6hqu.eu-central.insforge.app")!
     /// Google sign-in returns here, then to the app through the `sokozia://` scheme.
-    static let oauthReturnURL = "https://www.sokozia.com/api/auth/mobile-callback"
+    static let oauthReturnURL = "https://sokozia.vercel.app/api/auth/mobile-callback"
     static let callbackScheme = "sokozia"
     /// Credits granted by the server on the first sign-in.
-    static let welcomeCredits = 20
+    static let welcomeCredits = 50
 }
 
 /// African-market config, same values as the web app (lib/market.ts): countries, currencies,

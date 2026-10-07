@@ -61,7 +61,7 @@ struct SettingsView: View {
                         icon("moon.fill")
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Thème").font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                            Text("Sokozia existe uniquement en mode sombre, pensé pour la création.").msCaption()
+                            Text("Marketing Studio existe uniquement en mode sombre, pensé pour la création.").msCaption()
                         }
                         Spacer()
                         MSBadge(text: "Sombre", tone: .neutral)
@@ -114,13 +114,13 @@ struct SettingsView: View {
                     navRow("Centre d’aide", subtitle: "FAQ et contact", icon: "questionmark.circle") { router.push(.help) }
                     divider
                     navRow("Nous écrire sur WhatsApp", subtitle: "Questions, recharges, idées", icon: "message") {
-                        if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: "Bonjour Sokozia, ") { openURL(url) }
+                        if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: "Bonjour Marketing Studio, ") { openURL(url) }
                     }
                 }
 
                 VStack(spacing: 10) {
                     MSButton(title: "Effacer les données de cet appareil", icon: "trash", style: .danger) { confirmReset = true }
-                    Text("Sokozia \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")").msCaption()
+                    Text("Marketing Studio \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")").msCaption()
                 }
                 .padding(.horizontal, MSSpacing.gutter)
                 .padding(.top, 6)

@@ -19,10 +19,10 @@ struct HelpView: View {
         FAQ(id: "credits", q: "Comment fonctionnent les crédits ?", a: "Chaque génération consomme des crédits : \(AIModels.imageModel(nil).credits) par photo produit Standard, \(AIModels.imageModel("soul-2").credits) par image Éco et \(AIModels.videoModel(nil).creditsPerSecond) par seconde de vidéo UGC. Les textes et accroches sont gratuits. Si une génération échoue, vos crédits sont rendus automatiquement."),
         FAQ(id: "payment", q: "Comment recharger ?", a: "Choisissez un pack dans Crédits (dès 1 000 FCFA). Le paiement Mobile Money (Wave, Orange Money, MTN MoMo…) arrive bientôt ; en attendant, écrivez-nous sur WhatsApp pour recharger."),
         FAQ(id: "ugc", q: "Les créateurs sont-ils de vraies personnes ?", a: "Non. Ce sont des créateurs IA africains. Chacun a une fiche personnage pour garder le même visage, la même coiffure et la même tenue dans toutes vos vidéos."),
-        FAQ(id: "product", q: "Ma photo produit doit-elle être professionnelle ?", a: "Non. Une photo nette prise au téléphone suffit : Sokozia garde votre produit identique et refait le décor, la lumière et le cadrage."),
+        FAQ(id: "product", q: "Ma photo produit doit-elle être professionnelle ?", a: "Non. Une photo nette prise au téléphone suffit : Marketing Studio garde votre produit identique et refait le décor, la lumière et le cadrage."),
         FAQ(id: "whatsapp", q: "Comment publier sur WhatsApp ?", a: "Sur chaque résultat, touchez « WhatsApp » ou « Partager » : le fichier part directement dans vos statuts, groupes ou catalogue. Activez « Vidéos légères » dans Réglages pour des envois plus rapides."),
         FAQ(id: "template", q: "Que se passe-t-il quand j'utilise un modèle ?", a: "Le modèle ouvre le bon outil (image, vidéo, UGC, pub ou texte) avec les réglages remplis. Ajoutez votre produit et générez."),
-        FAQ(id: "data", q: "Où sont stockées mes créations ?", a: "Les images et vidéos générées sont hébergées sur votre compte Sokozia. La liste de vos projets est enregistrée sur cet appareil."),
+        FAQ(id: "data", q: "Où sont stockées mes créations ?", a: "Les images et vidéos générées sont hébergées sur votre compte Marketing Studio. La liste de vos projets est enregistrée sur cet appareil."),
     ]
 
 
@@ -78,10 +78,10 @@ struct HelpView: View {
                         }
                         HStack(spacing: 8) {
                             MSButton(title: "Écrire sur WhatsApp", icon: "message", style: .secondary, size: .compact) {
-                                if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: "Bonjour Sokozia, ") { openURL(url) }
+                                if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: "Bonjour Marketing Studio, ") { openURL(url) }
                             }
                             MSButton(title: "Signaler un bug", icon: "ladybug", style: .ghost, size: .compact) {
-                                if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: "Bonjour Sokozia, j'ai un problème avec l'app iPhone : ") { openURL(url) }
+                                if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: "Bonjour Marketing Studio, j'ai un problème avec l'app iPhone : ") { openURL(url) }
                             }
                         }
                     }
@@ -89,7 +89,7 @@ struct HelpView: View {
                 .padding(.horizontal, MSSpacing.gutter)
 
                 VStack(spacing: 4) {
-                    Text("Sokozia").font(MSFont.control(13)).foregroundStyle(MSColor.text2)
+                    Text("Marketing Studio").font(MSFont.control(13)).foregroundStyle(MSColor.text2)
                     Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1")) · Prototype").msCaption()
                     Text("Connecté en tant que \(store.user.email)").msCaption()
                 }

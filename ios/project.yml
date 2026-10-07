@@ -34,7 +34,7 @@ targets:
     info:
       path: MarketingStudio/Info.plist
       properties:
-        CFBundleDisplayName: Sokozia
+        CFBundleDisplayName: Marketing Studio
         CFBundleDevelopmentRegion: fr
         CFBundleName: MarketingStudio
         CFBundleShortVersionString: $(MARKETING_VERSION)
@@ -57,7 +57,7 @@ targets:
           - CFBundleURLName: com.sokozia.app.auth
             CFBundleURLSchemes:
               - sokozia
-        NSPhotoLibraryUsageDescription: Sokozia utilise vos photos produit pour créer vos visuels et vidéos.
+        NSPhotoLibraryUsageDescription: Marketing Studio utilise vos photos produit pour créer vos visuels et vidéos.
     postBuildScripts:
       - name: Strip xattrs
         script: 'xattr -cr "$CODESIGNING_FOLDER_PATH" || true'

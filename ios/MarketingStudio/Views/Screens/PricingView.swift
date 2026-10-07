@@ -208,7 +208,7 @@ struct UpgradeSheet: View {
             Spacer(minLength: 0)
             MSButton(title: working ? "Mise à jour du forfait" : (selected == store.plan ? "Déjà sur \(selected.title)" : "Confirmer \(selected.title)"), icon: working ? nil : "lock.fill", isLoading: working, isDisabled: selected == store.plan) {
                 // Mobile Money subscriptions aren't connected yet: continue on WhatsApp (no plan change here).
-                let message = "Bonjour Sokozia, je veux le forfait \(selected.title) (\(store.price(selected.price(yearly: yearly)))/mois) pour le compte \(store.user.email)."
+                let message = "Bonjour Marketing Studio, je veux le forfait \(selected.title) (\(store.price(selected.price(yearly: yearly)))/mois) pour le compte \(store.user.email)."
                 router.toast("Mobile Money bientôt disponible", style: .info, icon: "clock")
                 if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: message) { openURL(url) }
             }

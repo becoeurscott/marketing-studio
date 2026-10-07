@@ -7,7 +7,7 @@ struct WorkspaceView: View {
 
     @State private var memberToRemove: WorkspaceMember?
 
-    private let workspaceName = "Sokozia"
+    private let workspaceName = "Marketing Studio"
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -187,7 +187,7 @@ struct InviteMemberSheet: View {
     private var emailValid: Bool { email.contains("@") && email.contains(".") && !email.hasSuffix(".") }
 
     var body: some View {
-        BottomSheetContainer(title: "Inviter un coéquipier", subtitle: "Cette personne recevra un e-mail avec un lien pour rejoindre Sokozia.") {
+        BottomSheetContainer(title: "Inviter un coéquipier", subtitle: "Cette personne recevra un e-mail avec un lien pour rejoindre Marketing Studio.") {
             VStack(alignment: .leading, spacing: 14) {
                 MSTextField(label: "Nom", placeholder: "ex. Awa Diallo", text: $name, icon: "person", autocapitalization: .words)
                 MSTextField(label: "E-mail", placeholder: "nom@entreprise.com", text: $email, icon: "envelope", keyboard: .emailAddress, autocapitalization: .never)

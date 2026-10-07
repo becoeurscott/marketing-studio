@@ -63,7 +63,7 @@ struct AuthView: View {
                 linkButton("Renvoyer le code") { run { try await auth.sendCode(email: email); info = "Nouveau code envoyé." } }
             }
         case .password:
-            form(title: "Connexion", subtitle: "Avec votre e-mail et votre mot de passe Sokozia.") {
+            form(title: "Connexion", subtitle: "Avec votre e-mail et votre mot de passe Marketing Studio.") {
                 emailField
                 passwordField
                 MSButton(title: "Se connecter", icon: "arrow.right", isLoading: busy, isDisabled: email.isEmpty || password.isEmpty) {
@@ -138,8 +138,8 @@ struct AuthView: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     RoundedRectangle(cornerRadius: 7, style: .continuous).fill(MSColor.accentGradient).frame(width: 26, height: 26)
-                        .overlay(Text("S").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(MSColor.onAccent))
-                    Text("Sokozia").font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
+                        .overlay(Text("M").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(MSColor.onAccent))
+                    Text("Marketing Studio").font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
                 }
                 Text("Vos pubs, photos et vidéos UGC en quelques minutes.").msTitle(30)
                 Text("Pour les commerçants africains : prix en FCFA, Mobile Money, statuts WhatsApp et créateurs qui parlent vos langues.").msBody(15)
@@ -158,7 +158,7 @@ struct AuthView: View {
                 MSButton(title: "Recevoir un code par e-mail", icon: "envelope.fill") { go(.emailCode) }
                 MSButton(title: "E-mail et mot de passe", icon: "key.fill", style: .secondary) { go(.password) }
             }
-            Text("En continuant, vous acceptez les conditions d’utilisation de Sokozia. \(SokoziaConfig.welcomeCredits) crédits offerts à l’inscription.")
+            Text("En continuant, vous acceptez les conditions d’utilisation de Marketing Studio. \(SokoziaConfig.welcomeCredits) crédits offerts à l’inscription.")
                 .msCaption().multilineTextAlignment(.center).frame(maxWidth: .infinity)
         }
     }
