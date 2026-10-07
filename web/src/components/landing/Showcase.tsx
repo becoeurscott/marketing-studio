@@ -23,7 +23,7 @@ export function Benefits() {
           {/* Vertical light stripes, drifting slowly. */}
           <motion.div
             aria-hidden
-            className="absolute inset-y-0 right-0 w-full lg:w-2/3 bg-[repeating-linear-gradient(90deg,rgba(249,115,22,0.0)_0px,rgba(249,115,22,0.22)_18px,rgba(249,115,22,0.0)_36px)] [mask-image:linear-gradient(to_left,black,transparent)]"
+            className="absolute inset-y-0 right-0 w-full lg:w-2/3 bg-[repeating-linear-gradient(90deg,rgba(209,254,23,0.0)_0px,rgba(209,254,23,0.22)_18px,rgba(209,254,23,0.0)_36px)] [mask-image:linear-gradient(to_left,black,transparent)]"
             animate={{ backgroundPositionX: ["0px", "36px"] }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           />
@@ -37,7 +37,7 @@ export function Benefits() {
                 moins de stress
               </h2>
               <ScrollText
-                text="Laissez Sokozia produire vos visuels. Vous recevez des contenus soignés, adaptés à chaque plateforme, pendant que vous vous concentrez sur vos ventes et vos clients."
+                text="Laissez Marketing Studio produire vos visuels. Vous recevez des contenus soignés, adaptés à chaque plateforme, pendant que vous vous concentrez sur vos ventes et vos clients."
                 className="mt-6 max-w-md text-text2 leading-relaxed"
               />
               <CtaButton href={DEMO_HREF} className="mt-8">
@@ -151,7 +151,7 @@ export function UseCases() {
             align="left"
             eyebrow="Pour chaque secteur"
             title="Pas juste joli : du contenu qui fait vendre"
-            text="Quel que soit votre marché, Sokozia adapte le style, le format et le message à vos clients."
+            text="Quel que soit votre marché, Marketing Studio adapte le style, le format et le message à vos clients."
           />
           <Reveal className="shrink-0">
             <CtaButton href={DEMO_HREF}>Essayer la démo</CtaButton>
@@ -276,7 +276,7 @@ function PublishVisual() {
 
 const STEPS = [
   { n: "01", title: "Importez votre produit", text: "Une simple photo prise au téléphone suffit. Ajoutez votre logo et vos couleurs une seule fois.", visual: <UploadVisual />, wide: true },
-  { n: "02", title: "Sokozia crée vos contenus", text: "Décor, lumière, accroche, texte : l'IA transforme votre photo en visuels et vidéos professionnels.", visual: <BeforeAfter /> },
+  { n: "02", title: "Marketing Studio crée vos contenus", text: "Décor, lumière, accroche, texte : l'IA transforme votre photo en visuels et vidéos professionnels.", visual: <BeforeAfter /> },
   { n: "03", title: "Publiez partout", text: "Exportez au bon format pour chaque réseau et planifiez votre campagne dans le calendrier.", visual: <PublishVisual /> },
 ];
 
@@ -287,12 +287,12 @@ export function Process() {
         <SectionTitle
           eyebrow="Comment ça marche"
           title="De la photo au contenu publié, en trois étapes"
-          text="Pas besoin d'être designer ou marketeur. Sokozia vous guide de l'idée jusqu'à la publication."
+          text="Pas besoin d'être designer ou marketeur. Marketing Studio vous guide de l'idée jusqu'à la publication."
         />
         <div className="mt-16 grid gap-4 md:grid-cols-2">
           {STEPS.map((s, i) => (
             <Reveal key={s.n} delay={i * 0.1} className={s.wide ? "md:col-span-2" : ""}>
-              <GlowCard className="h-full p-2 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.12),transparent_70%)]">
+              <GlowCard className="h-full p-2 bg-[radial-gradient(ellipse_at_top,rgba(209,254,23,0.12),transparent_70%)]">
                 <div className={s.wide ? "h-64" : "h-60"}>{s.visual}</div>
                 <div className="p-4">
                   <span className="font-mono text-xs text-highlight">{s.n}</span>

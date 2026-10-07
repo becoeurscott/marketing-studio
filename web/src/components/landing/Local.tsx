@@ -34,7 +34,7 @@ export function WhatsAppSection() {
                 achètent déjà
               </>
             }
-            text="Vos clients vous écrivent sur WhatsApp. Sokozia crée tout ce qu'il faut pour y vendre : statuts, catalogue, boutons de commande et notes vocales."
+            text="Vos clients vous écrivent sur WhatsApp. Marketing Studio crée tout ce qu'il faut pour y vendre : statuts, catalogue, boutons de commande et notes vocales."
           />
           <div className="mt-10 grid gap-3 sm:grid-cols-2">
             {WA_FEATURES.map(({ icon: Icon, title, text }, i) => (
@@ -51,7 +51,7 @@ export function WhatsAppSection() {
             <div className="flex items-start gap-3 rounded-2xl border border-dashed border-[#25D366]/40 bg-[#25D366]/[0.06] p-5">
               <Bot className="size-5 shrink-0 text-[#25D366] mt-0.5" />
               <p className="text-sm text-text2 leading-relaxed">
-                <span className="font-medium text-text">Bientôt : le bot Sokozia sur WhatsApp.</span> Envoyez la photo de votre produit, recevez votre pub en retour. Sans installer d&apos;application.
+                <span className="font-medium text-text">Bientôt : le bot Marketing Studio sur WhatsApp.</span> Envoyez la photo de votre produit, recevez votre pub en retour. Sans installer d&apos;application.
               </p>
             </div>
           </Reveal>
@@ -69,7 +69,7 @@ export function WhatsAppSection() {
                 ))}
               </div>
               <div className="absolute left-3 top-6 z-10 flex items-center gap-2 text-white">
-                <span className="size-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-600" />
+                <span className="size-7 rounded-full bg-gradient-to-br from-lime-300 to-lime-600" />
                 <span className="text-xs font-medium">Awa Tissus · il y a 2 min</span>
               </div>
               <Creative data={status} bare className="aspect-[9/16] w-full" />
@@ -103,7 +103,7 @@ export function Terrain() {
         <SectionTitle
           eyebrow="Pensé pour le terrain"
           title="Un téléphone suffit"
-          text="Pas besoin d'ordinateur, de studio ni d'une grosse connexion. Sokozia s'adapte à votre façon de vendre, en ligne comme en boutique."
+          text="Pas besoin d'ordinateur, de studio ni d'une grosse connexion. Marketing Studio s'adapte à votre façon de vendre, en ligne comme en boutique."
         />
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {TERRAIN.map(({ icon: Icon, title, text }, i) => (
@@ -179,19 +179,19 @@ export interface Testimonial {
 export const TESTIMONIALS: Testimonial[] = [];
 
 const AMBASSADOR_STEPS = [
-  { icon: Users, title: "Faites des démos", text: "Montrez Sokozia aux commerçants de votre marché, de votre quartier ou de vos groupes." },
+  { icon: Users, title: "Faites des démos", text: "Montrez Marketing Studio aux commerçants de votre marché, de votre quartier ou de vos groupes." },
   { icon: Store, title: "Ils créent leurs pubs", text: "Chaque commerçant qui s'inscrit avec votre code est rattaché à vous." },
   { icon: Handshake, title: "Vous touchez une commission", text: "Sur chaque pack ou abonnement payé, versée en Mobile Money." },
 ];
 
 export function Trust() {
-  const joinLink = whatsappLink(SOKOZIA_WHATSAPP, "Bonjour Sokozia, je veux devenir ambassadeur dans ma ville.");
-  const pilotLink = whatsappLink(SOKOZIA_WHATSAPP, "Bonjour Sokozia, je suis commerçant(e) et je veux tester l'application.");
+  const joinLink = whatsappLink(SOKOZIA_WHATSAPP, "Bonjour Marketing Studio, je veux devenir ambassadeur dans ma ville.");
+  const pilotLink = whatsappLink(SOKOZIA_WHATSAPP, "Bonjour Marketing Studio, je suis commerçant(e) et je veux tester l'application.");
   return (
     <section id="confiance" className="scroll-mt-24 px-4 sm:px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
         <SectionTitle
-          eyebrow="Ils vendent avec Sokozia"
+          eyebrow="Ils vendent avec Marketing Studio"
           title="Des commerçants comme vous"
           text="Le bouche-à-oreille compte plus que tout. Voici ceux qui nous font confiance, et comment rejoindre l'aventure."
         />

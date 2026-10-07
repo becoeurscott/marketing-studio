@@ -22,25 +22,25 @@ export interface CreativeData {
 
 /**
  * Example creatives for the hero carousel, the gallery marquee and the use cases, all generated with
- * Sokozia (Higgsfield): UGC videos in /public/showcase/ugc and style photos in /public/styles.
+ * Marketing Studio (Higgsfield): UGC videos in /public/showcase/ugc and style photos in /public/styles.
  * Index order matters: [0] WhatsApp status mockup, [3] upload visual, [1]/[4] publish visual.
  */
 const UGC = (slug: string) => `/showcase/ugc/${slug}.mp4`;
 const STYLE = (id: string) => `/styles/${id}.jpg`;
 
 export const CREATIVES: CreativeData[] = [
-  { kind: "wax", title: "Nouvel arrivage wax", tag: "Vidéo UGC", platform: "Statut WhatsApp", price: "15 000 FCFA", video: true, bg: "from-[#3b1d0a] via-[#c2410c] to-[#fbbf24]", media: UGC("vendeuse-marche-wax") },
+  { kind: "wax", title: "Nouvel arrivage wax", tag: "Vidéo UGC", platform: "Statut WhatsApp", price: "15 000 FCFA", video: true, bg: "from-[#3b1d0a] via-[#5f7d00] to-[#fbbf24]", media: UGC("vendeuse-marche-wax") },
   { kind: "plate", title: "Garba du quartier", tag: "Micro-trottoir", platform: "TikTok", video: true, bg: "from-[#1c0f08] via-[#7c3f1d] to-[#f5c28b]", media: UGC("micro-trottoir-garba") },
   { kind: "shea", title: "Beurre de karité pur", tag: "Photo produit", platform: "Instagram", price: "7 500 FCFA", bg: "from-[#2b1a05] via-[#a16207] to-[#fde68a]", media: STYLE("marche-africain") },
   { kind: "shea", title: "Fiche catalogue", tag: "Catalogue WhatsApp", platform: "WhatsApp Business", bg: "from-[#f5f5f4] via-[#e7e5e4] to-[#d6d3d1]", media: STYLE("catalogue") },
   { kind: "wig", title: "Perruque lisse 22 pouces", tag: "Get ready with me", platform: "Instagram", price: "45 000 FCFA", video: true, bg: "from-[#3b0a1e] via-[#9d174d] to-[#fbcfe8]", media: UGC("grwm-perruque") },
   { kind: "phone", title: "Boutique de téléphones", tag: "Déballage", platform: "Facebook", price: "95 000 FCFA", video: true, bg: "from-[#0f172a] via-[#1e3a8a] to-[#60a5fa]", media: UGC("unboxing-telephone") },
-  { kind: "plate", title: "Livraison en 2 heures", tag: "Commande WhatsApp", platform: "Statut WhatsApp", video: true, bg: "from-[#3a0d06] via-[#c2410c] to-[#fed7aa]", media: UGC("livraison-whatsapp") },
+  { kind: "plate", title: "Livraison en 2 heures", tag: "Commande WhatsApp", platform: "Statut WhatsApp", video: true, bg: "from-[#3a0d06] via-[#5f7d00] to-[#fed7aa]", media: UGC("livraison-whatsapp") },
   { kind: "fashion", title: "Tenue sur mesure", tag: "Fit check atelier", platform: "Instagram", video: true, bg: "from-[#0b0b0b] via-[#3f3f46] to-[#d4d4d8]", media: UGC("atelier-couture") },
   { kind: "shea", title: "Témoignage karité", tag: "Témoignage", platform: "TikTok", video: true, bg: "from-[#2b1a05] via-[#a16207] to-[#fde68a]", media: UGC("temoignage-karite") },
   { kind: "plate", title: "Poulet braisé", tag: "Dégustation", platform: "Facebook", video: true, bg: "from-[#1c0f08] via-[#7c3f1d] to-[#f5c28b]", media: UGC("degustation-maquis") },
   { kind: "shea", title: "Collection luxe", tag: "Style Luxe doré", platform: "Instagram", price: "12 000 FCFA", bg: "from-[#0b0b0b] via-[#3f3f46] to-[#d4d4d8]", media: STYLE("luxe-dore") },
-  { kind: "fashion", title: "Bazin brodé Tabaski", tag: "Promo fête", platform: "Statut WhatsApp", video: true, bg: "from-[#3b1d0a] via-[#c2410c] to-[#fbbf24]", media: UGC("promo-tabaski") },
+  { kind: "fashion", title: "Bazin brodé Tabaski", tag: "Promo fête", platform: "Statut WhatsApp", video: true, bg: "from-[#3b1d0a] via-[#5f7d00] to-[#fbbf24]", media: UGC("promo-tabaski") },
 ];
 
 /** Plays only while on screen and loads nothing before (the gallery repeats items; keep mobile data low). */

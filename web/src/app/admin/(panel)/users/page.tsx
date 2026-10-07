@@ -21,7 +21,7 @@ export default async function AdminUsers({ searchParams }: PageProps<"/admin/use
 
   return (
     <>
-      <AdminTopBar title="Utilisateurs" pill={`${fmtNum(res.total)} comptes`} subtitle="Comptes Sokozia, crédits, formules et consommation" />
+      <AdminTopBar title="Utilisateurs" pill={`${fmtNum(res.total)} comptes`} subtitle="Comptes Marketing Studio, crédits, formules et consommation" />
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <SearchForm action="/admin/users" query={q} placeholder="Rechercher par e-mail, nom ou identifiant…" hidden={{ plan }} />
         <Segmented

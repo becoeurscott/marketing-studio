@@ -118,7 +118,7 @@ struct OnboardingFlow: View {
         VStack(alignment: .leading, spacing: 20) {
             HStack(alignment: .top, spacing: 8) {
                 ForEach(Array(Catalog.creators.filter(\.featured).prefix(3))) { c in
-                    CreatorIntroView(creator: c, showSoundButton: false)
+                    CreatorIntroView(creator: c)
                         .aspectRatio(9.0 / 15.0, contentMode: .fit)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }

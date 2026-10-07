@@ -23,9 +23,9 @@ export function AdminNav({ admin }: { admin: { name: string; email: string } }) 
     <>
       <aside className="hidden lg:flex w-[220px] shrink-0 flex-col border-r border-white/[0.06] bg-[#0b0b0b] p-3">
         <Link href="/admin" className="flex items-center gap-2.5 px-2 py-2">
-          <span className="grid size-9 place-items-center rounded-xl bg-white text-black font-black">S</span>
+          <span className="grid size-9 place-items-center rounded-xl bg-white text-black font-black">M</span>
           <span className="leading-tight">
-            <span className="block text-sm font-semibold">Sokozia</span>
+            <span className="block text-sm font-semibold">Marketing Studio</span>
             <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-accent">Admin</span>
           </span>
         </Link>

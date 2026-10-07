@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-/* Media generated with Sokozia (Higgsfield): style photos and UGC videos. */
+/* Media generated with Marketing Studio (Higgsfield): style photos and UGC videos. */
 export const MEDIA = {
   photos: [
     "/styles/porte-mannequin.jpg",

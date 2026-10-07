@@ -250,7 +250,7 @@ export interface ProductShootParams {
   environment: string;
   lighting: string;
   camera: string;
-  /** Sokozia style art direction (lib/styles.ts); replaces the generic décor prompt when set. */
+  /** Marketing Studio style art direction (lib/styles.ts); replaces the generic décor prompt when set. */
   styleDirection?: string;
   /** Framing direction (packshot, close-up, faceless, full body…), see SHOT_TYPES. */
   shotDirection?: string;

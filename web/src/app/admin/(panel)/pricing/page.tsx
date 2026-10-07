@@ -30,8 +30,8 @@ export default async function AdminPricing() {
     <>
       <AdminTopBar
         title="Tarifs et marges"
-        subtitle="Prix réels demandés à Higgsfield (estimation gratuite, rien n'est généré) comparés à ce que Sokozia facture"
-        pill={`1 crédit Sokozia = ${fmtXof(priceXof)} · 1 $ = ${XOF_PER_USD} FCFA`}
+        subtitle="Prix réels demandés à Higgsfield (estimation gratuite, rien n'est généré) comparés à ce que Marketing Studio facture"
+        pill={`1 crédit Marketing Studio = ${fmtXof(priceXof)} · 1 $ = ${XOF_PER_USD} FCFA`}
       />
 
       <div className="grid gap-3 sm:grid-cols-3 mb-3">
@@ -48,7 +48,7 @@ export default async function AdminPricing() {
                 <th className="px-4 py-3 font-medium">Génération</th>
                 <th className="px-4 py-3 font-medium text-right">Crédits Higgsfield</th>
                 <th className="px-4 py-3 font-medium text-right">Coût réel</th>
-                <th className="px-4 py-3 font-medium text-right">Facturé (cr. Sokozia)</th>
+                <th className="px-4 py-3 font-medium text-right">Facturé (cr. Marketing Studio)</th>
                 <th className="px-4 py-3 font-medium text-right">Encaissé</th>
                 <th className="px-4 py-3 font-medium text-right">Marge</th>
                 <th className="px-4 py-3 font-medium text-right">Seuil (cr.)</th>

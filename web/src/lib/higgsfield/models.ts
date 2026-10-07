@@ -1,7 +1,7 @@
 /**
- * Higgsfield models offered in Sokozia, priced in Sokozia credits only (never in provider prices).
+ * Higgsfield models offered in Marketing Studio, priced in Marketing Studio credits only (never in provider prices).
  * Credits are set from the real Higgsfield cost (estimate endpoint, see /admin/pricing, checked 2026-10-02:
- * 1 Higgsfield credit ≈ $0.0626) for ≈ 50 % gross margin when a Sokozia credit sells 12 FCFA (1 $ = 590 FCFA):
+ * 1 Higgsfield credit ≈ $0.0626) for ≈ 50 % gross margin when a Marketing Studio credit sells 12 FCFA (1 $ = 590 FCFA):
  * credits ≈ cost in FCFA / 6; update them here
  * when provider pricing changes. Shared by the browser (labels, costs) and the server (endpoints).
  */
@@ -19,7 +19,7 @@ export interface VideoModel {
   i2v?: string;
   /** Reference-to-video endpoint (several reference images: character sheet + product). */
   ref?: string;
-  /** Sokozia credits per second in light mode (480p, or the model's only resolution). */
+  /** Marketing Studio credits per second in light mode (480p, or the model's only resolution). */
   creditsPerSecond: number;
   /** Credits per second at 720p when it costs more than light mode. */
   creditsPerSecondHD?: number;

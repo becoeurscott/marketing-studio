@@ -11,7 +11,7 @@ export interface UgcVideo {
   sector: string;
 }
 
-/** Generated with Sokozia (Higgsfield Marketing Studio image → Seedance 2.5), stored in /public/showcase/ugc. */
+/** Generated with Marketing Studio (Higgsfield Marketing Studio image → Seedance 2.5), stored in /public/showcase/ugc. */
 export const UGC_VIDEOS: UgcVideo[] = [
   { slug: "temoignage-karite", style: "Témoignage", sector: "Cosmétiques" },
   { slug: "vendeuse-marche-wax", style: "Vendeuse au marché", sector: "Couture & wax" },
@@ -81,7 +81,7 @@ export function UgcShowcase() {
         <SectionTitle
           eyebrow="Vidéos UGC"
           title="Des créateurs africains qui présentent vos produits"
-          text="Témoignage, déballage, marché, maquis, livraison WhatsApp : dix styles de vidéos créées avec Sokozia, en français, prêtes pour TikTok, Facebook et vos statuts."
+          text="Témoignage, déballage, marché, maquis, livraison WhatsApp : dix styles de vidéos créées avec Marketing Studio, en français, prêtes pour TikTok, Facebook et vos statuts."
         />
       </div>
       <Reveal className="mt-14">

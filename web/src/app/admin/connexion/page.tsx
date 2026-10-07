@@ -14,9 +14,9 @@ export default async function AdminSignIn() {
       <div aria-hidden className="pointer-events-none absolute -top-40 left-1/2 h-80 w-[36rem] -translate-x-1/2 rounded-full bg-accent/20 blur-[110px]" />
       <div className="relative w-full max-w-sm rounded-[22px] border border-white/[0.08] bg-[#0f0f0f] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.6)]">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-10 place-items-center rounded-xl bg-white text-lg font-black text-black">S</span>
+          <span className="grid size-10 place-items-center rounded-xl bg-white text-lg font-black text-black">M</span>
           <span className="leading-tight">
-            <span className="block text-sm font-semibold">Sokozia</span>
+            <span className="block text-sm font-semibold">Marketing Studio</span>
             <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-accent">Administration</span>
           </span>
         </div>

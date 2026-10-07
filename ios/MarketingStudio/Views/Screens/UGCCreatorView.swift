@@ -191,7 +191,7 @@ struct UGCCreatorView: View {
     }
 
     private var previewSection: some View {
-        CreativeSection(title: "Aperçu", subtitle: "Votre créateur se présente (touchez le haut-parleur pour l'écouter)") {
+        CreativeSection(title: "Aperçu", subtitle: "Votre créateur se présente") {
             HStack(alignment: .top, spacing: 12) {
                 ZStack(alignment: .bottomLeading) {
                     if let creator {

@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <header className="px-4 sm:px-6 py-5">
         <Link href="/" className="inline-flex items-center gap-2 font-semibold tracking-tight text-[17px]">
           <span className="size-8 rounded-lg bg-gradient-to-br from-highlight via-accent to-green" aria-hidden />
-          Sokozia
+          Marketing Studio
         </Link>
       </header>
       <main className="flex-1 flex items-start sm:items-center justify-center px-4 pb-16">

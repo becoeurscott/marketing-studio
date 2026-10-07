@@ -29,7 +29,7 @@ export function slugify(input: string): string {
 }
 
 const svgUri = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-const PALETTES = [["#F97316", "#FACC15"], ["#16A34A", "#FACC15"], ["#EA580C", "#16A34A"], ["#0A0A0A", "#F97316"]];
+const PALETTES = [["#d1fe17", "#d1fe17"], ["#a6cf0c", "#d1fe17"], ["#a6cf0c", "#a6cf0c"], ["#0A0A0A", "#d1fe17"]];
 const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 
 /** Local placeholder graphic (no stock photo): brand gradient with an optional label. */

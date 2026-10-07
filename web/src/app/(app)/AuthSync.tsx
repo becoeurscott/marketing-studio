@@ -34,7 +34,7 @@ export function AuthSync() {
         const { localChangedAt } = useStore.getState();
         if (!localChangedAt || (res.updatedAt && localChangedAt <= res.updatedAt)) useStore.setState({ syncedAt: res.updatedAt ?? null });
       } else if (res.error !== "not-signed-in") {
-        console.error("Sokozia: workspace save failed", res.error);
+        console.error("Marketing Studio: workspace save failed", res.error);
         if (res.error !== "too-large") timer = setTimeout(() => void push(), RETRY_DELAY_MS);
       }
     };

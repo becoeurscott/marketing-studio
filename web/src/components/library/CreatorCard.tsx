@@ -1,15 +1,12 @@
 "use client";
 
-import { Heart, Languages, Volume2, VolumeX } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Heart, Languages } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { useStore } from "@/lib/store";
 import type { Creator } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { GENDER_LABELS } from "@/lib/labels";
-
-/** Only one creator talks at a time: unmuting one card mutes the others. */
-const SOUND_EVENT = "creator-sound";
 
 /** `onOpen`: main click (choose the creator). `onProfile`: optional "Voir le profil" link. */
 export function CreatorCard({ creator, onOpen, onProfile, className }: { creator: Creator; onOpen?: (c: Creator) => void; onProfile?: (c: Creator) => void; className?: string }) {
@@ -17,33 +14,16 @@ export function CreatorCard({ creator, onOpen, onProfile, className }: { creator
   const toggleFavorite = useStore((s) => s.toggleFavorite);
   const fav = favorites.includes(creator.id);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
 
-  // Play while on screen (loads nothing before: light on mobile data), pause when scrolled away.
+  // Silent preview: plays while on screen (loads nothing before: light on mobile data), pauses when scrolled away.
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
+    el.muted = true;
     const io = new IntersectionObserver(([e]) => (e.isIntersecting ? void el.play().catch(() => {}) : el.pause()), { threshold: 0.5 });
     io.observe(el);
-    const onOther = (e: Event) => { if ((e as CustomEvent<string>).detail !== creator.id) setMuted(true); };
-    window.addEventListener(SOUND_EVENT, onOther);
-    return () => { io.disconnect(); window.removeEventListener(SOUND_EVENT, onOther); };
+    return () => io.disconnect();
   }, [creator.id]);
-
-  // React doesn't reliably update the `muted` attribute after mount: set the property directly.
-  useEffect(() => {
-    if (videoRef.current) videoRef.current.muted = muted;
-  }, [muted]);
-
-  const toggleSound = () => {
-    const el = videoRef.current;
-    const next = !muted;
-    setMuted(next);
-    if (!next) {
-      window.dispatchEvent(new CustomEvent(SOUND_EVENT, { detail: creator.id }));
-      if (el) { el.currentTime = 0; void el.play().catch(() => {}); }
-    }
-  };
 
   return (
     <div className={cn("relative group", className)}>
@@ -54,7 +34,7 @@ export function CreatorCard({ creator, onOpen, onProfile, className }: { creator
       >
         <div className="relative aspect-[4/5] bg-elevated overflow-hidden">
           {creator.intro ? (
-            <video ref={videoRef} src={creator.intro} poster={creator.portrait} muted={muted} loop playsInline preload="none" className="size-full object-cover" aria-label={`Présentation de ${creator.name}`} />
+            <video ref={videoRef} src={creator.intro} poster={creator.portrait} muted loop playsInline preload="none" className="size-full object-cover" aria-label={`Présentation de ${creator.name}`} />
           ) : (
             <img src={creator.portrait} alt={creator.name} className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
           )}
@@ -89,17 +69,6 @@ export function CreatorCard({ creator, onOpen, onProfile, className }: { creator
       >
         <Heart className={cn("size-4", fav && "fill-current")} />
       </button>
-      {creator.intro && (
-        <button
-          type="button"
-          aria-label={muted ? `Écouter ${creator.name}` : "Couper le son"}
-          aria-pressed={!muted}
-          onClick={(e) => { e.stopPropagation(); toggleSound(); }}
-          className={cn("absolute top-12 right-3 size-8 rounded-full flex items-center justify-center backdrop-blur transition-colors", muted ? "bg-black/50 text-white hover:bg-black/70" : "bg-accent text-on-accent")}
-        >
-          {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-        </button>
-      )}
     </div>
   );
 }

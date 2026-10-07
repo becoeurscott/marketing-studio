@@ -1,13 +1,13 @@
 import { SOKOZIA_STYLES } from "@/lib/styles";
 import { Reveal, SectionTitle } from "./motion";
 
-/** The 10 Sokozia styles, each shown with its reference image (same product, different scene). */
+/** The 10 Marketing Studio styles, each shown with its reference image (same product, different scene). */
 export function StylesShowcase() {
   return (
     <section id="styles" className="scroll-mt-24 px-4 sm:px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
         <SectionTitle
-          eyebrow="Styles Sokozia"
+          eyebrow="Styles Marketing Studio"
           title="Une photo, dix styles"
           text="Dix styles pensés pour vendre en Afrique, chacun montré sur un produit différent. Votre produit reste identique : seul le décor change."
         />

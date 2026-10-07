@@ -131,7 +131,7 @@ export function whatsappLink(phone: string, message: string): string {
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }
 
-/** Sokozia's own WhatsApp line (ambassadors, support). Replace with the real number before launch. */
+/** Marketing Studio's own WhatsApp line (ambassadors, support). Replace with the real number before launch. */
 export const SOKOZIA_WHATSAPP = "+225 00 00 00 00 00";
 
 /* ---------- Local promo calendar ---------- */

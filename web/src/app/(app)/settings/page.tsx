@@ -38,7 +38,7 @@ const SECTIONS: { id: SectionId; label: string; icon: LucideIcon; description: s
   { id: "account", label: "Compte", icon: UserIcon, description: "Votre nom, votre photo et l’e-mail de connexion." },
   { id: "market", label: "Pays et langues", icon: Globe2, description: "Monnaie, Mobile Money, langues et mode économie de data." },
   { id: "workspace", label: "Boutique", icon: Building2, description: "Le nom de votre boutique ou de votre espace." },
-  { id: "notifications", label: "Notifications", icon: Bell, description: "Les alertes que vous recevez dans Sokozia." },
+  { id: "notifications", label: "Notifications", icon: Bell, description: "Les alertes que vous recevez dans Marketing Studio." },
   { id: "appearance", label: "Apparence", icon: Palette, description: "Barre latérale, animations et réglages par défaut du Studio." },
   { id: "brand", label: "Marque", icon: Sparkles, description: "Kit de marque actif et ton de marque." },
   { id: "credits", label: "Crédits et paiement", icon: CreditCard, description: "Solde, historique et recharge." },
@@ -159,7 +159,7 @@ function AccountSection({ account, onSaved }: { account: AccountDetails | null; 
   return (
     <form onSubmit={submit}>
       <Card>
-        <CardHeader title="Profil" subtitle="Enregistré sur votre compte Sokozia : visible sur tous vos appareils." />
+        <CardHeader title="Profil" subtitle="Enregistré sur votre compte Marketing Studio : visible sur tous vos appareils." />
         <div className="flex items-center gap-4 mb-5">
           <Avatar src={avatarUrl} name={name || "?"} size={64} />
           <div className="flex flex-wrap gap-2">
@@ -178,7 +178,7 @@ function AccountSection({ account, onSaved }: { account: AccountDetails | null; 
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-border">
           <p className="text-[12px] text-muted">
-            {account?.createdAt ? `Compte créé le ${formatDate(account.createdAt)}` : "Compte Sokozia"} · <Link href="/profile" className="text-text2 hover:text-text underline-offset-2 hover:underline">Voir le profil</Link>
+            {account?.createdAt ? `Compte créé le ${formatDate(account.createdAt)}` : "Compte Marketing Studio"} · <Link href="/profile" className="text-text2 hover:text-text underline-offset-2 hover:underline">Voir le profil</Link>
           </p>
           <Button type="submit" loading={saving} disabled={!dirty || uploading}>Enregistrer les modifications</Button>
         </div>
@@ -242,7 +242,7 @@ function NotificationsSection() {
   return (
     <>
       <Card>
-        <CardHeader title="Dans Sokozia" subtitle="Vous êtes prévenu ici (cloche en haut) quand :" />
+        <CardHeader title="Dans Marketing Studio" subtitle="Vous êtes prévenu ici (cloche en haut) quand :" />
         <ul className="space-y-2 text-[13px] text-text2">
           {["Une image, une vidéo ou une pub est prête", "Une campagne est créée", "Un export est prêt à partager"].map((t) => (
             <li key={t} className="flex items-center gap-2"><Check className="size-3.5 text-success shrink-0" />{t}</li>
@@ -276,7 +276,7 @@ function AppearanceSection() {
   return (
     <>
       <Card>
-        <CardHeader title="Interface" subtitle="Sokozia utilise un thème sombre, pensé pour mettre vos visuels en valeur." />
+        <CardHeader title="Interface" subtitle="Marketing Studio utilise un thème sombre, pensé pour mettre vos visuels en valeur." />
         <Toggle
           label="Barre latérale compacte"
           description={sidebarLocked ? "S’applique sur les grands écrans (la barre est déjà réduite sur cet écran)." : "Réduire la barre latérale aux icônes."}
@@ -322,7 +322,7 @@ function MarketSection() {
       </Card>
       <Card>
         <CardHeader title="Téléphone et connexion" subtitle="Pensé pour les photos prises au téléphone et les forfaits data limités." />
-        <Toggle label="Mode photo prise au téléphone" description="Sokozia demande au modèle de détourer le produit et de corriger la lumière et la netteté de votre photo." checked={prefs.phonePhotoMode ?? true} onChange={(v) => setPreference("phonePhotoMode", v)} />
+        <Toggle label="Mode photo prise au téléphone" description="Marketing Studio demande au modèle de détourer le produit et de corriger la lumière et la netteté de votre photo." checked={prefs.phonePhotoMode ?? true} onChange={(v) => setPreference("phonePhotoMode", v)} />
         <Toggle label="Vidéos légères" description="Vidéos en 480p, plus rapides à générer et à envoyer sur WhatsApp." checked={prefs.lightVideos ?? true} onChange={(v) => setPreference("lightVideos", v)} className="border-t border-border" />
       </Card>
     </>
@@ -428,9 +428,9 @@ function CreditsSection({ account }: { account: AccountDetails | null }) {
       </Card>
       <Card>
         <CardHeader title="Paiement" subtitle={`Mobile Money dans votre pays : ${mobile.join(", ") || "carte bancaire"}.`} />
-        <p className="text-[13px] text-text2">Le paiement Mobile Money directement dans Sokozia arrive bientôt. En attendant, écrivez-nous sur WhatsApp : nous rechargeons votre compte dès réception du paiement.</p>
+        <p className="text-[13px] text-text2">Le paiement Mobile Money directement dans Marketing Studio arrive bientôt. En attendant, écrivez-nous sur WhatsApp : nous rechargeons votre compte dès réception du paiement.</p>
         <a
-          href={whatsappLink(SOKOZIA_WHATSAPP, `Bonjour Sokozia, je veux recharger des crédits pour le compte ${email}.`)}
+          href={whatsappLink(SOKOZIA_WHATSAPP, `Bonjour Marketing Studio, je veux recharger des crédits pour le compte ${email}.`)}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block mt-3"
@@ -519,7 +519,7 @@ function SecuritySection({ account }: { account: AccountDetails | null }) {
 function HelpSection() {
   const links = [
     { label: "Centre d’aide et FAQ", description: "Guides et réponses aux questions fréquentes.", href: "/help", external: false },
-    { label: "Écrire au support sur WhatsApp", description: "Questions, recharges, problèmes : on vous répond sur WhatsApp.", href: whatsappLink(SOKOZIA_WHATSAPP, "Bonjour Sokozia, "), external: true },
+    { label: "Écrire au support sur WhatsApp", description: "Questions, recharges, problèmes : on vous répond sur WhatsApp.", href: whatsappLink(SOKOZIA_WHATSAPP, "Bonjour Marketing Studio, "), external: true },
     { label: "Crédits et tarifs", description: "Le fonctionnement des crédits et le prix des packs.", href: "/pricing", external: false },
   ];
   return (
@@ -542,9 +542,9 @@ function HelpSection() {
       <Card>
         <CardHeader title="À propos" />
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[13px]">
-          <dt className="text-text2">Application</dt><dd>Sokozia (bêta)</dd>
+          <dt className="text-text2">Application</dt><dd>Marketing Studio (bêta)</dd>
           <dt className="text-text2">Qualités</dt><dd>Images Éco, Standard et HD · vidéos Éco, Rapide, Standard, Premium, Ultra HD et Cinéma</dd>
-          <dt className="text-text2">Vos données</dt><dd>Enregistrées sur votre compte Sokozia, disponibles sur tous vos appareils</dd>
+          <dt className="text-text2">Vos données</dt><dd>Enregistrées sur votre compte Marketing Studio, disponibles sur tous vos appareils</dd>
         </dl>
       </Card>
     </>

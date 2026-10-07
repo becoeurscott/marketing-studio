@@ -5,8 +5,8 @@ import type { GenerationRequest } from "@/lib/higgsfield/types";
 
 /** FCFA per US dollar used to convert Higgsfield costs (XOF is pegged to the euro; adjust if the dollar moves). */
 export const XOF_PER_USD = 590;
-const PHOTO = "https://www.sokozia.com/products/parfum.jpg";
-const SHEET = "https://www.sokozia.com/products/sac.jpg";
+const PHOTO = "https://sokozia.vercel.app/products/parfum.jpg";
+const SHEET = "https://sokozia.vercel.app/products/sac.jpg";
 
 export const SCENARIOS: { label: string; req: GenerationRequest }[] = [
   { label: "Image Marketing Studio (2K)", req: { kind: "image", model: "marketing-studio", prompt: "Photo produit", aspectRatio: "1:1" } },

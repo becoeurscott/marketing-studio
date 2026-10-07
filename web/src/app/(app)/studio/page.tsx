@@ -75,7 +75,7 @@ export default function StudioPage() {
     else if (vid.error) overlay = <StudioError code={vid.error.code} message={vid.error.message} onRetry={generate} />;
     else if (vid.result) overlay = <VideoPlayer result={vid.result} className="mx-auto" heightClass="h-[max(14rem,calc(100dvh-28rem))] md:h-[max(14rem,calc(100dvh-26.5rem))]" maxHeightClass="max-h-[max(14rem,calc(100dvh-28rem))] md:max-h-[max(14rem,calc(100dvh-26.5rem))]" />;
     else if (vid.source || (mode === "ugc" && vid.creator)) overlay = (
-      <div className="flex flex-col items-center justify-center text-center p-6 gap-4 bg-[radial-gradient(circle_at_50%_40%,rgba(249,115,22,0.10),transparent_60%)]">
+      <div className="flex flex-col items-center justify-center text-center p-6 gap-4 bg-[radial-gradient(circle_at_50%_40%,rgba(209,254,23,0.10),transparent_60%)]">
         <div className="flex items-end justify-center gap-3 w-full min-w-0">
           {mode === "ugc" && vid.creator && (vid.creator.intro
             ? <video key={vid.creator.id} src={vid.creator.intro} poster={vid.creator.portrait} autoPlay muted loop playsInline className="h-40 sm:h-52 md:h-64 aspect-[9/16] shrink-0 rounded-2xl object-cover shadow-float border border-white/10" aria-label={`Présentation de ${vid.creator.name}`} />

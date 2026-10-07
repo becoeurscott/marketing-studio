@@ -39,7 +39,7 @@ export const routeTitles: [string, string][] = [
 ];
 
 export function titleForPath(path: string): string {
-  return routeTitles.find(([p]) => path === p || path.startsWith(p + "/"))?.[1] ?? "Sokozia";
+  return routeTitles.find(([p]) => path === p || path.startsWith(p + "/"))?.[1] ?? "Marketing Studio";
 }
 
 export function isActive(item: NavItem, path: string): boolean {

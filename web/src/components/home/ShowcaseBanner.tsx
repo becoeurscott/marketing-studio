@@ -12,14 +12,14 @@ interface Slide {
   text: string;
   cta: string;
   href: string;
-  /** Real Sokozia-generated media from /public. */
+  /** Real Marketing Studio-generated media from /public. */
   image: string;
   video?: string;
 }
 
 const SLIDES: Slide[] = [
   { tag: "Vidéos UGC", title: "Un créateur présente votre produit", text: "Choisissez un visage parmi nos créateurs, écrivez le texte : la vidéo est prête pour TikTok et les statuts.", cta: "Créer une vidéo UGC", href: "/studio/ugc", image: "/showcase/ugc/temoignage-karite.jpg", video: "/showcase/ugc/temoignage-karite.mp4" },
-  { tag: "Shooting produit", title: "Une simple photo devient un visuel pro", text: "Prenez votre produit en photo au téléphone. Sokozia le place dans un décor studio, nature ou luxe.", cta: "Lancer un shooting", href: "/studio/product-shoot", image: "/styles/studio-ocre.jpg" },
+  { tag: "Shooting produit", title: "Une simple photo devient un visuel pro", text: "Prenez votre produit en photo au téléphone. Marketing Studio le place dans un décor studio, nature ou luxe.", cta: "Lancer un shooting", href: "/studio/product-shoot", image: "/styles/studio-ocre.jpg" },
   { tag: "Publicités", title: "Des pubs et flyers prêts à poster", text: "Visuel, accroche et appel à l'action pour Facebook, Instagram, TikTok ou un flyer à imprimer.", cta: "Créer une publicité", href: "/studio/ads", image: "/styles/flyer-promo.jpg" },
   { tag: "Statuts WhatsApp", title: "Vendez là où sont vos clients", text: "Des statuts et visuels au format vertical, pensés pour WhatsApp et la vente en direct.", cta: "Créer un visuel", href: "/studio/image", image: "/styles/statut-whatsapp.jpg" },
   { tag: "Campagnes", title: "Toute une campagne en quelques minutes", text: "Tabaski, rentrée, fêtes : photos, vidéos, pubs et calendrier de publication réunis au même endroit.", cta: "Nouvelle campagne", href: "/campaigns/new", image: "/showcase/ugc/promo-tabaski.jpg", video: "/showcase/ugc/promo-tabaski.mp4" },
@@ -27,7 +27,7 @@ const SLIDES: Slide[] = [
 
 const INTERVAL_MS = 6500;
 
-/** Rotating banner on the dashboard that shows what Sokozia can make, each slide linking to its tool. */
+/** Rotating banner on the dashboard that shows what Marketing Studio can make, each slide linking to its tool. */
 export function ShowcaseBanner() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -45,7 +45,7 @@ export function ShowcaseBanner() {
   return (
     <section
       aria-roledescription="carrousel"
-      aria-label="Ce que Sokozia peut créer"
+      aria-label="Ce que Marketing Studio peut créer"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}

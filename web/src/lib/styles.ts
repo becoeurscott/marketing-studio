@@ -1,5 +1,5 @@
 /**
- * Sokozia styles: art directions built on Higgsfield Marketing Studio (edit mode keeps the
+ * Marketing Studio styles: art directions built on Higgsfield Marketing Studio (edit mode keeps the
  * merchant's product identical). Each has a reference image in /public/styles/<id>.jpg,
  * shown on a different product so merchants see the style on goods like theirs.
  */

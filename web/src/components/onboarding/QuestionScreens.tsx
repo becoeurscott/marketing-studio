@@ -14,7 +14,7 @@ export const GOALS = [
   { value: "sell", icon: TrendingUp, label: "Vendre plus" },
   { value: "social", icon: Smartphone, label: "Développer mes réseaux" },
   { value: "test", icon: FlaskConical, label: "Tester de nouvelles créas" },
-  { value: "auto", icon: Sparkles, label: "Je ne sais pas (Sokozia décide)" },
+  { value: "auto", icon: Sparkles, label: "Je ne sais pas (Marketing Studio décide)" },
 ];
 
 export function GoalScreen({ value, onChange, onNext }: { value: string | null; onChange: (v: string) => void; onNext: () => void }) {
@@ -156,7 +156,7 @@ export function BrandScreen({ value, onChange, onNext }: { value: boolean; onCha
             </div>
           ))}
           {shown >= BRAND_CHECKS.length && (
-            <div className="flex gap-2 pt-2">{["#F97316", "#f5d0fe", "#111827", "#fde68a"].map((c) => <span key={c} className="size-7 rounded-full border border-white/20" style={{ background: c }} />)}</div>
+            <div className="flex gap-2 pt-2">{["#d1fe17", "#f5d0fe", "#111827", "#fde68a"].map((c) => <span key={c} className="size-7 rounded-full border border-white/20" style={{ background: c }} />)}</div>
           )}
         </div>
       )}
