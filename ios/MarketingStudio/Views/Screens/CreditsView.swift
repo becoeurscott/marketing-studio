@@ -1,4 +1,3 @@
-import StoreKit
 import SwiftUI
 
 /// Credits: balance (server truth), cost table, usage history, pay-as-you-go packs in FCFA.
@@ -173,75 +172,44 @@ struct TransactionRow: View {
 
 // MARK: - Buy credits (AppSheet.buyCredits)
 
-/// Credit packs bought with the App Store (in-app purchase). The server verifies each purchase with Apple.
+/// Credits are bought on the website with Mobile Money or a card.
 struct BuyCreditsSheet: View {
     @EnvironmentObject private var store: AppStore
-    @EnvironmentObject private var router: Router
-    @EnvironmentObject private var auth: AuthService
-    @ObservedObject private var shop = StoreService.shared
-    @State private var busy: String?
-
     var body: some View {
-        BottomSheetContainer(title: "Recharger des crédits", subtitle: "Paiement sécurisé par l’App Store. Les crédits n’expirent pas.") {
+        BottomSheetContainer(title: "Recharger des crédits", subtitle: "1 crédit = 10 FCFA. Les crédits n’expirent pas.") {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 10) {
-                    if shop.packs.isEmpty {
-                        Text(shop.loaded ? "Les achats ne sont pas encore disponibles." : "Chargement…").msBody(14).padding(.top, 20)
-                    }
-                    ForEach(shop.packs, id: \.id) { p in
-                        StoreProductRow(product: p, credits: StoreService.credits[p.id] ?? 0, subscription: false, current: false, busy: busy == p.id) { buy(p) }
-                    }
-                    MSButton(title: "Voir les abonnements", icon: "arrow.triangle.2.circlepath", style: .ghost) { router.dismissSheet(); router.push(.pricing, on: .more) }
-                }
-                .padding(.horizontal, MSSpacing.gutter)
-                .padding(.bottom, 16)
+                WebTopUpCard(title: "Payez en Mobile Money", subtitle: "Packs dès 1 000 FCFA (100 crédits) ou abonnement mensuel, sur le site Marketing Studio.", path: "credits")
+                    .padding(.horizontal, MSSpacing.gutter)
+                    .padding(.bottom, 16)
             }
         }
-        .task { if !shop.loaded { await shop.load() } }
-    }
-
-    private func buy(_ p: Product) {
-        guard let user = auth.user else { return }
-        busy = p.id
-        Task {
-            defer { busy = nil }
-            do {
-                switch try await shop.purchase(p, userId: user.id) {
-                case .credited(let n):
-                    await API.refreshAccount(store)
-                    MSHaptic.success()
-                    router.toast(n > 0 ? "+\(n) crédits ajoutés" : "Achat enregistré", style: .success, icon: "bolt.fill")
-                    router.dismissSheet()
-                case .pending: router.toast("Achat en attente d’approbation", style: .info)
-                case .cancelled: break
-                }
-            } catch {
-                router.toast(error.localizedDescription, style: .error)
-            }
-        }
+        .task { await API.refreshAccount(store) }
     }
 }
 
-/// One App Store product row (pack or monthly pass).
-struct StoreProductRow: View {
-    var product: Product
-    var credits: Int
-    var subscription: Bool
-    var current: Bool
-    var busy: Bool
-    var action: () -> Void
+/// Credits are bought on the website (Mobile Money or card): the app opens it in Safari.
+struct WebTopUpCard: View {
+    var title: String
+    var subtitle: String
+    var path: String
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(product.displayName.isEmpty ? "\(credits) crédits" : product.displayName).font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                Text(subscription ? "\(credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits chaque mois" : "\(credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits · sans expiration").msCaption()
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "iphone.and.arrow.forward").font(.system(size: 18, weight: .semibold)).foregroundStyle(MSColor.highlight)
+                Text(title).msHeadline(16)
             }
-            Spacer()
-            MSButton(title: current ? "Actuel" : product.displayPrice + (subscription ? " / mois" : ""), style: current ? .secondary : .primary, size: .compact, isLoading: busy, isDisabled: current || busy, fullWidth: false, action: action)
+            Text(subtitle).msBody(14)
+            HStack(spacing: 8) {
+                ForEach(["Wave", "Orange Money", "MTN MoMo", "Carte"], id: \.self) { m in
+                    Text(m).font(MSFont.caption(11)).foregroundStyle(MSColor.text)
+                        .padding(.horizontal, 8).padding(.vertical, 4).background(MSColor.elevated, in: Capsule())
+                }
+            }
+            MSButton(title: "Recharger sur le site", icon: "safari") { openURL(SokoziaConfig.siteURL.appendingPathComponent(path)) }
+            Text("Connectez-vous avec le même compte : vos crédits apparaissent ici automatiquement.").msCaption()
         }
-        .padding(14)
-        .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
+        .msCard()
     }
 }

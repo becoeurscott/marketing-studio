@@ -96,17 +96,6 @@ enum APIClient {
         return u
     }
 
-    // MARK: In-app purchases
-
-    private struct RedeemBody: Encodable { var transactionId: String }
-    private struct RedeemReply: Decodable { var granted: Int; var credits: Int }
-
-    /// Asks the server to verify an App Store transaction with Apple and credit it (once). Returns the credits granted.
-    static func redeemAppleTransaction(id: String) async throws -> Int {
-        let r: RedeemReply = try await call("api/iap/transaction", method: "POST", json: RedeemBody(transactionId: id))
-        return r.granted
-    }
-
     // MARK: Generation
 
     /// Starts a job and polls until it finishes. Returns only on success with at least one output.
