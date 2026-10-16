@@ -31,6 +31,7 @@ struct RootView: View {
             if let user {
                 if store.accountId != user.id { store.load(for: user) }
                 Task { await API.refreshAccount(store) }
+                StoreService.shared.start()
             } else if store.accountId != nil {
                 router.dismissSheet()
                 store.unload()

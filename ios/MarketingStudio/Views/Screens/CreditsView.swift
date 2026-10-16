@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 
 /// Credits: balance (server truth), cost table, usage history, pay-as-you-go packs in FCFA.
@@ -172,86 +173,75 @@ struct TransactionRow: View {
 
 // MARK: - Buy credits (AppSheet.buyCredits)
 
-/// Pay-as-you-go packs in the user's currency, paid with Mobile Money. Payments are not connected
-/// yet: choosing a pack explains how to top up through WhatsApp (no credits are granted here).
+/// Credit packs bought with the App Store (in-app purchase). The server verifies each purchase with Apple.
 struct BuyCreditsSheet: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
-    @Environment(\.openURL) private var openURL
-
-    @State private var selected: Market.UsagePack = Market.usagePacks[1]
-
-    private var packs: [Market.UsagePack] { Market.usagePacks + Market.topUpPacks }
+    @EnvironmentObject private var auth: AuthService
+    @ObservedObject private var shop = StoreService.shared
+    @State private var busy: String?
 
     var body: some View {
-        BottomSheetContainer(title: "Recharger des crédits", subtitle: "Sans abonnement. Payez avec \(paymentNames).") {
+        BottomSheetContainer(title: "Recharger des crédits", subtitle: "Paiement sécurisé par l’App Store. Les crédits n’expirent pas.") {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 14) {
-                    VStack(spacing: 10) {
-                        ForEach(packs) { pack in packRow(pack) }
+                VStack(spacing: 10) {
+                    if shop.packs.isEmpty {
+                        Text(shop.loaded ? "Les achats ne sont pas encore disponibles." : "Chargement…").msBody(14).padding(.top, 20)
                     }
-                    paymentStrip
-                    VStack(spacing: 8) {
-                        MSButton(title: "Payer \(store.price(selected.priceXof))", icon: "lock.fill") { pay() }
-                        Text(Market.paymentsComingSoon).msCaption().multilineTextAlignment(.center)
+                    ForEach(shop.packs, id: \.id) { p in
+                        StoreProductRow(product: p, credits: StoreService.credits[p.id] ?? 0, subscription: false, current: false, busy: busy == p.id) { buy(p) }
                     }
+                    MSButton(title: "Voir les abonnements", icon: "arrow.triangle.2.circlepath", style: .ghost) { router.dismissSheet(); router.push(.pricing, on: .more) }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
                 .padding(.bottom, 16)
             }
         }
+        .task { if !shop.loaded { await shop.load() } }
     }
 
-    private var paymentNames: String {
-        store.country.payments.compactMap { Market.paymentMethods[$0] }.filter(\.mobile).map(\.label).prefix(3).joined(separator: ", ")
-    }
-
-    private var paymentStrip: some View {
-        HStack(spacing: 8) {
-            ForEach(store.country.payments.compactMap { Market.paymentMethods[$0] }) { m in
-                Text(m.label)
-                    .font(MSFont.caption(11))
-                    .foregroundStyle(MSColor.text)
-                    .padding(.horizontal, 10).padding(.vertical, 6)
-                    .background(Color(hex: m.colorHex).opacity(0.18), in: Capsule())
-                    .overlay(Capsule().strokeBorder(Color(hex: m.colorHex).opacity(0.5), lineWidth: 1))
+    private func buy(_ p: Product) {
+        guard let user = auth.user else { return }
+        busy = p.id
+        Task {
+            defer { busy = nil }
+            do {
+                switch try await shop.purchase(p, userId: user.id) {
+                case .credited(let n):
+                    await API.refreshAccount(store)
+                    MSHaptic.success()
+                    router.toast(n > 0 ? "+\(n) crédits ajoutés" : "Achat enregistré", style: .success, icon: "bolt.fill")
+                    router.dismissSheet()
+                case .pending: router.toast("Achat en attente d’approbation", style: .info)
+                case .cancelled: break
+                }
+            } catch {
+                router.toast(error.localizedDescription, style: .error)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
+}
 
-    private func packRow(_ pack: Market.UsagePack) -> some View {
-        let isSel = pack == selected
-        return Button {
-            MSHaptic.tap()
-            withAnimation(MSAnimation.snappy) { selected = pack }
-        } label: {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle().strokeBorder(isSel ? MSColor.accent : MSColor.borderStrong, lineWidth: 1.5).frame(width: 20, height: 20)
-                    if isSel { Circle().fill(MSColor.accent).frame(width: 10, height: 10) }
-                }
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 6) {
-                        Text(pack.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                        if pack.popular { MSBadge(text: "Le plus pris", tone: .accent) }
-                    }
-                    Text("\(pack.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits · \(pack.pitch)\(pack.validityDays.map { " · \($0) jours" } ?? "")").msCaption()
-                }
-                Spacer()
-                Text(store.price(pack.priceXof)).font(.system(size: 16, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
+/// One App Store product row (pack or monthly pass).
+struct StoreProductRow: View {
+    var product: Product
+    var credits: Int
+    var subscription: Bool
+    var current: Bool
+    var busy: Bool
+    var action: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(product.displayName.isEmpty ? "\(credits) crédits" : product.displayName).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                Text(subscription ? "\(credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits chaque mois" : "\(credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits · sans expiration").msCaption()
             }
-            .padding(14)
-            .background(isSel ? MSColor.accent.opacity(0.08) : MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(isSel ? MSColor.accent.opacity(0.6) : MSColor.border, lineWidth: 1))
+            Spacer()
+            MSButton(title: current ? "Actuel" : product.displayPrice + (subscription ? " / mois" : ""), style: current ? .secondary : .primary, size: .compact, isLoading: busy, isDisabled: current || busy, fullWidth: false, action: action)
         }
-        .buttonStyle(MSPressStyle())
-    }
-
-    /// Mobile Money checkout isn't connected yet: hand over to WhatsApp with the chosen pack.
-    private func pay() {
-        let message = "Bonjour Marketing Studio, je veux le \(selected.name) (\(selected.credits) crédits, \(store.price(selected.priceXof))) pour le compte \(store.user.email)."
-        router.toast("Mobile Money bientôt disponible", style: .info, icon: "clock")
-        if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: message) { openURL(url) }
+        .padding(14)
+        .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
     }
 }

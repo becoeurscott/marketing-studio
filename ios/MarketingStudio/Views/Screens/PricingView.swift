@@ -1,45 +1,44 @@
+import StoreKit
 import SwiftUI
 
-/// Monthly passes paid by card (Stripe Checkout in Safari) + link to the Mobile Money packs.
-/// Same plans and 10 FCFA credits as the web.
+/// Monthly passes bought with the App Store (auto-renewable subscriptions). Credits are added
+/// at each renewal after the server verifies the transaction with Apple.
 struct PricingView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
-    @Environment(\.openURL) private var openURL
-
-    @State private var current: APIClient.Subscription?
+    @EnvironmentObject private var auth: AuthService
+    @ObservedObject private var shop = StoreService.shared
     @State private var busy: String?
-
-    private var active: APIClient.Subscription? {
-        guard let c = current, ["active", "trialing", "past_due"].contains(c.status) else { return nil }
-        return c
-    }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Abonnements").msTitle(30)
-                    Text("1 crédit = 10 FCFA. Vos crédits sont ajoutés chaque mois, payés par carte, sans engagement.").msBody(14)
+                    Text("Des crédits ajoutés chaque mois. Paiement par l’App Store, annulable à tout moment dans vos réglages Apple.").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                if let active {
-                    MSCard {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Abonnement actuel : \(Market.monthlyPlans.first { $0.id == active.plan }?.name ?? active.plan ?? "")").msHeadline(15)
-                            MSButton(title: "Gérer mon abonnement", icon: "creditcard", style: .secondary, isLoading: busy == "portal") { open(portal: true) }
-                        }
+                VStack(spacing: 10) {
+                    if shop.subscriptions.isEmpty {
+                        Text(shop.loaded ? "Les abonnements ne sont pas encore disponibles." : "Chargement…").msBody(14)
+                    }
+                    ForEach(shop.subscriptions, id: \.id) { p in
+                        StoreProductRow(product: p, credits: StoreService.credits[p.id] ?? 0, subscription: true, current: shop.activeSubscriptionID == p.id, busy: busy == p.id) { buy(p) }
+                    }
+                }
+                .padding(.horizontal, MSSpacing.gutter)
+
+                if shop.activeSubscriptionID != nil {
+                    MSButton(title: "Gérer mon abonnement", icon: "gearshape", style: .secondary) {
+                        Task { if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { try? await StoreKit.AppStore.showManageSubscriptions(in: scene) } }
                     }
                     .padding(.horizontal, MSSpacing.gutter)
                 }
-
-                VStack(spacing: 12) {
-                    ForEach(Market.monthlyPlans) { plan in planCard(plan) }
-                }
-                .padding(.horizontal, MSSpacing.gutter)
-
-                MSButton(title: "Plutôt des packs en Mobile Money", icon: "bag", style: .ghost) { router.present(.buyCredits) }
+                MSButton(title: "Plutôt un pack de crédits", icon: "bag", style: .ghost) { router.present(.buyCredits) }
+                    .padding(.horizontal, MSSpacing.gutter)
+                Button("Restaurer mes achats") { Task { try? await StoreKit.AppStore.sync(); await shop.refreshEntitlements() } }
+                    .font(MSFont.control(13)).foregroundStyle(MSColor.text2)
                     .padding(.horizontal, MSSpacing.gutter)
             }
             .padding(.top, 4)
@@ -48,37 +47,23 @@ struct PricingView: View {
         .msScreen()
         .navigationTitle("Tarifs")
         .navigationBarTitleDisplayMode(.inline)
-        .task { current = try? await APIClient.subscription() }
-        .refreshable { current = try? await APIClient.subscription() }
+        .task { if !shop.loaded { await shop.load() } }
     }
 
-    private func planCard(_ plan: Market.MonthlyPlan) -> some View {
-        let mine = active?.plan == plan.id
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text(plan.name).msHeadline(18)
-                Spacer()
-                if plan.popular { MSBadge(text: "Le plus pris", tone: .accent) }
-            }
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(store.price(plan.priceXof)).font(.system(size: 30, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
-                Text("/ mois").msBody(14)
-            }
-            Label("\(plan.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits chaque mois", systemImage: "bolt.fill").msBody(14, color: MSColor.text)
-            Text(plan.pitch).msCaption()
-            MSButton(title: mine ? "Abonnement actuel" : (active != nil ? "Changer via « Gérer »" : "S’abonner"), icon: "creditcard",
-                     style: plan.popular ? .primary : .secondary, isLoading: busy == plan.id, isDisabled: mine || active != nil) { open(plan: plan.id) }
-        }
-        .msCard()
-    }
-
-    private func open(plan: String? = nil, portal: Bool = false) {
-        busy = portal ? "portal" : plan
+    private func buy(_ p: Product) {
+        guard let user = auth.user else { return }
+        busy = p.id
         Task {
             defer { busy = nil }
             do {
-                let url = portal ? try await APIClient.portalURL() : try await APIClient.checkoutURL(plan: plan ?? "")
-                openURL(url)
+                switch try await shop.purchase(p, userId: user.id) {
+                case .credited(let n):
+                    await API.refreshAccount(store)
+                    MSHaptic.success()
+                    router.toast(n > 0 ? "Abonné ! +\(n) crédits" : "Abonnement enregistré", style: .success, icon: "bolt.fill")
+                case .pending: router.toast("Achat en attente d’approbation", style: .info)
+                case .cancelled: break
+                }
             } catch {
                 router.toast(error.localizedDescription, style: .error)
             }
