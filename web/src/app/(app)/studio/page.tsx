@@ -1,195 +1,109 @@
 "use client";
 
-import { Clapperboard, ImageIcon, UserRound, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Inspector, useImmersive, usePageTitle } from "@/components/shell/ShellContext";
-import { AssistantButton } from "@/components/studio/Assistant";
-import { Composer } from "@/components/studio/Composer";
-import { StudioError } from "@/components/studio/ErrorState";
-import { GeneratingOverlay } from "@/components/studio/GeneratingOverlay";
-import { ImageCreatePanel } from "@/components/studio/ImageCreatePanel";
-import { ImageWorkbench } from "@/components/studio/ImageWorkbench";
-import { ModeTabs, type ComposeMode } from "@/components/studio/ModeTabs";
-import { ProductPicker } from "@/components/studio/ProductPicker";
-import { StudioCanvas } from "@/components/studio/StudioCanvas";
-import { StudioTopBar } from "@/components/studio/StudioTopBar";
-import { useImageGenerator } from "@/components/studio/useImageGenerator";
-import { useIsDesktop } from "@/components/studio/useMediaQuery";
-import { useVideoGenerator } from "@/components/studio/useVideoGenerator";
-import { VideoCreatePanel } from "@/components/studio/VideoCreatePanel";
-import { VideoPlayer } from "@/components/studio/VideoPlayer";
-import { BottomSheet } from "@/components/ui/BottomSheet";
-import { Button } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
-import { creators, templates } from "@/data";
+import { useEffect, useMemo, useState } from "react";
+import { useImmersive, usePageTitle } from "@/components/shell/ShellContext";
+import { PromptDock, type DockModel } from "@/components/hf/PromptDock";
+import { RunFeed } from "@/components/hf/RunFeed";
+import { useStudioRuns, type RunKind } from "@/components/hf/useStudioRuns";
+import { creators } from "@/data";
+import { ugcCredits } from "@/lib/api";
 import { useStore } from "@/lib/store";
-import type { Asset } from "@/lib/types";
-import { IMAGE_STYLE_LABELS, label } from "@/components/studio/constants";
-import type { ImageModelId, VideoModelId } from "@/lib/higgsfield/models";
+import type { AspectRatio, Asset } from "@/lib/types";
+import { IMAGE_MODELS, VIDEO_MODELS, imageModel, videoCredits, videoModel, type ImageModelId, type VideoModelId } from "@/lib/higgsfield/models";
 
-const MODE_ICON = { image: ImageIcon, video: Clapperboard, ugc: UserRound } as const;
+const IMAGE_DOCK: DockModel[] = IMAGE_MODELS.map((m) => ({ id: m.id, label: m.label, hint: m.hint, price: `✦ ${m.credits} / image`, badge: m.id === "marketing-studio-1k" ? "Recommandé" : undefined }));
+const VIDEO_DOCK: DockModel[] = VIDEO_MODELS.map((m) => ({ id: m.id, label: m.label, hint: m.hint, price: `✦ ${m.creditsPerSecond}/s`, badge: m.id === "seedance-2.5" ? "Top" : undefined }));
 
+const EXAMPLES = [
+  "Bouteille de parfum sur un pagne wax, lumière dorée du matin, photo publicitaire",
+  "Sneakers posées sur un toit d'Abidjan au coucher du soleil, style éditorial",
+  "Plat de thiéboudienne vu de dessus, décor coloré, photo culinaire premium",
+];
+
+/** Studio, Higgsfield layout: generations feed in the middle, prompt dock pinned to the bottom. */
 export default function StudioPage() {
   usePageTitle("Studio");
   useImmersive();
-  const isDesktop = useIsDesktop();
-  const assets = useStore((s) => s.assets);
-  const pendingTemplateId = useStore((s) => s.pendingTemplateId);
-  const [mode, setMode] = useState<ComposeMode>(() => {
-    // Templates hand-off: open the right mode for the preset.
-    const tpl = pendingTemplateId ? templates.find((t) => t.id === pendingTemplateId) : undefined;
-    return tpl?.preset.mode === "video" ? "video" : tpl?.preset.mode === "ugc" ? "ugc" : "image";
-  });
-  const gen = useImageGenerator();
-  const vid = useVideoGenerator();
+  const { runs, submit, remove, running } = useStudioRuns();
+  const hasHistory = useStore((s) => s.assets.some((a) => a.tags?.includes("generated")));
+  const light = useStore((s) => s.preferences.lightVideos ?? true);
 
-  // Links like /studio?mode=ugc&creator=<id> (Créateurs → "Utiliser en UGC") open the right mode and creator.
+  const [kind, setKind] = useState<RunKind>("image");
+  const [prompt, setPrompt] = useState("");
+  const [imgModel, setImgModel] = useState<ImageModelId>("marketing-studio-1k");
+  const [vidModel, setVidModel] = useState<VideoModelId>("kling-3.0");
+  const [ratio, setRatio] = useState<AspectRatio>("4:5");
+  const [count, setCount] = useState(1);
+  const [duration, setDuration] = useState<5 | 10 | 15>(5);
+  const [productId, setProductId] = useState<string | null>(null);
+  const [creatorId, setCreatorId] = useState<string | null>(null);
+
+  // Deep links: /studio?mode=ugc&creator=<id>, /studio?mode=video&model=<id>
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const m = q.get("mode");
-    if (m === "ugc" || m === "video" || m === "image") setMode(m);
+    if (m === "ugc" || m === "video" || m === "image") setKind(m);
     const c = q.get("creator");
-    if (c && creators.some((x) => x.id === c)) { setMode("ugc"); vid.update("creatorId", c); }
-    if (m || c) window.history.replaceState(null, "", "/studio");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (c && creators.some((x) => x.id === c)) { setKind("ugc"); setCreatorId(c); }
+    const model = q.get("model");
+    if (model && IMAGE_MODELS.some((x) => x.id === model)) { setKind("image"); setImgModel(model as ImageModelId); }
+    if (model && VIDEO_MODELS.some((x) => x.id === model)) { setKind("video"); setVidModel(model as VideoModelId); }
+    if (m || c || model) window.history.replaceState(null, "", "/studio");
   }, []);
-  const [picker, setPicker] = useState(false);
-  const [advanced, setAdvanced] = useState(false);
 
-  const product = assets.find((a) => a.id === gen.params.productAssetId) ?? null;
-  const media = mode === "image"
-    ? gen.selected ? { url: gen.selected.url, alt: "Résultat sélectionné", kind: "image" as const } : product ? { url: product.url, alt: product.name, kind: "image" as const } : null
-    : null;
+  const changeKind = (k: RunKind) => { setKind(k); setRatio(k === "image" ? "4:5" : "9:16"); };
 
-  const setProduct = (a: Asset | null) => { gen.update("productAssetId", a?.id ?? null); vid.update("sourceAssetId", a?.id ?? null); };
-  const startFromPrompt = () => document.querySelector<HTMLTextAreaElement>("textarea[name=prompt]")?.focus();
-  const generate = () => { if (mode === "image") void gen.generate(); else void vid.generate(mode); };
+  const cost = useMemo(() => {
+    if (kind === "image") return imageModel(imgModel).credits * count;
+    if (kind === "ugc") return ugcCredits(duration);
+    return videoCredits(vidModel, duration, !!productId, light);
+  }, [kind, imgModel, count, vidModel, duration, productId, light]);
 
-  /* --- per-mode overlay (generating / error / video result) --- */
-  let overlay: React.ReactNode = null;
-  if (mode === "image") {
-    if (gen.generating) overlay = <GeneratingOverlay hint={`${label(IMAGE_STYLE_LABELS, gen.params.style)} · ${gen.params.ratio}`} />;
-    else if (gen.error) overlay = <StudioError code={gen.error.code} message={gen.error.message} onRetry={generate} />;
-  } else {
-    if (vid.generating) overlay = <GeneratingOverlay label={mode === "ugc" ? "Tournage avec votre créateur…" : "Génération de votre vidéo…"} steps={vid.steps} step={vid.step} />;
-    else if (vid.error) overlay = <StudioError code={vid.error.code} message={vid.error.message} onRetry={generate} />;
-    else if (vid.result) overlay = <VideoPlayer result={vid.result} className="mx-auto" heightClass="h-[max(14rem,calc(100dvh-28rem))] md:h-[max(14rem,calc(100dvh-26.5rem))]" maxHeightClass="max-h-[max(14rem,calc(100dvh-28rem))] md:max-h-[max(14rem,calc(100dvh-26.5rem))]" />;
-    else if (vid.source || (mode === "ugc" && vid.creator)) overlay = (
-      <div className="flex flex-col items-center justify-center text-center p-6 gap-4 bg-[radial-gradient(circle_at_50%_40%,rgba(209,254,23,0.10),transparent_60%)]">
-        <div className="flex items-end justify-center gap-3 w-full min-w-0">
-          {mode === "ugc" && vid.creator && (vid.creator.intro
-            ? <video key={vid.creator.id} src={vid.creator.intro} poster={vid.creator.portrait} autoPlay muted loop playsInline className="h-40 sm:h-52 md:h-64 aspect-[9/16] shrink-0 rounded-2xl object-cover shadow-float border border-white/10" aria-label={`Présentation de ${vid.creator.name}`} />
-            : <img src={vid.creator.avatarUrl} alt={vid.creator.name} className="size-20 sm:size-28 md:size-40 shrink-0 rounded-2xl object-cover shadow-float border border-white/10" />)}
-          {vid.source && <img src={vid.source.thumbnail} alt={vid.source.name} className="max-h-[32dvh] max-w-[calc(100%-6rem)] sm:max-w-[60vw] min-w-0 rounded-2xl shadow-float object-contain border border-white/10" />}
-        </div>
-        <p className="text-sm text-text2 max-w-sm">
-          {mode === "ugc"
-            ? <>{vid.creator ? <span className="text-text">{vid.creator.name}</span> : "Choisissez un créateur, qui"} présentera {vid.source ? <span className="text-text">{vid.source.name}</span> : "votre produit"}. Décrivez la scène et lancez la génération.</>
-            : <>Image source : <span className="text-text">{vid.source?.name}</span>. Décrivez le mouvement et lancez la génération.</>}
-        </p>
-        <Button variant="secondary" size="sm" leftIcon={<Clapperboard className="size-4" />} onClick={() => setPicker(true)}>{vid.source ? "Changer de produit" : "Ajouter un produit"}</Button>
-      </div>
-    );
-  }
+  const generate = () => {
+    const modelLabel = kind === "image" ? imageModel(imgModel).label : kind === "ugc" ? `UGC · ${creators.find((c) => c.id === creatorId)?.name ?? ""}` : videoModel(vidModel).label;
+    void submit({ kind, prompt, modelLabel, ratio: kind === "ugc" ? "9:16" : ratio, imageModel: imgModel, count, videoModel: vidModel, durationSec: duration, productAssetId: productId, creatorId });
+  };
 
-  const Icon = MODE_ICON[mode];
-  const advancedPanel = mode === "image" ? (
-    <ImageCreatePanel params={gen.params} update={gen.update} onGenerate={generate} generating={gen.generating} hideGenerate templateName={gen.templateName} />
-  ) : (
-    <VideoCreatePanel params={vid.params} update={vid.update} onGenerate={generate} generating={vid.generating} hideGenerate />
-  );
+  const empty = runs.length === 0 && !hasHistory;
 
   return (
-    <div className="relative h-[calc(100dvh-3.5rem-env(safe-area-inset-bottom))] md:h-[calc(100dvh-3.5rem)] overflow-hidden bg-bg">
-      {/* Thin translucent top bar over the canvas */}
-      <div className="absolute top-0 inset-x-0 z-20 bg-bg/70 backdrop-blur-md border-b border-white/5 px-3 md:px-4 h-12 flex items-center">
-        <StudioTopBar
-          className="flex-1 min-w-0"
-          saveStatus={gen.saveStatus}
-          onUndo={gen.undo}
-          onRedo={gen.redo}
-          canUndo={gen.canUndo}
-          canRedo={gen.canRedo}
-          exportKind={mode === "image" ? "image" : "video"}
-          getExportAsset={() => (mode === "image" ? (gen.selected ? gen.ensureAsset(gen.selected) : product) : vid.ensureAsset())}
-          center={<ModeTabs value={mode} onChange={setMode} compact composeOnly />}
-        />
-      </div>
-      {/* Below lg: floating segmented mode pill (kept clear of the Assistant button on the right) */}
-      <div className="lg:hidden absolute top-14 left-3 right-[4.75rem] sm:right-48 md:right-3 z-20 flex justify-center">
-        <ModeTabs value={mode} onChange={setMode} compact composeOnly />
-      </div>
-
-      {/* Canvas fills the column; results scroll beneath the media */}
-      <div className="absolute inset-0 overflow-y-auto pt-12">
-        <StudioCanvas
-          className="min-h-full pb-[17rem] md:pb-[15rem]"
-          media={media}
-          overlay={overlay}
-          onUploaded={setProduct}
-          onPickFromAssets={() => setPicker(true)}
-          onStartFromPrompt={startFromPrompt}
-          footer={mode === "image" && gen.results.length > 0 && !gen.generating ? (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[13px] font-medium text-text2">Résultats</p>
-                <span className="text-xs text-muted">Touchez un résultat pour l’afficher sur le canevas</span>
+    <div className="relative h-[calc(100dvh-3.5rem-env(safe-area-inset-bottom))] md:h-[calc(100dvh-3.5rem)] overflow-hidden bg-[#030304]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_50%_0%,rgba(209,254,23,0.10),transparent_65%)]" />
+      <div className="absolute inset-0 overflow-y-auto">
+        <div className="mx-auto max-w-6xl px-3 md:px-6 pt-6 pb-64">
+          {empty ? (
+            <div className="min-h-[55vh] flex flex-col items-center justify-center text-center">
+              <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">Créez vos pubs <span className="text-accent">en un prompt</span></h1>
+              <p className="mt-3 text-white/55 max-w-lg">Photos produit, vidéos et UGC avec des créateurs africains. Ajoutez la photo de votre produit, décrivez la scène, générez.</p>
+              <div className="mt-8 flex flex-wrap justify-center gap-2 max-w-2xl">
+                {EXAMPLES.map((e) => (
+                  <button key={e} type="button" onClick={() => setPrompt(e)} className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[13px] text-white/75 hover:bg-white/10 hover:text-white">{e}</button>
+                ))}
               </div>
-              <ImageWorkbench gen={gen} dense className="!grid-cols-2 sm:!grid-cols-4" />
             </div>
-          ) : null}
+          ) : (
+            <RunFeed runs={runs} onRemove={remove} onReuse={setPrompt} />
+          )}
+        </div>
+      </div>
+
+      <div className="absolute z-30 bottom-2 inset-x-2 md:bottom-5 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-[min(860px,calc(100%-3rem))]">
+        {running > 0 && <p className="mb-2 text-center text-[12px] text-white/50">{running} génération{running > 1 ? "s" : ""} en cours · vous pouvez en lancer d’autres</p>}
+        <PromptDock
+          kind={kind} onKind={changeKind}
+          prompt={prompt} onPrompt={setPrompt}
+          models={kind === "image" ? IMAGE_DOCK : VIDEO_DOCK}
+          model={kind === "image" ? imgModel : vidModel}
+          onModel={(id) => (kind === "image" ? setImgModel(id as ImageModelId) : setVidModel(id as VideoModelId))}
+          ratio={ratio} onRatio={setRatio}
+          count={count} onCount={setCount}
+          duration={duration} onDuration={setDuration}
+          productId={productId} onProduct={(a: Asset | null) => setProductId(a?.id ?? null)}
+          creatorId={creatorId} onCreator={setCreatorId}
+          cost={cost}
+          onGenerate={generate}
         />
       </div>
-
-      {/* Floating composer */}
-      <div className="absolute z-30 bottom-2 inset-x-2 md:bottom-4 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-[min(760px,calc(100%-2rem))]">
-        {mode === "image" ? (
-          <Composer
-            mode="image"
-            prompt={gen.params.prompt} onPrompt={(v) => gen.update("prompt", v)}
-            productId={gen.params.productAssetId} onProduct={setProduct}
-            model={gen.params.model} onModel={(m) => gen.update("model", m as ImageModelId)}
-            ratio={gen.params.ratio} onRatio={(r) => gen.update("ratio", r)}
-            count={gen.params.count} onCount={(n) => gen.update("count", n)}
-            onGenerate={generate} generating={gen.generating}
-            onMore={() => setAdvanced((v) => !v)} moreActive={advanced}
-            templateName={gen.templateName}
-          />
-        ) : (
-          <Composer
-            mode={mode}
-            prompt={vid.params.concept} onPrompt={(v) => vid.update("concept", v)}
-            productId={vid.params.sourceAssetId} onProduct={setProduct}
-            creatorId={vid.params.creatorId} onCreator={(c) => vid.update("creatorId", c?.id ?? null)}
-            model={vid.params.model} onModel={(m) => vid.update("model", m as VideoModelId)}
-            ratio={vid.params.ratio} onRatio={(r) => vid.update("ratio", r)}
-            duration={vid.params.durationSec} onDuration={(d) => vid.update("durationSec", d)}
-            onGenerate={generate} generating={vid.generating}
-            onMore={() => setAdvanced((v) => !v)} moreActive={advanced}
-          />
-        )}
-      </div>
-
-      <ProductPicker open={picker} onClose={() => setPicker(false)} onPick={setProduct} selectedId={mode === "image" ? gen.params.productAssetId : vid.params.sourceAssetId} />
-
-      {/* Advanced options: Inspector on desktop (toggle), BottomSheet on mobile */}
-      {advanced && isDesktop && (
-        <Inspector>
-          <div className="p-4 flex flex-col min-h-full" key={mode}>
-            <div className="flex items-center gap-2 mb-4">
-              <Icon className="size-4 text-highlight" />
-              <h2 className="text-[15px] font-semibold flex-1">Options avancées</h2>
-              <IconButton size="sm" label="Masquer les options" onClick={() => setAdvanced(false)}><X /></IconButton>
-            </div>
-            {advancedPanel}
-          </div>
-        </Inspector>
-      )}
-      <BottomSheet open={advanced && !isDesktop} onClose={() => setAdvanced(false)} title="Options avancées">
-        {advancedPanel}
-      </BottomSheet>
-
-      <AssistantButton className="!bottom-auto !top-14 md:!top-[calc(3.5rem+3rem+0.75rem)] !h-10 md:!h-11" />
     </div>
   );
 }
