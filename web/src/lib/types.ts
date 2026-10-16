@@ -1,5 +1,6 @@
 /* ---------- Primitives ---------- */
 import type { CountryCode, LanguageId } from "./market";
+import { UPSCALE_USD, creditsForUsd, imageModel, videoCredits } from "./higgsfield/models";
 
 export type ID = string;
 export type ISODate = string;
@@ -295,14 +296,15 @@ export interface SavedHook {
 /* ---------- Credits, plans ---------- */
 export type CreditAction = "image" | "video" | "upscale" | "copy" | "ads" | "ugc" | "product-shoot" | "export" | "purchase" | "bonus";
 
+/** Fixed-action costs, derived from the model prices (cost × 1.5, see lib/higgsfield/models.ts). */
 export const CREDIT_COSTS: Record<Exclude<CreditAction, "purchase" | "bonus">, number> = {
-  image: 23, // Standard quality (Marketing Studio 1K)
-  video: 65,
-  upscale: 72,
+  image: imageModel("marketing-studio-1k").credits, // one Standard image
+  video: videoCredits("seedance-2.5", 5, false, true),
+  upscale: creditsForUsd(UPSCALE_USD),
   copy: 0, // template-based text, free until a real text model is wired
-  ads: 46, // 2 Standard images
-  ugc: 168,
-  "product-shoot": 69, // 3 Standard images
+  ads: imageModel("marketing-studio-1k").credits * 2, // 2 Standard images
+  ugc: videoCredits("seedance-2.5", 8, true, true),
+  "product-shoot": imageModel("marketing-studio-1k").credits * 3, // 3 Standard images
   export: 0,
 };
 

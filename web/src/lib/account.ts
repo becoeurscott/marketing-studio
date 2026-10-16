@@ -1,14 +1,13 @@
 import "server-only";
 import { headers } from "next/headers";
 import { adminClient } from "./insforge/admin";
-import { imageModel, videoCredits, videoModel } from "./higgsfield/models";
+import { UPSCALE_USD, creditsForUsd, imageModel, videoCredits, videoModel } from "./higgsfield/models";
 import { sanitizeShots } from "./higgsfield/server";
 import type { GenerationRequest } from "./higgsfield/types";
 
 /** Credits given once, when the account is first created. */
 export const WELCOME_CREDITS = 50;
 /** Extra cost of a 4k upscale over a normal image. */
-const UPSCALE_EXTRA = 28;
 
 export interface LedgerEntry {
   id: string;
@@ -56,7 +55,7 @@ export async function accountSummary(userId: string): Promise<AccountSummary> {
 
 /** Server-side price of one generation job, from the same catalog the UI shows. */
 export function jobCost(req: GenerationRequest): number {
-  if (req.kind === "image") return imageModel(req.model).credits + (req.upscale ? UPSCALE_EXTRA : 0);
+  if (req.kind === "image") return req.upscale ? creditsForUsd(UPSCALE_USD) : imageModel(req.model).credits;
   const withPhoto = (req.imageUrls?.length ?? 0) > 0 || (req.references?.length ?? 0) > 0;
   const shots = !withPhoto && videoModel(req.model).id === "kling-3.0" ? sanitizeShots(req.shots) : [];
   const seconds = shots.length ? shots.reduce((s, x) => s + x.duration, 0) : Number(req.durationSec) || 5;

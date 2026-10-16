@@ -5,16 +5,20 @@ import Link from "next/link";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { useMoney } from "@/components/account/PaymentMethodPicker";
+import { SubscriptionPlans } from "@/components/billing/SubscriptionPlans";
 import { TOP_UP_PACKS, USAGE_PACKS } from "@/lib/market";
 import { cn, formatNumber } from "@/lib/utils";
 
-/** Credit packs paid in Mobile Money: no subscription, credits never expire. */
+/** Monthly passes (card, Stripe) and credit packs (Mobile Money). 1 credit = 10 FCFA everywhere. */
 export default function PricingPage() {
   const money = useMoney();
   const packs = [...USAGE_PACKS, ...TOP_UP_PACKS];
   return (
     <>
-      <PageHeader title="Tarifs" description="Sans abonnement : achetez des crédits en Mobile Money quand vous en avez besoin. Ils n'expirent pas." />
+      <PageHeader title="Tarifs" description="1 crédit = 10 FCFA. Abonnez-vous par carte, ou achetez des crédits en Mobile Money quand vous en avez besoin." />
+      <SubscriptionPlans />
+      <h2 className="mt-10 mb-1 text-lg font-semibold">Packs de crédits</h2>
+      <p className="mb-4 text-[13px] text-text2">Sans abonnement, payés en Mobile Money. Les crédits n’expirent pas.</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {packs.map((p) => (
           <div key={p.id} className={cn("relative flex flex-col rounded-2xl border p-5", p.popular ? "border-accent/50 bg-accent/10 shadow-glow" : "border-border bg-card")}>

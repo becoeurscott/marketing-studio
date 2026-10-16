@@ -113,15 +113,23 @@ export interface UsagePack {
 
 /** Sold without subscription: many merchants manage cash day to day. 1 visual = 10 credits. */
 export const USAGE_PACKS: UsagePack[] = [
-  { id: "pack_decouverte", name: "Pack Découverte", pitch: "1 photo produit + 1 portrait", priceXof: 1000, credits: 50 },
-  { id: "pack_boutique", name: "Pack Boutique", pitch: "4 photos produit", priceXof: 3500, credits: 200, popular: true },
-  { id: "pack_pro", name: "Pack Pro", pitch: "9 photos produit ou 6 vidéos de 5 s", priceXof: 5000, credits: 400 },
+  { id: "pack_decouverte", name: "Pack Découverte", pitch: "≈ 4 photos produit", priceXof: 1000, credits: 100 },
+  { id: "pack_boutique", name: "Pack Boutique", pitch: "≈ 16 photos ou 2 vidéos UGC", priceXof: 3500, credits: 350, popular: true },
+  { id: "pack_pro", name: "Pack Pro", pitch: "≈ 23 photos ou 3 vidéos UGC", priceXof: 5000, credits: 500 },
 ];
 
-/** Bigger one-off top-ups for regular users (credits never expire). */
+/** Bigger one-off top-ups (credits never expire). Same 10 FCFA per credit: no bonus, the margin is in the generation price. */
 export const TOP_UP_PACKS: UsagePack[] = [
-  { id: "topup_1500", name: "Recharge 1 500", pitch: "+10 % offerts", priceXof: 19900, credits: 1650 },
-  { id: "topup_5000", name: "Recharge 5 000", pitch: "+20 % offerts", priceXof: 54900, credits: 6000 },
+  { id: "topup_1990", name: "Recharge 1 990", pitch: "Crédits sans date d’expiration", priceXof: 19900, credits: 1990 },
+  { id: "topup_5490", name: "Recharge 5 490", pitch: "Crédits sans date d’expiration", priceXof: 54900, credits: 5490 },
+];
+
+/** Monthly passes paid with Stripe (card). Credits are added at each paid month, 10 FCFA per credit. */
+export interface MonthlyPlan { id: "starter" | "pro" | "business"; name: string; priceXof: number; credits: number; pitch: string; popular?: boolean }
+export const MONTHLY_PLANS: MonthlyPlan[] = [
+  { id: "starter", name: "Starter", priceXof: 5000, credits: 500, pitch: "≈ 23 photos produit ou 3 vidéos UGC par mois" },
+  { id: "pro", name: "Pro", priceXof: 15000, credits: 1500, pitch: "≈ 71 photos ou 10 vidéos UGC par mois", popular: true },
+  { id: "business", name: "Business", priceXof: 40000, credits: 4000, pitch: "≈ 190 photos ou 27 vidéos UGC par mois" },
 ];
 
 /* ---------- WhatsApp ---------- */
