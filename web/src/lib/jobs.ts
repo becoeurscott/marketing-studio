@@ -54,6 +54,19 @@ export async function syncJob(userId: string, jobId: string): Promise<Generation
   if (error) throw new Error("Impossible de lire la génération.");
   const row = data?.[0] as JobRow | undefined;
   if (!row) return null;
+  return finalizeRow(row);
+}
+
+/** Same as syncJob, without an owner check: for the Higgsfield webhook and the reconciler (server only). */
+export async function finalizeJob(jobId: string): Promise<GenerationJob | null> {
+  const { data, error } = await adminClient().database.from("ms_jobs").select(COLS).eq("id", jobId).limit(1);
+  if (error) throw new Error("Impossible de lire la génération.");
+  const row = data?.[0] as JobRow | undefined;
+  return row ? finalizeRow(row) : null;
+}
+
+async function finalizeRow(row: JobRow): Promise<GenerationJob> {
+  const db = adminClient().database;
   if (row.finalized || !row.hf_request_id) return toJob(row);
 
   const hf = await getJob(row.hf_request_id);
@@ -91,6 +104,43 @@ export async function syncJob(userId: string, jobId: string): Promise<Generation
   }
   if (hf.status !== row.status) await db.from("ms_jobs").update({ status: hf.status, updated_at: new Date().toISOString() }).eq("id", row.id);
   return toJob(row, hf.status);
+}
+
+/**
+ * Finishes jobs nobody is polling (browser closed, webhook missed). Called every few minutes.
+ * - accepted jobs quiet for 3+ min are re-checked with Higgsfield (finalize or refund)
+ * - jobs charged but never accepted (unclear submit) are refunded after 5 min
+ * - jobs still unfinished after 2 h are refunded
+ */
+export async function reconcileJobs(limit = 25): Promise<{ checked: number; refunded: number }> {
+  const db = adminClient().database;
+  const now = Date.now();
+  const iso = (ms: number) => new Date(now - ms).toISOString();
+  const { data, error } = await db.from("ms_jobs").select(COLS + ", created_at")
+    .eq("finalized", false).lt("updated_at", iso(3 * 60_000)).gt("created_at", iso(48 * 3600_000))
+    .order("updated_at", { ascending: true }).limit(limit);
+  if (error) throw new Error(error.message);
+  let refunded = 0;
+  for (const row of (data ?? []) as unknown as (JobRow & { created_at: string })[]) {
+    const age = now - Date.parse(row.created_at);
+    try {
+      if (!row.hf_request_id) {
+        if (age > 5 * 60_000) { await refundJob(row.id, "error"); refunded++; }
+        continue;
+      }
+      const job = await finalizeRow(row);
+      if ((job.status === "queued" || job.status === "in_progress") && age > 2 * 3600_000) {
+        await refundJob(row.id, "failed");
+        refunded++;
+      } else if (job.status === "queued" || job.status === "in_progress") {
+        // Touch so the next run checks the oldest jobs first.
+        await db.from("ms_jobs").update({ updated_at: new Date().toISOString() }).eq("id", row.id).eq("finalized", false).neq("status", "completed");
+      }
+    } catch {
+      // Leave it for the next run.
+    }
+  }
+  return { checked: data?.length ?? 0, refunded };
 }
 
 export async function attachRequest(jobId: string, hfRequestId: string, status: JobStatus) {
