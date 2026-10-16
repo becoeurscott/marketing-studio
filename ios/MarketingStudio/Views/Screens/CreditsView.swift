@@ -115,7 +115,7 @@ struct CreditsView: View {
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
             costRow("Vidéo Éco", "8 secondes", cost: AIModels.videoCredits("wan-3.0-prime", seconds: 8), icon: "film", each: "par vidéo")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Agrandissement 4K", "Même image, plus nette", cost: AIModels.imageModel("marketing-studio").credits + AIModels.upscaleExtra, icon: "arrow.up.left.and.arrow.down.right", each: "par image")
+            costRow("Agrandissement 4K", "Même image, plus nette", cost: AIModels.creditsFor(usd: AIModels.upscaleUsd), icon: "arrow.up.left.and.arrow.down.right", each: "par image")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
             costRow("Textes et accroches", "Tous les outils de rédaction", cost: 0, icon: "text.alignleft", each: "gratuit")
         }

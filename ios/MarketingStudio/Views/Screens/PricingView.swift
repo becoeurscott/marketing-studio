@@ -1,47 +1,45 @@
 import SwiftUI
 
-/// SPEC §37 — Pricing: four plan cards, monthly/yearly toggle, current plan badge, upgrade flow.
+/// Monthly passes paid by card (Stripe Checkout in Safari) + link to the Mobile Money packs.
+/// Same plans and 10 FCFA credits as the web.
 struct PricingView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
+    @Environment(\.openURL) private var openURL
 
-    @State private var yearly = false
+    @State private var current: APIClient.Subscription?
+    @State private var busy: String?
+
+    private var active: APIClient.Subscription? {
+        guard let c = current, ["active", "trialing", "past_due"].contains(c.status) else { return nil }
+        return c
+    }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Forfaits").msTitle(30)
-                    Text("Chaque forfait inclut le studio complet. Choisissez le volume adapté à votre production.").msBody(14)
+                    Text("Abonnements").msTitle(30)
+                    Text("1 crédit = 10 FCFA. Vos crédits sont ajoutés chaque mois, payés par carte, sans engagement.").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                billingToggle.padding(.horizontal, MSSpacing.gutter)
+                if let active {
+                    MSCard {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Abonnement actuel : \(Market.monthlyPlans.first { $0.id == active.plan }?.name ?? active.plan ?? "")").msHeadline(15)
+                            MSButton(title: "Gérer mon abonnement", icon: "creditcard", style: .secondary, isLoading: busy == "portal") { open(portal: true) }
+                        }
+                    }
+                    .padding(.horizontal, MSSpacing.gutter)
+                }
 
                 VStack(spacing: 12) {
-                    ForEach(Plan.allCases) { plan in
-                        PlanCard(plan: plan, yearly: yearly, current: store.plan == plan, recommended: plan == .studio) {
-                            router.present(.upgrade(plan: plan))
-                        }
-                    }
+                    ForEach(Market.monthlyPlans) { plan in planCard(plan) }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
-                MSCard {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Tous les forfaits incluent").msHeadline(15)
-                        ForEach(["Génération d'images, de vidéos, d'UGC et de publicités", "Rédacteur IA et générateur d'accroches", "Créateur de campagnes et calendrier éditorial", "Export en PNG, JPG, MP4 et PDF", "Résiliable à tout moment"], id: \.self) { f in
-                            HStack(spacing: 8) {
-                                Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(MSColor.success)
-                                Text(f).msBody(14)
-                            }
-                        }
-                    }
-                }
-                .padding(.horizontal, MSSpacing.gutter)
-
-                Text("Pas envie d'abonnement ? Les packs sans engagement sont dans Crédits. Paiement Mobile Money bientôt disponible.")
-                    .msCaption()
+                MSButton(title: "Plutôt des packs en Mobile Money", icon: "bag", style: .ghost) { router.present(.buyCredits) }
                     .padding(.horizontal, MSSpacing.gutter)
             }
             .padding(.top, 4)
@@ -50,16 +48,41 @@ struct PricingView: View {
         .msScreen()
         .navigationTitle("Tarifs")
         .navigationBarTitleDisplayMode(.inline)
+        .task { current = try? await APIClient.subscription() }
+        .refreshable { current = try? await APIClient.subscription() }
     }
 
-    private var billingToggle: some View {
-        HStack(spacing: 10) {
-            SegmentedTabs(tabs: ["Mensuel", "Annuel"], selection: Binding(get: { yearly ? 1 : 0 }, set: { yearly = $0 == 1 }))
-                .frame(maxWidth: 240)
-            if yearly { MSBadge(text: "Économisez 20 %", tone: .success) }
-            Spacer()
+    private func planCard(_ plan: Market.MonthlyPlan) -> some View {
+        let mine = active?.plan == plan.id
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(plan.name).msHeadline(18)
+                Spacer()
+                if plan.popular { MSBadge(text: "Le plus pris", tone: .accent) }
+            }
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(store.price(plan.priceXof)).font(.system(size: 30, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
+                Text("/ mois").msBody(14)
+            }
+            Label("\(plan.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits chaque mois", systemImage: "bolt.fill").msBody(14, color: MSColor.text)
+            Text(plan.pitch).msCaption()
+            MSButton(title: mine ? "Abonnement actuel" : (active != nil ? "Changer via « Gérer »" : "S’abonner"), icon: "creditcard",
+                     style: plan.popular ? .primary : .secondary, isLoading: busy == plan.id, isDisabled: mine || active != nil) { open(plan: plan.id) }
         }
-        .animation(MSAnimation.gentle, value: yearly)
+        .msCard()
+    }
+
+    private func open(plan: String? = nil, portal: Bool = false) {
+        busy = portal ? "portal" : plan
+        Task {
+            defer { busy = nil }
+            do {
+                let url = portal ? try await APIClient.portalURL() : try await APIClient.checkoutURL(plan: plan ?? "")
+                openURL(url)
+            } catch {
+                router.toast(error.localizedDescription, style: .error)
+            }
+        }
     }
 }
 

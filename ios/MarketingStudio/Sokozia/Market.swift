@@ -132,15 +132,33 @@ enum Market {
 
     /// Sold without subscription: many merchants manage cash day to day.
     static let usagePacks: [UsagePack] = [
-        UsagePack(id: "pack_decouverte", name: "Pack Découverte", pitch: "5 photos IA", priceXof: 1_000, credits: 50),
-        UsagePack(id: "pack_boutique", name: "Pack Boutique", pitch: "4 visuels produit + 1 vidéo", priceXof: 3_500, credits: 200, popular: true),
-        UsagePack(id: "pass_semaine", name: "Pass Semaine", pitch: "7 jours pour tout créer", priceXof: 5_000, credits: 400, validityDays: 7),
+        UsagePack(id: "pack_decouverte", name: "Pack Découverte", pitch: "≈ 4 photos produit", priceXof: 1_000, credits: 100),
+        UsagePack(id: "pack_boutique", name: "Pack Boutique", pitch: "≈ 16 photos ou 2 vidéos UGC", priceXof: 3_500, credits: 350, popular: true),
+        UsagePack(id: "pack_pro", name: "Pack Pro", pitch: "≈ 23 photos ou 3 vidéos UGC", priceXof: 5_000, credits: 500),
     ]
 
-    /// Bigger one-off top-ups for regular users (credits never expire).
+    /// Bigger one-off top-ups (credits never expire). Same 10 FCFA per credit.
     static let topUpPacks: [UsagePack] = [
-        UsagePack(id: "topup_1500", name: "Recharge 1 500", pitch: "+10 % offerts", priceXof: 19_900, credits: 1_650),
-        UsagePack(id: "topup_5000", name: "Recharge 5 000", pitch: "+20 % offerts", priceXof: 54_900, credits: 6_000),
+        UsagePack(id: "topup_1990", name: "Recharge 1 990", pitch: "Crédits sans date d’expiration", priceXof: 19_900, credits: 1_990),
+        UsagePack(id: "topup_5490", name: "Recharge 5 490", pitch: "Crédits sans date d’expiration", priceXof: 54_900, credits: 5_490),
+    ]
+
+    // MARK: Monthly passes (card, Stripe)
+
+    struct MonthlyPlan: Identifiable, Hashable {
+        let id: String
+        let name: String
+        let priceXof: Int
+        let credits: Int
+        let pitch: String
+        var popular = false
+    }
+
+    /// Same plans as the web (lib/market.ts MONTHLY_PLANS): credits added each paid month, 10 FCFA per credit.
+    static let monthlyPlans: [MonthlyPlan] = [
+        MonthlyPlan(id: "starter", name: "Starter", priceXof: 5_000, credits: 500, pitch: "≈ 23 photos produit ou 3 vidéos UGC par mois"),
+        MonthlyPlan(id: "pro", name: "Pro", priceXof: 15_000, credits: 1_500, pitch: "≈ 71 photos ou 10 vidéos UGC par mois", popular: true),
+        MonthlyPlan(id: "business", name: "Business", priceXof: 40_000, credits: 4_000, pitch: "≈ 190 photos ou 27 vidéos UGC par mois"),
     ]
 
     /// Shown until Mobile Money payments are connected (same message as the web app).

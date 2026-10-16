@@ -201,7 +201,7 @@ enum API {
     /// Same image re-rendered in very high definition.
     static func upscaleImage(url: String, store: AppStore) async throws -> GeneratedImage {
         guard url.hasPrefix("https://") else { throw APIError.failed("Cette image ne peut pas être agrandie : générez-la ou importez-la d’abord.") }
-        let cost = AIModels.imageModel("marketing-studio").credits + AIModels.upscaleExtra
+        let cost = AIModels.creditsFor(usd: AIModels.upscaleUsd)
         let urls = try await charged(store, cost: cost) {
             try await images("Même image, identique, en très haute définition : détails plus nets, sans rien changer.", count: 1, ratio: nil, imageUrls: [url], model: "marketing-studio", upscale: true)
         }

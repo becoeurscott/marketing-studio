@@ -75,6 +75,27 @@ enum APIClient {
         try await call("api/account")
     }
 
+    // MARK: Billing (Stripe monthly passes)
+
+    struct Subscription: Decodable { var plan: String?; var status: String; var current_period_end: String? }
+    private struct URLReply: Decodable { var url: String }
+    private struct PlanBody: Encodable { var plan: String }
+    private struct Empty: Encodable {}
+
+    static func subscription() async throws -> Subscription { try await call("api/billing/subscription") }
+    /// Stripe Checkout URL for a monthly pass (opened in Safari).
+    static func checkoutURL(plan: String) async throws -> URL {
+        let r: URLReply = try await call("api/billing/checkout", method: "POST", json: PlanBody(plan: plan))
+        guard let u = URL(string: r.url) else { throw APIError.failed("Lien de paiement invalide.") }
+        return u
+    }
+    /// Stripe customer portal URL (change or cancel the pass).
+    static func portalURL() async throws -> URL {
+        let r: URLReply = try await call("api/billing/portal", method: "POST", json: Empty())
+        guard let u = URL(string: r.url) else { throw APIError.failed("Lien invalide.") }
+        return u
+    }
+
     // MARK: Generation
 
     /// Starts a job and polls until it finishes. Returns only on success with at least one output.
