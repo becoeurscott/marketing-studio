@@ -2,6 +2,7 @@
 
 import { Check, ChevronDown, Clock, Copy, ImagePlus, Loader2, Proportions, Sparkles, UserRound, Wand2, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { creators } from "@/data";
 import { useStore } from "@/lib/store";
 import { RATIOS, type AspectRatio, type Asset } from "@/lib/types";
@@ -12,27 +13,38 @@ import type { RunKind } from "./useStudioRuns";
 
 export interface DockModel { id: string; label: string; hint: string; price: string; badge?: string }
 
-/** Small popover anchored above its trigger pill (Higgsfield's dock menus open upwards). */
+/** Popover anchored above its trigger pill, rendered in a portal so the scrolling pill row never clips it. */
 function Pill({ icon, label, children, wide }: { icon?: ReactNode; label: ReactNode; children: (close: () => void) => ReactNode; wide?: boolean }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null);
+  const btn = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  const open = pos !== null;
   useEffect(() => {
     if (!open) return;
-    const off = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    const off = (e: MouseEvent) => { const t = e.target as Node; if (!menu.current?.contains(t) && !btn.current?.contains(t)) setPos(null); };
+    const close = () => setPos(null);
     document.addEventListener("mousedown", off);
-    return () => document.removeEventListener("mousedown", off);
+    window.addEventListener("resize", close);
+    return () => { document.removeEventListener("mousedown", off); window.removeEventListener("resize", close); };
   }, [open]);
+  const toggle = () => {
+    if (open) return setPos(null);
+    const r = btn.current!.getBoundingClientRect();
+    const width = wide ? Math.min(352, window.innerWidth - 32) : 176;
+    setPos({ left: Math.max(16, Math.min(r.left, window.innerWidth - width - 16)), bottom: window.innerHeight - r.top + 8 });
+  };
   return (
-    <div ref={ref} className="relative">
-      <button type="button" onClick={() => setOpen((v) => !v)} className={cn("h-9 px-3 rounded-full flex items-center gap-1.5 text-[13px] font-medium transition-colors whitespace-nowrap", open ? "bg-white/15 text-white" : "bg-white/[0.06] text-white/85 hover:bg-white/10")}>
+    <>
+      <button ref={btn} type="button" onClick={toggle} className={cn("shrink-0 h-9 px-3 rounded-full flex items-center gap-1.5 text-[13px] font-medium transition-colors whitespace-nowrap", open ? "bg-white/15 text-white" : "bg-white/[0.06] text-white/85 hover:bg-white/10")}>
         {icon}{label}<ChevronDown className="size-3.5 opacity-60" />
       </button>
-      {open && (
-        <div className={cn("absolute bottom-full mb-2 left-0 z-50 rounded-2xl border border-white/10 bg-[#121214]/95 backdrop-blur-xl p-1.5 shadow-2xl", wide ? "w-[min(22rem,calc(100vw-2rem))]" : "min-w-40")}>
-          {children(() => setOpen(false))}
-        </div>
+      {open && createPortal(
+        <div ref={menu} style={{ left: pos.left, bottom: pos.bottom }} className={cn("fixed z-[90] rounded-2xl border border-white/10 bg-[#121214] p-1.5 shadow-2xl", wide ? "w-[min(22rem,calc(100vw-2rem))]" : "w-44")}>
+          {children(() => setPos(null))}
+        </div>,
+        document.body,
       )}
-    </div>
+    </>
   );
 }
 
