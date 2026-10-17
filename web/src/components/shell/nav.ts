@@ -1,6 +1,6 @@
 import {
   Bell, BookOpen, Building2, CreditCard, FolderKanban, Heart, History, Home, Images, LayoutTemplate,
-  Megaphone, Palette, Settings, Sparkles, User, Users, Wand2, type LucideIcon,
+  Globe, Megaphone, Palette, Settings, Sparkles, User, Users, Wand2, type LucideIcon,
 } from "lucide-react";
 
 export interface NavItem { href: string; label: string; icon: LucideIcon; match?: (path: string) => boolean }
@@ -8,6 +8,7 @@ export interface NavItem { href: string; label: string; icon: LucideIcon; match?
 export const primaryNav: NavItem[] = [
   { href: "/home", label: "Accueil", icon: Home },
   { href: "/studio", label: "Studio", icon: Wand2, match: (p) => p.startsWith("/studio") },
+  { href: "/community", label: "Communauté", icon: Globe },
   { href: "/projects", label: "Projets", icon: FolderKanban, match: (p) => p.startsWith("/projects") },
   { href: "/assets", label: "Ressources", icon: Images, match: (p) => p.startsWith("/assets") },
   { href: "/campaigns", label: "Campagnes", icon: Megaphone, match: (p) => p.startsWith("/campaigns") },
@@ -32,7 +33,7 @@ export const secondaryNav: NavItem[] = [
 export const routeTitles: [string, string][] = [
   ["/home", "Accueil"], ["/studio/image", "Générateur d’images"], ["/studio/video", "Générateur de vidéos"], ["/studio/ugc", "Créateur UGC"],
   ["/studio/product-shoot", "Shooting produit IA"], ["/studio/ads", "Créateur d’annonces"], ["/studio/copy", "Rédacteur IA"], ["/studio", "Studio"],
-  ["/projects", "Projets"], ["/assets", "Ressources"], ["/campaigns", "Campagnes"], ["/templates", "Modèles"],
+  ["/community", "Communauté"], ["/projects", "Projets"], ["/assets", "Ressources"], ["/campaigns", "Campagnes"], ["/templates", "Modèles"],
   ["/brand/voice", "Ton de marque"], ["/brand", "Kit de marque"], ["/creators", "Créateurs"], ["/generations", "Historique des générations"],
   ["/favorites", "Favoris"], ["/credits", "Crédits"], ["/pricing", "Tarifs"], ["/notifications", "Notifications"],
   ["/workspace", "Espace de travail"], ["/profile", "Profil"], ["/settings", "Paramètres"], ["/help", "Aide"],

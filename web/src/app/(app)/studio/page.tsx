@@ -48,7 +48,9 @@ export default function StudioPage() {
     const model = q.get("model");
     if (model && IMAGE_MODELS.some((x) => x.id === model)) { setKind("image"); setImgModel(model as ImageModelId); }
     if (model && VIDEO_MODELS.some((x) => x.id === model)) { setKind("video"); setVidModel(model as VideoModelId); }
-    if (m || c || model) window.history.replaceState(null, "", "/studio");
+    const pr = q.get("prompt");
+    if (pr) setPrompt(pr.slice(0, 2000));
+    if (m || c || model || pr) window.history.replaceState(null, "", "/studio");
   }, []);
 
   const changeKind = (k: RunKind) => { setKind(k); setRatio(k === "image" ? "4:5" : "9:16"); };
