@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ImagePlus, Upload } from "lucide-react";
+import { Check, ImagePlus, Link as LinkIcon, Upload } from "lucide-react";
 import { useCallback, useRef, useState, type DragEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -55,6 +55,41 @@ export function useDropzone(onFile: (file: File | null) => void) {
 }
 
 /** Modal: upload a new product photo or pick one from existing image assets. */
+/** Paste a shop/marketplace link: the server fetches the product photo, name and price. */
+function LinkImport({ onImported }: { onImported: (a: Asset) => void }) {
+  const [link, setLink] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const addAsset = useStore((s) => s.addAsset);
+  const projectId = useStore((s) => s.currentProjectId);
+  const toast = useToast();
+  const go = async () => {
+    if (!link.trim() || busy) return;
+    setBusy(true); setError(null);
+    try {
+      const res = await fetch("/api/product/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: link.trim() }) });
+      const d = (await res.json().catch(() => ({}))) as { url?: string; name?: string; price?: string | null; currency?: string | null; error?: string };
+      if (!res.ok || !d.url) throw new Error(d.error ?? "Import impossible.");
+      const asset = addAsset({ name: (d.name || "Produit importé").slice(0, 60), type: "image", url: d.url, thumbnail: d.url, projectId, favorite: false, width: 2048, height: 2048, sizeKb: 400, tags: ["product", "imported", ...(d.price ? [`prix ${d.price}${d.currency ? " " + d.currency : ""}`] : [])] });
+      toast.success("Produit importé", d.name ?? undefined);
+      setLink("");
+      onImported(asset);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Import impossible.");
+    } finally { setBusy(false); }
+  };
+  return (
+    <div className="mb-5">
+      <p className="text-[13px] font-medium text-text2 mb-2">Ou collez le lien du produit</p>
+      <div className="flex gap-2">
+        <input value={link} onChange={(e) => setLink(e.target.value)} onKeyDown={(e) => e.key === "Enter" && void go()} placeholder="https://… (Jumia, boutique, Facebook, Instagram…)" inputMode="url" className="flex-1 min-w-0 h-10 rounded-md border border-border-strong bg-surface px-3 text-sm outline-none focus:border-accent" />
+        <Button size="sm" onClick={go} loading={busy} leftIcon={<LinkIcon className="size-4" />}>Importer</Button>
+      </div>
+      {error && <p className="text-xs text-danger mt-1.5">{error}</p>}
+    </div>
+  );
+}
+
 export function ProductPicker({ open, onClose, onPick, selectedId }: { open: boolean; onClose: () => void; onPick: (asset: Asset) => void; selectedId?: string | null }) {
   const assets = useStore((s) => s.assets);
   const images = assets.filter((a) => a.type === "image").slice(0, 24);
@@ -77,6 +112,8 @@ export function ProductPicker({ open, onClose, onPick, selectedId }: { open: boo
         </div>
         <Button variant="secondary" size="sm" onClick={dz.open} loading={uploading} leftIcon={<ImagePlus className="size-4" />}>Parcourir</Button>
       </div>
+
+      <LinkImport onImported={pick} />
 
       <p className="text-[13px] font-medium text-text2 mb-2">Depuis vos ressources</p>
       {images.length ? (

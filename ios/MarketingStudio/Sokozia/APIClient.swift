@@ -86,6 +86,13 @@ enum APIClient {
     private struct Empty: Encodable {}
 
     static func subscription() async throws -> Subscription { try await call("api/billing/subscription") }
+
+    /// Product page link (shop, marketplace, social post) → product photo re-hosted in our storage, plus name/price.
+    struct ImportedProduct: Decodable { var url: String; var name: String?; var price: String?; var currency: String? }
+    static func importProduct(link: String) async throws -> ImportedProduct {
+        struct Body: Encodable { var url: String }
+        return try await call("api/product/import", method: "POST", json: Body(url: link))
+    }
     /// Stripe Checkout URL for a monthly pass (opened in Safari).
     static func checkoutURL(plan: String) async throws -> URL {
         let r: URLReply = try await call("api/billing/checkout", method: "POST", json: PlanBody(plan: plan))
