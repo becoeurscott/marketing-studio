@@ -71,6 +71,22 @@ function meta(html: string, keys: string[]): string | undefined {
   }
 }
 
+/** Amazon & co.: the main product photo is in page data, not in og:image (which is a padded banner). */
+function shopImages(html: string): string[] {
+  const out: string[] = [];
+  const unescape = (u: string) => u.replace(/\\u002F/g, "/").replace(/\\\//g, "/");
+  for (const re of [/data-old-hires="(https:[^"]+)"/g, /"hiRes":"(https:[^"]+)"/g, /"large":"(https:[^"]+)"/g, /"landingImageUrl":"(https:[^"]+)"/g, /data-a-dynamic-image="\{&quot;(https:[^&]+)&quot;/g]) {
+    for (const m of html.matchAll(re)) out.push(unescape(m[1]));
+  }
+  return out;
+}
+
+/** Full-size original instead of a resized / padded rendition (Amazon "._AC_SX300_" style modifiers). */
+function fullSize(u: string): string {
+  return u.replace(/(\/images\/I\/[A-Za-z0-9+%-]+)\.[^/]*?\.(jpg|jpeg|png|webp)(\?.*)?$/i, "$1.$2")
+    .replace(/(\/images\/I\/[A-Za-z0-9+%-]+)\.(jpg|jpeg|png)_[^/]*$/i, "$1.$2");
+}
+
 interface Found { name?: string; price?: string; currency?: string; images: string[] }
 
 /** schema.org Product in JSON-LD (Shopify, WooCommerce, Jumia and most shops). */
@@ -111,16 +127,22 @@ export interface ImportedProduct { image: Buffer; name: string; price?: string; 
 export async function importProduct(link: string): Promise<ImportedProduct> {
   let page: Awaited<ReturnType<typeof safeFetch>> | undefined;
   let lastError: unknown;
+  let preview: typeof page;
+  let fallback: typeof page;
   for (const ua of AGENTS) {
     try {
       const p = await safeFetch(link.trim(), "text/html,application/xhtml+xml,image/*;q=0.8", 3 * 1024 * 1024, ua);
-      if (p.type.startsWith("image/") || /og:image|application\/ld\+json|twitter:image/i.test(p.body.toString("utf8"))) { page = p; break; }
-      page ??= p;
+      const text = p.type.startsWith("image/") ? "" : p.body.toString("utf8");
+      // Real product data (Amazon fields, JSON-LD) beats a preview card; keep looking until we get it.
+      if (p.type.startsWith("image/") || /application\/ld\+json|landingImageUrl|data-old-hires|"hiRes"/i.test(text)) { page = p; break; }
+      if (/og:image|twitter:image/i.test(text)) preview ??= p;
+      fallback ??= p;
     } catch (e) {
       lastError = e;
       if (e instanceof ImportError && e.status === 400) throw e;
     }
   }
+  page ??= preview ?? fallback;
   if (!page) {
     console.warn("product_import_failed", { host: safeHost(link), reason: lastError instanceof Error ? lastError.message : "fetch" });
     if (lastError instanceof ImportError) throw lastError;
@@ -135,10 +157,11 @@ export async function importProduct(link: string): Promise<ImportedProduct> {
   const html = page.body.toString("utf8");
   found = jsonLd(html);
   candidates = [
+    ...shopImages(html),
     ...found.images,
     meta(html, ["og:image:secure_url", "og:image", "twitter:image", "twitter:image:src", "image"]),
     html.match(/<link[^>]+rel=["']image_src["'][^>]*href=["']([^"']+)["']/i)?.[1],
-  ].filter((x): x is string => !!x).map((u) => { try { return new URL(decode(u), page.url).toString(); } catch { return ""; } }).filter(Boolean);
+  ].filter((x): x is string => !!x).map((u) => { try { return new URL(decode(u), page.url).toString(); } catch { return ""; } }).filter(Boolean).map(fullSize);
   if (!candidates.length) console.warn("product_import_failed", { host: page.url.hostname, reason: "no_image" });
   if (!candidates.length) throw new ImportError("Aucune photo de produit trouvée sur cette page. Importez la photo directement.", 422);
 
