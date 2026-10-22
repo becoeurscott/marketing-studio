@@ -162,3 +162,36 @@ struct ActivityView: UIViewControllerRepresentable {
     }
     func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
 }
+
+/// Silent UGC showcase clips hosted with the website (public/showcase/ugc).
+enum Showcase {
+    static func video(_ name: String) -> String { "\(SokoziaConfig.siteURL.absoluteString)/showcase/ugc/\(name).mp4" }
+    static func poster(_ name: String) -> String { "\(SokoziaConfig.siteURL.absoluteString)/showcase/ugc/\(name).jpg" }
+}
+
+/// Higgsfield-style wall of looping, muted showcase videos in staggered columns that drift slowly.
+struct ShowcaseWall: View {
+    var names: [String] = ["vendeuse-marche-wax", "grwm-perruque", "unboxing-telephone"]
+    var height: CGFloat = 380
+    @State private var drift = false
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            ForEach(Array(names.enumerated()), id: \.offset) { i, n in
+                LoopingVideoView(url: Showcase.video(n), poster: Showcase.poster(n))
+                    .aspectRatio(9.0 / 16.0, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
+                    .offset(y: (i == 1 ? 34 : 0) + (drift ? (i == 1 ? -14 : 10) : 0))
+            }
+        }
+        .frame(height: height, alignment: .top)
+        .clipped()
+        .mask(LinearGradient(stops: [.init(color: .black, location: 0), .init(color: .black, location: 0.7), .init(color: .clear, location: 1)], startPoint: .top, endPoint: .bottom))
+        .onAppear {
+            guard !MSAnimation.reduced else { return }
+            withAnimation(.easeInOut(duration: 6).repeatForever(autoreverses: true)) { drift = true }
+        }
+        .accessibilityHidden(true)
+    }
+}

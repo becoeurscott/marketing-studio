@@ -165,23 +165,8 @@ struct AuthView: View {
 
     /// Real creators and styles generated for Sokozia.
     private var heroCollage: some View {
-        let items = [Catalog.creators[0].avatarURL, Catalog.styles[0].imageURL, Catalog.creators[2].avatarURL, Catalog.styles[3].imageURL, Catalog.creators[1].avatarURL, Catalog.styles[4].imageURL]
-        return HStack(alignment: .top, spacing: 8) {
-            ForEach(0..<3, id: \.self) { col in
-                VStack(spacing: 8) {
-                    ForEach(0..<2, id: \.self) { row in
-                        RemoteImage(url: items[col * 2 + row], cornerRadius: 14)
-                            .frame(height: col == 1 ? (row == 0 ? 120 : 170) : (row == 0 ? 160 : 130))
-                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    }
-                }
-                .padding(.top, col == 1 ? 24 : 0)
-            }
-        }
-        .frame(height: 330, alignment: .top)
-        .clipped()
-        .mask(LinearGradient(colors: [.black, .black, .clear], startPoint: .top, endPoint: .bottom))
-        .padding(.top, 8)
+        ShowcaseWall(names: ["vendeuse-marche-wax", "grwm-perruque", "unboxing-telephone"], height: 360)
+            .padding(.top, 12)
     }
 
     // MARK: Building blocks

@@ -204,7 +204,7 @@ struct HomeView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(Array(Catalog.creators.filter(\.featured).prefix(2))) { c in
-                        Button { store.pendingCreatorId = c.id; router.push(.ugcCreator) } label: {
+                        Button { store.pendingCreatorId = c.id; router.popToRoot(on: .studio); router.select(.studio) } label: {
                             VStack(alignment: .leading, spacing: 4) {
                                 CreatorIntroView(creator: c).frame(width: 120, height: 190)
                                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))

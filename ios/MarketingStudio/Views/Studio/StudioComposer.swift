@@ -248,9 +248,7 @@ struct StudioComposer: View {
                             controlPillLabel(icon: "clock", text: "\(ugc.duration)s")
                         }
                     }
-                    optionMenu(options: StudioOptions.ratios, value: ratio.wrappedValue) { ratio.wrappedValue = $0 } label: {
-                        controlPillLabel(icon: "viewfinder", text: ratio.wrappedValue)
-                    }
+                    RatioPickerPill(ratio: ratio)
                     controlPill(icon: "slider.horizontal.3", text: nil, action: onMore)
                         .accessibilityLabel("Plus d'options")
                 }
@@ -490,6 +488,68 @@ struct CreatorPickerSheet: View {
                 .padding(.horizontal, MSSpacing.gutter)
                 .padding(.bottom, 24)
             }
+        }
+    }
+}
+
+
+/// Format pill: shows the current frame shape; opens a popover of frame shapes with the selected one highlighted.
+struct RatioPickerPill: View {
+    @Binding var ratio: String
+    @State private var open = false
+
+    static func shape(_ r: String, max side: CGFloat) -> CGSize {
+        let parts = r.split(separator: ":").compactMap { Double($0) }
+        guard parts.count == 2, parts[0] > 0, parts[1] > 0 else { return CGSize(width: side, height: side) }
+        let w = parts[0], h = parts[1]
+        return w >= h ? CGSize(width: side, height: side * h / w) : CGSize(width: side * w / h, height: side)
+    }
+
+    var body: some View {
+        Button { MSHaptic.tap(); open = true } label: {
+            HStack(spacing: 7) {
+                let s = Self.shape(ratio, max: 15)
+                RoundedRectangle(cornerRadius: 2.5).strokeBorder(MSColor.accent, lineWidth: 1.6).frame(width: s.width, height: s.height).frame(width: 16, height: 16)
+                Text(ratio).font(MSFont.control(13)).lineLimit(1).fixedSize()
+            }
+            .foregroundStyle(MSColor.text)
+            .padding(.horizontal, 10)
+            .frame(height: 42)
+            .background(MSColor.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(open ? MSColor.accent.opacity(0.7) : MSColor.border, lineWidth: 1))
+        }
+        .buttonStyle(MSPressStyle())
+        .accessibilityLabel("Format \(ratio)")
+        .popover(isPresented: $open, arrowEdge: .bottom) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Format").msHeadline(14)
+                HStack(alignment: .bottom, spacing: 8) {
+                    ForEach(StudioOptions.ratios, id: \.self) { r in
+                        let selected = r == ratio
+                        Button {
+                            MSHaptic.tap()
+                            withAnimation(MSAnimation.snappy) { ratio = r }
+                            open = false
+                        } label: {
+                            VStack(spacing: 6) {
+                                let s = Self.shape(r, max: 34)
+                                RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                    .fill(selected ? MSColor.accent.opacity(0.22) : MSColor.elevated)
+                                    .overlay(RoundedRectangle(cornerRadius: 5, style: .continuous).strokeBorder(selected ? MSColor.accent : MSColor.border, lineWidth: selected ? 2 : 1))
+                                    .frame(width: s.width, height: s.height)
+                                    .frame(width: 40, height: 40)
+                                Text(r).font(MSFont.caption(12)).foregroundStyle(selected ? MSColor.accent : MSColor.text2)
+                            }
+                            .padding(6)
+                            .background(selected ? MSColor.accent.opacity(0.08) : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .padding(14)
+            .presentationCompactAdaptation(.popover)
+            .preferredColorScheme(.dark)
         }
     }
 }

@@ -5,6 +5,8 @@ struct RemoteImage: View {
     var url: String?
     var contentMode: ContentMode = .fill
     var cornerRadius: CGFloat = 0
+    /// AsyncImage reports .failure when a load is cancelled (view re-created mid-animation) and never retries.
+    @State private var attempt = 0
 
     var body: some View {
         Group {
@@ -19,11 +21,16 @@ struct RemoteImage: View {
                         )
                         .transition(.opacity)
                     case .failure:
-                        fallback
+                        fallback.task {
+                            guard attempt < 3 else { return }
+                            try? await Task.sleep(for: .milliseconds(400 * (attempt + 1)))
+                            attempt += 1
+                        }
                     @unknown default:
                         fallback
                     }
                 }
+                .id("\(url)#\(attempt)")
             } else {
                 fallback
             }
