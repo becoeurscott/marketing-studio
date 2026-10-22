@@ -99,7 +99,7 @@ export default function ProductShootPage() {
       <ControlField label="Photo produit" hint={product?.name}>
         <ProductPicker value={productId} onChange={(a) => setProductId(a.id)} onClear={() => setProductId(null)} />
       </ControlField>
-      <ControlField label="Style Sokozia" hint={style.description}>
+      <ControlField label="Style Marketing Studio" hint={style.description}>
         <div className="grid grid-cols-2 gap-2">
           {SOKOZIA_STYLES.map((st) => (
             <button

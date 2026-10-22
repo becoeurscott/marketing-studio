@@ -9,7 +9,7 @@ const headers = () => ({ Authorization: `Bearer ${process.env.PAWAPAY_API_TOKEN}
 
 export const isPawapayConfigured = () => !!process.env.PAWAPAY_API_TOKEN;
 
-/** ISO 3166 alpha-3 codes pawaPay expects, for the countries Sokozia sells in. */
+/** ISO 3166 alpha-3 codes pawaPay expects, for the countries Marketing Studio sells in. */
 export const ISO3: Record<string, string> = { SN: "SEN", CI: "CIV", ML: "MLI", BF: "BFA", CM: "CMR", CD: "COD", NG: "NGA", GH: "GHA", KE: "KEN" };
 
 /** International number without "+" (e.g. 2250700000000). Côte d'Ivoire keeps its leading 0 (10 digits). */
@@ -33,8 +33,8 @@ export async function createPaymentPage(o: { depositId: string; amount: number; 
       amountDetails: { amount: String(o.amount), currency: o.currency },
       country: o.country,
       ...(o.phone ? { phoneNumber: o.phone } : {}),
-      reason: "Credits Sokozia",
-      customerMessage: "Sokozia",
+      reason: "Credits Marketing Studio",
+      customerMessage: "Marketing Studio",
       language: "FR",
     }),
   });

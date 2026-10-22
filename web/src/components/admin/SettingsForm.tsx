@@ -8,7 +8,7 @@ import type { AdminSettings } from "@/lib/admin/server";
 const FIELDS: { key: keyof AdminSettings; label: string; hint: string; type: "number" | "date"; step?: string }[] = [
   { key: "hfBudgetUsd", label: "Montant rechargé sur Higgsfield ($)", hint: "Total chargé sur le compte API depuis la date ci-dessous.", type: "number", step: "0.01" },
   { key: "hfBudgetSince", label: "Date de la recharge", hint: "Les dépenses sont comptées à partir de ce jour.", type: "date" },
-  { key: "hfUsdPerCredit", label: "Coût Higgsfield d'un crédit Sokozia ($)", hint: "À vérifier avec votre facture Higgsfield.", type: "number", step: "0.0001" },
+  { key: "hfUsdPerCredit", label: "Coût Higgsfield d'un crédit Marketing Studio ($)", hint: "À vérifier avec votre facture Higgsfield.", type: "number", step: "0.0001" },
   { key: "hfOtherSpendUsd", label: "Autres dépenses Higgsfield ($)", hint: "Générations faites hors de l'app (visuels du site…).", type: "number", step: "0.01" },
   { key: "hfAlertUsd", label: "Alerte quand il reste moins de ($)", hint: "Affiche une alerte rouge sur la vue d'ensemble.", type: "number", step: "1" },
   { key: "xofPerCredit", label: "Prix de vente d'un crédit (FCFA)", hint: "Sert à estimer la valeur des crédits vendus.", type: "number", step: "0.1" },

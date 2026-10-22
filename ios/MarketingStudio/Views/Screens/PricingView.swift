@@ -1,47 +1,32 @@
 import SwiftUI
 
-/// SPEC §37 — Pricing: four plan cards, monthly/yearly toggle, current plan badge, upgrade flow.
+/// Plans and packs are sold on the website (Mobile Money or card).
 struct PricingView: View {
     @EnvironmentObject private var store: AppStore
-    @EnvironmentObject private var router: Router
-
-    @State private var yearly = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Forfaits").msTitle(30)
-                    Text("Chaque forfait inclut le studio complet. Choisissez le volume adapté à votre production.").msBody(14)
+                    Text("Tarifs").msTitle(30)
+                    Text("1 crédit = 10 FCFA. Chaque génération affiche son prix en crédits avant de lancer.").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
-
-                billingToggle.padding(.horizontal, MSSpacing.gutter)
-
-                VStack(spacing: 12) {
-                    ForEach(Plan.allCases) { plan in
-                        PlanCard(plan: plan, yearly: yearly, current: store.plan == plan, recommended: plan == .studio) {
-                            router.present(.upgrade(plan: plan))
-                        }
-                    }
-                }
-                .padding(.horizontal, MSSpacing.gutter)
-
-                MSCard {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Tous les forfaits incluent").msHeadline(15)
-                        ForEach(["Génération d'images, de vidéos, d'UGC et de publicités", "Rédacteur IA et générateur d'accroches", "Créateur de campagnes et calendrier éditorial", "Export en PNG, JPG, MP4 et PDF", "Résiliable à tout moment"], id: \.self) { f in
-                            HStack(spacing: 8) {
-                                Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(MSColor.success)
-                                Text(f).msBody(14)
+                VStack(spacing: 10) {
+                    ForEach(Market.monthlyPlans) { p in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(p.name).msHeadline(16)
+                                Text("\(p.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits / mois · \(p.pitch)").msCaption()
                             }
+                            Spacer()
+                            Text(store.price(p.priceXof)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
                         }
+                        .msCard(padding: 14)
                     }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
-
-                Text("Pas envie d'abonnement ? Les packs sans engagement sont dans Crédits. Paiement Mobile Money bientôt disponible.")
-                    .msCaption()
+                WebTopUpCard(title: "S’abonner ou acheter des crédits", subtitle: "Abonnements et packs se paient sur le site, en Mobile Money ou par carte.", path: "pricing")
                     .padding(.horizontal, MSSpacing.gutter)
             }
             .padding(.top, 4)
@@ -50,16 +35,6 @@ struct PricingView: View {
         .msScreen()
         .navigationTitle("Tarifs")
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private var billingToggle: some View {
-        HStack(spacing: 10) {
-            SegmentedTabs(tabs: ["Mensuel", "Annuel"], selection: Binding(get: { yearly ? 1 : 0 }, set: { yearly = $0 == 1 }))
-                .frame(maxWidth: 240)
-            if yearly { MSBadge(text: "Économisez 20 %", tone: .success) }
-            Spacer()
-        }
-        .animation(MSAnimation.gentle, value: yearly)
     }
 }
 
@@ -208,7 +183,7 @@ struct UpgradeSheet: View {
             Spacer(minLength: 0)
             MSButton(title: working ? "Mise à jour du forfait" : (selected == store.plan ? "Déjà sur \(selected.title)" : "Confirmer \(selected.title)"), icon: working ? nil : "lock.fill", isLoading: working, isDisabled: selected == store.plan) {
                 // Mobile Money subscriptions aren't connected yet: continue on WhatsApp (no plan change here).
-                let message = "Bonjour Sokozia, je veux le forfait \(selected.title) (\(store.price(selected.price(yearly: yearly)))/mois) pour le compte \(store.user.email)."
+                let message = "Bonjour Marketing Studio, je veux le forfait \(selected.title) (\(store.price(selected.price(yearly: yearly)))/mois) pour le compte \(store.user.email)."
                 router.toast("Mobile Money bientôt disponible", style: .info, icon: "clock")
                 if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: message) { openURL(url) }
             }

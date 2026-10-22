@@ -33,7 +33,7 @@ export function CreatorDetailModal({ creator, onClose }: { creator: Creator | nu
           <div className="shrink-0 mx-auto md:mx-0 md:w-[220px]">
             <div className="relative h-[45dvh] max-h-[26rem] md:h-auto md:max-h-none aspect-[9/16] md:w-full rounded-lg overflow-hidden bg-elevated">
               {creator.intro ? (
-                <video src={creator.intro} poster={creator.portrait} autoPlay muted loop playsInline controls preload="metadata" className="size-full object-cover" aria-label={`Présentation de ${creator.name}`} />
+                <video src={creator.intro} poster={creator.portrait} autoPlay muted loop playsInline disablePictureInPicture preload="metadata" className="size-full object-cover" aria-label={`Présentation de ${creator.name}`} />
               ) : (
                 <img src={creator.portrait} alt={creator.name} className="size-full object-cover" />
               )}

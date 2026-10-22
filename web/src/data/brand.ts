@@ -6,7 +6,7 @@ export const brands: Brand[] = [
     id: "brand_main",
     name: "Ma marque",
     logoUrl: "",
-    colors: ["#F97316", "#FACC15", "#16A34A", "#0A0A0A"],
+    colors: ["#d1fe17", "#d1fe17", "#a6cf0c", "#0A0A0A"],
     fonts: { heading: "Inter", body: "Inter" },
     website: "",
     description: "",

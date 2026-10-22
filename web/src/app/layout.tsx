@@ -6,7 +6,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: { default: "Sokozia", template: "%s · Sokozia" },
+  title: { default: "Marketing Studio", template: "%s · Marketing Studio" },
   description: "Transformez une idée de produit en campagne marketing complète.",
 };
 

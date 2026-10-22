@@ -159,7 +159,7 @@ function UGCPage() {
                 ) : (
                   <>
                     {creator.intro ? (
-                      <video key={creator.id} src={creator.intro} poster={creator.portrait} autoPlay muted loop playsInline controls className={cn("size-full object-cover transition-opacity", loading && "opacity-40")} aria-label={`Présentation de ${creator.name}`} />
+                      <video key={creator.id} src={creator.intro} poster={creator.portrait} autoPlay muted loop playsInline className={cn("size-full object-cover transition-opacity", loading && "opacity-40")} aria-label={`Présentation de ${creator.name}`} />
                     ) : (
                       <img src={creator.portrait} alt={creator.name} className={cn("size-full object-cover transition-opacity", loading ? "opacity-40" : "opacity-80")} />
                     )}

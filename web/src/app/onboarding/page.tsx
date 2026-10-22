@@ -144,7 +144,7 @@ export default function OnboardingPage() {
           <span className="size-7 rounded-md bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shadow-glow">
             <Sparkles className="size-4 text-on-accent" />
           </span>
-          <span className="text-[15px] font-semibold tracking-tight">Sokozia</span>
+          <span className="text-[15px] font-semibold tracking-tight">Marketing Studio</span>
         </div>
         <div className="w-20 flex justify-end">
           {qIndex >= 0 && <StepDots total={QUESTION_STEPS.length} current={qIndex} className="hidden sm:flex" />}

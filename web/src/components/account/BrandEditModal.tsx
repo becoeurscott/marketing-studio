@@ -138,7 +138,7 @@ export function ColorPalette({ value, onChange }: { value: string[]; onChange: (
           </button>
         </div>
       ))}
-      <Button type="button" variant="secondary" size="sm" leftIcon={<Plus className="size-4" />} disabled={value.length >= 8} onClick={() => onChange([...value, "#F97316"])}>Ajouter une couleur</Button>
+      <Button type="button" variant="secondary" size="sm" leftIcon={<Plus className="size-4" />} disabled={value.length >= 8} onClick={() => onChange([...value, "#d1fe17"])}>Ajouter une couleur</Button>
     </div>
   );
 }

@@ -45,7 +45,7 @@ export function VideoCreatePanel({ params, update, onGenerate, generating, hideG
 
       <div>
         <Select label="Modèle vidéo" name="videoModel" value={params.model} onChange={(e) => update("model", e.target.value as VideoModelId)} options={VIDEO_MODELS.map((m) => ({ value: m.id, label: `${m.label} · ${m.creditsPerSecond} cr/s` }))} />
-        <p className="text-[12px] text-muted mt-1.5">{model.hint}{source && !model.i2v ? " · Avec une image source, la vidéo est rendue avec Seedance 2.5." : ""}</p>
+        <p className="text-[12px] text-muted mt-1.5">{model.hint}{source && !model.i2v ? " · Avec une image source, la vidéo est rendue en qualité Premium." : ""}</p>
       </div>
 
       {multiShotAvailable && (

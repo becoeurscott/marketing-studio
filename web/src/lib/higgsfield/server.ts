@@ -34,7 +34,7 @@ function client() {
   return higgsfield;
 }
 
-async function hfFetch(path: string, init?: RequestInit): Promise<Response> {
+export async function hfFetch(path: string, init?: RequestInit): Promise<Response> {
   return fetch(`${API}${path}`, {
     ...init,
     headers: { Authorization: `Key ${credentials()}`, "Content-Type": "application/json", ...init?.headers },
@@ -63,7 +63,7 @@ export function toModelInput(req: GenerationRequest): [string, Record<string, un
         return [imageModel("soul-2").endpoint, { prompt, batch_size: 1, resolution: "1080p", aspect_ratio: soulRatios.includes(req.aspectRatio ?? "") ? req.aspectRatio : "3:4", enhance_prompt: true }];
       }
       const ratio = IMAGE_RATIOS.has(req.aspectRatio ?? "") ? req.aspectRatio : "auto";
-      const resolution = req.upscale ? "4k" : "2k";
+      const resolution = req.upscale ? "4k" : imageModel(req.model).resolution ?? "2k";
       if (req.presetId) {
         // Preset (enhanced) mode: product photo first, optional model reference second.
         if (!UUID.test(req.presetId)) throw new Error("Style inconnu.");
@@ -142,10 +142,25 @@ function normalize(r: RawResponse): GenerationJob {
 }
 
 /** Submits without waiting; the browser polls getJob() so no request outlives the function timeout. */
-export async function submit(req: GenerationRequest): Promise<GenerationJob> {
+/**
+ * Starts a job. With `webhookUrl`, Higgsfield calls us back on completion/failure (`?hf_webhook=`),
+ * so jobs finish even when nobody is polling.
+ */
+export async function submit(req: GenerationRequest, webhookUrl?: string): Promise<GenerationJob> {
   const [model, input] = toModelInput(req);
-  const res = (await client().subscribe(model, { input, withPolling: false })) as RawResponse;
+  const res = (await client().subscribe(model, {
+    input,
+    withPolling: false,
+    ...(webhookUrl ? { webhook: { url: webhookUrl, secret: "" } } : {}),
+  })) as RawResponse;
   return normalize(res);
+}
+
+/** Cancels a queued request on Higgsfield. True when accepted (202); false once it has started. */
+export async function cancelRequest(requestId: string): Promise<boolean> {
+  if (!REQUEST_ID.test(requestId)) throw new Error("Identifiant de requête invalide.");
+  const res = await hfFetch(`/requests/${encodeURIComponent(requestId)}/cancel`, { method: "POST" });
+  return res.status === 202 || res.ok;
 }
 
 const REQUEST_ID = /^[A-Za-z0-9_-]{8,80}$/;

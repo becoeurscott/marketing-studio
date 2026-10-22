@@ -2,19 +2,6 @@ import AVFoundation
 import AVKit
 import SwiftUI
 
-/// Only one clip plays with sound at a time (same rule as the web app's creator cards).
-@MainActor
-final class SoundCoordinator: ObservableObject {
-    static let shared = SoundCoordinator()
-    /// Id of the clip currently allowed to play sound (nil = everything muted).
-    @Published var audibleId: String?
-
-    func toggle(_ id: String) {
-        audibleId = audibleId == id ? nil : id
-        if audibleId != nil { try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers]) }
-    }
-}
-
 /// Autoplaying, looping, chrome-less video (fills its frame). Plays only while on screen.
 struct LoopingVideoView: View {
     var url: String
@@ -94,34 +81,12 @@ private struct PlayerLayerView: UIViewRepresentable {
     }
 }
 
-/// A creator's intro clip, muted by default, with a speaker button. Unmuting one mutes the others.
+/// A creator's intro clip: silent looping preview (no sound in the app).
 struct CreatorIntroView: View {
     var creator: Creator
-    var showSoundButton = true
-    @ObservedObject private var sound = SoundCoordinator.shared
-
-    private var muted: Bool { sound.audibleId != creator.id }
 
     var body: some View {
-        LoopingVideoView(url: creator.introURL, poster: creator.avatarURL, muted: muted)
-            .overlay(alignment: .bottomTrailing) {
-                if showSoundButton {
-                    Button {
-                        MSHaptic.tap()
-                        sound.toggle(creator.id)
-                    } label: {
-                        Image(systemName: muted ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 30, height: 30)
-                            .background(.black.opacity(0.55), in: Circle())
-                    }
-                    .buttonStyle(MSPressStyle())
-                    .padding(8)
-                    .accessibilityLabel(muted ? "Activer le son" : "Couper le son")
-                }
-            }
-            .onDisappear { if sound.audibleId == creator.id { sound.audibleId = nil } }
+        LoopingVideoView(url: creator.introURL, poster: creator.avatarURL, muted: true)
     }
 }
 

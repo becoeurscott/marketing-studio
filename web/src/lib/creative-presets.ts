@@ -1,5 +1,5 @@
 /**
- * Sokozia creative formats inspired by Higgsfield Marketing Studio (product shots, UGC types,
+ * Marketing Studio creative formats inspired by Higgsfield Marketing Studio (product shots, UGC types,
  * multi-shot ads). Higgsfield only exposes its ad templates through the API, so these are
  * rebuilt as art direction sent with the generation (Marketing Studio image, Seedance UGC, Kling multi-shot).
  */

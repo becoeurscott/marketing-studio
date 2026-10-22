@@ -7,9 +7,9 @@ import { ChipGroup } from "@/components/ui/Chip";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { useStore } from "@/lib/store";
-import { CREDIT_COSTS, IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
+import { IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { BACKGROUND_LABELS, BACKGROUNDS, COMPOSITION_LABELS, COMPOSITIONS, IMAGE_CAMERA_LABELS, IMAGE_CAMERAS, IMAGE_STYLE_LABELS, label, LIGHTING, LIGHTING_LABELS, modelOptions, PROMPT_PLACEHOLDER, type ImageParams } from "./constants";
+import { BACKGROUND_LABELS, BACKGROUNDS, COMPOSITION_LABELS, COMPOSITIONS, IMAGE_CAMERA_LABELS, IMAGE_CAMERAS, IMAGE_STYLE_LABELS, label, LIGHTING, LIGHTING_LABELS, modelOptions, PROMPT_PLACEHOLDER, IMAGE_COUNTS, imageCost, type ImageCount, type ImageParams } from "./constants";
 import { ProductField, ProductPicker } from "./ProductPicker";
 
 export interface ImageCreatePanelProps {
@@ -73,6 +73,11 @@ export function ImageCreatePanel({ params, update, onGenerate, generating, hideG
       </div>
 
       <Select label="Modèle" name="model" value={params.model} onChange={(e) => update("model", e.target.value as ImageParams["model"])} options={modelOptions("image").map((m) => ({ value: m.id, label: `${m.label} · ${m.cost}` }))} />
+      <div>
+        <p className="text-[13px] font-medium text-text2 mb-1.5">Nombre d’images</p>
+        <ChipGroup<string> size="sm" options={IMAGE_COUNTS.map((n) => ({ value: String(n), label: `${n}` }))} value={String(params.count)} onChange={(v) => update("count", Number(v) as ImageCount)} />
+        <p className="text-[11px] text-muted mt-1">Chaque image est facturée : {imageCost(params)} crédits au total.</p>
+      </div>
 
       <div>
         <button onClick={() => setAdvanced((v) => !v)} className="flex items-center gap-1.5 text-[13px] font-medium text-text2 hover:text-text" aria-expanded={advanced}>
@@ -101,7 +106,7 @@ export function ImageCreatePanel({ params, update, onGenerate, generating, hideG
       {!hideGenerate && (
         <div className="sticky bottom-0 -mx-4 px-4 py-3 bg-surface/95 backdrop-blur border-t border-border lg:mt-auto">
           <Button fullWidth size="lg" onClick={onGenerate} loading={generating} disabled={!canGenerate} leftIcon={<Sparkles className="size-4" />}>
-            {generating ? "Création…" : `Générer · ${CREDIT_COSTS.image} crédits`}
+            {generating ? "Création…" : `Générer · ${imageCost(params)} crédits`}
           </Button>
           {!canGenerate && <p className="text-xs text-muted text-center mt-2">Ajoutez un prompt ou un produit pour commencer.</p>}
         </div>

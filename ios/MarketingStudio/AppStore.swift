@@ -132,6 +132,7 @@ final class AppStore: ObservableObject {
     private func applyDevicePreferences() {
         MSHaptic.enabled = preferences.haptics
         MSAnimation.reduced = preferences.reduceMotion
+        AIModels.lightVideos = preferences.lightVideos
     }
 
     private func apply(_ s: PersistedState) {
@@ -169,7 +170,7 @@ final class AppStore: ObservableObject {
             generations: [],
             favorites: [:],
             brand: Brand(
-                id: "brand_main", name: shop, logoURL: "", iconURL: "", colors: ["#F97316", "#FACC15", "#16A34A", "#0A0A0A"],
+                id: "brand_main", name: shop, logoURL: "", iconURL: "", colors: ["#D1FE17", "#030304", "#FFFFFF", "#A6CF0C"],
                 fonts: ["Inter"], website: "", description: "", industry: "", audience: "",
                 voice: BrandVoice(tone: "Friendly", writingStyle: "Clair, chaleureux et direct.", keywords: [], avoid: []),
                 assetIds: []

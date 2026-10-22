@@ -150,7 +150,7 @@ export function CtaButton({
       className={cn(
         "group relative inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full text-sm font-medium overflow-hidden transition-all duration-300",
         variant === "primary"
-          ? "bg-gradient-to-b from-highlight to-accent2 text-on-accent shadow-[0_0_0_1px_rgba(250,204,21,0.4),0_8px_30px_rgba(249,115,22,0.35)] hover:shadow-[0_0_0_1px_rgba(250,204,21,0.6),0_10px_40px_rgba(249,115,22,0.55)]"
+          ? "bg-gradient-to-b from-highlight to-accent2 text-on-accent shadow-[0_0_0_1px_rgba(209,254,23,0.4),0_8px_30px_rgba(209,254,23,0.35)] hover:shadow-[0_0_0_1px_rgba(209,254,23,0.6),0_10px_40px_rgba(209,254,23,0.55)]"
           : "border border-white/12 bg-white/[0.04] text-text hover:bg-white/[0.08] backdrop-blur",
         className,
       )}

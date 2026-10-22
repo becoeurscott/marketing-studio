@@ -7,7 +7,7 @@ export function LegalPage({ title, intro, children }: { title: string; intro: st
   return (
     <main className="min-h-dvh bg-bg px-4 py-10 sm:py-16">
       <article className="mx-auto max-w-2xl">
-        <Link href="/" className="text-sm text-muted hover:text-text">← Sokozia</Link>
+        <Link href="/" className="text-sm text-muted hover:text-text">← Marketing Studio</Link>
         <h1 className="mt-6 text-3xl font-semibold tracking-tight">{title}</h1>
         <p className="mt-2 text-sm text-muted">Dernière mise à jour : {LEGAL.updatedAt}</p>
         <p className="mt-6 text-[15px] leading-relaxed text-text2">{intro}</p>

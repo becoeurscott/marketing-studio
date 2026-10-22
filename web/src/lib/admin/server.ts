@@ -111,7 +111,7 @@ export async function listAudit(q: { targetId?: string; limit?: number } = {}): 
 /* ---------- Settings (Higgsfield cost tracking) ---------- */
 
 export interface AdminSettings {
-  /** What one Sokozia credit costs us at Higgsfield, in USD. */
+  /** What one Marketing Studio credit costs us at Higgsfield, in USD. */
   hfUsdPerCredit: number;
   /** USD loaded on the Higgsfield account since `hfBudgetSince`. */
   hfBudgetUsd: number;

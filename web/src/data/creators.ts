@@ -40,6 +40,6 @@ export const creators: Creator[] = rows.map(([id, name, gender, age, style, lang
 export function creatorSheetUrl(c: Pick<Creator, "sheet">) {
   const app = process.env.NEXT_PUBLIC_APP_URL ?? "";
   // Higgsfield can't reach localhost: in development, use the published copy of the sheet.
-  const origin = app.startsWith("https://") ? app : "https://www.sokozia.com";
+  const origin = app.startsWith("https://") ? app : "https://sokozia.vercel.app";
   return new URL(c.sheet, origin).toString();
 }

@@ -32,7 +32,7 @@ export function Audiences() {
               qui vendent
             </>
           }
-          text="Que vous lanciez votre premier produit ou gériez dix marques, Sokozia s'adapte à votre façon de travailler."
+          text="Que vous lanciez votre premier produit ou gériez dix marques, Marketing Studio s'adapte à votre façon de travailler."
         />
         <div className="mt-14 grid gap-4 md:grid-cols-3">
           {AUDIENCES.map(({ icon: Icon, title, text }, i) => (
@@ -141,8 +141,8 @@ export function Pricing() {
 /* ───────────────────────── FAQ ───────────────────────── */
 
 const FAQS = [
-  { q: "Qu'est-ce que Sokozia ?", a: "Sokozia est un studio marketing propulsé par l'IA. À partir d'une photo de votre produit, il crée des photos professionnelles, des vidéos UGC, des publicités et des textes de vente prêts à publier." },
-  { q: "Faut-il savoir faire du design ou du marketing ?", a: "Non. Vous choisissez un style et une plateforme, Sokozia s'occupe du cadrage, du décor, des accroches et des formats." },
+  { q: "Qu'est-ce que Marketing Studio ?", a: "Marketing Studio est un studio marketing propulsé par l'IA. À partir d'une photo de votre produit, il crée des photos professionnelles, des vidéos UGC, des publicités et des textes de vente prêts à publier." },
+  { q: "Faut-il savoir faire du design ou du marketing ?", a: "Non. Vous choisissez un style et une plateforme, Marketing Studio s'occupe du cadrage, du décor, des accroches et des formats." },
   { q: "Sur quelles plateformes puis-je publier ?", a: "Les contenus sont adaptés à TikTok, Instagram, Facebook, YouTube, Pinterest et Google : bons formats, bons ratios, bons textes." },
   { q: "Est-ce que les contenus respectent ma marque ?", a: "Oui. Vous enregistrez votre logo, vos couleurs et votre ton de voix dans le kit de marque, et ils sont appliqués à chaque création." },
   { q: "Comment je paie ?", a: "En Mobile Money (Wave, Orange Money, MTN, Moov…), par packs de crédits dès 1 000 FCFA. Pas d'abonnement, et vos crédits n'expirent pas. 50 crédits sont offerts à l'inscription pour essayer." },
@@ -218,11 +218,11 @@ export function Platforms() {
         text="Chaque création sort au bon format pour chaque plateforme. Plus besoin de redimensionner à la main."
       />
       <Reveal className="relative mx-auto mt-16 size-[272px] min-[360px]:size-[320px] sm:size-[440px]">
-        <div aria-hidden className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(249,115,22,0.35),transparent_65%)] blur-xl" />
+        <div aria-hidden className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(209,254,23,0.35),transparent_65%)] blur-xl" />
         <div className="absolute inset-[12%] rounded-full border border-white/10" />
         <div className="absolute inset-[30%] rounded-full border border-white/[0.06]" />
-        <div className="absolute inset-0 m-auto flex size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-highlight via-accent to-green text-on-accent shadow-[0_0_60px_rgba(249,115,22,0.6)]">
-          <span className="text-2xl font-semibold">S</span>
+        <div className="absolute inset-0 m-auto flex size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-highlight via-accent to-green text-on-accent shadow-[0_0_60px_rgba(209,254,23,0.6)]">
+          <span className="text-2xl font-semibold">M</span>
         </div>
         <div className="absolute inset-[12%] animate-[spin_40s_linear_infinite]">
           {PLATFORMS.map((p, i) => {
@@ -253,7 +253,7 @@ export function FinalCta() {
         <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] border border-white/[0.08] bg-[#0b0910] px-6 py-20 text-center sm:py-28">
           <motion.div
             aria-hidden
-            className="absolute inset-0 bg-[repeating-linear-gradient(90deg,rgba(249,115,22,0)_0px,rgba(249,115,22,0.28)_22px,rgba(249,115,22,0)_44px)] [mask-image:radial-gradient(ellipse_at_bottom,black_20%,transparent_70%)]"
+            className="absolute inset-0 bg-[repeating-linear-gradient(90deg,rgba(209,254,23,0)_0px,rgba(209,254,23,0.28)_22px,rgba(209,254,23,0)_44px)] [mask-image:radial-gradient(ellipse_at_bottom,black_20%,transparent_70%)]"
             animate={{ backgroundPositionX: ["0px", "44px"] }}
             transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
           />
@@ -305,7 +305,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="mx-auto mt-12 max-w-6xl border-t border-white/[0.06] pt-6 text-xs text-muted">
-        © {new Date().getFullYear()} Sokozia. Tous droits réservés.
+        © {new Date().getFullYear()} Marketing Studio. Tous droits réservés.
       </div>
     </footer>
   );

@@ -107,15 +107,15 @@ struct CreditsView: View {
 
     private var costTable: some View {
         VStack(spacing: 0) {
-            costRow("Image produit", "Marketing Studio · garde votre produit", cost: AIModels.imageModel("marketing-studio").credits, icon: "photo.on.rectangle.angled", each: "par image")
+            costRow("Photo produit Standard", "Votre produit reste identique", cost: AIModels.imageModel("marketing-studio-1k").credits, icon: "photo.on.rectangle.angled", each: "par image")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Portrait / mode", "Soul 2 · sans photo produit", cost: AIModels.imageModel("soul-2").credits, icon: "person.crop.square", each: "par image")
+            costRow("Image Éco", "Idées et portraits, très économique", cost: AIModels.imageModel("soul-2").credits, icon: "person.crop.square", each: "par image")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Vidéo UGC", "Seedance 2.5 · 8 secondes", cost: AIModels.ugcCredits(seconds: 8), icon: "video", each: "par vidéo")
+            costRow("Vidéo UGC", "Créateur IA · 8 secondes", cost: AIModels.ugcCredits(seconds: 8), icon: "video", each: "par vidéo")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Vidéo économique", "Kling 3.0 · 8 secondes", cost: AIModels.videoCredits("kling-3.0", seconds: 8), icon: "film", each: "par vidéo")
+            costRow("Vidéo Éco", "8 secondes", cost: AIModels.videoCredits("wan-3.0-prime", seconds: 8), icon: "film", each: "par vidéo")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
-            costRow("Agrandissement HD", "Même image, plus nette", cost: AIModels.imageModel(nil).credits + AIModels.upscaleExtra, icon: "arrow.up.left.and.arrow.down.right", each: "par image")
+            costRow("Agrandissement 4K", "Même image, plus nette", cost: AIModels.creditsFor(usd: AIModels.upscaleUsd), icon: "arrow.up.left.and.arrow.down.right", each: "par image")
             Rectangle().fill(MSColor.border).frame(height: 1).padding(.leading, 56)
             costRow("Textes et accroches", "Tous les outils de rédaction", cost: 0, icon: "text.alignleft", each: "gratuit")
         }
@@ -172,86 +172,44 @@ struct TransactionRow: View {
 
 // MARK: - Buy credits (AppSheet.buyCredits)
 
-/// Pay-as-you-go packs in the user's currency, paid with Mobile Money. Payments are not connected
-/// yet: choosing a pack explains how to top up through WhatsApp (no credits are granted here).
+/// Credits are bought on the website with Mobile Money or a card.
 struct BuyCreditsSheet: View {
     @EnvironmentObject private var store: AppStore
-    @EnvironmentObject private var router: Router
+    var body: some View {
+        BottomSheetContainer(title: "Recharger des crédits", subtitle: "1 crédit = 10 FCFA. Les crédits n’expirent pas.") {
+            ScrollView(showsIndicators: false) {
+                WebTopUpCard(title: "Payez en Mobile Money", subtitle: "Packs dès 1 000 FCFA (100 crédits) ou abonnement mensuel, sur le site Marketing Studio.", path: "credits")
+                    .padding(.horizontal, MSSpacing.gutter)
+                    .padding(.bottom, 16)
+            }
+        }
+        .task { await API.refreshAccount(store) }
+    }
+}
+
+/// Credits are bought on the website (Mobile Money or card): the app opens it in Safari.
+struct WebTopUpCard: View {
+    var title: String
+    var subtitle: String
+    var path: String
     @Environment(\.openURL) private var openURL
 
-    @State private var selected: Market.UsagePack = Market.usagePacks[1]
-
-    private var packs: [Market.UsagePack] { Market.usagePacks + Market.topUpPacks }
-
     var body: some View {
-        BottomSheetContainer(title: "Recharger des crédits", subtitle: "Sans abonnement. Payez avec \(paymentNames).") {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 14) {
-                    VStack(spacing: 10) {
-                        ForEach(packs) { pack in packRow(pack) }
-                    }
-                    paymentStrip
-                    VStack(spacing: 8) {
-                        MSButton(title: "Payer \(store.price(selected.priceXof))", icon: "lock.fill") { pay() }
-                        Text(Market.paymentsComingSoon).msCaption().multilineTextAlignment(.center)
-                    }
-                }
-                .padding(.horizontal, MSSpacing.gutter)
-                .padding(.bottom, 16)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "iphone.and.arrow.forward").font(.system(size: 18, weight: .semibold)).foregroundStyle(MSColor.highlight)
+                Text(title).msHeadline(16)
             }
-        }
-    }
-
-    private var paymentNames: String {
-        store.country.payments.compactMap { Market.paymentMethods[$0] }.filter(\.mobile).map(\.label).prefix(3).joined(separator: ", ")
-    }
-
-    private var paymentStrip: some View {
-        HStack(spacing: 8) {
-            ForEach(store.country.payments.compactMap { Market.paymentMethods[$0] }) { m in
-                Text(m.label)
-                    .font(MSFont.caption(11))
-                    .foregroundStyle(MSColor.text)
-                    .padding(.horizontal, 10).padding(.vertical, 6)
-                    .background(Color(hex: m.colorHex).opacity(0.18), in: Capsule())
-                    .overlay(Capsule().strokeBorder(Color(hex: m.colorHex).opacity(0.5), lineWidth: 1))
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func packRow(_ pack: Market.UsagePack) -> some View {
-        let isSel = pack == selected
-        return Button {
-            MSHaptic.tap()
-            withAnimation(MSAnimation.snappy) { selected = pack }
-        } label: {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle().strokeBorder(isSel ? MSColor.accent : MSColor.borderStrong, lineWidth: 1.5).frame(width: 20, height: 20)
-                    if isSel { Circle().fill(MSColor.accent).frame(width: 10, height: 10) }
+            Text(subtitle).msBody(14)
+            HStack(spacing: 8) {
+                ForEach(["Wave", "Orange Money", "MTN MoMo", "Carte"], id: \.self) { m in
+                    Text(m).font(MSFont.caption(11)).foregroundStyle(MSColor.text)
+                        .padding(.horizontal, 8).padding(.vertical, 4).background(MSColor.elevated, in: Capsule())
                 }
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 6) {
-                        Text(pack.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                        if pack.popular { MSBadge(text: "Le plus pris", tone: .accent) }
-                    }
-                    Text("\(pack.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits · \(pack.pitch)\(pack.validityDays.map { " · \($0) jours" } ?? "")").msCaption()
-                }
-                Spacer()
-                Text(store.price(pack.priceXof)).font(.system(size: 16, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
             }
-            .padding(14)
-            .background(isSel ? MSColor.accent.opacity(0.08) : MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(isSel ? MSColor.accent.opacity(0.6) : MSColor.border, lineWidth: 1))
+            MSButton(title: "Recharger sur le site", icon: "safari") { openURL(SokoziaConfig.siteURL.appendingPathComponent(path)) }
+            Text("Connectez-vous avec le même compte : vos crédits apparaissent ici automatiquement.").msCaption()
         }
-        .buttonStyle(MSPressStyle())
-    }
-
-    /// Mobile Money checkout isn't connected yet: hand over to WhatsApp with the chosen pack.
-    private func pay() {
-        let message = "Bonjour Sokozia, je veux le \(selected.name) (\(selected.credits) crédits, \(store.price(selected.priceXof))) pour le compte \(store.user.email)."
-        router.toast("Mobile Money bientôt disponible", style: .info, icon: "clock")
-        if let url = Market.whatsappLink(Market.sokoziaWhatsApp, message: message) { openURL(url) }
+        .msCard()
     }
 }

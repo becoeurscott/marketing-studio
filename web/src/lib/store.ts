@@ -274,7 +274,7 @@ export const useStore = create<Store>()(
         const b: Brand = {
           id: uid("brand"),
           logoUrl: "",
-          colors: ["#FFFFFF", "#1C1C1C", "#F97316"],
+          colors: ["#FFFFFF", "#1C1C1C", "#d1fe17"],
           fonts: { heading: "Inter", body: "Inter" },
           website: "",
           description: "",

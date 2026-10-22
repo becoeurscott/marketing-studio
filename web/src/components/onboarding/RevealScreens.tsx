@@ -293,7 +293,7 @@ export function WorkflowScreen({ onNext }: { onNext: () => void }) {
         </div>
       </div>
       <div className="rounded-2xl bg-accent/10 border border-accent/40 p-4 mt-3">
-        <p className="text-xs uppercase tracking-wider text-highlight mb-3">Avec Sokozia</p>
+        <p className="text-xs uppercase tracking-wider text-highlight mb-3">Avec Marketing Studio</p>
         <div className="flex items-center justify-between gap-2 text-[11px] md:text-sm font-semibold">
           <span>UN PRODUIT</span><ArrowRight className="size-4 text-highlight shrink-0" />
           <span className="px-2 py-1 rounded-md bg-accent text-on-accent font-semibold">SOKOZIA</span><ArrowRight className="size-4 text-highlight shrink-0" />
@@ -339,7 +339,7 @@ export function CalendarScreen({ product, onNext }: RevealProps) {
   ];
   return (
     <div className="w-full max-w-lg">
-      <ScreenTitle title="Et Sokozia peut aussi la planifier." subtitle="Votre campagne n'est pas seulement créée. Elle est organisée." />
+      <ScreenTitle title="Et Marketing Studio peut aussi la planifier." subtitle="Votre campagne n'est pas seulement créée. Elle est organisée." />
       <ul className="space-y-2">
         {days.map(([d, l, m], i) => (
           <Appear key={d} delay={i * 0.1} className="flex items-center gap-3 rounded-xl bg-surface border border-border p-2.5">

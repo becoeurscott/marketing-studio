@@ -9,14 +9,14 @@ import { UgcShowcase } from "@/components/landing/UgcShowcase";
 import { Problem, Services, Solution } from "@/components/landing/Story";
 
 export const metadata: Metadata = {
-  title: { absolute: "Sokozia — Votre studio marketing IA" },
+  title: { absolute: "Marketing Studio — Votre studio marketing IA" },
   description:
     "Photos produit, vidéos UGC, statuts WhatsApp et pubs avec vos prix en FCFA : le studio marketing IA des commerçants africains. Dès 1 000 FCFA, en Mobile Money.",
   openGraph: {
-    title: "Sokozia — Votre studio marketing IA",
+    title: "Marketing Studio — Votre studio marketing IA",
     description: "Transformez votre produit en campagne marketing complète, en quelques minutes.",
-    url: "https://sokozia.com",
-    siteName: "Sokozia",
+    url: "https://sokozia.vercel.app",
+    siteName: "Marketing Studio",
     locale: "fr_FR",
     type: "website",
   },

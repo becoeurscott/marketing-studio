@@ -44,7 +44,7 @@ struct HomeView: View {
     private var brandMark: some View {
         HStack(spacing: 8) {
             RoundedRectangle(cornerRadius: 6, style: .continuous).fill(MSColor.accentGradient).frame(width: 20, height: 20)
-            Text("Sokozia").font(.system(size: 14, weight: .semibold, design: .rounded)).foregroundStyle(MSColor.text2)
+            Text("Marketing Studio").font(.system(size: 14, weight: .semibold, design: .rounded)).foregroundStyle(MSColor.text2)
         }
         .padding(.horizontal, MSSpacing.gutter)
         .padding(.bottom, -12)
@@ -200,7 +200,7 @@ struct HomeView: View {
     /// Real results made with Sokozia, so a new account sees what it can get.
     private var examples: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Exemples faits avec Sokozia", actionTitle: "Créateurs") { router.push(.creators) }
+            SectionHeader(title: "Exemples faits avec Marketing Studio", actionTitle: "Créateurs") { router.push(.creators) }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(Array(Catalog.creators.filter(\.featured).prefix(2))) { c in

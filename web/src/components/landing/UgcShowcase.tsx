@@ -1,7 +1,6 @@
 "use client";
 
-import { Volume2, VolumeX } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { DEMO_HREF } from "./Hero";
 import { CtaButton, Reveal, SectionTitle } from "./motion";
 
@@ -11,7 +10,7 @@ export interface UgcVideo {
   sector: string;
 }
 
-/** Generated with Sokozia (Higgsfield Marketing Studio image → Seedance 2.5), stored in /public/showcase/ugc. */
+/** Generated with Marketing Studio (Higgsfield Marketing Studio image → Seedance 2.5), stored in /public/showcase/ugc. */
 export const UGC_VIDEOS: UgcVideo[] = [
   { slug: "temoignage-karite", style: "Témoignage", sector: "Cosmétiques" },
   { slug: "vendeuse-marche-wax", style: "Vendeuse au marché", sector: "Couture & wax" },
@@ -25,10 +24,9 @@ export const UGC_VIDEOS: UgcVideo[] = [
   { slug: "promo-tabaski", style: "Promo fête", sector: "Tabaski" },
 ];
 
-/** Plays only while visible, loads nothing before: light on mobile data. */
+/** Silent preview: plays only while visible, loads nothing before (light on mobile data). */
 function UgcCard({ v }: { v: UgcVideo }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
 
   useEffect(() => {
     const el = ref.current;
@@ -50,21 +48,13 @@ function UgcCard({ v }: { v: UgcVideo }) {
         ref={ref}
         src={`/showcase/ugc/${v.slug}.mp4`}
         poster={`/showcase/ugc/${v.slug}.jpg`}
-        muted={muted}
+        muted
         loop
         playsInline
         preload="none"
         className="aspect-[9/16] w-full object-cover"
         aria-label={`Vidéo UGC : ${v.style}`}
       />
-      <button
-        type="button"
-        onClick={() => setMuted((m) => !m)}
-        aria-label={muted ? "Activer le son" : "Couper le son"}
-        className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur"
-      >
-        {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-      </button>
       <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 pt-12">
         <p className="text-sm font-semibold text-white">{v.style}</p>
         <p className="text-xs text-white/70">{v.sector}</p>
@@ -81,7 +71,7 @@ export function UgcShowcase() {
         <SectionTitle
           eyebrow="Vidéos UGC"
           title="Des créateurs africains qui présentent vos produits"
-          text="Témoignage, déballage, marché, maquis, livraison WhatsApp : dix styles de vidéos créées avec Sokozia, en français, prêtes pour TikTok, Facebook et vos statuts."
+          text="Témoignage, déballage, marché, maquis, livraison WhatsApp : dix styles de vidéos créées avec Marketing Studio, en français, prêtes pour TikTok, Facebook et vos statuts."
         />
       </div>
       <Reveal className="mt-14">

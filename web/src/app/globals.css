@@ -3,19 +3,19 @@
 
 @theme {
   /* Color system (SPEC) */
-  --color-bg: #070707;
+  --color-bg: #030304;
   --color-surface: #101010;
   --color-card: #151515;
   --color-elevated: #1c1c1c;
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-strong: rgba(255, 255, 255, 0.14);
-  /* Brand: orange (primary), yellow (highlight), green (secondary), on black */
-  --color-accent: #f97316;
-  --color-accent2: #ea580c;
-  --color-highlight: #facc15;
-  --color-green: #16a34a;
-  /* Text on orange / yellow fills (white fails contrast there) */
-  --color-on-accent: #0a0a0a;
+  /* Brand: Higgsfield green (#D1FE17) on near-black */
+  --color-accent: #d1fe17;
+  --color-accent2: #a6cf0c;
+  --color-highlight: #e4ff6a;
+  --color-green: #a6cf0c;
+  /* Text on green fills (white fails contrast there) */
+  --color-on-accent: #030304;
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
@@ -34,7 +34,7 @@
   /* Shadows */
   --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
   --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --shadow-glow: 0 0 0 1px rgba(249,115,22, 0.4), 0 8px 32px rgba(249,115,22, 0.25);
+  --shadow-glow: 0 0 0 1px rgba(209,254,23, 0.4), 0 8px 32px rgba(209,254,23, 0.25);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
@@ -59,7 +59,7 @@ h1, h2, h3 {
 }
 
 ::selection {
-  background: rgba(249,115,22, 0.35);
+  background: rgba(209,254,23, 0.35);
 }
 
 /* Thin, dark scrollbars */

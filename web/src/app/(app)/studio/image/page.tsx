@@ -14,8 +14,7 @@ import { useImageGenerator } from "@/components/studio/useImageGenerator";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { CREDIT_COSTS } from "@/lib/types";
-import { IMAGE_STYLE_LABELS, label } from "@/components/studio/constants";
+import { IMAGE_STYLE_LABELS, imageCost, label } from "@/components/studio/constants";
 import { imageModel } from "@/lib/higgsfield/models";
 
 /** SPEC §11–13: full image generator → progress → 4-result gallery with per-result actions + editor. */
@@ -36,7 +35,7 @@ export default function ImageGeneratorPage() {
       />
 
       {gen.generating ? (
-        <GeneratingOverlay hint={`${label(IMAGE_STYLE_LABELS, gen.params.style)} · ${gen.params.ratio} · 4 variantes`} className="min-h-[460px]" />
+        <GeneratingOverlay hint={`${label(IMAGE_STYLE_LABELS, gen.params.style)} · ${gen.params.ratio} · ${gen.params.count} image${gen.params.count > 1 ? "s" : ""}`} className="min-h-[460px]" />
       ) : gen.error ? (
         <StudioError code={gen.error.code} message={gen.error.message} onRetry={() => void gen.generate()} />
       ) : gen.results.length ? (
@@ -77,7 +76,7 @@ export default function ImageGeneratorPage() {
       </BottomSheet>
       <div className="lg:hidden fixed left-4 right-4 md:left-[calc(var(--sb)+1rem)] bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] md:bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-40">
         <Button fullWidth size="lg" className="shadow-float" onClick={() => void gen.generate()} loading={gen.generating} disabled={!canGenerate} leftIcon={<Sparkles className="size-4" />}>
-          {canGenerate ? `Générer · ${CREDIT_COSTS.image} crédits` : "Ajoutez un prompt pour générer"}
+          {canGenerate ? `Générer · ${imageCost(gen.params)} crédits` : "Ajoutez un prompt pour générer"}
         </Button>
       </div>
 

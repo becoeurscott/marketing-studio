@@ -47,7 +47,7 @@ struct ProductShootView: View {
             VStack(alignment: .leading, spacing: 22) {
                 header
                 uploadCard
-                CreativeSection(title: "Style Sokozia") { stylePicker }
+                CreativeSection(title: "Style") { stylePicker }
                 if styleId == nil {
                     CreativeSection(title: "Décor") { ChipGroup(options: Self.environmentLabels.map(\.fr), selection: $environment, allowDeselect: false) }
                 }

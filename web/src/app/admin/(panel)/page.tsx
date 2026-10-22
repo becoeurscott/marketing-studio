@@ -90,7 +90,7 @@ export default async function AdminOverview({ searchParams }: PageProps<"/admin"
         <KpiCard
           icon={<Flame />} title="Dépense Higgsfield"
           value={fmtUsd(periodUsd)} sub={`≈ ${fmtUsd(o.credits.spentAll * settings.hfUsdPerCredit)} depuis le début`}
-          graphic={<MiniBlocks values={spark("credits")} color="#f97316" />}
+          graphic={<MiniBlocks values={spark("credits")} color="#d1fe17" />}
           footer={<><span>{fmtUsd(settings.hfUsdPerCredit)} / crédit</span><Delta value={trend(o.credits.spent, o.credits.spentPrev)} invert /></>}
         />
         <KpiCard
@@ -159,13 +159,13 @@ export default async function AdminOverview({ searchParams }: PageProps<"/admin"
         <Card>
           <CardHeader icon={<Flame />} title="Dépense par modèle" action={<span className="text-[12px] text-muted">{rangeLabel}</span>} />
           {o.jobs.byModel.length ? (
-            <ShareBars unit=" cr." items={o.jobs.byModel.map((m, i) => ({ label: modelLabel(m.model), value: m.credits, hint: `${fmtUsd(m.credits * settings.hfUsdPerCredit)} · ${m.jobs} jobs`, color: ["#f97316", "#facc15", "#22c55e", "#a855f7", "#3b82f6", "#ef4444"][i % 6] }))} />
+            <ShareBars unit=" cr." items={o.jobs.byModel.map((m, i) => ({ label: modelLabel(m.model), value: m.credits, hint: `${fmtUsd(m.credits * settings.hfUsdPerCredit)} · ${m.jobs} jobs`, color: ["#d1fe17", "#d1fe17", "#22c55e", "#a855f7", "#3b82f6", "#ef4444"][i % 6] }))} />
           ) : <p className="py-6 text-center text-[13px] text-muted">Aucune dépense sur la période.</p>}
         </Card>
 
         <Card>
           <CardHeader icon={<Layers />} title="Comptes et formules" />
-          <ShareBars items={Object.entries(o.users.byPlan).map(([plan, n], i) => ({ label: PLAN_LABEL[plan] ?? plan, value: Number(n), color: ["#22c55e", "#f97316", "#facc15", "#a855f7"][i % 4] }))} />
+          <ShareBars items={Object.entries(o.users.byPlan).map(([plan, n], i) => ({ label: PLAN_LABEL[plan] ?? plan, value: Number(n), color: ["#22c55e", "#d1fe17", "#d1fe17", "#a855f7"][i % 4] }))} />
           <div className="mt-5 grid grid-cols-3 gap-2 text-center">
             {[["Achetés", o.credits.purchased], ["Offerts", o.credits.gifted], ["En stock", o.credits.outstanding]].map(([l, v]) => (
               <div key={l as string} className="rounded-xl bg-white/[0.03] p-2.5">

@@ -114,7 +114,7 @@ export default function HelpPage() {
             </ul>
           </Card>
           <Card>
-            <p className="text-[13px] text-text2">Sokozia <span className="text-text font-medium">v{APP_VERSION}</span></p>
+            <p className="text-[13px] text-text2">Marketing Studio <span className="text-text font-medium">v{APP_VERSION}</span></p>
             <p className="text-[12px] text-muted mt-1">Prototype frontend. L’IA, les paiements et la publication sont entièrement simulés.</p>
             <div className="flex gap-3 mt-2 text-[12px]">
               <a href="#" onClick={(e) => e.preventDefault()} className="text-text2 hover:text-text">Conditions</a>

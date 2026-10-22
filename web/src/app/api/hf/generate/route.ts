@@ -4,6 +4,7 @@ import { errorResponse, submit, toModelInput } from "@/lib/higgsfield/server";
 import type { GenerationRequest } from "@/lib/higgsfield/types";
 import { getSessionUser } from "@/lib/insforge/server";
 import { attachRequest } from "@/lib/jobs";
+import { webhookUrlFor } from "@/lib/higgsfield/webhook-token";
 
 export async function POST(request: Request) {
   const blocked = guard(request, { limit: Number(process.env.HF_HOURLY_LIMIT) || 60 });
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
   }
   let job;
   try {
-    job = await submit(body);
+    job = await submit(body, webhookUrlFor(jobId));
   } catch (error) {
     await refundJob(jobId, "error");
     return errorResponse(error);

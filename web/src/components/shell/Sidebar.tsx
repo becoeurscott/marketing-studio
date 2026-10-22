@@ -33,7 +33,7 @@ export function Sidebar() {
         <span className="size-7 rounded-md bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shadow-glow">
           <Sparkles className="size-4 text-on-accent" />
         </span>
-        {!collapsed && <span className="text-[15px] font-semibold tracking-tight">Sokozia</span>}
+        {!collapsed && <span className="text-[15px] font-semibold tracking-tight">Marketing Studio</span>}
       </Link>
 
       {/* Nav */}

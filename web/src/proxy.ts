@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@insforge/sdk/ssr/middleware";
 
 /** App areas that need an account (the landing and auth pages stay public). */
-const PROTECTED = /^\/(home|studio|projects|assets|campaigns|creators|credits|favorites|generations|help|notifications|pricing|profile|settings|templates|workspace|brand)(\/|$)/;
+const PROTECTED = /^\/(home|studio|projects|assets|campaigns|creators|credits|favorites|generations|help|notifications|pricing|profile|settings|templates|workspace|brand|community)(\/|$)/;
 
 export async function proxy(request: NextRequest) {
   const response = NextResponse.next({ request });
