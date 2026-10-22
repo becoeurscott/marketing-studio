@@ -198,6 +198,36 @@ enum API {
         return urls.map { GeneratedImage(id: IDGen.make("out"), url: $0, generationId: g.id) }
     }
 
+    /// Influencer photo shots, same ids as the server (web/src/lib/influencer.ts).
+    static let influencerShots: [(id: String, label: String)] = [
+        ("hold", "Tient le produit"), ("selfie", "Selfie"), ("use", "En utilisation"),
+        ("closeup", "Gros plan"), ("unboxing", "Déballage"), ("street", "En ville"),
+    ]
+
+    /// Creator + product photo. `multi`: each image a different shot; otherwise variations of one shot.
+    static func generateInfluencer(creatorId: String, prompt: String, productAssetId: String?, ratio: String, model: String, count: Int, multi: Bool, shot: String, store: AppStore) async throws -> [GeneratedImage] {
+        let m = AIModels.imageModel(model).acceptsImages ? AIModels.imageModel(model) : AIModels.imageModel(nil)
+        let n = min(max(count, 1), 4)
+        let product = remoteURL(store, productAssetId)
+        let start = influencerShots.firstIndex { $0.id == shot } ?? 0
+        let cost = m.credits * n
+        let urls = try await charged(store, cost: cost) {
+            try await withThrowingTaskGroup(of: [String].self) { group in
+                for i in 0..<n {
+                    let s = multi ? influencerShots[(start + i) % influencerShots.count].id : shot
+                    let req = GenerationRequest(kind: .image, model: m.id, prompt: prompt, imageUrls: product.map { [$0] }, aspectRatio: imageRatio(ratio),
+                                                influencer: .init(creatorId: creatorId, shot: s, variation: !multi && n > 1 ? i + 1 : 0))
+                    group.addTask { try await APIClient.run(req).images }
+                }
+                var out: [String] = []
+                for try await u in group { out += u }
+                return out
+            }
+        }
+        let g = store.addGeneration(kind: .image, prompt: prompt.isEmpty ? "Photo influenceur" : prompt, thumbnails: urls, projectId: store.currentProjectId, model: m.label, credits: cost)
+        return urls.map { GeneratedImage(id: IDGen.make("out"), url: $0, generationId: g.id) }
+    }
+
     /// Same image re-rendered in very high definition.
     static func upscaleImage(url: String, store: AppStore) async throws -> GeneratedImage {
         guard url.hasPrefix("https://") else { throw APIError.failed("Cette image ne peut pas être agrandie : générez-la ou importez-la d’abord.") }

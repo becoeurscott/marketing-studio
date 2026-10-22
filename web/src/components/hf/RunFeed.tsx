@@ -23,7 +23,7 @@ function Tile({ url, video, poster, ratio, onOpen }: { url: string; video?: bool
 }
 
 /** Higgsfield-style feed: each run is a row header (prompt + model) above its tiles; history from the library follows. */
-export function RunFeed({ runs, onRemove, onReuse }: { runs: Run[]; onRemove: (id: string) => void; onReuse: (prompt: string) => void }) {
+export function RunFeed({ runs, onRemove, onReuse, onMore }: { runs: Run[]; onRemove: (id: string) => void; onReuse: (prompt: string) => void; onMore?: (run: Run, mode: "variations" | "multi") => void }) {
   const assets = useStore((s) => s.assets);
   const history = assets.filter((a) => a.tags?.includes("generated") && (a.type === "image" || a.type === "video"));
   const shown = new Set(runs.flatMap((r) => r.urls));
@@ -47,6 +47,12 @@ export function RunFeed({ runs, onRemove, onReuse }: { runs: Run[]; onRemove: (i
               <p className="text-[14px] text-white/90 line-clamp-2">{r.prompt || "Sans prompt"}</p>
               <p className="text-[12px] text-white/40 mt-0.5">{r.modelLabel} · {r.ratio}{r.status === "running" && " · génération en cours…"}</p>
             </button>
+            {r.status === "done" && r.kind === "image" && onMore && (
+              <div className="flex gap-1.5 shrink-0">
+                <button type="button" onClick={() => onMore(r, "variations")} className="h-8 px-3 rounded-full bg-white/[0.06] hover:bg-white/10 text-[12px] font-medium text-white/85">Variantes</button>
+                {r.input?.creatorId && <button type="button" onClick={() => onMore(r, "multi")} className="h-8 px-3 rounded-full bg-white/[0.06] hover:bg-white/10 text-[12px] font-medium text-white/85">Autres plans</button>}
+              </div>
+            )}
             {r.status !== "running" && <button type="button" onClick={() => onRemove(r.id)} className="text-white/30 hover:text-white" aria-label="Masquer"><X className="size-4" /></button>}
           </div>
           {r.status === "failed" ? (

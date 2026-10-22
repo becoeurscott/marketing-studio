@@ -11,6 +11,7 @@ import { GenerationError, runJob, uploadPhoto } from "./higgsfield/client";
 import { imageModel, videoCredits, type ImageModelId, type VideoModelId } from "./higgsfield/models";
 import { creators as creatorsSeed, creatorSheetUrl } from "@/data/creators";
 import { countryOf, languageLabel, type LanguageId } from "./market";
+import { INFLUENCER_SHOTS } from "./influencer";
 
 export class ApiError extends Error {
   code: "insufficient-credits" | "failed";
@@ -150,6 +151,38 @@ export async function generateImage(params: GenerateImageParams): Promise<ImageR
   const cost = model.credits * count;
   const results = await chargedExact("image", `Image ${model.label} — ${params.prompt.slice(0, 40)}`, cost, () => images(prompt, count, { ratio: params.ratio, imageUrls: refs, model: model.id }));
   record({ type: "image", prompt: params.prompt, status: "completed", thumbnails: results.map((r) => r.thumbnail), projectId: params.projectId ?? null, params: { style: params.style ?? "", ratio: params.ratio ?? "", model: model.id }, creditsUsed: cost });
+  return results;
+}
+
+/* ---------- Influencer photo (creator + product) ---------- */
+export interface GenerateInfluencerParams {
+  creatorId: ID;
+  prompt: string;
+  productAssetId?: ID | null;
+  ratio?: AspectRatio;
+  model?: ImageModelId;
+  count: number;
+  /** "multi": each image a different shot; "variations": same shot, slight changes. */
+  mode: "multi" | "variations";
+  shot?: string;
+  projectId?: ID | null;
+}
+
+/** The server wraps the short prompt in the director prompt (lib/influencer.ts) with the creator sheet + product. */
+export async function generateInfluencer(p: GenerateInfluencerParams): Promise<ImageResult[]> {
+  const count = Math.min(Math.max(p.count, 1), 4);
+  const model = imageModel(p.model).acceptsImages ? imageModel(p.model) : imageModel("marketing-studio-1k");
+  const product = assetUrl(p.productAssetId);
+  const start = Math.max(0, INFLUENCER_SHOTS.findIndex((s) => s.id === p.shot));
+  const cost = model.credits * count;
+  const results = await chargedExact("image", `Photo influenceur — ${p.prompt.slice(0, 40)}`, cost, async () => {
+    const jobs = await Promise.all(Array.from({ length: count }, (_, i) => runJob({
+      kind: "image", model: model.id, prompt: p.prompt, aspectRatio: imageRatio(p.ratio), imageUrls: product ? [product] : undefined,
+      influencer: { creatorId: p.creatorId, shot: p.mode === "multi" ? INFLUENCER_SHOTS[(start + i) % INFLUENCER_SHOTS.length].id : p.shot, variation: p.mode === "variations" && count > 1 ? i + 1 : 0 },
+    })));
+    return jobs.flatMap((j) => j.images).map((url) => ({ id: uid("res"), url, thumbnail: url, ratio: p.ratio ?? "4:5", seed: url }));
+  });
+  record({ type: "image", prompt: p.prompt, status: "completed", thumbnails: results.map((r) => r.thumbnail), projectId: p.projectId ?? null, params: { style: "influencer", ratio: p.ratio ?? "", model: model.id }, creditsUsed: cost });
   return results;
 }
 

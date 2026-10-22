@@ -33,6 +33,33 @@ struct CopywriterView: View {
     static let goals = ["Sales", "Awareness", "Engagement", "Leads", "Retention"]
     static let cost = GenerationKind.copy.creditCost
 
+    /// What each tool asks for: its own fields, examples and which generic options apply.
+    struct ToolForm {
+        var productLabel = "Produit"
+        var productHint = "ex. Beurre de karité pur"
+        var audienceLabel: String? = "Pour qui ?"
+        var extras: [(key: String, label: String, hint: String, icon: String)] = []
+        var showTone = true
+        var showGoal = true
+        var tip: String
+    }
+    static func form(_ tool: String) -> ToolForm {
+        switch tool {
+        case "WhatsApp Status": return ToolForm(extras: [("price", "Prix", "ex. 5 000 FCFA", "tag"), ("offer", "Offre / promo", "ex. -20 % jusqu'à samedi", "gift"), ("contact", "Contact / livraison", "ex. Livraison gratuite à Cocody", "phone")], showGoal: false, tip: "3 à 5 statuts courts avec emojis, prix et appel à commander.")
+        case "WhatsApp Catalog": return ToolForm(productLabel: "Article", audienceLabel: nil, extras: [("price", "Prix", "ex. 12 500 FCFA", "tag"), ("details", "Tailles, couleurs, matière", "ex. S à XL, 3 coloris, coton wax", "list.bullet")], showTone: false, showGoal: false, tip: "Une fiche claire : nom, description, variantes et prix.")
+        case "Voice Note": return ToolForm(extras: [("duration", "Durée", "ex. 30 secondes", "clock"), ("offer", "Offre", "ex. 2 achetés = 1 offert", "gift")], showGoal: false, tip: "Un texte parlé naturel, à lire ou faire lire dans votre langue.")
+        case "Ad Copy": return ToolForm(extras: [("offer", "Offre", "ex. Livraison offerte cette semaine", "gift")], tip: "Texte pub Facebook / Instagram : accroche, bénéfices, appel à l'action.")
+        case "Product Description": return ToolForm(extras: [("details", "Caractéristiques", "ex. 100 % naturel, 250 g, fait au Burkina", "list.bullet")], showGoal: false, tip: "Description vendeuse pour boutique ou catalogue.")
+        case "Instagram Caption", "TikTok Caption": return ToolForm(extras: [("hashtags", "Hashtags souhaités", "ex. #abidjan #wax", "number")], showGoal: false, tip: "Légende courte avec hashtags.")
+        case "Email": return ToolForm(productLabel: "Sujet / produit", extras: [("offer", "Offre", "ex. -15 % pour nos clientes fidèles", "gift")], tip: "Objet + e-mail court.")
+        case "Headline", "Hook": return ToolForm(audienceLabel: "Pour qui ?", showGoal: false, tip: tool == "Hook" ? "Accroches qui arrêtent le scroll dans les 2 premières secondes." : "Titres percutants, 10 mots maximum.")
+        case "CTA": return ToolForm(audienceLabel: nil, extras: [("channel", "Où le client doit agir", "ex. WhatsApp, boutique, lien", "hand.tap")], showTone: false, tip: "Phrases courtes qui poussent à commander.")
+        case "UGC Script": return ToolForm(extras: [("duration", "Durée", "ex. 15 secondes", "clock"), ("creator", "Qui parle", "ex. une jeune maman, un étudiant", "person")], showGoal: false, tip: "Script face caméra, naturel, utilisable dans le Créateur UGC.")
+        case "Landing Page Copy": return ToolForm(extras: [("price", "Prix", "ex. 9 900 FCFA", "tag"), ("offer", "Garantie / offre", "ex. Satisfait ou remboursé 7 jours", "checkmark.seal")], tip: "Titre, bénéfices, preuves et appel à l'action.")
+        default: return ToolForm(tip: "")
+        }
+    }
+
     private enum Phase: Equatable { case idle, generating, done, failed }
 
     @State private var tool = "WhatsApp Status"
@@ -41,6 +68,7 @@ struct CopywriterView: View {
     @State private var audience = "mes clientes du quartier"
     @State private var tone: Set<String> = ["Professionnel"]
     @State private var goal: Set<String> = ["Ventes"]
+    @State private var extras: [String: String] = [:]
     @State private var phase: Phase = .idle
     @State private var results: [CopyResult] = []
     @State private var savedIds: Set<String> = []
@@ -53,12 +81,26 @@ struct CopywriterView: View {
             VStack(alignment: .leading, spacing: 22) {
                 header
                 toolPicker
-                VStack(spacing: 14) {
-                    MSTextField(label: "Produit", placeholder: "ex. Beurre de karité pur", text: $product, icon: "shippingbox")
-                    MSTextField(label: "Pour qui ?", placeholder: "ex. les mamans d'Abidjan", text: $audience, icon: "person.2")
+                let f = Self.form(tool)
+                VStack(alignment: .leading, spacing: 14) {
+                    if !f.tip.isEmpty {
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "lightbulb.fill").foregroundStyle(MSColor.accent)
+                            Text(f.tip).msBody(13, color: MSColor.text2)
+                        }
+                    }
+                    MSTextField(label: f.productLabel, placeholder: f.productHint, text: $product, icon: "shippingbox")
+                    if let a = f.audienceLabel {
+                        MSTextField(label: a, placeholder: "ex. les mamans d'Abidjan", text: $audience, icon: "person.2")
+                    }
+                    ForEach(f.extras, id: \.key) { e in
+                        MSTextField(label: e.label, placeholder: e.hint, text: Binding(get: { extras[e.key, default: ""] }, set: { extras[e.key] = $0 }), icon: e.icon)
+                    }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
-                CreativeSection(title: "Ton") { ChipGroup(options: Self.tones.map(Self.toneLabel), selection: $tone, allowDeselect: false) }
+                .id(tool)
+                .transition(.opacity)
+                if f.showTone { CreativeSection(title: "Ton") { ChipGroup(options: Self.tones.map(Self.toneLabel), selection: $tone, allowDeselect: false) } }
                 CreativeSection(title: "Langue") {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
@@ -70,7 +112,7 @@ struct CopywriterView: View {
                     }
                     .padding(.horizontal, -MSSpacing.gutter)
                 }
-                CreativeSection(title: "Objectif") { ChipGroup(options: Self.goals.map { Self.goalLabels[$0] ?? $0 }, selection: $goal, allowDeselect: false) }
+                if f.showGoal { CreativeSection(title: "Objectif") { ChipGroup(options: Self.goals.map { Self.goalLabels[$0] ?? $0 }, selection: $goal, allowDeselect: false) } }
                 brandVoiceCard
                 CreditCostRow(cost: Self.cost, label: Self.toolLabel(tool))
                 MSButton(title: results.isEmpty ? "Générer" : "Générer une variante", icon: "sparkles", isLoading: phase == .generating, isDisabled: !canGenerate) { generate() }
@@ -219,7 +261,13 @@ struct CopywriterView: View {
         MSHaptic.tap()
         lastError = nil
         withAnimation(MSAnimation.gentle) { phase = .generating }
-        let p = CopyParams(tool: tool, product: product, audience: audience, tone: Self.key(tone.first ?? "Professionnel", in: Self.toneLabels), goal: Self.key(goal.first ?? "Ventes", in: Self.goalLabels), language: language)
+        let f = Self.form(tool)
+        let details = f.extras.compactMap { e -> String? in
+            let v = extras[e.key, default: ""].trimmingCharacters(in: .whitespaces)
+            return v.isEmpty ? nil : "\(e.label) : \(v)"
+        }
+        let fullProduct = ([product] + details).joined(separator: ". ")
+        let p = CopyParams(tool: tool, product: fullProduct, audience: f.audienceLabel == nil ? "" : audience, tone: Self.key(tone.first ?? "Professionnel", in: Self.toneLabels), goal: Self.key(goal.first ?? "Ventes", in: Self.goalLabels), language: language)
         Task {
             do {
                 let r = try await API.generateCopy(p, store: store)

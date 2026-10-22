@@ -37,6 +37,8 @@ export default function StudioPage() {
   const [duration, setDuration] = useState<5 | 10 | 15>(5);
   const [productId, setProductId] = useState<string | null>(null);
   const [creatorId, setCreatorId] = useState<string | null>(null);
+  const [shotMode, setShotMode] = useState<"multi" | "variations">("variations");
+  const [shot, setShot] = useState("hold");
 
   // Deep links: /studio?mode=ugc&creator=<id>, /studio?mode=video&model=<id>
   useEffect(() => {
@@ -62,8 +64,9 @@ export default function StudioPage() {
   }, [kind, imgModel, count, vidModel, duration, productId, light]);
 
   const generate = () => {
-    const modelLabel = kind === "image" ? imageModel(imgModel).label : kind === "ugc" ? `UGC · ${creators.find((c) => c.id === creatorId)?.name ?? ""}` : videoModel(vidModel).label;
-    void submit({ kind, prompt, modelLabel, ratio: kind === "ugc" ? "9:16" : ratio, imageModel: imgModel, count, videoModel: vidModel, durationSec: duration, productAssetId: productId, creatorId });
+    const creatorName = creators.find((c) => c.id === creatorId)?.name ?? "";
+    const modelLabel = kind === "image" && creatorId ? `Influenceur · ${creatorName} · ${imageModel(imgModel).label}` : kind === "image" ? imageModel(imgModel).label : kind === "ugc" ? `UGC · ${creators.find((c) => c.id === creatorId)?.name ?? ""}` : videoModel(vidModel).label;
+    void submit({ kind, prompt, modelLabel, ratio: kind === "ugc" ? "9:16" : ratio, imageModel: imgModel, count, videoModel: vidModel, durationSec: duration, productAssetId: productId, creatorId, shotMode, shot });
   };
 
   const empty = runs.length === 0 && !hasHistory;
@@ -84,7 +87,7 @@ export default function StudioPage() {
               </div>
             </div>
           ) : (
-            <RunFeed runs={runs} onRemove={remove} onReuse={setPrompt} />
+            <RunFeed runs={runs} onRemove={remove} onReuse={setPrompt} onMore={(r, mode) => r.input && void submit({ ...r.input, count: 4, shotMode: mode, modelLabel: `${r.input.modelLabel} · ${mode === "multi" ? "autres plans" : "variantes"}` })} />
           )}
         </div>
       </div>
@@ -102,6 +105,7 @@ export default function StudioPage() {
           duration={duration} onDuration={setDuration}
           productId={productId} onProduct={(a: Asset | null) => setProductId(a?.id ?? null)}
           creatorId={creatorId} onCreator={setCreatorId}
+          shotMode={shotMode} onShotMode={setShotMode} shot={shot} onShot={setShot}
           cost={cost}
           onGenerate={generate}
         />

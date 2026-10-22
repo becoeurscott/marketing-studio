@@ -15,13 +15,14 @@ struct OnboardingFlow: View {
     @State private var shopName = ""
     @State private var goals: Set<String> = []
     @State private var channels: Set<String> = ["WhatsApp"]
+    @State private var showCountries = false
 
     static let sectors: [(name: String, icon: String, category: TemplateCategory)] = [
         ("Couture & wax", "tshirt", .waxCouture), ("Cosmétiques", "drop", .cosmetics), ("Coiffure", "comb", .hair),
         ("Restaurant / maquis", "fork.knife", .restaurant), ("Électronique", "iphone", .electronics),
         ("Alimentation", "basket", .grocery), ("Boutique / marché", "storefront", .promo), ("Autre", "sparkles", .ugc),
     ]
-    static let goalOptions = ["Vendre plus", "Lancer un produit", "Préparer une fête (Tabaski, Noël…)", "Être plus visible", "Gagner du temps"]
+    static let goalOptions = ["Vendre plus", "Lancer un produit", "Être plus visible", "Gagner du temps"]
     static let channelOptions = ["WhatsApp", "Facebook", "TikTok", "Instagram", "YouTube"]
 
     var body: some View {
@@ -115,18 +116,41 @@ struct OnboardingFlow: View {
     private var firstName: String { store.user.name.split(separator: " ").first.map(String.init) ?? "" }
 
     private var welcome: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack(alignment: .top, spacing: 8) {
-                ForEach(Array(Catalog.creators.filter(\.featured).prefix(3))) { c in
-                    CreatorIntroView(creator: c)
-                        .aspectRatio(9.0 / 15.0, contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        VStack(alignment: .leading, spacing: 22) {
+            ZStack(alignment: .bottomLeading) {
+                ShowcaseWall(names: ["temoignage-karite", "atelier-couture", "degustation-maquis"], height: 400)
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkles").font(.system(size: 11, weight: .bold))
+                    Text("\(SokoziaConfig.welcomeCredits) crédits offerts").font(MSFont.caption(12))
                 }
+                .foregroundStyle(MSColor.onAccent)
+                .padding(.horizontal, 10).frame(height: 26)
+                .background(MSColor.accent, in: Capsule())
+                .padding(.bottom, 8)
             }
-            .padding(.top, 20)
-            VStack(alignment: .leading, spacing: 8) {
-                Text(firstName.isEmpty ? "Bienvenue sur Marketing Studio" : "Bienvenue, \(firstName) !").msTitle(30)
-                Text("En une minute, on prépare votre espace : pays, activité et réseaux. Ensuite, vos photos produit deviennent des pubs, des statuts WhatsApp et des vidéos UGC.").msBody(15)
+            .padding(.top, 12)
+            VStack(alignment: .leading, spacing: 10) {
+                Text(firstName.isEmpty ? "Bienvenue sur Marketing Studio" : "Bienvenue, \(firstName) !").msTitle(32)
+                Text("Vos photos produit deviennent des pubs, des statuts WhatsApp et des vidéos UGC avec des créateurs africains.").msBody(15)
+            }
+            VStack(alignment: .leading, spacing: 12) {
+                welcomeRow("photo.on.rectangle.angled", "Photos produit pro", "Depuis une simple photo prise au téléphone")
+                welcomeRow("person.crop.rectangle.stack", "Vidéos UGC", "Des créateurs qui parlent vos langues")
+                welcomeRow("message.fill", "Prêt pour WhatsApp", "Formats statut, Facebook et TikTok")
+            }
+            .padding(14)
+            .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
+        }
+    }
+
+    private func welcomeRow(_ icon: String, _ title: String, _ subtitle: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon).font(.system(size: 15, weight: .semibold)).foregroundStyle(MSColor.onAccent)
+                .frame(width: 36, height: 36).background(MSColor.accent, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).msHeadline(15)
+                Text(subtitle).msCaption()
             }
         }
     }
@@ -134,19 +158,27 @@ struct OnboardingFlow: View {
     private var countryStep: some View {
         VStack(alignment: .leading, spacing: 16) {
             title("Où vendez-vous ?", "Pour vos prix, vos moyens de paiement et vos langues.")
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
-                ForEach(Market.countries) { c in
-                    selectable(selected: country == c.code) {
-                        country = c.code
-                        if !c.languages.contains(language) { language = c.languages.first ?? "fr" }
-                    } label: {
-                        HStack(spacing: 8) {
-                            Text(c.flag).font(.system(size: 22))
-                            Text(c.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1).minimumScaleFactor(0.8)
-                            Spacer(minLength: 0)
-                        }
-                    }
+            Button { MSHaptic.tap(); showCountries = true } label: {
+                HStack(spacing: 10) {
+                    Text(Market.country(country).flag).font(.system(size: 24))
+                    Text(Market.country(country).name).font(MSFont.control(16)).foregroundStyle(MSColor.text)
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down").font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.muted)
                 }
+                .padding(.horizontal, 14)
+                .frame(height: 56)
+                .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous).strokeBorder(MSColor.accent.opacity(0.6), lineWidth: 1))
+            }
+            .buttonStyle(MSPressStyle())
+            .sheet(isPresented: $showCountries) {
+                CountryPickerSheet(selection: country) { c in
+                    country = c.code
+                    if !c.languages.contains(language) { language = c.languages.first ?? "fr" }
+                    showCountries = false
+                }
+                .presentationDetents([.large])
+                .preferredColorScheme(.dark)
             }
             Text("Langue principale").msHeadline(16).padding(.top, 6)
             FlowLayout(spacing: 8) {
@@ -332,5 +364,40 @@ struct OnboardingFlow: View {
         answers.platforms = Array(channels)
         MSHaptic.success()
         store.completeOnboarding(answers)
+    }
+}
+
+
+/// Searchable list of every African country.
+struct CountryPickerSheet: View {
+    var selection: String
+    var onPick: (Market.Country) -> Void
+    @State private var query = ""
+
+    private var filtered: [Market.Country] {
+        let q = query.trimmingCharacters(in: .whitespaces).folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+        guard !q.isEmpty else { return Market.countries }
+        return Market.countries.filter { $0.name.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current).contains(q) }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List(filtered) { c in
+                Button { MSHaptic.tap(); onPick(c) } label: {
+                    HStack(spacing: 12) {
+                        Text(c.flag).font(.system(size: 24))
+                        Text(c.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                        Spacer()
+                        if c.code == selection { Image(systemName: "checkmark.circle.fill").foregroundStyle(MSColor.accent) }
+                    }
+                }
+                .listRowBackground(c.code == selection ? MSColor.accent.opacity(0.10) : MSColor.card)
+            }
+            .scrollContentBackground(.hidden)
+            .background(MSColor.bg)
+            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Rechercher un pays")
+            .navigationTitle("Votre pays")
+            .navigationBarTitleDisplayMode(.inline)
+        }
     }
 }

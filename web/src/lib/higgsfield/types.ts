@@ -25,6 +25,8 @@ export interface GenerationRequest {
   modelReferenceUrl?: string;
   /** Video only (Kling 3.0): custom shots rendered as one video; durations are summed for generation and billing. */
   shots?: { prompt: string; duration: number }[];
+  /** Image only: influencer photo with one of our creators (server builds the full prompt, see lib/influencer.ts). */
+  influencer?: { creatorId: string; shot?: string; variation?: number };
 }
 
 export interface HfPreset {

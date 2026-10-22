@@ -31,6 +31,7 @@ enum Market {
         "KES": Currency(code: "KES", symbol: "KSh", perXof: 0.23, step: 10),
         "GHS": Currency(code: "GHS", symbol: "GH₵", perXof: 0.025, step: 1),
         "CDF": Currency(code: "CDF", symbol: "FC", perXof: 5, step: 500),
+        "USD": Currency(code: "USD", symbol: "$", perXof: 1.0 / 590.0, step: 1),
     ]
 
     struct PaymentMethod: Identifiable, Hashable {
@@ -64,6 +65,8 @@ enum Market {
         Language(id: "ln", label: "Lingala"),
         Language(id: "sw", label: "Swahili"),
         Language(id: "pcm", label: "Pidgin"),
+        Language(id: "ar", label: "Arabe"),
+        Language(id: "pt", label: "Portugais"),
     ]
 
     static func languageLabel(_ id: String) -> String { languages.first { $0.id == id }?.label ?? id }
@@ -89,7 +92,52 @@ enum Market {
         Country(code: "NG", name: "Nigeria", flag: "🇳🇬", currency: "NGN", dialCode: "234", payments: ["mtn-momo", "airtel-money", "card"], languages: ["en", "pcm"]),
         Country(code: "GH", name: "Ghana", flag: "🇬🇭", currency: "GHS", dialCode: "233", payments: ["mtn-momo", "airtel-money", "card"], languages: ["en", "pcm"]),
         Country(code: "KE", name: "Kenya", flag: "🇰🇪", currency: "KES", dialCode: "254", payments: ["mpesa", "airtel-money", "card"], languages: ["en", "sw"]),
-    ]
+        Country(code: "DZ", name: "Algérie", flag: "🇩🇿", currency: "USD", dialCode: "213", payments: ["card"], languages: ["fr", "ar"]),
+        Country(code: "AO", name: "Angola", flag: "🇦🇴", currency: "USD", dialCode: "244", payments: ["card"], languages: ["pt"]),
+        Country(code: "BJ", name: "Bénin", flag: "🇧🇯", currency: "XOF", dialCode: "229", payments: ["orange-money", "moov-money", "card"], languages: ["fr"]),
+        Country(code: "BW", name: "Botswana", flag: "🇧🇼", currency: "USD", dialCode: "267", payments: ["card"], languages: ["en"]),
+        Country(code: "BI", name: "Burundi", flag: "🇧🇮", currency: "USD", dialCode: "257", payments: ["card"], languages: ["fr", "sw"]),
+        Country(code: "CV", name: "Cap-Vert", flag: "🇨🇻", currency: "USD", dialCode: "238", payments: ["card"], languages: ["pt"]),
+        Country(code: "CF", name: "Centrafrique", flag: "🇨🇫", currency: "XAF", dialCode: "236", payments: ["mtn-momo", "orange-money", "card"], languages: ["fr"]),
+        Country(code: "KM", name: "Comores", flag: "🇰🇲", currency: "USD", dialCode: "269", payments: ["card"], languages: ["fr", "ar"]),
+        Country(code: "CG", name: "Congo", flag: "🇨🇬", currency: "XAF", dialCode: "242", payments: ["mtn-momo", "orange-money", "card"], languages: ["fr", "ln"]),
+        Country(code: "DJ", name: "Djibouti", flag: "🇩🇯", currency: "USD", dialCode: "253", payments: ["card"], languages: ["fr", "ar"]),
+        Country(code: "EG", name: "Égypte", flag: "🇪🇬", currency: "USD", dialCode: "20", payments: ["card"], languages: ["ar", "en"]),
+        Country(code: "ER", name: "Érythrée", flag: "🇪🇷", currency: "USD", dialCode: "291", payments: ["card"], languages: ["en", "ar"]),
+        Country(code: "SZ", name: "Eswatini", flag: "🇸🇿", currency: "USD", dialCode: "268", payments: ["card"], languages: ["en"]),
+        Country(code: "ET", name: "Éthiopie", flag: "🇪🇹", currency: "USD", dialCode: "251", payments: ["mpesa", "airtel-money", "card"], languages: ["en"]),
+        Country(code: "GA", name: "Gabon", flag: "🇬🇦", currency: "XAF", dialCode: "241", payments: ["mtn-momo", "orange-money", "card"], languages: ["fr"]),
+        Country(code: "GM", name: "Gambie", flag: "🇬🇲", currency: "USD", dialCode: "220", payments: ["card"], languages: ["en", "wo"]),
+        Country(code: "GN", name: "Guinée", flag: "🇬🇳", currency: "USD", dialCode: "224", payments: ["card"], languages: ["fr"]),
+        Country(code: "GW", name: "Guinée-Bissau", flag: "🇬🇼", currency: "XOF", dialCode: "245", payments: ["orange-money", "moov-money", "card"], languages: ["pt", "fr"]),
+        Country(code: "GQ", name: "Guinée équatoriale", flag: "🇬🇶", currency: "XAF", dialCode: "240", payments: ["mtn-momo", "orange-money", "card"], languages: ["fr", "en"]),
+        Country(code: "LS", name: "Lesotho", flag: "🇱🇸", currency: "USD", dialCode: "266", payments: ["card"], languages: ["en"]),
+        Country(code: "LR", name: "Liberia", flag: "🇱🇷", currency: "USD", dialCode: "231", payments: ["card"], languages: ["en"]),
+        Country(code: "LY", name: "Libye", flag: "🇱🇾", currency: "USD", dialCode: "218", payments: ["card"], languages: ["ar", "en"]),
+        Country(code: "MG", name: "Madagascar", flag: "🇲🇬", currency: "USD", dialCode: "261", payments: ["card"], languages: ["fr"]),
+        Country(code: "MW", name: "Malawi", flag: "🇲🇼", currency: "USD", dialCode: "265", payments: ["mpesa", "airtel-money", "card"], languages: ["en"]),
+        Country(code: "MA", name: "Maroc", flag: "🇲🇦", currency: "USD", dialCode: "212", payments: ["card"], languages: ["fr", "ar"]),
+        Country(code: "MU", name: "Maurice", flag: "🇲🇺", currency: "USD", dialCode: "230", payments: ["card"], languages: ["en", "fr"]),
+        Country(code: "MR", name: "Mauritanie", flag: "🇲🇷", currency: "USD", dialCode: "222", payments: ["card"], languages: ["ar", "fr"]),
+        Country(code: "MZ", name: "Mozambique", flag: "🇲🇿", currency: "USD", dialCode: "258", payments: ["mpesa", "airtel-money", "card"], languages: ["pt"]),
+        Country(code: "NA", name: "Namibie", flag: "🇳🇦", currency: "USD", dialCode: "264", payments: ["card"], languages: ["en"]),
+        Country(code: "NE", name: "Niger", flag: "🇳🇪", currency: "XOF", dialCode: "227", payments: ["orange-money", "moov-money", "card"], languages: ["fr"]),
+        Country(code: "UG", name: "Ouganda", flag: "🇺🇬", currency: "USD", dialCode: "256", payments: ["mpesa", "airtel-money", "card"], languages: ["en", "sw"]),
+        Country(code: "RW", name: "Rwanda", flag: "🇷🇼", currency: "USD", dialCode: "250", payments: ["mpesa", "airtel-money", "card"], languages: ["fr", "en", "sw"]),
+        Country(code: "ST", name: "Sao Tomé-et-Principe", flag: "🇸🇹", currency: "USD", dialCode: "239", payments: ["card"], languages: ["pt"]),
+        Country(code: "SC", name: "Seychelles", flag: "🇸🇨", currency: "USD", dialCode: "248", payments: ["card"], languages: ["en", "fr"]),
+        Country(code: "SL", name: "Sierra Leone", flag: "🇸🇱", currency: "USD", dialCode: "232", payments: ["card"], languages: ["en"]),
+        Country(code: "SO", name: "Somalie", flag: "🇸🇴", currency: "USD", dialCode: "252", payments: ["card"], languages: ["ar", "en"]),
+        Country(code: "SD", name: "Soudan", flag: "🇸🇩", currency: "USD", dialCode: "249", payments: ["card"], languages: ["ar", "en"]),
+        Country(code: "SS", name: "Soudan du Sud", flag: "🇸🇸", currency: "USD", dialCode: "211", payments: ["card"], languages: ["en"]),
+        Country(code: "ZA", name: "Afrique du Sud", flag: "🇿🇦", currency: "USD", dialCode: "27", payments: ["card"], languages: ["en"]),
+        Country(code: "TZ", name: "Tanzanie", flag: "🇹🇿", currency: "USD", dialCode: "255", payments: ["mpesa", "airtel-money", "card"], languages: ["sw", "en"]),
+        Country(code: "TD", name: "Tchad", flag: "🇹🇩", currency: "XAF", dialCode: "235", payments: ["mtn-momo", "orange-money", "card"], languages: ["fr", "ar"]),
+        Country(code: "TG", name: "Togo", flag: "🇹🇬", currency: "XOF", dialCode: "228", payments: ["orange-money", "moov-money", "card"], languages: ["fr"]),
+        Country(code: "TN", name: "Tunisie", flag: "🇹🇳", currency: "USD", dialCode: "216", payments: ["card"], languages: ["fr", "ar"]),
+        Country(code: "ZM", name: "Zambie", flag: "🇿🇲", currency: "USD", dialCode: "260", payments: ["mpesa", "airtel-money", "card"], languages: ["en"]),
+        Country(code: "ZW", name: "Zimbabwe", flag: "🇿🇼", currency: "USD", dialCode: "263", payments: ["card"], languages: ["en"]),
+    ].sorted { $0.name.folding(options: .diacriticInsensitive, locale: .current) < $1.name.folding(options: .diacriticInsensitive, locale: .current) }
 
     /// Pilot country, used until the user picks another one.
     static let defaultCountry = "CI"

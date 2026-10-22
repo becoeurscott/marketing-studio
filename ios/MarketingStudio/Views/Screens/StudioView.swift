@@ -64,12 +64,13 @@ struct StudioView: View {
         .toolbar(.hidden, for: .navigationBar)
         .onChange(of: store.pendingCreatorId) { _, id in
             // "Utiliser en UGC" from the Creators screen while the Studio is open.
-            guard let id, let c = store.creator(id) else { return }
-            ugc.creator = c
+            guard id != nil else { return }
+            consumePendingCreator()
         }
         .onAppear {
             applyPreferencesIfFresh()
             consumePendingTemplate()
+            consumePendingCreator()
             if ugc.creator == nil { ugc.creator = store.creators.first }
         }
         .onChange(of: store.pendingTemplateId) { _, _ in consumePendingTemplate() }
@@ -85,7 +86,7 @@ struct StudioView: View {
             UploadProductSheet { asset in setProduct(asset) }
         }
         .msSheet(isPresented: $showCreatorPicker, detents: [.medium, .large]) {
-            CreatorPickerSheet(selection: $ugc.creator)
+            if mode == .image { CreatorPickerSheet(selection: $image.creator) } else { CreatorPickerSheet(selection: $ugc.creator) }
         }
         .msSheet(isPresented: $showModelPicker, detents: [.medium]) { modelSheet }
         .msSheet(isPresented: $showOptions, detents: [.medium, .large]) { optionsSheet }
@@ -290,10 +291,17 @@ struct StudioView: View {
         case .idle:
             if let c = ugc.creator {
                 // The creator introduces themself (muted, speaker button to listen).
-                CreatorIntroView(creator: c)
-                    .aspectRatio(9.0 / 16.0, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
-                    .frame(maxWidth: .infinity)
+                VStack(spacing: 10) {
+                    CreatorIntroView(creator: c)
+                        .aspectRatio(9.0 / 16.0, contentMode: .fit)
+                        .frame(maxHeight: 300)
+                        .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+                    Text("\(c.name) présentera votre produit").msCaption()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.top, 110)
+                .padding(.bottom, bottomInset + 16)
                     .id(c.id)
                     .transition(.opacity)
             } else {
@@ -605,6 +613,16 @@ struct StudioView: View {
             }
         }
         markSaved()
+    }
+
+    /// A creator picked elsewhere ("Utiliser en UGC") lands straight in the UGC slot.
+    private func consumePendingCreator() {
+        guard let id = store.pendingCreatorId, let c = store.creator(id) else { return }
+        store.pendingCreatorId = nil
+        withAnimation(MSAnimation.gentle) {
+            ugc.creator = c
+            mode = .ugc
+        }
     }
 
     private func applyPreferencesIfFresh() {

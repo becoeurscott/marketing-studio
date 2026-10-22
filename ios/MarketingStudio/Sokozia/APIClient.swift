@@ -17,6 +17,9 @@ struct GenerationRequest: Encodable {
     var upscale: Bool?
     /// Video only: reference images (creator sheet, product) for reference-to-video.
     var references: [String]?
+    /// Image only: influencer photo with one of our creators (the server builds the director prompt).
+    var influencer: Influencer?
+    struct Influencer: Encodable { var creatorId: String; var shot: String?; var variation: Int? }
 }
 
 struct GenerationJob: Decodable {

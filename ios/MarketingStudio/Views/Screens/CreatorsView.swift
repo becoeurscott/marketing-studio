@@ -194,7 +194,8 @@ struct CreatorDetailSheet: View {
                     MSButton(title: "Utiliser en UGC", icon: "video.fill") {
                         store.pendingCreatorId = creator.id
                         dismiss()
-                        router.push(.ugcCreator, on: .studio)
+                        router.popToRoot(on: .studio)
+                        router.select(.studio)
                         router.toast("\(creator.name) sélectionné(e) pour l'UGC", style: .success)
                     }
                     .padding(.top, 4)
