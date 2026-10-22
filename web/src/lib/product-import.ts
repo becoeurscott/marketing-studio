@@ -9,7 +9,13 @@ export class ImportError extends Error {
   constructor(message: string, public status = 422) { super(message); }
 }
 
-const UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
+/** Link-preview bots first: shops, Facebook and Instagram serve them the product preview (og:image) even when they block other servers. */
+const AGENTS = [
+  "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+  "WhatsApp/2.24.6.77 A",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+];
+const UA = AGENTS[2];
 
 function privateIp(ip: string): boolean {
   if (isIP(ip) === 6) {
@@ -31,11 +37,11 @@ async function assertPublic(u: URL) {
   if (!addrs.length || addrs.some((a) => privateIp(a.address))) throw new ImportError("Lien non autorisé.", 400);
 }
 
-async function safeFetch(raw: string, accept: string, maxBytes: number): Promise<{ url: URL; type: string; body: Buffer }> {
+async function safeFetch(raw: string, accept: string, maxBytes: number, ua = UA): Promise<{ url: URL; type: string; body: Buffer }> {
   let url = new URL(raw);
   for (let hop = 0; hop < 4; hop++) {
     await assertPublic(url);
-    const res = await fetch(url, { redirect: "manual", headers: { "user-agent": UA, accept, "accept-language": "fr-FR,fr;q=0.9,en;q=0.8" }, signal: AbortSignal.timeout(10_000) });
+    const res = await fetch(url, { redirect: "manual", headers: { "user-agent": ua, accept, "accept-language": "fr-FR,fr;q=0.9,en;q=0.8" }, signal: AbortSignal.timeout(10_000) });
     if (res.status >= 300 && res.status < 400 && res.headers.get("location")) { url = new URL(res.headers.get("location")!, url); continue; }
     if (!res.ok || !res.body) throw new ImportError(`Le site a refusé l'accès (${res.status}). Importez plutôt la photo.`, 422);
     if (Number(res.headers.get("content-length")) > maxBytes) throw new ImportError("Fichier trop lourd.", 413);
@@ -98,12 +104,28 @@ function jsonLd(html: string): Found {
   return out;
 }
 
+function safeHost(l: string) { try { return new URL(/^https?:/i.test(l) ? l : "https://" + l).hostname; } catch { return "invalid"; } }
+
 export interface ImportedProduct { image: Buffer; name: string; price?: string; currency?: string; source: string }
 
 export async function importProduct(link: string): Promise<ImportedProduct> {
-  let page;
-  try { page = await safeFetch(link.trim(), "text/html,application/xhtml+xml,image/*;q=0.8", 3 * 1024 * 1024); }
-  catch (e) { if (e instanceof ImportError) throw e; throw new ImportError("Impossible d'ouvrir ce lien. Vérifiez-le ou importez la photo.", 422); }
+  let page: Awaited<ReturnType<typeof safeFetch>> | undefined;
+  let lastError: unknown;
+  for (const ua of AGENTS) {
+    try {
+      const p = await safeFetch(link.trim(), "text/html,application/xhtml+xml,image/*;q=0.8", 3 * 1024 * 1024, ua);
+      if (p.type.startsWith("image/") || /og:image|application\/ld\+json|twitter:image/i.test(p.body.toString("utf8"))) { page = p; break; }
+      page ??= p;
+    } catch (e) {
+      lastError = e;
+      if (e instanceof ImportError && e.status === 400) throw e;
+    }
+  }
+  if (!page) {
+    console.warn("product_import_failed", { host: safeHost(link), reason: lastError instanceof Error ? lastError.message : "fetch" });
+    if (lastError instanceof ImportError) throw lastError;
+    throw new ImportError("Impossible d'ouvrir ce lien. Vérifiez-le ou importez la photo.", 422);
+  }
 
   let found: Found = { images: [] };
   let candidates: string[] = [];
@@ -117,6 +139,7 @@ export async function importProduct(link: string): Promise<ImportedProduct> {
     meta(html, ["og:image:secure_url", "og:image", "twitter:image", "twitter:image:src", "image"]),
     html.match(/<link[^>]+rel=["']image_src["'][^>]*href=["']([^"']+)["']/i)?.[1],
   ].filter((x): x is string => !!x).map((u) => { try { return new URL(decode(u), page.url).toString(); } catch { return ""; } }).filter(Boolean);
+  if (!candidates.length) console.warn("product_import_failed", { host: page.url.hostname, reason: "no_image" });
   if (!candidates.length) throw new ImportError("Aucune photo de produit trouvée sur cette page. Importez la photo directement.", 422);
 
   const name = (found.name ?? meta(html, ["og:title", "twitter:title"]) ?? html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] ?? "Produit").trim();
@@ -129,6 +152,7 @@ export async function importProduct(link: string): Promise<ImportedProduct> {
       return { image: await toJpeg(img.body), name: decode(name).slice(0, 80), price, currency, source: page.url.toString() };
     } catch { /* try the next candidate */ }
   }
+  console.warn("product_import_failed", { host: page.url.hostname, reason: "image_download" });
   throw new ImportError("La photo du produit n'a pas pu être téléchargée. Importez-la directement.", 422);
 }
 
