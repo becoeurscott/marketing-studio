@@ -2,7 +2,7 @@
 
 import { CheckSquare, Download, FolderInput, Images, Trash2, Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { AssetCard } from "@/components/assets/AssetCard";
 import { DeleteAssetsModal, MoveAssetModal, PreviewAssetModal, RenameAssetModal } from "@/components/assets/AssetModals";
 import { ExportModal } from "@/components/assets/ExportModal";
@@ -49,6 +49,40 @@ export default function AssetsPage() {
   const [moving, setMoving] = useState<Asset[]>([]);
   const [deleting, setDeleting] = useState<Asset[]>([]);
   const [exportOpen, setExportOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const addAsset = useStore((s) => s.addAsset);
+
+  const handleUpload = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    for (const file of Array.from(files)) {
+      try {
+        const res = await fetch("/api/hf/uploads", { method: "POST", body: file });
+        const data = (await res.json()) as { url?: string; key?: string; error?: string };
+        if (data.url) {
+          const isVideo = file.type.startsWith("video/");
+          addAsset({
+            name: file.name.replace(/\.[^.]+$/, ""),
+            type: isVideo ? "video" : "image",
+            url: data.url,
+            thumbnail: data.url,
+            projectId: null,
+            favorite: false,
+            sizeKb: Math.round(file.size / 1024),
+            tags: ["uploaded"],
+          });
+          toast.success("Importé", file.name);
+        } else {
+          toast.error("Échec", data.error ?? "Envoi impossible.");
+        }
+      } catch {
+        toast.error("Erreur", `Impossible d'importer ${file.name}.`);
+      }
+    }
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
+  }, [addAsset, toast]);
 
   const counts = useMemo(() => {
     const c: Record<TypeTab, number> = { all: assets.length, image: 0, video: 0, audio: 0, logo: 0, brand: 0, export: 0 };
@@ -83,11 +117,12 @@ export default function AssetsPage() {
     <>
       <PageHeader
         title="Bibliothèque de ressources"
-        description="Toutes vos images, vidéos, pistes audio, logos et exports au même endroit."
+        description="Tout votre contenu : générations IA, imports et fichiers téléversés."
         actions={
           <>
             <Button variant="secondary" leftIcon={<CheckSquare className="size-4" />} onClick={() => (selecting ? exitSelect() : setSelecting(true))}>{selecting ? "Terminé" : "Sélectionner"}</Button>
-            <Button leftIcon={<Upload className="size-4" />} onClick={() => router.push("/studio")}>Importer</Button>
+            <input ref={fileRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} />
+            <Button leftIcon={<Upload className="size-4" />} disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? "Envoi…" : "Importer"}</Button>
           </>
         }
       />

@@ -1,78 +1,76 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, CalendarHeart, FolderKanban, Images, Megaphone, Sparkles, Wand2, Play } from "lucide-react";
+import { ArrowRight, Camera, CreditCard, Film, FolderKanban, Images, Megaphone, Sparkles, Type, Wand2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { PageHeader, Section } from "@/components/shell/PageHeader";
+import { PageHeader } from "@/components/shell/PageHeader";
 import { ShowcaseBanner } from "@/components/home/ShowcaseBanner";
-import { Badge } from "@/components/ui/Badge";
+import { FeatureBanner } from "@/components/home/FeatureBanner";
+import { TrendingVideos } from "@/components/home/TrendingVideos";
+import { UserGallery } from "@/components/home/UserGallery";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { templates } from "@/data/templates";
 import { useStore } from "@/lib/store";
-import { cn, formatNumber, greetingForHour, timeAgo } from "@/lib/utils";
-import { AD_FORMAT_LABELS, GENERATION_TYPE_LABELS, labelOf } from "@/lib/labels";
-import { platformLabel } from "@/components/library/TemplateCard";
-import { ProjectCard } from "@/components/projects/ProjectCard";
-import { studioRouteForMode } from "@/components/studio/useTemplatePreset";
-import { upcomingMoments } from "@/lib/market";
+import { cn, formatNumber, greetingForHour } from "@/lib/utils";
+
+interface QuickAction { icon: React.ElementType; label: string; desc: string; href: string; accent?: boolean }
+
+const QUICK_ACTIONS: QuickAction[] = [
+  { icon: Wand2, label: "Générer une image", desc: "IA multi-modèles", href: "/studio/image", accent: true },
+  { icon: Film, label: "Créer une vidéo", desc: "UGC, pub, produit", href: "/studio/video" },
+  { icon: Camera, label: "Shooting produit", desc: "Photo studio IA", href: "/studio/product-shoot" },
+  { icon: Megaphone, label: "Créer une pub", desc: "75 templates", href: "/studio/ads" },
+  { icon: Type, label: "Rédiger un texte", desc: "Accroches, posts", href: "/studio/copy" },
+  { icon: Images, label: "Mes ressources", desc: "Tout mon contenu", href: "/assets" },
+];
 
 export default function HomePage() {
   const router = useRouter();
   const user = useStore((s) => s.user);
+  const credits = useStore((s) => s.credits);
   const projects = useStore((s) => s.projects);
   const assets = useStore((s) => s.assets);
-  const campaigns = useStore((s) => s.campaigns);
-  const credits = useStore((s) => s.credits);
-  const generations = useStore((s) => s.generations);
-  // Safe: this page only renders client-side after store hydration (see (app)/layout.tsx).
   const [greeting] = useState(() => greetingForHour(new Date().getHours()));
 
-  const active = projects.filter((p) => p.status === "active");
-  const recentProjects = [...active].sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1)).slice(0, 4);
-  const recentAssets = [...assets].filter((a) => a.type === "image" || a.type === "video").sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 8);
-  const continueItems = generations.filter((g) => g.status === "completed" && g.thumbnails.length).slice(0, 3);
-  const featuredTemplates = templates.filter((t) => t.popular).slice(0, 6);
-  const setPendingTemplate = useStore((s) => s.setPendingTemplate);
-  const [moments] = useState(() => upcomingMoments().slice(0, 3));
-  const openTemplate = (id: string) => {
-    const t = templates.find((x) => x.id === id);
-    if (!t) return;
-    setPendingTemplate(t.id);
-    router.push(studioRouteForMode(t.preset.mode));
-  };
-
-  const stats = [
-    { label: "Projets", value: active.length, icon: FolderKanban, href: "/projects" },
-    { label: "Ressources", value: assets.length, icon: Images, href: "/assets" },
-    { label: "Campagnes", value: campaigns.length, icon: Megaphone, href: "/campaigns" },
-    { label: "Crédits", value: credits, icon: Sparkles, href: "/credits", accent: true },
-  ];
+  const activeProjects = projects.filter((p) => p.status === "active").length;
 
   return (
     <>
+      {/* Header */}
       <PageHeader
         title={user.name && user.name !== "Mon compte" ? `${greeting}, ${user.name.split(" ")[0]}.` : `${greeting} !`}
-        description="Que créons-nous aujourd’hui ?"
-        actions={<Button size="lg" leftIcon={<Wand2 className="size-4" />} onClick={() => router.push("/studio")}>Créer quelque chose</Button>}
+        description="Que créons-nous aujourd'hui ?"
+        actions={
+          <div className="flex items-center gap-3">
+            <Link href="/credits" className="flex items-center gap-1.5 text-[13px] text-highlight font-medium">
+              <Sparkles className="size-3.5" />
+              {formatNumber(credits)} crédits
+            </Link>
+            <Button size="lg" leftIcon={<Wand2 className="size-4" />} onClick={() => router.push("/studio")}>Créer</Button>
+          </div>
+        }
       />
 
+      {/* 1. Feature banner (scrollable pills) */}
+      <FeatureBanner />
+
+      {/* 2. Showcase carousel */}
       <ShowcaseBanner />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-        {stats.map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Link href={s.href}>
-              <Card interactive className="flex items-center gap-3">
-                <span className={cn("size-9 rounded-md flex items-center justify-center border border-border", s.accent ? "bg-accent/15 text-highlight" : "bg-elevated text-text2")}>
-                  <s.icon className="size-4" />
+      {/* 3. Quick actions (compact) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-8">
+        {QUICK_ACTIONS.map((a, i) => (
+          <motion.div key={a.label} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+            <Link href={a.href}>
+              <Card interactive padded={false} className="p-3 flex items-center gap-2.5 h-full">
+                <span className={cn("size-8 rounded-md flex items-center justify-center shrink-0", a.accent ? "bg-accent/15 text-highlight" : "bg-white/[0.06] text-text2")}>
+                  <a.icon className="size-3.5" />
                 </span>
-                <span>
-                  <span className="block text-xl font-semibold tracking-tight leading-none">{formatNumber(s.value)}</span>
-                  <span className="block text-xs text-muted mt-1">{s.label}</span>
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-medium leading-tight">{a.label}</span>
+                  <span className="block text-[11px] text-muted leading-tight">{a.desc}</span>
                 </span>
               </Card>
             </Link>
@@ -80,93 +78,26 @@ export default function HomePage() {
         ))}
       </div>
 
-      {moments.length > 0 && (
-        <Section title="Prochains temps forts" description="Préparez vos promos trois semaines avant : c’est là que tout se joue.">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            {moments.map((m) => (
-              <Card key={m.id} className={cn("flex flex-col gap-3", m.daysLeft <= 21 && "border-accent/50 bg-accent/8")}>
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <p className="font-semibold flex items-center gap-1.5 min-w-0"><CalendarHeart className="size-4 text-highlight shrink-0" />{m.name}</p>
-                  <Badge tone={m.daysLeft <= 21 ? "accent" : "outline"}>J-{m.daysLeft}</Badge>
-                </div>
-                <p className="text-[13px] text-text2 flex-1">{m.pitch}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {m.templateIds.map((id) => {
-                    const t = templates.find((x) => x.id === id);
-                    return t ? <Button key={id} size="sm" variant="secondary" className="max-w-full h-auto min-h-8 py-1 whitespace-normal text-left" onClick={() => openTemplate(id)}>{t.title}</Button> : null;
-                  })}
-                </div>
-              </Card>
-            ))}
-          </div>
-        </Section>
-      )}
+      {/* 4. Stats strip */}
+      <div className="flex items-center gap-4 mb-8 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+        {[
+          { label: "Projets", value: activeProjects, href: "/projects", icon: FolderKanban },
+          { label: "Ressources", value: assets.length, href: "/assets", icon: Images },
+          { label: "Crédits", value: credits, href: "/credits", icon: Sparkles, accent: true },
+        ].map((s) => (
+          <Link key={s.label} href={s.href} className="flex items-center gap-2 shrink-0 rounded-lg border border-border bg-surface px-3 py-2 hover:bg-elevated transition-colors">
+            <s.icon className={cn("size-4", s.accent ? "text-highlight" : "text-muted")} />
+            <span className="text-[15px] font-semibold">{formatNumber(s.value)}</span>
+            <span className="text-[12px] text-muted">{s.label}</span>
+          </Link>
+        ))}
+      </div>
 
-      <Section title="Projets récents" action={<Link href="/projects" className="text-[13px] text-text2 hover:text-text flex items-center gap-1">Tout voir <ArrowRight className="size-3.5" /></Link>}>
-        {recentProjects.length ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            {recentProjects.map((p) => <ProjectCard key={p.id} project={p} assetCount={assets.filter((a) => a.projectId === p.id).length} />)}
-          </div>
-        ) : (
-          <EmptyState compact icon={FolderKanban} title="Aucun projet pour le moment" description="Créez un projet pour organiser vos ressources, générations et campagnes." cta={{ label: "Nouveau projet", href: "/projects" }} />
-        )}
-      </Section>
+      {/* 5. Trending videos from community */}
+      <TrendingVideos />
 
-      <Section title="Reprendre la création" description="Reprenez là où vous vous êtes arrêté.">
-        {continueItems.length ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {continueItems.map((g) => (
-              <Card key={g.id} interactive padded={false} className="overflow-hidden group" onClick={() => router.push(`/studio/${g.type === "ad" ? "ads" : g.type}`)}>
-                <div className="relative aspect-[16/10] bg-elevated overflow-hidden">
-                  <img src={g.thumbnails[0]} alt="" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  <Badge tone="accent" className="absolute top-3 left-3">{labelOf(GENERATION_TYPE_LABELS, g.type)}</Badge>
-                  <span className="absolute bottom-3 left-3 right-3 text-[13px] text-white line-clamp-2">{g.prompt}</span>
-                </div>
-                <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-xs text-muted">{timeAgo(g.createdAt)} · {g.creditsUsed} crédits</span>
-                  <span className="text-[13px] font-medium text-highlight flex items-center gap-1">Reprendre <ArrowRight className="size-3.5" /></span>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <EmptyState compact icon={Wand2} title="Rien en cours" description="Lancez une génération : elle apparaîtra ici." cta={{ label: "Ouvrir le Studio", href: "/studio" }} />
-        )}
-      </Section>
-
-      <Section title="Modèles" description="Partez d’un format qui a fait ses preuves." action={<Link href="/templates" className="text-[13px] text-text2 hover:text-text flex items-center gap-1">Tout parcourir <ArrowRight className="size-3.5" /></Link>}>
-        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 pb-1 snap-x">
-          {featuredTemplates.map((t) => (
-            <Link key={t.id} href={`/templates/${t.id}`} className="snap-start shrink-0 w-[160px] md:w-[190px] group">
-              <div className="relative aspect-[4/5] rounded-lg overflow-hidden border border-border bg-elevated">
-                <img src={t.thumbnail} alt={t.title} className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <span className="absolute bottom-2.5 left-2.5 right-2.5 text-[13px] font-medium text-white leading-tight">{t.title}</span>
-              </div>
-              <p className="text-[11px] text-muted mt-1.5">{platformLabel(t.platform)} · {labelOf(AD_FORMAT_LABELS, t.format)}</p>
-            </Link>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Ressources récentes" action={<Link href="/assets" className="text-[13px] text-text2 hover:text-text flex items-center gap-1">Ouvrir la bibliothèque <ArrowRight className="size-3.5" /></Link>}>
-        {recentAssets.length ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3">
-            {recentAssets.map((a) => (
-              <Link key={a.id} href={`/assets/${a.id}`} className="group relative aspect-square rounded-lg overflow-hidden border border-border bg-elevated">
-                <img src={a.thumbnail} alt={a.name} className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
-                {a.type === "video" && <span className="absolute top-2 right-2 size-6 rounded-full bg-black/60 flex items-center justify-center"><Play className="size-3 text-white fill-white" /></span>}
-                <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-[11px] text-white line-clamp-1">{a.name}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <EmptyState compact icon={Images} title="Aucune ressource pour le moment" description="Vos fichiers générés et importés arrivent ici." cta={{ label: "Générer une image", href: "/studio/image" }} />
-        )}
-      </Section>
+      {/* 6. User generations gallery with sticky category tabs */}
+      <UserGallery />
     </>
   );
 }
