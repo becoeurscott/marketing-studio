@@ -39,6 +39,8 @@ export interface RunInput {
   /** Image + creator: influencer photo. */
   shotMode?: "multi" | "variations";
   shot?: string;
+  /** Image + product, no creator: product photography style. */
+  productStyle?: string;
 }
 
 /**
@@ -60,7 +62,7 @@ export function useStudioRuns() {
       if (input.kind === "image") {
         const out = input.creatorId
           ? await generateInfluencer({ creatorId: input.creatorId, prompt: input.prompt, productAssetId: input.productAssetId, ratio: input.ratio, model: input.imageModel, count: slots, mode: input.shotMode ?? "variations", shot: input.shot, projectId })
-          : await generateImage({ prompt: input.prompt, ratio: input.ratio, model: input.imageModel, count: slots, productAssetId: input.productAssetId, projectId });
+          : await generateImage({ prompt: input.prompt, ratio: input.ratio, model: input.imageModel, count: slots, productAssetId: input.productAssetId, projectId, productStyle: input.productStyle });
         for (const r of out) s.addAsset({ name, type: "image", url: r.url, thumbnail: r.thumbnail, projectId, favorite: false, width: 1600, height: 2000, sizeKb: 1400, tags: ["generated"] });
         patch(id, { status: "done", urls: out.map((r) => r.url) });
       } else {

@@ -8,6 +8,7 @@ import { webhookUrlFor } from "@/lib/higgsfield/webhook-token";
 import { creators, creatorSheetUrl } from "@/data/creators";
 import { imageModel } from "@/lib/higgsfield/models";
 import { influencerPrompt } from "@/lib/influencer";
+import { productStylePrompt } from "@/lib/product-styles";
 
 /** Influencer photo: creator sheet first, product second, short user idea wrapped in the director prompt. */
 function applyInfluencer(body: GenerationRequest) {
@@ -22,6 +23,14 @@ function applyInfluencer(body: GenerationRequest) {
   body.presetId = undefined;
 }
 
+/** Product style photo: product photo + professional photography prompt, no creator. */
+function applyProductStylePrompt(body: GenerationRequest) {
+  if (!body.productStyle || body.kind !== "image") return;
+  body.prompt = productStylePrompt({ style: body.productStyle, userPrompt: String(body.prompt ?? "") });
+  if (!imageModel(body.model).acceptsImages) body.model = "marketing-studio-1k";
+  body.presetId = undefined;
+}
+
 export async function POST(request: Request) {
   const blocked = guard(request, { limit: Number(process.env.HF_HOURLY_LIMIT) || 60 });
   if (blocked) return blocked;
@@ -31,6 +40,7 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as GenerationRequest;
     applyInfluencer(body);
+    applyProductStylePrompt(body);
     toModelInput(body);
   } catch (error) {
     return errorResponse(error);

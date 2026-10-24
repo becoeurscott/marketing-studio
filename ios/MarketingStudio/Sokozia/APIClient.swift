@@ -20,6 +20,7 @@ struct GenerationRequest: Encodable {
     /// Image only: influencer photo with one of our creators (the server builds the director prompt).
     var influencer: Influencer?
     struct Influencer: Encodable { var creatorId: String; var shot: String?; var variation: Int? }
+    var productStyle: String?
 }
 
 struct GenerationJob: Decodable {

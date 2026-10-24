@@ -137,6 +137,8 @@ export interface GenerateImageParams {
   projectId?: ID | null;
   count?: number;
   model?: ImageModelId;
+  /** Product photography style (Canva-style templates). Server builds the full prompt. */
+  productStyle?: string;
 }
 export interface ImageResult { id: ID; url: string; thumbnail: string; ratio: AspectRatio; seed: string }
 
@@ -149,8 +151,14 @@ export async function generateImage(params: GenerateImageParams): Promise<ImageR
   const model = imageModel(params.model);
   const refs = product && model.acceptsImages ? [product] : undefined;
   const cost = model.credits * count;
-  const results = await chargedExact("image", `Image ${model.label} — ${params.prompt.slice(0, 40)}`, cost, () => images(prompt, count, { ratio: params.ratio, imageUrls: refs, model: model.id }));
-  record({ type: "image", prompt: params.prompt, status: "completed", thumbnails: results.map((r) => r.thumbnail), projectId: params.projectId ?? null, params: { style: params.style ?? "", ratio: params.ratio ?? "", model: model.id }, creditsUsed: cost });
+  const results = await chargedExact("image", `Image ${model.label} — ${params.prompt.slice(0, 40)}`, cost, async () => {
+    if (params.productStyle && product) {
+      const jobs = await Promise.all(Array.from({ length: count }, () => runJob({ kind: "image", model: model.id, prompt, aspectRatio: imageRatio(params.ratio), imageUrls: refs, productStyle: params.productStyle })));
+      return jobs.flatMap((j) => j.images).map((url) => ({ id: uid("res"), url, thumbnail: url, ratio: params.ratio ?? "4:5", seed: url }));
+    }
+    return images(prompt, count, { ratio: params.ratio, imageUrls: refs, model: model.id });
+  });
+  record({ type: "image", prompt: params.prompt, status: "completed", thumbnails: results.map((r) => r.thumbnail), projectId: params.projectId ?? null, params: { style: params.productStyle ?? params.style ?? "", ratio: params.ratio ?? "", model: model.id }, creditsUsed: cost });
   return results;
 }
 

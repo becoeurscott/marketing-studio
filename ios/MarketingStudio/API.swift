@@ -16,6 +16,7 @@ struct ImageGenParams {
     /// Image model id or label ("Marketing Studio", "Soul 2").
     var model: String = "marketing-studio-1k"
     var count: Int = 2
+    var productStyle: String? = nil
 }
 
 struct VideoGenParams {
@@ -191,7 +192,18 @@ enum API {
         let refs = product != nil && model.acceptsImages ? [product!] : nil
         let cost = model.credits * count
         let urls = try await charged(store, cost: cost) {
-            try await images(prompt, count: count, ratio: p.ratio, imageUrls: refs, model: model.id)
+            if let ps = p.productStyle, product != nil {
+                return try await withThrowingTaskGroup(of: [String].self) { group in
+                    for _ in 0..<count {
+                        let req = GenerationRequest(kind: .image, model: model.id, prompt: prompt, imageUrls: refs, aspectRatio: imageRatio(p.ratio), productStyle: ps)
+                        group.addTask { try await APIClient.run(req).images }
+                    }
+                    var out: [String] = []
+                    for try await u in group { out += u }
+                    return out
+                }
+            }
+            return try await images(prompt, count: count, ratio: p.ratio, imageUrls: refs, model: model.id)
         }
         let g = store.addGeneration(kind: .image, prompt: p.prompt, thumbnails: urls, projectId: p.projectId, model: model.label, credits: cost)
         store.pushNotification(kind: .generationComplete, title: "Génération terminée", message: "\(urls.count) image\(urls.count > 1 ? "s sont prêtes" : " est prête") pour « \(p.prompt.prefix(40)) ».")

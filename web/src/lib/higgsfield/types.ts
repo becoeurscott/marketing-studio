@@ -27,6 +27,8 @@ export interface GenerationRequest {
   shots?: { prompt: string; duration: number }[];
   /** Image only: influencer photo with one of our creators (server builds the full prompt, see lib/influencer.ts). */
   influencer?: { creatorId: string; shot?: string; variation?: number };
+  /** Image only: product photography style (server builds the full prompt, see lib/product-styles.ts). */
+  productStyle?: string;
 }
 
 export interface HfPreset {
