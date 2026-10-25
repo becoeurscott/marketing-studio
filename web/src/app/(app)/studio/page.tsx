@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useImmersive, usePageTitle } from "@/components/shell/ShellContext";
 import { PromptDock, type DockModel } from "@/components/hf/PromptDock";
+import { HiggsfieldExamples } from "@/components/studio/HiggsfieldExamples";
 import { RunFeed } from "@/components/hf/RunFeed";
 import { useStudioRuns, type RunKind } from "@/components/hf/useStudioRuns";
 import { creators } from "@/data";
@@ -82,6 +83,7 @@ export default function StudioPage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_50%_0%,rgba(209,254,23,0.10),transparent_65%)]" />
       <div className="absolute inset-0 overflow-y-auto">
         <div className="mx-auto max-w-6xl px-3 md:px-6 pt-6 pb-64">
+          {kind !== "image" && <HiggsfieldExamples />}
           {empty ? (
             <div className="min-h-[55vh] flex flex-col items-center justify-center text-center">
               <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">Créez vos pubs <span className="text-accent">en un prompt</span></h1>

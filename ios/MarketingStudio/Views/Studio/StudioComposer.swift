@@ -1,5 +1,7 @@
 import SwiftUI
 import PhotosUI
+import AVKit
+import Combine
 
 /// Floating Studio composer (SPEC §9 generation bar, redesigned):
 /// [media slots] / [inline prompt with product + creator chips] / [model][duration][ratio][more] ... [Generate].
@@ -18,6 +20,7 @@ struct StudioComposer: View {
     var onMore: () -> Void
     var onGenerate: () -> Void
 
+    @State private var examplePicker = false
     @State private var presetPicker = false
     @FocusState private var promptFocused: Bool
 
@@ -85,6 +88,12 @@ struct StudioComposer: View {
         VStack(alignment: .leading, spacing: 14) {
             slots
             promptArea
+            if mode == .video || mode == .ugc {
+                Button { promptFocused = false; examplePicker = true } label: {
+                    Label("Exemples vidéo Higgsfield", systemImage: "play.rectangle")
+                        .font(.subheadline)
+                }
+            }
             if mode == .image && image.supportsPresets {
                 Button { promptFocused = false; presetPicker = true } label: {
                     Label(image.activePreset?.name ?? "Modèles Marketing Studio", systemImage: "rectangle.grid.2x2")
@@ -104,6 +113,7 @@ struct StudioComposer: View {
         .padding(.bottom, 8)
         .animation(MSAnimation.snappy, value: promptFocused)
         .animation(MSAnimation.gentle, value: mode)
+        .sheet(isPresented: $examplePicker) { HiggsfieldVideoExamples() }
         .sheet(isPresented: $presetPicker) {
             MarketingPresetPicker(selection: $image.preset)
         }
@@ -664,5 +674,66 @@ private struct MarketingPresetPicker: View {
         do { items = try await APIClient.marketingPresets() }
         catch is CancellationError { }
         catch { self.error = error.localizedDescription }
+    }
+}
+
+
+private struct HiggsfieldVideoExample: Identifiable {
+    var id: String { source }
+    let name: String
+    let category: String
+    let url: String
+    let source: String
+    static let all: [Self] = [
+        .init(name: "Green Tea Macro", category: "Motion", url: "https://cdn.higgsfield.ai/marketing-studio-motion-preview/68a696dc-2c2e-43b1-b285-511c8783db1f.mp4", source: "https://higgsfield.ai/marketing-studio/preset/green-tea-macro-6089a97b-4e49-43ed-9338-09a9c63e2783"),
+        .init(name: "Pixel Block Yard", category: "Motion", url: "https://cdn.higgsfield.ai/marketing-studio-motion-preview/353daae1-e520-486b-b7d5-83f026169305.mp4", source: "https://higgsfield.ai/marketing-studio/preset/pixel-block-yard-000b690e-7f6d-4a7c-9196-a90f15494bb6"),
+        .init(name: "Before and After", category: "UGC", url: "https://d29nkk4626dxhc.cloudfront.net/marketing_studio_video_preset/a6bd1da8-b768-425e-beb6-821075efbc2e-6748bfc5a91afbfc.mp4", source: "https://higgsfield.ai/marketing-studio/preset/before-and-after-3728af13-8efa-4703-a10f-69b142c2df52"),
+        .init(name: "Monospace Callouts", category: "Motion", url: "https://cdn.higgsfield.ai/marketing-studio-motion-preview/aef59e19-f388-4dcc-b55a-e43a5c48c835.mp4", source: "https://higgsfield.ai/marketing-studio/preset/monospace-callouts-46406130-acc3-43f0-b6fe-554a22cad279")
+    ]
+}
+
+private struct HiggsfieldVideoExamples: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var category = "Tous"
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Exemples UGC et motion de Higgsfield Marketing Studio.")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                    Picker("Catégorie", selection: $category) {
+                        ForEach(["Tous", "UGC", "Motion"], id: \.self) { Text($0).tag($0) }
+                    }.pickerStyle(.segmented)
+                    ForEach(HiggsfieldVideoExample.all.filter { category == "Tous" || $0.category == category }) { example in
+                        HiggsfieldExamplePlayer(example: example)
+                    }
+                }.padding()
+            }
+            .navigationTitle("Inspiration vidéo")
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } } }
+        }
+    }
+}
+
+private struct HiggsfieldExamplePlayer: View {
+    let example: HiggsfieldVideoExample
+    @State private var player: AVPlayer?
+    @State private var unavailable = false
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            VideoPlayer(player: player)
+                .frame(height: 300).clipShape(RoundedRectangle(cornerRadius: 12))
+            if unavailable { Text("Aperçu indisponible. Consultez cet exemple sur Higgsfield.").font(.caption).foregroundStyle(.secondary) }
+            Text(example.name).font(.headline)
+            Text(example.category).font(.caption).foregroundStyle(.secondary)
+            if let source = URL(string: example.source) {
+                Link("Voir sur Higgsfield ↗", destination: source)
+            }
+        }
+        .onAppear { if player == nil, let url = URL(string: example.url) { player = AVPlayer(url: url) } }
+        .onReceive(player?.currentItem?.publisher(for: \.status).eraseToAnyPublisher() ?? Empty<AVPlayerItem.Status, Never>().eraseToAnyPublisher()) { status in
+            unavailable = status == .failed
+        }
+        .onDisappear { player?.pause(); player = nil }
     }
 }
