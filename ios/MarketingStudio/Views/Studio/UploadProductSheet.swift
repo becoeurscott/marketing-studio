@@ -13,6 +13,8 @@ struct UploadProductSheet: View {
     @State private var uploading = false
     @State private var progress = 0.0
     @State private var uploadName = ""
+    @State private var link = ""
+    @FocusState private var linkFocused: Bool
 
     private var candidates: [Asset] {
         let tagged = store.assets.filter { $0.kind == .image && ($0.tags.contains("product") || $0.tags.contains("upload")) }
@@ -52,6 +54,35 @@ struct UploadProductSheet: View {
                         .onChange(of: pickerItem) { _, item in
                             guard let item else { return }
                             upload(name: "Photo produit", item: item)
+                        }
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Ou collez le lien du produit").msHeadline(14)
+                            HStack(spacing: 8) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "link").foregroundStyle(MSColor.muted)
+                                    TextField("https://… Jumia, boutique, Facebook…", text: $link)
+                                        .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
+                                        .focused($linkFocused).submitLabel(.go).onSubmit(importLink)
+                                        .font(MSFont.body(14)).foregroundStyle(MSColor.text)
+                                }
+                                .padding(.horizontal, 12).frame(height: 46)
+                                .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous).strokeBorder(linkFocused ? MSColor.accent : MSColor.border, lineWidth: 1))
+                                Button(action: importLink) {
+                                    Text("Importer").font(MSFont.control(14)).foregroundStyle(MSColor.onAccent)
+                                        .padding(.horizontal, 14).frame(height: 46)
+                                        .background(MSColor.accent, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+                                }
+                                .buttonStyle(MSPressStyle())
+                                .disabled(link.trimmingCharacters(in: .whitespaces).isEmpty)
+                                .opacity(link.trimmingCharacters(in: .whitespaces).isEmpty ? 0.5 : 1)
+                            }
+                            Button {
+                                if let s = UIPasteboard.general.string { link = s }
+                            } label: {
+                                Label("Coller depuis le presse-papiers", systemImage: "doc.on.clipboard").font(MSFont.caption(12)).foregroundStyle(MSColor.text2)
+                            }
                         }
 
                         if !candidates.isEmpty { SectionHeader(title: "Vos images produit") }
@@ -106,6 +137,29 @@ struct UploadProductSheet: View {
             } catch {
                 uploading = false
                 pickerItem = nil
+                router.toast(error.localizedDescription, style: .error)
+            }
+        }
+    }
+
+    private func importLink() {
+        let l = link.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !l.isEmpty, !uploading else { return }
+        linkFocused = false
+        uploadName = "votre produit"
+        uploading = true
+        progress = 0.2
+        Task {
+            withAnimation(.easeInOut(duration: 6)) { progress = 0.85 }
+            do {
+                let p = try await APIClient.importProduct(link: l)
+                var tags = ["product", "imported"]
+                if let price = p.price { tags.append(["prix", price, p.currency ?? ""].joined(separator: " ").trimmingCharacters(in: .whitespaces)) }
+                let asset = store.addAsset(name: String((p.name ?? "Produit importé").prefix(60)), kind: .image, imageURL: p.url, projectId: store.currentProjectId, tags: tags)
+                withAnimation { progress = 1 }
+                finish(asset)
+            } catch {
+                uploading = false
                 router.toast(error.localizedDescription, style: .error)
             }
         }

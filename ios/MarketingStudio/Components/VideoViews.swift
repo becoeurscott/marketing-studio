@@ -195,3 +195,26 @@ struct ShowcaseWall: View {
         .accessibilityHidden(true)
     }
 }
+
+/// Full-screen background: muted showcase clips that cross-fade to the next one every few seconds.
+struct BackgroundVideoCycler: View {
+    var names: [String] = ["vendeuse-marche-wax", "grwm-perruque", "unboxing-telephone", "temoignage-karite", "atelier-couture", "degustation-maquis", "livraison-whatsapp"]
+    var interval: Double = 5
+    @State private var index = 0
+
+    var body: some View {
+        ZStack {
+            Color.black
+            LoopingVideoView(url: Showcase.video(names[index]), poster: Showcase.poster(names[index]))
+                .id(index)
+                .transition(.opacity)
+        }
+        .task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(interval))
+                withAnimation(.easeInOut(duration: 1.0)) { index = (index + 1) % names.count }
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}

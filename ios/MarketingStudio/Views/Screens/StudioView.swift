@@ -86,7 +86,7 @@ struct StudioView: View {
             UploadProductSheet { asset in setProduct(asset) }
         }
         .msSheet(isPresented: $showCreatorPicker, detents: [.medium, .large]) {
-            CreatorPickerSheet(selection: $ugc.creator)
+            if mode == .image { CreatorPickerSheet(selection: $image.creator) } else { CreatorPickerSheet(selection: $ugc.creator) }
         }
         .msSheet(isPresented: $showModelPicker, detents: [.medium]) { modelSheet }
         .msSheet(isPresented: $showOptions, detents: [.medium, .large]) { optionsSheet }

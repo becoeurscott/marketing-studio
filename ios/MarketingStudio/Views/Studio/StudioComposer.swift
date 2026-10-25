@@ -286,6 +286,21 @@ struct StudioComposer: View {
                         }
                         .menuOrder(.fixed)
                     }
+                    if mode == .image, image.productAsset != nil, image.creator == nil {
+                        Menu {
+                            ForEach(ProductStyleOption.all, id: \.id) { s in
+                                Button {
+                                    MSHaptic.tap()
+                                    image.productStyleId = s.id
+                                } label: {
+                                    if image.productStyleId == s.id { Label("\(s.emoji) \(s.label)", systemImage: "checkmark") } else { Text("\(s.emoji) \(s.label)") }
+                                }
+                            }
+                        } label: {
+                            controlPillLabel(icon: "paintbrush", text: ProductStyleOption.all.first { $0.id == image.productStyleId }?.label ?? "Style")
+                        }
+                        .menuOrder(.fixed)
+                    }
                     RatioPickerPill(ratio: ratio)
                     controlPill(icon: "slider.horizontal.3", text: nil, action: onMore)
                         .accessibilityLabel("Plus d'options")

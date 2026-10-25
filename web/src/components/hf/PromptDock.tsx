@@ -11,6 +11,7 @@ import { CreatorPicker } from "@/components/studio/CreatorPicker";
 import { ProductPicker } from "@/components/studio/ProductPicker";
 import type { RunKind } from "./useStudioRuns";
 import { INFLUENCER_SHOTS } from "@/lib/influencer";
+import { PRODUCT_STYLES } from "@/lib/product-styles";
 
 export interface DockModel { id: string; label: string; hint: string; price: string; badge?: string }
 
@@ -80,6 +81,8 @@ export interface PromptDockProps {
   onShotMode: (m: "multi" | "variations") => void;
   shot: string;
   onShot: (id: string) => void;
+  productStyle: string;
+  onProductStyle: (id: string) => void;
   cost: number;
   onGenerate: () => void;
   busy?: boolean;
@@ -95,7 +98,7 @@ export function PromptDock(p: PromptDockProps) {
   const [creatorPicker, setCreatorPicker] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   const current = p.models.find((m) => m.id === p.model) ?? p.models[0];
-  const canGenerate = !p.busy && (!!p.prompt.trim() || !!product || (p.kind === "image" && !!creator)) && (p.kind !== "ugc" || !!creator);
+  const canGenerate = !p.busy && (!!p.prompt.trim() || !!product || (p.kind === "image" && !!creator)) && (p.kind !== "ugc" || !!creator) && (p.kind !== "image" || !!p.prompt.trim() || !!product || !!creator);
 
   const enhance = async () => {
     if (!p.prompt.trim() || enhancing) return;
@@ -137,7 +140,7 @@ export function PromptDock(p: PromptDockProps) {
           onChange={(e) => p.onPrompt(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && canGenerate) p.onGenerate(); }}
           rows={2}
-          placeholder={p.kind === "image" && creator ? `Une idée courte : ex. ${creator.name} au marché avec mon produit…` : p.kind === "image" ? "Décrivez la scène que vous imaginez…" : p.kind === "ugc" ? "Ce que le créateur dit et fait avec votre produit…" : "Décrivez le mouvement et la scène…"}
+          placeholder={p.kind === "image" && creator ? `Une idée courte : ex. ${creator.name} au marché avec mon produit…` : p.kind === "image" && product ? "Optionnel : décrivez une mise en scène pour votre produit…" : p.kind === "image" ? "Décrivez la scène que vous imaginez…" : p.kind === "ugc" ? "Ce que le créateur dit et fait avec votre produit…" : "Décrivez le mouvement et la scène…"}
           className="flex-1 min-w-0 resize-none bg-transparent text-[15px] leading-relaxed text-white placeholder:text-white/35 outline-none py-1 max-h-40"
         />
       </div>
@@ -184,6 +187,24 @@ export function PromptDock(p: PromptDockProps) {
                   <p className="px-2.5 pt-2 pb-1 text-[11px] uppercase tracking-wider text-white/40">Un seul plan (variations)</p>
                   {INFLUENCER_SHOTS.map((s) => (
                     <Option key={s.id} active={p.shotMode === "variations" && p.shot === s.id} onClick={() => { p.onShotMode("variations"); p.onShot(s.id); close(); }}>{s.label}</Option>
+                  ))}
+                </div>
+              )}
+            </Pill>
+          )}
+          {p.kind === "image" && product && !creator && (
+            <Pill wide icon={<Sparkles className="size-3.5 text-accent" />} label={PRODUCT_STYLES.find((s) => s.id === p.productStyle)?.label ?? "Style"}>
+              {(close) => (
+                <div className="max-h-80 overflow-y-auto">
+                  <p className="px-2.5 pt-1.5 pb-2 text-[11px] uppercase tracking-wider text-white/40">Style de la photo produit</p>
+                  {PRODUCT_STYLES.map((s) => (
+                    <Option key={s.id} active={p.productStyle === s.id} onClick={() => { p.onProductStyle(s.id); close(); }}>
+                      <span className="flex items-center gap-2">
+                        <span>{s.emoji}</span>
+                        <span className="font-medium text-white">{s.label}</span>
+                      </span>
+                      <span className="block text-[12px] text-white/50 mt-0.5">{s.hint}</span>
+                    </Option>
                   ))}
                 </div>
               )}

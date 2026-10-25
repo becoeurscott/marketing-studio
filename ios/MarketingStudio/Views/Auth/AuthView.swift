@@ -25,6 +25,17 @@ struct AuthView: View {
     var body: some View {
         ZStack {
             MSColor.bg.ignoresSafeArea()
+            if step == .welcome {
+                BackgroundVideoCycler().ignoresSafeArea()
+                LinearGradient(stops: [
+                    .init(color: .black.opacity(0.35), location: 0),
+                    .init(color: .black.opacity(0.15), location: 0.25),
+                    .init(color: .black.opacity(0.75), location: 0.55),
+                    .init(color: .black.opacity(0.95), location: 1),
+                ], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+                .transition(.opacity)
+            }
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
                     if step != .welcome { backButton }
@@ -45,7 +56,7 @@ struct AuthView: View {
 
     @ViewBuilder private var content: some View {
         switch step {
-        case .welcome: welcome
+        case .welcome: welcome.frame(minHeight: UIScreen.main.bounds.height - 100, alignment: .bottom)
         case .emailCode:
             form(title: "Recevoir un code", subtitle: "Pas de mot de passe : on vous envoie un code à 6 chiffres par e-mail.") {
                 emailField
@@ -134,7 +145,7 @@ struct AuthView: View {
 
     private var welcome: some View {
         VStack(alignment: .leading, spacing: 22) {
-            heroCollage
+            Spacer(minLength: 0)
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     RoundedRectangle(cornerRadius: 7, style: .continuous).fill(MSColor.accentGradient).frame(width: 26, height: 26)
@@ -142,8 +153,9 @@ struct AuthView: View {
                     Text("Marketing Studio").font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
                 }
                 Text("Vos pubs, photos et vidéos UGC en quelques minutes.").msTitle(30)
-                Text("Pour les commerçants africains : prix en FCFA, Mobile Money, statuts WhatsApp et créateurs qui parlent vos langues.").msBody(15)
+                Text("Pour les commerçants africains : prix en FCFA, Mobile Money, statuts WhatsApp et créateurs qui parlent vos langues.").msBody(15, color: .white.opacity(0.85))
             }
+            .shadow(color: .black.opacity(0.6), radius: 8, y: 2)
             VStack(spacing: 10) {
                 Button { run { try await auth.signInWithGoogle() } } label: {
                     HStack(spacing: 10) {

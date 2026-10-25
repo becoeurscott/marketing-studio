@@ -137,6 +137,10 @@ struct ImageResultsView: View {
                 action(session.busyAction == "upscale" ? "Agrandissement" : "Agrandir", "arrow.up.left.and.arrow.down.right", loading: session.busyAction == "upscale") {
                     Task { await session.upscaleSelected(store: store, router: router) }
                 }
+                action("Variantes", "square.on.square") { session.multiShot = false; session.count = 4; onRegenerate() }
+                if session.creator != nil {
+                    action("Autres plans", "camera.metering.multispot") { session.multiShot = true; session.count = 4; onRegenerate() }
+                }
                 action("Régénérer", "arrow.clockwise") { onRegenerate() }
                 action("Utiliser dans une campagne", "flag") { showCampaignPicker = true }
             }
