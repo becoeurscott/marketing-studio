@@ -1,3 +1,4 @@
+export {};
 /**
  * Seedance 2.5 text-to-video example (Higgsfield SDK).
  * Run: npm run seedance   (loads HF_CREDENTIALS from .env.local; never printed)
