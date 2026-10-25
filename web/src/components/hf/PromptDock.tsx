@@ -77,6 +77,10 @@ export interface PromptDockProps {
   onProduct: (a: Asset | null) => void;
   creatorId: string | null;
   onCreator: (id: string | null) => void;
+  /** A selected video preset can use the avatar as a Seedance reference image. */
+  enableCreatorForVideo?: boolean;
+  /** Video references require Seedance 2.5, so hide alternate model choices. */
+  lockVideoModel?: boolean;
   shotMode: "multi" | "variations";
   onShotMode: (m: "multi" | "variations") => void;
   shot: string;
@@ -94,6 +98,7 @@ export function PromptDock(p: PromptDockProps) {
   const credits = useStore((s) => s.credits);
   const product = assets.find((a) => a.id === p.productId) ?? null;
   const creator = creators.find((c) => c.id === p.creatorId) ?? null;
+  const showCreator = p.kind !== "video" || p.enableCreatorForVideo;
   const [productPicker, setProductPicker] = useState(false);
   const [creatorPicker, setCreatorPicker] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
@@ -115,19 +120,21 @@ export function PromptDock(p: PromptDockProps) {
       <div className="flex gap-3">
         {/* Reference tiles */}
         <div className="flex gap-2 shrink-0">
-          {p.kind !== "video" && (
+          {showCreator && (
             <div className="relative">
-            <button type="button" onClick={() => setCreatorPicker(true)} className="relative size-14 md:size-16 rounded-2xl overflow-hidden border border-dashed border-white/15 bg-white/[0.04] flex items-center justify-center text-white/50 hover:text-white hover:border-white/30" aria-label="Choisir un créateur">
+            <button type="button" onClick={() => setCreatorPicker(true)} className="relative size-14 md:size-16 rounded-2xl overflow-hidden border border-dashed border-white/15 bg-white/[0.04] flex items-center justify-center text-white/50 hover:text-white hover:border-white/30" aria-label="Choisir un avatar">
               {creator ? <img src={creator.avatarUrl} alt={creator.name} className="size-full object-cover" /> : <UserRound className="size-5" />}
+              <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-[9px] font-medium text-white">Avatar</span>
             </button>
-            {creator && p.kind === "image" && (
+            {creator && (
               <button type="button" onClick={() => p.onCreator(null)} className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-white text-black flex items-center justify-center" aria-label="Retirer le créateur"><X className="size-3" /></button>
             )}
             </div>
           )}
           <div className="relative">
-            <button type="button" onClick={() => setProductPicker(true)} className="size-14 md:size-16 rounded-2xl overflow-hidden border border-dashed border-white/15 bg-white/[0.04] flex items-center justify-center text-white/50 hover:text-white hover:border-white/30" aria-label="Ajouter une image de référence">
+            <button type="button" onClick={() => setProductPicker(true)} className="relative size-14 md:size-16 rounded-2xl overflow-hidden border border-dashed border-white/15 bg-white/[0.04] flex items-center justify-center text-white/50 hover:text-white hover:border-white/30" aria-label="Ajouter une image de référence">
               {product ? <img src={product.thumbnail} alt={product.name} className="size-full object-cover" /> : <ImagePlus className="size-5" />}
+              <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-[9px] font-medium text-white">Produit</span>
             </button>
             {product && (
               <button type="button" onClick={() => p.onProduct(null)} className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-white text-black flex items-center justify-center" aria-label="Retirer l'image"><X className="size-3" /></button>
@@ -152,7 +159,7 @@ export function PromptDock(p: PromptDockProps) {
               <Option key={k} active={p.kind === k} onClick={() => { p.onKind(k); close(); }}>{k === "image" ? "Image" : k === "video" ? "Vidéo" : "Vidéo UGC avec créateur"}</Option>
             ))}
           </Pill>
-          {p.kind !== "ugc" && current && (
+          {p.kind !== "ugc" && current && !p.lockVideoModel && (
             <Pill wide icon={<Sparkles className="size-3.5 text-accent" />} label={current.label}>
               {(close) => (
                 <div className="max-h-80 overflow-y-auto">

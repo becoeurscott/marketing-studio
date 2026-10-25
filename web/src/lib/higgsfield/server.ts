@@ -82,11 +82,12 @@ export function toModelInput(req: GenerationRequest): [string, Record<string, un
     }
     case "video": {
       const refs = (req.references ?? []).filter(isHttpsUrl).slice(0, 4);
-      if (refs.length) {
-        // Consistent characters: Seedance 2.5 reference-to-video with the creator sheet (+ product photo).
+      const videos = (req.videoUrls ?? []).filter(isHttpsUrl).slice(0, 1);
+      if (refs.length || videos.length) {
+        // Seedance 2.5 reference-to-video: product/avatar images and, when selected in Studio, a video-style reference.
         const m = videoModel(DEFAULT_VIDEO_MODEL);
         const ratio = m.ratios.includes(req.aspectRatio ?? "") ? req.aspectRatio : "9:16";
-        return [m.ref!, { prompt, image_urls: refs, duration: clampDuration(m, Number(req.durationSec) || 5), resolution: m.resolution(!!req.light), aspect_ratio: ratio, generate_audio: req.audio ?? true }];
+        return [m.ref!, { prompt, ...(refs.length ? { image_urls: refs } : {}), ...(videos.length ? { video_urls: videos } : {}), duration: clampDuration(m, Number(req.durationSec) || 5), resolution: m.resolution(!!req.light), aspect_ratio: ratio, generate_audio: req.audio ?? true }];
       }
       // A product photo can only be animated by a model with an image-to-video mode.
       const chosen = videoModel(req.model);

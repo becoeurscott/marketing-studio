@@ -56,10 +56,10 @@ export async function accountSummary(userId: string): Promise<AccountSummary> {
 /** Server-side price of one generation job, from the same catalog the UI shows. */
 export function jobCost(req: GenerationRequest): number {
   if (req.kind === "image") return imageCredits(req.model, !!req.presetId, !!req.upscale);
-  const withPhoto = (req.imageUrls?.length ?? 0) > 0 || (req.references?.length ?? 0) > 0;
+  const withPhoto = (req.imageUrls?.length ?? 0) > 0 || (req.references?.length ?? 0) > 0 || (req.videoUrls?.length ?? 0) > 0;
   const shots = !withPhoto && videoModel(req.model).id === "kling-3.0" ? sanitizeShots(req.shots) : [];
   const seconds = shots.length ? shots.reduce((s, x) => s + x.duration, 0) : Number(req.durationSec) || 5;
-  return videoCredits(req.kind === "video" && (req.references?.length ?? 0) > 0 ? "seedance-2.5" : req.model, seconds, withPhoto, req.light === true);
+  return videoCredits(req.kind === "video" && ((req.references?.length ?? 0) > 0 || (req.videoUrls?.length ?? 0) > 0) ? "seedance-2.5" : req.model, seconds, withPhoto, req.light === true);
 }
 
 export class InsufficientCreditsError extends Error {

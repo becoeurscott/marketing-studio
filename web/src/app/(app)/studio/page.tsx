@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useImmersive, usePageTitle } from "@/components/shell/ShellContext";
 import { PromptDock, type DockModel } from "@/components/hf/PromptDock";
-import { HiggsfieldExamples } from "@/components/studio/HiggsfieldExamples";
+import { HiggsfieldVideoPresetPicker } from "@/components/studio/HiggsfieldExamples";
 import { RunFeed } from "@/components/hf/RunFeed";
 import { useStudioRuns, type RunKind } from "@/components/hf/useStudioRuns";
 import { creators } from "@/data";
@@ -17,6 +17,7 @@ const VIDEO_DOCK: DockModel[] = VIDEO_MODELS.map((m) => ({ id: m.id, label: m.la
 
 import { AdTemplatePicker } from "@/components/studio/AdTemplatePicker";
 import type { HfPreset } from "@/lib/higgsfield/types";
+import type { HiggsfieldVideoPreset } from "@/data/higgsfield-examples";
 
 const EXAMPLES = [
   "Bouteille de parfum sur un pagne wax, lumière dorée du matin, photo publicitaire",
@@ -43,6 +44,7 @@ export default function StudioPage() {
   const [creatorId, setCreatorId] = useState<string | null>(null);
   const [shotMode, setShotMode] = useState<"multi" | "variations">("variations");
   const [preset, setPreset] = useState<HfPreset | null>(null);
+  const [videoPreset, setVideoPreset] = useState<HiggsfieldVideoPreset | null>(null);
   const activePreset = kind === "image" && !!productId && !creatorId && imgModel.startsWith("marketing-studio") ? preset : null;
   const [shot, setShot] = useState("hold");
   const [productStyle, setProductStyle] = useState("studio");
@@ -64,16 +66,26 @@ export default function StudioPage() {
 
   const changeKind = (k: RunKind) => { setKind(k); setRatio(k === "image" ? "4:5" : "9:16"); };
 
+  const selectVideoPreset = (next: HiggsfieldVideoPreset) => {
+    setVideoPreset(next);
+    setKind(next.mode);
+    setVidModel("seedance-2.5");
+    setRatio("9:16");
+    setDuration(5);
+    if (!prompt.trim()) setPrompt(next.defaultPrompt);
+  };
+
   const cost = useMemo(() => {
     if (kind === "image") return imageCredits(imgModel, !!activePreset) * count;
     if (kind === "ugc") return ugcCredits(duration);
-    return videoCredits(vidModel, duration, !!productId, light);
-  }, [kind, imgModel, count, vidModel, duration, productId, light, activePreset]);
+    return videoCredits(videoPreset ? "seedance-2.5" : vidModel, duration, !!productId || !!videoPreset, light);
+  }, [kind, imgModel, count, vidModel, duration, productId, light, activePreset, videoPreset]);
 
   const generate = () => {
     const creatorName = creators.find((c) => c.id === creatorId)?.name ?? "";
-    const modelLabel = kind === "image" && creatorId ? `Influenceur · ${creatorName} · ${imageModel(imgModel).label}` : kind === "image" ? imageModel(imgModel).label : kind === "ugc" ? `UGC · ${creators.find((c) => c.id === creatorId)?.name ?? ""}` : videoModel(vidModel).label;
-    void submit({ kind, prompt, modelLabel, ratio: kind === "ugc" ? "9:16" : ratio, imageModel: imgModel, presetId: activePreset?.id, count, videoModel: vidModel, durationSec: duration, productAssetId: productId, creatorId, shotMode, shot, productStyle: !activePreset && kind === "image" && productId && !creatorId ? productStyle : undefined });
+    const presetLabel = videoPreset ? ` · ${videoPreset.name}` : "";
+    const modelLabel = kind === "image" && creatorId ? `Influenceur · ${creatorName} · ${imageModel(imgModel).label}` : kind === "image" ? imageModel(imgModel).label : kind === "ugc" ? `UGC · ${creators.find((c) => c.id === creatorId)?.name ?? ""}${presetLabel}` : `${videoPreset ? "Seedance 2.5" : videoModel(vidModel).label}${presetLabel}`;
+    void submit({ kind, prompt, modelLabel, ratio: kind === "ugc" ? "9:16" : ratio, imageModel: imgModel, presetId: activePreset?.id, count, videoModel: videoPreset ? "seedance-2.5" : vidModel, durationSec: duration, productAssetId: productId, creatorId, videoPresetId: videoPreset?.id, videoReferenceUrl: videoPreset?.url, videoDirection: videoPreset?.direction, shotMode, shot, productStyle: !activePreset && kind === "image" && productId && !creatorId ? productStyle : undefined });
   };
 
   const empty = runs.length === 0 && !hasHistory;
@@ -83,7 +95,7 @@ export default function StudioPage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_50%_0%,rgba(209,254,23,0.10),transparent_65%)]" />
       <div className="absolute inset-0 overflow-y-auto">
         <div className="mx-auto max-w-6xl px-3 md:px-6 pt-6 pb-64">
-          {kind !== "image" && <HiggsfieldExamples />}
+          {kind !== "image" && <HiggsfieldVideoPresetPicker selectedId={videoPreset?.id} onSelect={selectVideoPreset} />}
           {empty ? (
             <div className="min-h-[55vh] flex flex-col items-center justify-center text-center">
               <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">Créez vos pubs <span className="text-accent">en un prompt</span></h1>
@@ -119,6 +131,8 @@ export default function StudioPage() {
           duration={duration} onDuration={setDuration}
           productId={productId} onProduct={(a: Asset | null) => setProductId(a?.id ?? null)}
           creatorId={creatorId} onCreator={setCreatorId}
+          enableCreatorForVideo={!!videoPreset}
+          lockVideoModel={!!videoPreset}
           shotMode={shotMode} onShotMode={setShotMode} shot={shot} onShot={setShot}
           productStyle={productStyle} onProductStyle={setProductStyle}
           cost={cost}

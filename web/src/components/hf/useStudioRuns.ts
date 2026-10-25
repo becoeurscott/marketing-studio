@@ -37,6 +37,10 @@ export interface RunInput {
   durationSec?: 5 | 10 | 15;
   productAssetId?: string | null;
   creatorId?: string | null;
+  /** Selected public Marketing Studio example used as a Seedance video reference. */
+  videoPresetId?: string;
+  videoReferenceUrl?: string;
+  videoDirection?: string;
   /** Image + creator: influencer photo. */
   shotMode?: "multi" | "variations";
   shot?: string;
@@ -70,8 +74,8 @@ export function useStudioRuns() {
         const src = s.assets.find((a) => a.id === input.productAssetId);
         const dur = input.durationSec ?? 5;
         const out = input.kind === "ugc" && input.creatorId
-          ? await generateUGC({ creatorId: input.creatorId, script: input.prompt, durationSec: dur, productAssetId: input.productAssetId, projectId })
-          : await generateVideo({ concept: input.prompt, durationSec: dur, ratio: input.ratio, model: input.videoModel, sourceAssetId: input.productAssetId, sourceUrl: src?.url, projectId });
+          ? await generateUGC({ creatorId: input.creatorId, script: input.prompt, durationSec: dur, productAssetId: input.productAssetId, presetVideoUrl: input.videoReferenceUrl, formatDirection: input.videoDirection, projectId })
+          : await generateVideo({ concept: input.prompt, durationSec: dur, ratio: input.ratio, model: input.videoModel, sourceAssetId: input.productAssetId, sourceUrl: src?.url, creatorId: input.creatorId, presetVideoUrl: input.videoReferenceUrl, style: input.videoDirection, projectId });
         const poster = out.poster || src?.url || "";
         s.addAsset({ name, type: "video", url: out.url, thumbnail: out.thumbnail || poster, projectId, favorite: false, width: 1080, height: 1920, durationSec: out.durationSec, sizeKb: 4200, tags: ["generated"] });
         patch(id, { status: "done", urls: [out.url], poster });
