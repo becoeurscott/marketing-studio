@@ -45,6 +45,7 @@ enum AIModels {
     static let image: [ImageModel] = [
         ImageModel(id: "marketing-studio-1k", label: "Standard", hint: "Votre produit reste identique · idéal WhatsApp et réseaux", usd: 0.235, acceptsImages: true),
         ImageModel(id: "marketing-studio", label: "HD", hint: "Même rendu en haute définition · affiches et impression", usd: 0.452, acceptsImages: true),
+        ImageModel(id: "nano-banana-pro", label: "Nano Banana Pro", hint: "Google Gemini 3 · texte lisible, scènes complexes, jusqu'à 4K", usd: 0.15, acceptsImages: true),
         ImageModel(id: "soul-2", label: "Éco", hint: "Idées, portraits et mode · très économique, le produit peut changer un peu", usd: 0.006, acceptsImages: false),
     ]
 

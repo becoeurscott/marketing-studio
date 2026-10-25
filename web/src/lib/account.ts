@@ -1,7 +1,7 @@
 import "server-only";
 import { headers } from "next/headers";
 import { adminClient } from "./insforge/admin";
-import { UPSCALE_USD, creditsForUsd, imageModel, videoCredits, videoModel } from "./higgsfield/models";
+import { imageCredits, imageModel, videoCredits, videoModel } from "./higgsfield/models";
 import { sanitizeShots } from "./higgsfield/server";
 import type { GenerationRequest } from "./higgsfield/types";
 
@@ -55,7 +55,7 @@ export async function accountSummary(userId: string): Promise<AccountSummary> {
 
 /** Server-side price of one generation job, from the same catalog the UI shows. */
 export function jobCost(req: GenerationRequest): number {
-  if (req.kind === "image") return req.upscale ? creditsForUsd(UPSCALE_USD) : imageModel(req.model).credits;
+  if (req.kind === "image") return imageCredits(req.model, !!req.presetId, !!req.upscale);
   const withPhoto = (req.imageUrls?.length ?? 0) > 0 || (req.references?.length ?? 0) > 0;
   const shots = !withPhoto && videoModel(req.model).id === "kling-3.0" ? sanitizeShots(req.shots) : [];
   const seconds = shots.length ? shots.reduce((s, x) => s + x.duration, 0) : Number(req.durationSec) || 5;

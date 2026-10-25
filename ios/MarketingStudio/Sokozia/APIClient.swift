@@ -17,6 +17,16 @@ struct GenerationRequest: Encodable {
     var upscale: Bool?
     /// Video only: reference images (creator sheet, product) for reference-to-video.
     var references: [String]?
+    /// Image only: influencer photo with one of our creators (the server builds the director prompt).
+    var presetId: String? = nil
+    var influencer: Influencer?
+    struct Influencer: Encodable { var creatorId: String; var shot: String?; var variation: Int? }
+}
+
+struct MarketingPreset: Decodable, Identifiable, Hashable {
+    let id: String
+    let name: String
+    let preview: String?
 }
 
 struct GenerationJob: Decodable {
@@ -94,6 +104,13 @@ enum APIClient {
         let r: URLReply = try await call("api/billing/portal", method: "POST", json: Empty())
         guard let u = URL(string: r.url) else { throw APIError.failed("Lien invalide.") }
         return u
+    }
+
+    private struct PresetCatalog: Decodable { let items: [MarketingPreset] }
+
+    static func marketingPresets() async throws -> [MarketingPreset] {
+        let catalog: PresetCatalog = try await call("api/hf/presets")
+        return catalog.items
     }
 
     // MARK: Generation

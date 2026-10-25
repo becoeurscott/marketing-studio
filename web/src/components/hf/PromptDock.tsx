@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { CreatorPicker } from "@/components/studio/CreatorPicker";
 import { ProductPicker } from "@/components/studio/ProductPicker";
 import type { RunKind } from "./useStudioRuns";
+import { INFLUENCER_SHOTS } from "@/lib/influencer";
 
 export interface DockModel { id: string; label: string; hint: string; price: string; badge?: string }
 
@@ -75,6 +76,10 @@ export interface PromptDockProps {
   onProduct: (a: Asset | null) => void;
   creatorId: string | null;
   onCreator: (id: string | null) => void;
+  shotMode: "multi" | "variations";
+  onShotMode: (m: "multi" | "variations") => void;
+  shot: string;
+  onShot: (id: string) => void;
   cost: number;
   onGenerate: () => void;
   busy?: boolean;
@@ -90,7 +95,7 @@ export function PromptDock(p: PromptDockProps) {
   const [creatorPicker, setCreatorPicker] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   const current = p.models.find((m) => m.id === p.model) ?? p.models[0];
-  const canGenerate = !p.busy && (!!p.prompt.trim() || !!product) && (p.kind !== "ugc" || !!creator);
+  const canGenerate = !p.busy && (!!p.prompt.trim() || !!product || (p.kind === "image" && !!creator)) && (p.kind !== "ugc" || !!creator);
 
   const enhance = async () => {
     if (!p.prompt.trim() || enhancing) return;
@@ -107,10 +112,15 @@ export function PromptDock(p: PromptDockProps) {
       <div className="flex gap-3">
         {/* Reference tiles */}
         <div className="flex gap-2 shrink-0">
-          {p.kind === "ugc" && (
+          {p.kind !== "video" && (
+            <div className="relative">
             <button type="button" onClick={() => setCreatorPicker(true)} className="relative size-14 md:size-16 rounded-2xl overflow-hidden border border-dashed border-white/15 bg-white/[0.04] flex items-center justify-center text-white/50 hover:text-white hover:border-white/30" aria-label="Choisir un créateur">
               {creator ? <img src={creator.avatarUrl} alt={creator.name} className="size-full object-cover" /> : <UserRound className="size-5" />}
             </button>
+            {creator && p.kind === "image" && (
+              <button type="button" onClick={() => p.onCreator(null)} className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-white text-black flex items-center justify-center" aria-label="Retirer le créateur"><X className="size-3" /></button>
+            )}
+            </div>
           )}
           <div className="relative">
             <button type="button" onClick={() => setProductPicker(true)} className="size-14 md:size-16 rounded-2xl overflow-hidden border border-dashed border-white/15 bg-white/[0.04] flex items-center justify-center text-white/50 hover:text-white hover:border-white/30" aria-label="Ajouter une image de référence">
@@ -127,7 +137,7 @@ export function PromptDock(p: PromptDockProps) {
           onChange={(e) => p.onPrompt(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && canGenerate) p.onGenerate(); }}
           rows={2}
-          placeholder={p.kind === "image" ? "Décrivez la scène que vous imaginez…" : p.kind === "ugc" ? "Ce que le créateur dit et fait avec votre produit…" : "Décrivez le mouvement et la scène…"}
+          placeholder={p.kind === "image" && creator ? `Une idée courte : ex. ${creator.name} au marché avec mon produit…` : p.kind === "image" ? "Décrivez la scène que vous imaginez…" : p.kind === "ugc" ? "Ce que le créateur dit et fait avec votre produit…" : "Décrivez le mouvement et la scène…"}
           className="flex-1 min-w-0 resize-none bg-transparent text-[15px] leading-relaxed text-white placeholder:text-white/35 outline-none py-1 max-h-40"
         />
       </div>
@@ -161,6 +171,22 @@ export function PromptDock(p: PromptDockProps) {
           {p.kind !== "ugc" && (
             <Pill icon={<Proportions className="size-3.5" />} label={p.ratio}>
               {(close) => RATIOS.map((r) => <Option key={r} active={r === p.ratio} onClick={() => { p.onRatio(r); close(); }}>{r}</Option>)}
+            </Pill>
+          )}
+          {p.kind === "image" && creator && (
+            <Pill wide icon={<UserRound className="size-3.5 text-accent" />} label={p.shotMode === "multi" ? "Multi-plans" : INFLUENCER_SHOTS.find((s) => s.id === p.shot)?.label ?? "Plan"}>
+              {(close) => (
+                <div className="max-h-80 overflow-y-auto">
+                  <Option active={p.shotMode === "multi"} onClick={() => { p.onShotMode("multi"); if (p.count < 2) p.onCount(4); close(); }}>
+                    <span className="font-medium text-white">Multi-plans</span>
+                    <span className="block text-[12px] text-white/50">Chaque image sous un angle différent (selfie, gros plan, en ville…)</span>
+                  </Option>
+                  <p className="px-2.5 pt-2 pb-1 text-[11px] uppercase tracking-wider text-white/40">Un seul plan (variations)</p>
+                  {INFLUENCER_SHOTS.map((s) => (
+                    <Option key={s.id} active={p.shotMode === "variations" && p.shot === s.id} onClick={() => { p.onShotMode("variations"); p.onShot(s.id); close(); }}>{s.label}</Option>
+                  ))}
+                </div>
+              )}
             </Pill>
           )}
           {p.kind === "image" ? (

@@ -16,6 +16,7 @@ struct ImageGenParams {
     /// Image model id or label ("Marketing Studio", "Soul 2").
     var model: String = "marketing-studio-1k"
     var count: Int = 2
+    var presetId: String? = nil
 }
 
 struct VideoGenParams {
@@ -158,11 +159,11 @@ enum API {
         return r == "4:5" ? "3:4" : r
     }
 
-    private static func images(_ prompt: String, count: Int, ratio: String?, imageUrls: [String]? = nil, model: String? = nil, upscale: Bool = false) async throws -> [String] {
+    private static func images(_ prompt: String, count: Int, ratio: String?, imageUrls: [String]? = nil, model: String? = nil, upscale: Bool = false, presetId: String? = nil) async throws -> [String] {
         try await withThrowingTaskGroup(of: [String].self) { group in
             for _ in 0..<count {
                 group.addTask {
-                    try await APIClient.run(GenerationRequest(kind: .image, model: model, prompt: prompt, imageUrls: imageUrls, aspectRatio: imageRatio(ratio), upscale: upscale ? true : nil)).images
+                    try await APIClient.run(GenerationRequest(kind: .image, model: model, prompt: prompt, imageUrls: imageUrls, aspectRatio: imageRatio(ratio), upscale: upscale ? true : nil, presetId: presetId)).images
                 }
             }
             var out: [String] = []
@@ -189,12 +190,42 @@ enum API {
         let prompt = "\(p.prompt). \(details)\(product != nil ? ". Garde le produit de la photo fournie exactement identique (forme, couleurs, étiquette)." : "")"
         // Soul 2 can't use a product photo: it renders from the text only.
         let refs = product != nil && model.acceptsImages ? [product!] : nil
-        let cost = model.credits * count
+        let cost = AIModels.creditsFor(usd: model.usd * (p.presetId != nil ? 1.1 : 1)) * count
         let urls = try await charged(store, cost: cost) {
-            try await images(prompt, count: count, ratio: p.ratio, imageUrls: refs, model: model.id)
+            try await images(prompt, count: count, ratio: p.ratio, imageUrls: refs, model: model.id, presetId: p.presetId)
         }
         let g = store.addGeneration(kind: .image, prompt: p.prompt, thumbnails: urls, projectId: p.projectId, model: model.label, credits: cost)
         store.pushNotification(kind: .generationComplete, title: "Génération terminée", message: "\(urls.count) image\(urls.count > 1 ? "s sont prêtes" : " est prête") pour « \(p.prompt.prefix(40)) ».")
+        return urls.map { GeneratedImage(id: IDGen.make("out"), url: $0, generationId: g.id) }
+    }
+
+    /// Influencer photo shots, same ids as the server (web/src/lib/influencer.ts).
+    static let influencerShots: [(id: String, label: String)] = [
+        ("hold", "Tient le produit"), ("selfie", "Selfie"), ("use", "En utilisation"),
+        ("closeup", "Gros plan"), ("unboxing", "Déballage"), ("street", "En ville"),
+    ]
+
+    /// Creator + product photo. `multi`: each image a different shot; otherwise variations of one shot.
+    static func generateInfluencer(creatorId: String, prompt: String, productAssetId: String?, ratio: String, model: String, count: Int, multi: Bool, shot: String, store: AppStore) async throws -> [GeneratedImage] {
+        let m = AIModels.imageModel(model).acceptsImages ? AIModels.imageModel(model) : AIModels.imageModel(nil)
+        let n = min(max(count, 1), 4)
+        let product = remoteURL(store, productAssetId)
+        let start = influencerShots.firstIndex { $0.id == shot } ?? 0
+        let cost = m.credits * n
+        let urls = try await charged(store, cost: cost) {
+            try await withThrowingTaskGroup(of: [String].self) { group in
+                for i in 0..<n {
+                    let s = multi ? influencerShots[(start + i) % influencerShots.count].id : shot
+                    let req = GenerationRequest(kind: .image, model: m.id, prompt: prompt, imageUrls: product.map { [$0] }, aspectRatio: imageRatio(ratio),
+                                                influencer: .init(creatorId: creatorId, shot: s, variation: !multi && n > 1 ? i + 1 : 0))
+                    group.addTask { try await APIClient.run(req).images }
+                }
+                var out: [String] = []
+                for try await u in group { out += u }
+                return out
+            }
+        }
+        let g = store.addGeneration(kind: .image, prompt: prompt.isEmpty ? "Photo influenceur" : prompt, thumbnails: urls, projectId: store.currentProjectId, model: m.label, credits: cost)
         return urls.map { GeneratedImage(id: IDGen.make("out"), url: $0, generationId: g.id) }
     }
 

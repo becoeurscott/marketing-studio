@@ -2,12 +2,14 @@
  * Seedance 2.5 text-to-video example (Higgsfield SDK).
  * Run: npm run seedance   (loads HF_CREDENTIALS from .env.local; never printed)
  */
-import { config, higgsfield, HiggsfieldError } from "@higgsfield/client/v2";
 
-if (!process.env.HF_CREDENTIALS) {
-  console.error("HF_CREDENTIALS is missing. Add it to web/.env.local as key-id:key-secret.");
+
+if (!process.env.HF_CREDENTIALS || !/^[^:\s]+:[^:\s]+$/.test(process.env.HF_CREDENTIALS)) {
+  console.error("HF_CREDENTIALS is missing or malformed. Enter it locally in web/.env.local as key-id:key-secret.");
   process.exit(1);
 }
+
+const { config, higgsfield, HiggsfieldError } = await import("@higgsfield/client/v2");
 
 // Video renders can take several minutes: poll every 5 s for up to 15 min.
 config({ credentials: process.env.HF_CREDENTIALS, pollInterval: 5_000, maxPollTime: 15 * 60_000 });
@@ -38,6 +40,7 @@ try {
 } catch (error) {
   // SDK errors: AuthenticationError, NotEnoughCreditsError, ValidationError, TimeoutError, …
   const name = error instanceof HiggsfieldError ? error.constructor.name : "Error";
-  console.error(`${name}: ${error instanceof Error ? error.message : String(error)}`);
+  // Do not print SDK messages or response bodies: they may contain request details.
+  console.error(`${name}: generation failed. Check API credentials, balance, and request status in the Higgsfield console.`);
   process.exitCode = 1;
 }

@@ -58,9 +58,16 @@ export function toModelInput(req: GenerationRequest): [string, Record<string, un
 
   switch (req.kind as GenerationKind) {
     case "image": {
+      if (req.presetId && !imageModel(req.model).id.startsWith("marketing-studio")) throw new Error("Choisissez Standard ou HD pour appliquer une mise en page Marketing Studio.");
       if (imageModel(req.model).id === "soul-2") {
         const soulRatios = ["9:16", "16:9", "4:3", "3:4", "1:1", "2:3", "3:2"];
         return [imageModel("soul-2").endpoint, { prompt, batch_size: 1, resolution: "1080p", aspect_ratio: soulRatios.includes(req.aspectRatio ?? "") ? req.aspectRatio : "3:4", enhance_prompt: true }];
+      }
+      if (imageModel(req.model).id === "nano-banana-pro") {
+        const nbRatios = ["1:1", "3:2", "2:3", "4:3", "3:4", "16:9", "9:16"];
+        const ratio = nbRatios.includes(req.aspectRatio ?? "") ? req.aspectRatio : "3:4";
+        const resolution = req.upscale ? "4k" : "1k";
+        return [imageModel("nano-banana-pro").endpoint, { prompt, aspect_ratio: ratio, resolution, ...(images.length ? { image_urls: images } : {}) }];
       }
       const ratio = IMAGE_RATIOS.has(req.aspectRatio ?? "") ? req.aspectRatio : "auto";
       const resolution = req.upscale ? "4k" : imageModel(req.model).resolution ?? "2k";

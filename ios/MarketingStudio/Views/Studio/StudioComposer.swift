@@ -18,6 +18,7 @@ struct StudioComposer: View {
     var onMore: () -> Void
     var onGenerate: () -> Void
 
+    @State private var presetPicker = false
     @FocusState private var promptFocused: Bool
 
     // MARK: Derived
@@ -84,6 +85,15 @@ struct StudioComposer: View {
         VStack(alignment: .leading, spacing: 14) {
             slots
             promptArea
+            if mode == .image && image.supportsPresets {
+                Button { promptFocused = false; presetPicker = true } label: {
+                    Label(image.activePreset?.name ?? "Modèles Marketing Studio", systemImage: "rectangle.grid.2x2")
+                        .font(.subheadline)
+                }
+                .disabled(image.productAsset == nil || busy)
+                Text(image.productAsset == nil ? "Ajoutez une photo produit pour choisir une mise en page." : image.activePreset == nil ? "Choisissez une mise en page pour votre produit." : "Supplément de 10 % inclus dans les crédits affichés.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             controls
         }
         .padding(16)
@@ -94,6 +104,9 @@ struct StudioComposer: View {
         .padding(.bottom, 8)
         .animation(MSAnimation.snappy, value: promptFocused)
         .animation(MSAnimation.gentle, value: mode)
+        .sheet(isPresented: $presetPicker) {
+            MarketingPresetPicker(selection: $image.preset)
+        }
         .onChange(of: promptFocused) { _, f in composing = f }
     }
 
@@ -107,6 +120,12 @@ struct StudioComposer: View {
             if mode == .ugc {
                 MediaSlot(url: ugc.creator?.avatarURL, title: "Créateur", icon: "person.crop.square", onTap: openCreator) {
                     withAnimation(MSAnimation.snappy) { ugc.creator = nil }
+                }
+                .transition(.scale(scale: 0.8).combined(with: .opacity))
+            }
+            if mode == .image {
+                MediaSlot(url: image.creator?.avatarURL, title: "Créateur", icon: "person.crop.square", onTap: openCreator) {
+                    withAnimation(MSAnimation.snappy) { image.creator = nil }
                 }
                 .transition(.scale(scale: 0.8).combined(with: .opacity))
             }
@@ -162,6 +181,7 @@ struct StudioComposer: View {
     private enum Token { case text(String), product, creator, style, camera }
 
     private var tokens: [Token] {
+        if mode == .image, image.creator != nil { return [.text("Photo de"), .creator, .text("avec"), .product] }
         switch mode {
         case .video: return [.text("Animer"), .product, .text("avec un mouvement"), .camera, .text(", style"), .style]
         case .ugc: return [.text("Créer une vidéo UGC où"), .creator, .text("apprécie le produit"), .product]
@@ -199,7 +219,8 @@ struct StudioComposer: View {
                 MSHaptic.tap()
                 openCreator()
             } label: {
-                PromptChip(imageURL: ugc.creator?.avatarURL, icon: "person", text: ugc.creator?.name ?? "créateur", filled: ugc.creator != nil, circular: true)
+                let c = mode == .image ? image.creator : ugc.creator
+                PromptChip(imageURL: c?.avatarURL, icon: "person", text: c?.name ?? "créateur", filled: c != nil, circular: true)
             }
             .buttonStyle(MSPressStyle())
         case .style:
@@ -247,6 +268,23 @@ struct StudioComposer: View {
                         optionMenu(options: StudioOptions.ugcDurations.map { "\($0)s" }, value: "\(ugc.duration)s") { ugc.duration = Int($0.dropLast()) ?? 15 } label: {
                             controlPillLabel(icon: "clock", text: "\(ugc.duration)s")
                         }
+                    }
+                    if mode == .image, image.creator != nil {
+                        Menu {
+                            Button { MSHaptic.tap(); image.multiShot = true; image.count = 4 } label: {
+                                if image.multiShot { Label("Multi-plans (4 angles)", systemImage: "checkmark") } else { Text("Multi-plans (4 angles)") }
+                            }
+                            Section("Un seul plan") {
+                                ForEach(API.influencerShots, id: \.id) { s in
+                                    Button { MSHaptic.tap(); image.multiShot = false; image.shot = s.id } label: {
+                                        if !image.multiShot && image.shot == s.id { Label(s.label, systemImage: "checkmark") } else { Text(s.label) }
+                                    }
+                                }
+                            }
+                        } label: {
+                            controlPillLabel(icon: "person.crop.rectangle", text: image.multiShot ? "Multi-plans" : (API.influencerShots.first { $0.id == image.shot }?.label ?? "Plan"))
+                        }
+                        .menuOrder(.fixed)
                     }
                     RatioPickerPill(ratio: ratio)
                     controlPill(icon: "slider.horizontal.3", text: nil, action: onMore)
@@ -551,5 +589,65 @@ struct RatioPickerPill: View {
             .presentationCompactAdaptation(.popover)
             .preferredColorScheme(.dark)
         }
+    }
+}
+
+
+/// Live ad layouts from the shared server; credentials stay on the server.
+private struct MarketingPresetPicker: View {
+    @Binding var selection: MarketingPreset?
+    @Environment(\.dismiss) private var dismiss
+    @State private var items: [MarketingPreset] = []
+    @State private var loading = true
+    @State private var error: String?
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    Button("Mise en page libre") { selection = nil; dismiss() }
+                    if loading { ProgressView("Chargement des modèles…") }
+                    if let error {
+                        Text(error).font(.callout)
+                        Button("Réessayer") { Task { await load() } }
+                    }
+                    if !loading && error == nil && items.isEmpty {
+                        Text("Aucun modèle disponible pour le moment.").foregroundStyle(.secondary)
+                    }
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        ForEach(items) { preset in
+                            Button { selection = preset; dismiss() } label: {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    AsyncImage(url: preset.preview.flatMap(URL.init(string:))) { image in
+                                        image.resizable().scaledToFill()
+                                    } placeholder: {
+                                        Rectangle().fill(.quaternary)
+                                            .overlay(Image(systemName: "rectangle.grid.2x2"))
+                                    }
+                                    .frame(height: 160).clipped().cornerRadius(12)
+                                    HStack {
+                                        Text(preset.name).font(.caption).lineLimit(2)
+                                        if selection?.id == preset.id { Image(systemName: "checkmark.circle.fill") }
+                                    }
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }.padding()
+            }
+            .navigationTitle("Modèles de pub")
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } } }
+            .task { await load() }
+        }
+    }
+
+    @MainActor private func load() async {
+        loading = true
+        error = nil
+        defer { loading = false }
+        do { items = try await APIClient.marketingPresets() }
+        catch is CancellationError { }
+        catch { self.error = error.localizedDescription }
     }
 }

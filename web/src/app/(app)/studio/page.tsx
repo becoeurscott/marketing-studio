@@ -9,10 +9,13 @@ import { creators } from "@/data";
 import { ugcCredits } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import type { AspectRatio, Asset } from "@/lib/types";
-import { IMAGE_MODELS, VIDEO_MODELS, imageModel, videoCredits, videoModel, type ImageModelId, type VideoModelId } from "@/lib/higgsfield/models";
+import { IMAGE_MODELS, VIDEO_MODELS, imageCredits, imageModel, videoCredits, videoModel, type ImageModelId, type VideoModelId } from "@/lib/higgsfield/models";
 
 const IMAGE_DOCK: DockModel[] = IMAGE_MODELS.map((m) => ({ id: m.id, label: m.label, hint: m.hint, price: `✦ ${m.credits} / image`, badge: m.id === "marketing-studio-1k" ? "Recommandé" : undefined }));
 const VIDEO_DOCK: DockModel[] = VIDEO_MODELS.map((m) => ({ id: m.id, label: m.label, hint: m.hint, price: `✦ ${m.creditsPerSecond}/s`, badge: m.id === "seedance-2.5" ? "Top" : undefined }));
+
+import { AdTemplatePicker } from "@/components/studio/AdTemplatePicker";
+import type { HfPreset } from "@/lib/higgsfield/types";
 
 const EXAMPLES = [
   "Bouteille de parfum sur un pagne wax, lumière dorée du matin, photo publicitaire",
@@ -37,6 +40,10 @@ export default function StudioPage() {
   const [duration, setDuration] = useState<5 | 10 | 15>(5);
   const [productId, setProductId] = useState<string | null>(null);
   const [creatorId, setCreatorId] = useState<string | null>(null);
+  const [shotMode, setShotMode] = useState<"multi" | "variations">("variations");
+  const [preset, setPreset] = useState<HfPreset | null>(null);
+  const activePreset = kind === "image" && !!productId && !creatorId && imgModel.startsWith("marketing-studio") ? preset : null;
+  const [shot, setShot] = useState("hold");
 
   // Deep links: /studio?mode=ugc&creator=<id>, /studio?mode=video&model=<id>
   useEffect(() => {
@@ -56,14 +63,15 @@ export default function StudioPage() {
   const changeKind = (k: RunKind) => { setKind(k); setRatio(k === "image" ? "4:5" : "9:16"); };
 
   const cost = useMemo(() => {
-    if (kind === "image") return imageModel(imgModel).credits * count;
+    if (kind === "image") return imageCredits(imgModel, !!activePreset) * count;
     if (kind === "ugc") return ugcCredits(duration);
     return videoCredits(vidModel, duration, !!productId, light);
-  }, [kind, imgModel, count, vidModel, duration, productId, light]);
+  }, [kind, imgModel, count, vidModel, duration, productId, light, activePreset]);
 
   const generate = () => {
-    const modelLabel = kind === "image" ? imageModel(imgModel).label : kind === "ugc" ? `UGC · ${creators.find((c) => c.id === creatorId)?.name ?? ""}` : videoModel(vidModel).label;
-    void submit({ kind, prompt, modelLabel, ratio: kind === "ugc" ? "9:16" : ratio, imageModel: imgModel, count, videoModel: vidModel, durationSec: duration, productAssetId: productId, creatorId });
+    const creatorName = creators.find((c) => c.id === creatorId)?.name ?? "";
+    const modelLabel = kind === "image" && creatorId ? `Influenceur · ${creatorName} · ${imageModel(imgModel).label}` : kind === "image" ? imageModel(imgModel).label : kind === "ugc" ? `UGC · ${creators.find((c) => c.id === creatorId)?.name ?? ""}` : videoModel(vidModel).label;
+    void submit({ kind, prompt, modelLabel, ratio: kind === "ugc" ? "9:16" : ratio, imageModel: imgModel, presetId: activePreset?.id, count, videoModel: vidModel, durationSec: duration, productAssetId: productId, creatorId, shotMode, shot });
   };
 
   const empty = runs.length === 0 && !hasHistory;
@@ -84,13 +92,19 @@ export default function StudioPage() {
               </div>
             </div>
           ) : (
-            <RunFeed runs={runs} onRemove={remove} onReuse={setPrompt} />
+            <RunFeed runs={runs} onRemove={remove} onReuse={setPrompt} onMore={(r, mode) => r.input && void submit({ ...r.input, count: 4, shotMode: mode, modelLabel: `${r.input.modelLabel} · ${mode === "multi" ? "autres plans" : "variantes"}` })} />
           )}
         </div>
       </div>
 
       <div className="absolute z-30 bottom-2 inset-x-2 md:bottom-5 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-[min(860px,calc(100%-3rem))]">
         {running > 0 && <p className="mb-2 text-center text-[12px] text-white/50">{running} génération{running > 1 ? "s" : ""} en cours · vous pouvez en lancer d’autres</p>}
+        {kind === "image" && !creatorId && imgModel.startsWith("marketing-studio") && (
+          <div className="mb-2 rounded-xl bg-[#0d0d0f] p-2">
+            <AdTemplatePicker value={activePreset?.id ?? null} onChange={setPreset} disabled={!productId} />
+            {activePreset && <p className="mt-1 text-xs text-muted">Mise en page : {activePreset.name} · supplément de 10 % inclus</p>}
+          </div>
+        )}
         <PromptDock
           kind={kind} onKind={changeKind}
           prompt={prompt} onPrompt={setPrompt}
@@ -102,6 +116,7 @@ export default function StudioPage() {
           duration={duration} onDuration={setDuration}
           productId={productId} onProduct={(a: Asset | null) => setProductId(a?.id ?? null)}
           creatorId={creatorId} onCreator={setCreatorId}
+          shotMode={shotMode} onShotMode={setShotMode} shot={shot} onShot={setShot}
           cost={cost}
           onGenerate={generate}
         />
