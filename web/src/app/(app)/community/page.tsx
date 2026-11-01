@@ -4,6 +4,7 @@ import { Loader2, RefreshCcw, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { usePageTitle } from "@/components/shell/ShellContext";
+import { HiggsfieldVideoPresetPicker } from "@/components/studio/HiggsfieldExamples";
 import type { CommunityPost } from "@/lib/community";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,9 @@ export default function CommunityPage() {
   useEffect(() => { void load(true); }, [load]);
 
   const recreate = (p: CommunityPost) => router.push(`/studio?mode=${p.kind}&prompt=${encodeURIComponent(p.prompt)}`);
+  const usePreset = (preset: { id: string; mode: "video" | "ugc" }) => {
+    router.push(`/studio?mode=${preset.mode}&videoPreset=${encodeURIComponent(preset.id)}`);
+  };
   const unpublish = async (p: CommunityPost) => {
     await fetch(`/api/community/${p.id}`, { method: "DELETE" });
     setPosts((cur) => cur.filter((x) => x.id !== p.id));
@@ -53,6 +57,12 @@ export default function CommunityPage() {
           ))}
         </div>
       </div>
+
+      {tab !== "image" && (
+        <div className="mb-8 rounded-2xl border border-white/10 bg-white/[0.02] px-3 md:px-5 py-4">
+          <HiggsfieldVideoPresetPicker onSelect={usePreset} />
+        </div>
+      )}
 
       {!loading && posts.length === 0 ? (
         <div className="py-24 text-center text-text2">

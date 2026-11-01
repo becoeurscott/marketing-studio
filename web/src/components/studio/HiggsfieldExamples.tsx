@@ -20,12 +20,12 @@ export function HiggsfieldVideoPresetPicker({ selectedId, onSelect }: Higgsfield
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h2 className="text-lg font-semibold text-white">{selecting ? "Choisissez un preset vidéo" : "Inspiration vidéo · Higgsfield"}</h2>
-          <p className="mt-1 text-sm text-white/55">{selecting ? "Sélectionnez une vidéo de référence, puis ajoutez votre avatar et votre produit dans le composeur." : "Exemples UGC et motion de Marketing Studio."}</p>
+          <p className="mt-1 text-sm text-white/55">{selecting ? "Sélectionnez une vidéo de référence, puis ajoutez votre avatar et votre produit dans le composeur." : "Exemples UGC, TikTok et motion de Marketing Studio."}</p>
         </div>
         {selecting && <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent"><Sparkles className="size-3.5" /> Seedance 2.5</span>}
       </div>
       <div className="my-3 flex gap-2" role="group" aria-label="Catégorie">
-        {["Tous", "UGC", "Motion"].map((c) => <button type="button" key={c} aria-pressed={category === c} onClick={() => setCategory(c)} className={`rounded-full px-3 py-1.5 text-sm ${category === c ? "bg-accent text-black" : "bg-white/10 text-white"}`}>{c}</button>)}
+        {["Tous", "UGC", "TikTok", "Motion"].map((c) => <button type="button" key={c} aria-pressed={category === c} onClick={() => setCategory(c)} className={`rounded-full px-3 py-1.5 text-sm ${category === c ? "bg-accent text-black" : "bg-white/10 text-white"}`}>{c}</button>)}
       </div>
       <div className="flex gap-3 overflow-x-auto pb-3 lg:grid lg:grid-cols-4 lg:overflow-visible">
         {higgsfieldExamples.filter((v) => category === "Tous" || category === v.category).map((v) => {

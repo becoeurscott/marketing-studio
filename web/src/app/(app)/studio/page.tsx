@@ -17,7 +17,7 @@ const VIDEO_DOCK: DockModel[] = VIDEO_MODELS.map((m) => ({ id: m.id, label: m.la
 
 import { AdTemplatePicker } from "@/components/studio/AdTemplatePicker";
 import type { HfPreset } from "@/lib/higgsfield/types";
-import type { HiggsfieldVideoPreset } from "@/data/higgsfield-examples";
+import { higgsfieldExamples, type HiggsfieldVideoPreset } from "@/data/higgsfield-examples";
 
 const EXAMPLES = [
   "Bouteille de parfum sur un pagne wax, lumière dorée du matin, photo publicitaire",
@@ -61,7 +61,17 @@ export default function StudioPage() {
     if (model && VIDEO_MODELS.some((x) => x.id === model)) { setKind("video"); setVidModel(model as VideoModelId); }
     const pr = q.get("prompt");
     if (pr) setPrompt(pr.slice(0, 2000));
-    if (m || c || model || pr) window.history.replaceState(null, "", "/studio");
+    const presetId = q.get("videoPreset");
+    const selectedPreset = presetId ? higgsfieldExamples.find((preset) => preset.id === presetId) : null;
+    if (selectedPreset) {
+      setVideoPreset(selectedPreset);
+      setKind(selectedPreset.mode);
+      setVidModel("seedance-2.5");
+      setRatio("9:16");
+      setDuration(5);
+      if (!pr) setPrompt(selectedPreset.defaultPrompt);
+    }
+    if (m || c || model || pr || presetId) window.history.replaceState(null, "", "/studio");
   }, []);
 
   const changeKind = (k: RunKind) => { setKind(k); setRatio(k === "image" ? "4:5" : "9:16"); };
