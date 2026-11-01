@@ -7,6 +7,7 @@ import { useState } from "react";
 import { COUNTRIES, DEFAULT_COUNTRY, PAYMENT_METHODS, TOP_UP_PACKS, USAGE_PACKS, countryOf, priceIn, type CountryCode, type PaymentMethodId } from "@/lib/market";
 import { cn } from "@/lib/utils";
 import { DEMO_HREF, Logo } from "./Hero";
+import { SubscriptionPlans } from "@/components/billing/SubscriptionPlans";
 import { CtaButton, EASE, Particles, Reveal, ScrollText, SectionTitle } from "./motion";
 import { GlowCard } from "./Story";
 
@@ -54,84 +55,17 @@ export function Audiences() {
 
 /* ───────────────────────── Pricing ───────────────────────── */
 
-const LANDING_PAYMENTS: PaymentMethodId[] = ["wave", "orange-money", "mtn-momo", "moov-money", "mpesa", "card"];
-
 export function Pricing() {
-  const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
-  const c = countryOf(country);
   return (
     <section id="tarifs" className="relative scroll-mt-24 px-4 sm:px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
         <SectionTitle
           eyebrow="Tarifs"
-          title={
-            <>
-              Payez à l&apos;usage,
-              <br />
-              en Mobile Money
-            </>
-          }
-          text="Sans abonnement, dès 1 000 FCFA. Vos crédits n'expirent pas, rechargez quand vous voulez."
+          title="Un abonnement simple pour créer chaque mois"
+          text="Choisissez votre volume de crédits. Paiement par carte, renouvellement mensuel et résiliation à tout moment."
         />
-        <Reveal className="mt-8 flex flex-col items-center gap-4">
-          <label className="flex items-center gap-2 text-sm text-text2">
-            Prix pour
-            <select
-              value={country}
-              onChange={(e) => setCountry(e.target.value as CountryCode)}
-              className="h-9 rounded-full border border-white/10 bg-white/[0.04] px-3 text-sm text-text focus:border-accent focus:outline-none"
-            >
-              {COUNTRIES.map((x) => <option key={x.code} value={x.code} className="bg-bg">{x.flag} {x.name}</option>)}
-            </select>
-          </label>
-          <ul className="flex flex-wrap justify-center gap-2" aria-label="Moyens de paiement acceptés">
-            {LANDING_PAYMENTS.map((id) => {
-              const m = PAYMENT_METHODS[id];
-              const local = c.payments.includes(id);
-              return (
-                <li key={id} className={cn("flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs", local ? "border-white/15 bg-white/[0.06] text-text" : "border-white/[0.06] text-muted")}>
-                  <span className="size-2.5 rounded-full" style={{ background: m.color }} />
-                  {m.label}
-                </li>
-              );
-            })}
-          </ul>
-        </Reveal>
-
-        {/* Pay-as-you-go packs */}
-        <div className="mt-12 grid gap-3 sm:grid-cols-3">
-          {USAGE_PACKS.map((p, i) => (
-            <Reveal key={p.id} delay={i * 0.08}>
-              <div className={cn("h-full rounded-2xl border p-5", p.popular ? "border-accent/40 bg-accent/10" : "border-white/[0.08] bg-white/[0.03]")}>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm text-text2">{p.name}</p>
-                  {p.popular && <span className="rounded-full bg-accent/20 border border-accent/40 px-2 py-0.5 text-[10px] text-highlight">Le plus pris</span>}
-                </div>
-                <p className="mt-2 text-3xl font-medium tracking-tight text-white tabular-nums">{priceIn(p.priceXof, country)}</p>
-                <p className="mt-1 text-sm">{p.pitch}</p>
-                <p className="mt-2 text-xs text-muted">Sans abonnement{p.validityDays ? ` · valable ${p.validityDays} jours` : ""}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-
-        <p className="mt-14 text-center text-sm text-text2">Vous publiez beaucoup ? Les grosses recharges donnent des crédits en plus</p>
-        <div className="mx-auto mt-6 grid max-w-3xl gap-4 sm:grid-cols-2">
-          {TOP_UP_PACKS.map((p, i) => (
-            <Reveal key={p.id} delay={i * 0.12}>
-              <GlowCard className="h-full p-7 transition-transform duration-500 hover:-translate-y-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-medium">{p.name}</h3>
-                  <span className="rounded-full bg-accent/20 border border-accent/40 px-2.5 py-0.5 text-[11px] text-highlight">{p.pitch}</span>
-                </div>
-                <p className="mt-6 whitespace-nowrap text-4xl font-light tracking-tight text-white tabular-nums">{priceIn(p.priceXof, country)}</p>
-                <p className="mt-1 text-sm text-text2">{p.credits.toLocaleString("fr-FR")} crédits · sans abonnement, sans expiration</p>
-                <Link href={DEMO_HREF} className="mt-8 flex h-11 w-full items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-sm font-medium transition-all duration-300 hover:bg-white/[0.08]">
-                  Commencer gratuitement
-                </Link>
-              </GlowCard>
-            </Reveal>
-          ))}
+        <div className="mt-12">
+          <SubscriptionPlans />
         </div>
       </div>
     </section>
