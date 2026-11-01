@@ -4,6 +4,7 @@ import { Hero, SiteHeader } from "@/components/landing/Hero";
 import { LandingMotion } from "@/components/landing/LandingMotion";
 import { StylesShowcase } from "@/components/landing/StylesShowcase";
 import { UgcShowcase } from "@/components/landing/UgcShowcase";
+import { VideoPresetsShowcase } from "@/components/landing/VideoPresetsShowcase";
 
 export const metadata: Metadata = {
   title: { absolute: "Marketing Studio — Votre studio marketing IA" },
@@ -26,6 +27,7 @@ export default function LandingPage() {
         <main>
           <Hero />
           <UgcShowcase />
+          <VideoPresetsShowcase />
           <StylesShowcase />
           <Pricing />
           <Faq />

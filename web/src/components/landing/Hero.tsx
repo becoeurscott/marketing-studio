@@ -20,6 +20,7 @@ export const DEMO_HREF = "/inscription";
 
 const NAV = [
   { href: "#ugc", label: "Vidéos" },
+  { href: "#presets", label: "Presets" },
   { href: "#styles", label: "Styles" },
   { href: "#tarifs", label: "Tarifs" },
   { href: "#faq", label: "FAQ" },
