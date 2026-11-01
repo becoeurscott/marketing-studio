@@ -60,8 +60,7 @@ export const higgsfieldExamples = [
     "direction": "Use the selected reference video for its editorial product rhythm, clean framing, purposeful camera moves, and concise graphic callout moments. Keep any generated text minimal and legible.",
     "defaultPrompt": "Présentez les bénéfices clés de mon produit avec un montage éditorial rythmé."
   }
-,
-[
+  ,
   {
     "id": "giant-figure-6017577c-d9f9-4d1a-87d6-26e96e8e4f25",
     "name": "Giant Figure",
@@ -315,4 +314,4 @@ export const higgsfieldExamples = [
     "direction": "Follow this official Higgsfield TikTok template structure, keeping the selected product accurate and the creator natural.",
     "defaultPrompt": "Create a Direct-to-Camera product video with a natural, social-first performance and a clear call to action."
   }
-] as const satisfies readonly HiggsfieldVideoPreset[];
+] as const satisfies ReadonlyArray<HiggsfieldVideoPreset>;
