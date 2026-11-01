@@ -28,7 +28,7 @@ const NAV = [
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-[17px]">
-      <img src="/icon.png" alt="" aria-hidden="true" className="size-8 rounded-lg shadow-[0_0_20px_rgba(209,254,23,0.35)]" />
+      <img src="/brand-mark.png" alt="" aria-hidden="true" className="size-8 rounded-lg shadow-[0_0_20px_rgba(209,254,23,0.35)]" />
       Marketing Studio
     </Link>
   );
