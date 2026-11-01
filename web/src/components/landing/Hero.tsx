@@ -8,7 +8,7 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
-import { Camera, Clapperboard, Megaphone, Menu, Sparkles, X } from "lucide-react";
+import { Camera, Clapperboard, Megaphone, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -28,9 +28,7 @@ const NAV = [
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-[17px]">
-      <span className="size-8 rounded-lg bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shadow-[0_0_20px_rgba(209,254,23,0.45)]">
-        <Sparkles className="size-4 text-on-accent" />
-      </span>
+      <img src="/icon.png" alt="" aria-hidden="true" className="size-8 rounded-lg shadow-[0_0_20px_rgba(209,254,23,0.35)]" />
       Marketing Studio
     </Link>
   );
