@@ -19,9 +19,8 @@ import { CtaButton, EASE, Particles } from "./motion";
 export const DEMO_HREF = "/inscription";
 
 const NAV = [
-  { href: "#fonctionnalites", label: "Fonctionnalités" },
-  { href: "#whatsapp", label: "WhatsApp" },
-  { href: "#creations", label: "Créations" },
+  { href: "#ugc", label: "Vidéos" },
+  { href: "#styles", label: "Styles" },
   { href: "#tarifs", label: "Tarifs" },
   { href: "#faq", label: "FAQ" },
 ];
@@ -206,17 +205,17 @@ export function Hero() {
   const orbScale = useTransform(scrollYProgress, [0, 1], [1, 1.3]);
   const contentY = useTransform(scrollYProgress, [0, 1], [0, -80]);
 
-  const words = "Des contenus marketing qui vendent vraiment".split(" ");
+  const words = "Des pubs qui vendent".split(" ");
 
   return (
     <section ref={ref} className="relative overflow-hidden pt-36 sm:pt-44">
       <motion.div
         aria-hidden
         style={{ y: orbY, scale: orbScale }}
-        className="pointer-events-none absolute -top-[380px] left-1/2 -translate-x-[70%] size-[760px] rounded-full bg-[radial-gradient(circle_at_center,rgba(209,254,23,0.9),rgba(166,207,12,0.45)_35%,transparent_68%)] blur-2xl opacity-70"
+        className="pointer-events-none absolute -top-[380px] left-1/2 -translate-x-[70%] size-[760px] rounded-full bg-[radial-gradient(circle_at_center,rgba(209,254,23,0.55),rgba(166,207,12,0.2)_35%,transparent_68%)] blur-3xl opacity-60"
       />
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,transparent_30%,#070707_75%)]" />
-      <Particles count={50} />
+      <Particles count={24} />
 
       <motion.div style={{ y: contentY }} className="relative mx-auto max-w-5xl px-4 sm:px-6 text-center">
         <motion.span
@@ -226,7 +225,7 @@ export function Hero() {
           className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[11px] sm:px-3.5 sm:py-1.5 sm:text-xs text-text2 backdrop-blur max-w-full"
         >
           <span className="size-1.5 shrink-0 rounded-full bg-green shadow-[0_0_8px_#a6cf0c]" />
-          Le studio marketing IA des commerçants africains
+          Le studio marketing IA pour vendre en ligne
         </motion.span>
 
         <h1 className="mt-7 text-[42px] leading-[1.02] sm:text-6xl lg:text-7xl font-medium tracking-[-0.04em] text-balance">
@@ -249,8 +248,7 @@ export function Hero() {
           transition={{ duration: 0.9, delay: 0.7, ease: EASE }}
           className="mt-6 mx-auto max-w-2xl text-base sm:text-lg text-text2 leading-relaxed"
         >
-          Photos produit, vidéos UGC, statuts WhatsApp et pubs avec vos prix en FCFA : Marketing Studio transforme une simple
-          photo prise au téléphone en contenus prêts à vendre sur WhatsApp, TikTok et Facebook. Dès 1 000 FCFA, en Mobile Money.
+          Une photo suffit. Choisissez un style, ajoutez votre prix et obtenez une pub prête pour WhatsApp, TikTok ou Facebook.
         </motion.p>
 
         <motion.div
@@ -259,9 +257,9 @@ export function Hero() {
           transition={{ duration: 0.9, delay: 0.85, ease: EASE }}
           className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3"
         >
-          <CtaButton href={DEMO_HREF}>Essayer la démo</CtaButton>
-          <CtaButton href="#creations" variant="ghost">
-            Voir les créations
+          <CtaButton href={DEMO_HREF}>Créer ma première pub</CtaButton>
+          <CtaButton href="#ugc" variant="ghost">
+            Voir les exemples
           </CtaButton>
         </motion.div>
       </motion.div>
@@ -283,7 +281,7 @@ export function Hero() {
       >
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-xs sm:text-sm text-text2 backdrop-blur">
           {HERO_TAGS.map(({ icon: Icon, label }, i) => (
-            <span key={label} className="flex items-center gap-2">
+          <span key={label} className="flex items-center gap-2">
               {i > 0 && <span className="size-1 rounded-full bg-highlight" />}
               <Icon className="size-4 text-highlight" />
               {label}
@@ -291,6 +289,8 @@ export function Hero() {
           ))}
         </div>
       </motion.div>
+
+      <p className="relative mt-5 text-center text-xs text-muted">Sans abonnement · dès 1 000 FCFA · paiement Mobile Money</p>
 
       {/* Floor glow under the carousel. */}
       <div aria-hidden className="pointer-events-none mx-auto mt-10 h-40 max-w-4xl bg-[radial-gradient(ellipse_at_top,rgba(209,254,23,0.35),transparent_70%)]" />
