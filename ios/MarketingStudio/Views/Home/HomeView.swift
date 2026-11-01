@@ -23,6 +23,7 @@ struct HomeView: View {
                 brandMark
                 hero
                 quickActions
+                sokoziaShowcaseSection
                 promoMoments
                 if store.assets.count < 4 { examples }
                 stats
@@ -40,6 +41,25 @@ struct HomeView: View {
     }
 
     // MARK: Sections
+
+    private var sokoziaShowcaseSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeader(title: "Communauté · Exemples Sokozia", actionTitle: "Créer") { router.push(.ugcCreator) }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(["temoignage-karite", "atelier-couture", "degustation-maquis", "vendeuse-marche-wax", "grwm-perruque", "unboxing-telephone", "avant-apres-savon-noir", "livraison-whatsapp", "micro-trottoir-garba", "promo-tabaski"], id: \.self) { name in
+                        LoopingVideoView(
+                            url: "\(SokoziaConfig.siteURL.absoluteString)/showcase/ugc/\(name).mp4",
+                            poster: "\(SokoziaConfig.siteURL.absoluteString)/showcase/ugc/\(name).jpg"
+                        )
+                        .frame(width: 150, height: 260)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                }
+                .padding(.horizontal, MSSpacing.gutter)
+            }
+        }
+    }
 
     private var brandMark: some View {
         HStack(spacing: 8) {
