@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { usePageTitle } from "@/components/shell/ShellContext";
 import { HiggsfieldVideoPresetPicker } from "@/components/studio/HiggsfieldExamples";
+import { sokoziaShowcaseVideos } from "@/data/sokozia-showcase";
 import type { CommunityPost } from "@/lib/community";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +63,28 @@ export default function CommunityPage() {
         <div className="mb-8 rounded-2xl border border-white/10 bg-white/[0.02] px-3 md:px-5 py-4">
           <HiggsfieldVideoPresetPicker onSelect={usePreset} />
         </div>
+      )}
+
+      {tab !== "image" && (
+        <section className="mb-8" aria-label="Vidéos de démonstration Sokozia">
+          <div className="mb-3">
+            <h2 className="text-lg font-semibold text-white">Exemples Sokozia</h2>
+            <p className="mt-1 text-sm text-white/55">Les 10 vidéos UGC utilisées dans l’expérience Sokozia.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
+            {sokoziaShowcaseVideos.map((video) => (
+              <article key={video.id} className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+                <button type="button" onClick={() => router.push(`/studio?mode=ugc&prompt=${encodeURIComponent(video.prompt)}`)} className="group block w-full text-left">
+                  <div className="relative aspect-[9/16] bg-black">
+                    <video src={video.source} poster={video.poster} muted loop playsInline preload="metadata" onMouseEnter={(e) => void e.currentTarget.play().catch(() => {})} onMouseLeave={(e) => e.currentTarget.pause()} className="size-full object-cover" aria-label={video.name} />
+                    <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-1 text-[11px] text-white/85 group-hover:bg-accent group-hover:text-black">Utiliser</span>
+                  </div>
+                  <p className="p-3 text-sm font-medium text-white">{video.name}</p>
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
       )}
 
       {!loading && posts.length === 0 ? (
