@@ -56,6 +56,7 @@ export function Audiences() {
 /* ───────────────────────── Pricing ───────────────────────── */
 
 export function Pricing() {
+  const [currency, setCurrency] = useState<"local" | "eur">("local");
   return (
     <section id="tarifs" className="relative scroll-mt-24 px-4 sm:px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
@@ -65,7 +66,13 @@ export function Pricing() {
           text="Choisissez votre volume de crédits. Paiement par carte, renouvellement mensuel et résiliation à tout moment."
         />
         <div className="mt-12">
-          <SubscriptionPlans />
+          <div className="mb-6 flex justify-center">
+            <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] p-1 text-xs" aria-label="Choisir la devise">
+              <button type="button" onClick={() => setCurrency("local")} className={cn("rounded-full px-4 py-2 transition-colors", currency === "local" ? "bg-white text-black" : "text-text2 hover:text-text")}>FCFA</button>
+              <button type="button" onClick={() => setCurrency("eur")} className={cn("rounded-full px-4 py-2 transition-colors", currency === "eur" ? "bg-white text-black" : "text-text2 hover:text-text")}>EUR €</button>
+            </div>
+          </div>
+          <SubscriptionPlans currency={currency} />
         </div>
       </div>
     </section>
