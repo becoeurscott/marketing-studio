@@ -1,7 +1,7 @@
 "use client";
 
-import { Play, TrendingUp } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { CommunityPost } from "@/lib/community";
 import { cn } from "@/lib/utils";
 
@@ -42,37 +42,19 @@ export function TrendingVideos() {
 }
 
 function VideoCard({ post }: { post: CommunityPost }) {
-  const [playing, setPlaying] = useState(false);
-  const toggle = useCallback((el: HTMLVideoElement | null) => {
-    if (!el) return;
-    if (playing) el.play().catch(() => {});
-    else el.pause();
-  }, [playing]);
-
   return (
-    <div
-      className="snap-start shrink-0 w-[180px] group relative overflow-hidden rounded-xl bg-white/[0.03]"
-      onMouseEnter={() => setPlaying(true)}
-      onMouseLeave={() => setPlaying(false)}
-    >
+    <div className="snap-start shrink-0 w-[180px] group relative overflow-hidden rounded-xl bg-white/[0.03]">
       <div className="aspect-[9/16] relative">
         <video
-          ref={toggle}
           src={post.url}
           poster={post.poster ?? undefined}
+          autoPlay
           muted
           loop
           playsInline
           preload="metadata"
           className="size-full object-cover"
         />
-        {!playing && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-            <span className="size-10 rounded-full bg-black/50 flex items-center justify-center backdrop-blur">
-              <Play className="size-4 text-white fill-white" />
-            </span>
-          </div>
-        )}
         <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/80 to-transparent">
           <p className="text-[11px] text-white line-clamp-2">{post.prompt}</p>
           <p className="text-[10px] text-white/50 mt-0.5">{post.author} · {post.modelLabel}</p>

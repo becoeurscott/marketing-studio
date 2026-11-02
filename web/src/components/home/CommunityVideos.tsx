@@ -14,7 +14,7 @@ function Preview({ video }: { video: (typeof videos)[number] }) {
         {unavailable ? (
           <div className="flex h-full items-center justify-center p-4 text-center text-sm text-white/60">Aperçu indisponible</div>
         ) : (
-          <video src={video.url} poster={video.poster} muted loop playsInline controls preload="none" onError={() => setUnavailable(true)} className="h-full w-full object-cover" aria-label={video.name} />
+          <video src={video.url} poster={video.poster} autoPlay muted loop playsInline controls preload="metadata" onError={() => setUnavailable(true)} className="h-full w-full object-cover" aria-label={video.name} />
         )}
       </div>
       <div className="p-3"><p className="text-sm font-medium text-white">{video.name}</p><p className="mt-1 text-xs text-white/55">{video.category}</p></div>

@@ -76,7 +76,7 @@ export default function CommunityPage() {
               <article key={video.id} className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
                 <button type="button" onClick={() => router.push(`/studio?mode=ugc&prompt=${encodeURIComponent(video.prompt)}`)} className="group block w-full text-left">
                   <div className="relative aspect-[9/16] bg-black">
-                    <video src={video.source} poster={video.poster} muted loop playsInline preload="metadata" onMouseEnter={(e) => void e.currentTarget.play().catch(() => {})} onMouseLeave={(e) => e.currentTarget.pause()} className="size-full object-cover" aria-label={video.name} />
+                    <video src={video.source} poster={video.poster} autoPlay muted loop playsInline preload="metadata" className="size-full object-cover" aria-label={video.name} />
                     <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-1 text-[11px] text-white/85 group-hover:bg-accent group-hover:text-black">Utiliser</span>
                   </div>
                   <p className="p-3 text-sm font-medium text-white">{video.name}</p>
@@ -99,7 +99,7 @@ export default function CommunityPage() {
               <button type="button" onClick={() => setOpen(p)} className="block w-full">
                 {p.kind === "image"
                   ? <img src={p.url} alt={p.prompt} loading="lazy" className="w-full" />
-                  : <video src={p.url} poster={p.poster ?? undefined} muted loop playsInline preload="metadata" onMouseEnter={(e) => void e.currentTarget.play().catch(() => {})} onMouseLeave={(e) => e.currentTarget.pause()} className="w-full" />}
+                  : <video src={p.url} poster={p.poster ?? undefined} autoPlay muted loop playsInline preload="metadata" className="w-full" />}
               </button>
               <div className="pointer-events-none absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/85 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                 <p className="text-[12px] text-white line-clamp-2">{p.prompt}</p>
