@@ -11,6 +11,7 @@ import {
 import { Camera, Clapperboard, Megaphone, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { currentAccount } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
 import { CREATIVES, Creative } from "./Creative";
 import { CtaButton, EASE, Particles } from "./motion";
@@ -40,6 +41,20 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  useEffect(() => {
+    let active = true;
+    const checkSession = () => {
+      void currentAccount().then((user) => {
+        if (active) setSignedIn(Boolean(user));
+      }).catch(() => {
+        if (active) setSignedIn(false);
+      });
+    };
+    checkSession();
+    window.addEventListener("focus", checkSession);
+    return () => { active = false; window.removeEventListener("focus", checkSession); };
+  }, []);
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 24));
   useEffect(() => {
     if (!menuOpen) return;
@@ -85,14 +100,14 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-        <Link href="/connexion" className="hidden sm:inline-flex h-9 items-center px-3 text-sm text-text2 hover:text-text transition-colors">
+        {signedIn === false && <Link href="/connexion" className="hidden sm:inline-flex h-9 items-center px-3 text-sm text-text2 hover:text-text transition-colors">
           Connexion
-        </Link>
+        </Link>}
         <Link
-          href={DEMO_HREF}
+          href={signedIn ? "/home" : DEMO_HREF}
           className="group inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition-colors"
         >
-          Commencer
+          {signedIn ? "Mon espace" : "Commencer"}
           <span className="transition-transform group-hover:translate-x-0.5">↗</span>
         </Link>
         {/* Section menu for phones/tablets (the nav links are hidden below lg) */}
@@ -121,9 +136,9 @@ export function SiteHeader() {
                 {n.label}
               </a>
             ))}
-            <Link href="/connexion" onClick={() => setMenuOpen(false)} className="sm:hidden flex h-11 items-center justify-end rounded-xl px-3 text-[15px] text-text2 hover:text-text hover:bg-white/5 transition-colors border-t border-white/5 mt-1 pt-1">
+            {signedIn === false && <Link href="/connexion" onClick={() => setMenuOpen(false)} className="sm:hidden flex h-11 items-center justify-end rounded-xl px-3 text-[15px] text-text2 hover:text-text hover:bg-white/5 transition-colors border-t border-white/5 mt-1 pt-1">
               Connexion
-            </Link>
+            </Link>}
           </motion.nav>
       )}
     </motion.header>
