@@ -69,9 +69,9 @@ export function UgcShowcase() {
     <section id="ugc" className="scroll-mt-24 py-24 sm:py-32">
       <div className="px-4 sm:px-6">
         <SectionTitle
-          eyebrow="Vidéos Higgsfield"
-          title="Des vidéos prêtes à publier"
-          text="Témoignage, déballage, marché, maquis ou livraison WhatsApp : découvrez des exemples créés avec Higgsfield Marketing Studio."
+          eyebrow="UGC TikTok · Higgsfield"
+          title="Des vidéos qui arrêtent le scroll"
+          text="Témoignage, déballage, marché, maquis ou livraison WhatsApp : des formats verticaux créés pour TikTok, Reels et Shorts."
         />
       </div>
       <Reveal className="mt-14">

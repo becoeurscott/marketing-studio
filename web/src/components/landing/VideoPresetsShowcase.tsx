@@ -13,7 +13,7 @@ export function VideoPresetsShowcase() {
     <section id="presets" className="scroll-mt-24 px-4 py-20 sm:px-6 sm:py-28">
       <div className="mx-auto max-w-6xl">
         <SectionTitle
-          eyebrow="Presets vidéo Higgsfield"
+          eyebrow="Presets UGC TikTok · Higgsfield"
           title="Choisissez un format, ajoutez votre produit"
           text="Des formats prêts pour TikTok, WhatsApp et Facebook. Le scénario, le rythme et le style sont déjà pensés."
         />
@@ -23,7 +23,7 @@ export function VideoPresetsShowcase() {
               <Link href="/studio/video" className="group block h-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 transition-all hover:-translate-y-1 hover:border-accent/40 hover:bg-white/[0.05]">
                 <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black">
                   <video src={`/showcase/ugc/${slug}.mp4`} poster={`/showcase/ugc/${slug}.jpg`} muted loop autoPlay playsInline preload="metadata" className="aspect-video w-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-105" />
-                  <span className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2 py-1 text-[10px] text-white/80">Higgsfield</span>
+                  <span className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2 py-1 text-[10px] text-white/80">Higgsfield · TikTok</span>
                 </div>
                 <div className="flex items-start justify-between gap-3">
                   <span className="flex size-10 items-center justify-center rounded-xl bg-accent/15 text-highlight"><Clapperboard className="size-5" /></span>
@@ -31,6 +31,7 @@ export function VideoPresetsShowcase() {
                 </div>
                 <h3 className="mt-5 font-medium">{preset.label}</h3>
                 <p className="mt-1 text-sm text-text2">{preset.hint}</p>
+                <p className="mt-2 text-[11px] uppercase tracking-wider text-highlight">UGC vertical · TikTok</p>
                 <span className="mt-5 inline-flex items-center gap-1 text-xs text-highlight">Utiliser ce preset <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" /></span>
               </Link>
             </Reveal>
