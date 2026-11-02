@@ -6,7 +6,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     <div lang="fr" className="min-h-dvh bg-bg text-text flex flex-col">
       <header className="px-4 sm:px-6 py-5">
         <Link href="/" className="inline-flex items-center gap-2 font-semibold tracking-tight text-[17px]">
-          <span className="size-8 rounded-lg bg-gradient-to-br from-highlight via-accent to-green" aria-hidden />
+          <img src="/brand-mark.png" alt="" aria-hidden="true" className="size-8 rounded-lg" />
           Marketing Studio
         </Link>
       </header>

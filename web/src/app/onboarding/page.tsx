@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { StepDots } from "@/components/ui/ProgressIndicator";
@@ -141,9 +141,7 @@ export default function OnboardingPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="size-7 rounded-md bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shadow-glow">
-            <Sparkles className="size-4 text-on-accent" />
-          </span>
+          <img src="/brand-mark.png" alt="" aria-hidden="true" className="size-7 rounded-md" />
           <span className="text-[15px] font-semibold tracking-tight">Marketing Studio</span>
         </div>
         <div className="w-20 flex justify-end">

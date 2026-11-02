@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Plus, Search, Sparkles } from "lucide-react";
+import { Bell, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -21,8 +21,8 @@ export function TopBar() {
 
   return (
     <header className="sticky top-0 z-30 h-14 bg-bg/85 backdrop-blur-md border-b border-border flex items-center gap-3 px-4 md:px-6">
-      <Link href="/home" className="md:hidden size-7 rounded-md bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shrink-0">
-        <Sparkles className="size-4 text-on-accent" />
+      <Link href="/home" aria-label="Accueil Marketing Studio" className="md:hidden size-7 shrink-0">
+        <img src="/brand-mark.png" alt="" aria-hidden="true" className="size-full rounded-md" />
       </Link>
       <h1 className="text-[15px] md:text-base font-semibold tracking-tight truncate min-w-0 flex-1 md:flex-none md:max-w-[12rem] lg:max-w-xs">{title ?? titleForPath(path)}</h1>
 
