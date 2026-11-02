@@ -10,6 +10,7 @@ import { ShowcaseBanner } from "@/components/home/ShowcaseBanner";
 import { FeatureBanner } from "@/components/home/FeatureBanner";
 import { TrendingVideos } from "@/components/home/TrendingVideos";
 import { UserGallery } from "@/components/home/UserGallery";
+import { CommunityVideos } from "@/components/home/CommunityVideos";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useStore } from "@/lib/store";
@@ -58,6 +59,8 @@ export default function HomePage() {
 
       {/* 2. Showcase carousel */}
       <ShowcaseBanner />
+
+      <CommunityVideos />
 
       {/* 3. Quick actions (compact) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-8">

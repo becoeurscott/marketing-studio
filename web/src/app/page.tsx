@@ -5,6 +5,7 @@ import { LandingMotion } from "@/components/landing/LandingMotion";
 import { StylesShowcase } from "@/components/landing/StylesShowcase";
 import { UgcShowcase } from "@/components/landing/UgcShowcase";
 import { VideoPresetsShowcase } from "@/components/landing/VideoPresetsShowcase";
+import { CommunityVideos } from "@/components/home/CommunityVideos";
 
 export const metadata: Metadata = {
   title: { absolute: "Marketing Studio — Votre studio marketing IA" },
@@ -26,6 +27,7 @@ export default function LandingPage() {
         <SiteHeader />
         <main>
           <Hero />
+          <div className="mx-auto max-w-6xl px-4 sm:px-6"><CommunityVideos /></div>
           <UgcShowcase />
           <VideoPresetsShowcase />
           <StylesShowcase />
