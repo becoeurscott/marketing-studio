@@ -66,10 +66,10 @@ export default function CommunityPage() {
       )}
 
       {tab !== "image" && (
-        <section className="mb-8" aria-label="Vidéos de démonstration Sokozia">
+        <section className="mb-8" aria-label="Vidéos UGC TikTok Higgsfield">
           <div className="mb-3">
-            <h2 className="text-lg font-semibold text-white">Exemples Sokozia</h2>
-            <p className="mt-1 text-sm text-white/55">Les 10 vidéos UGC utilisées dans l’expérience Sokozia.</p>
+            <h2 className="text-lg font-semibold text-white">Vidéos UGC TikTok Higgsfield</h2>
+            <p className="mt-1 text-sm text-white/55">Des exemples verticaux pour TikTok, Reels et Shorts. Touchez une vidéo pour l’utiliser dans le Studio.</p>
           </div>
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
             {sokoziaShowcaseVideos.map((video) => (
