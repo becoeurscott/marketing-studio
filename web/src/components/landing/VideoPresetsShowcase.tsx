@@ -3,7 +3,10 @@ import { ArrowRight, Check, Clapperboard } from "lucide-react";
 import { MULTI_SHOT_PRESETS, UGC_TYPES } from "@/lib/creative-presets";
 import { Reveal, SectionTitle } from "./motion";
 
-const FEATURED_UGC = UGC_TYPES.slice(0, 6);
+const FEATURED_UGC = UGC_TYPES.slice(0, 6).map((preset, i) => ({
+  preset,
+  slug: ["avant-apres-savon-noir", "unboxing-telephone", "temoignage-karite", "atelier-couture", "grwm-perruque", "degustation-maquis"][i],
+}));
 
 export function VideoPresetsShowcase() {
   return (
@@ -15,9 +18,13 @@ export function VideoPresetsShowcase() {
           text="Des formats prêts pour TikTok, WhatsApp et Facebook. Le scénario, le rythme et le style sont déjà pensés."
         />
         <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURED_UGC.map((preset, i) => (
+          {FEATURED_UGC.map(({ preset, slug }, i) => (
             <Reveal key={preset.id} delay={(i % 3) * 0.06}>
               <Link href="/studio/video" className="group block h-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 transition-all hover:-translate-y-1 hover:border-accent/40 hover:bg-white/[0.05]">
+                <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black">
+                  <video src={`/showcase/ugc/${slug}.mp4`} poster={`/showcase/ugc/${slug}.jpg`} muted loop autoPlay playsInline preload="metadata" className="aspect-video w-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-105" />
+                  <span className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2 py-1 text-[10px] text-white/80">Higgsfield</span>
+                </div>
                 <div className="flex items-start justify-between gap-3">
                   <span className="flex size-10 items-center justify-center rounded-xl bg-accent/15 text-highlight"><Clapperboard className="size-5" /></span>
                   <span className="rounded-full border border-white/10 px-2 py-1 text-[11px] text-text2">{preset.durationSec} s</span>
