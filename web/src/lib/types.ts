@@ -362,6 +362,7 @@ export interface Preferences {
   defaultRatio: AspectRatio;
   defaultStyle: ImageStyle;
   reducedMotion: boolean;
+  accentColor?: "lime" | "blue" | "pink";
   emailNotifications: boolean;
   pushNotifications: boolean;
   compactSidebar: boolean;

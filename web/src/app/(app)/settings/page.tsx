@@ -279,6 +279,16 @@ function AppearanceSection() {
     <>
       <Card>
         <CardHeader title="Interface" subtitle="Marketing Studio utilise un thème sombre, pensé pour mettre vos visuels en valeur." />
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+          <div><p className="text-sm font-medium">Couleur d’accent</p><p className="text-[13px] text-text2">Utilisée pour les actions principales et la sélection.</p></div>
+          <div className="flex gap-2" role="group" aria-label="Couleur d’accent">
+            {([{ id: "lime", label: "Vert", color: "#d1fe17" }, { id: "blue", label: "Bleu", color: "#70c7ff" }, { id: "pink", label: "Rose", color: "#ff91c1" }] as const).map((color) => (
+              <button key={color.id} type="button" aria-label={color.label} aria-pressed={(prefs.accentColor ?? "lime") === color.id} onClick={() => setPreference("accentColor", color.id)} className="flex size-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2">
+                <span className="flex size-7 items-center justify-center rounded-full" style={{ backgroundColor: color.color }}>{(prefs.accentColor ?? "lime") === color.id && <Check className="size-4 text-black" />}</span>
+              </button>
+            ))}
+          </div>
+        </div>
         <Toggle
           label="Barre latérale compacte"
           description={sidebarLocked ? "S’applique sur les grands écrans (la barre est déjà réduite sur cet écran)." : "Réduire la barre latérale aux icônes."}
