@@ -71,6 +71,12 @@ export default function OnboardingPage() {
   };
   const onGenerated = useCallback(() => setStep("photos"), []);
 
+  const skipOnboarding = () => {
+    setFinished(true);
+    complete();
+    router.replace("/home");
+  };
+
   const saveProduct = (p: ProductInfo) => {
     setProduct(p);
     setAnswers({ product: { name: p.name, category: p.category, description: p.description, sample: p.sample } });
@@ -145,10 +151,12 @@ export default function OnboardingPage() {
           <span className="text-[15px] font-semibold tracking-tight">Marketing Studio</span>
         </div>
         <div className="w-20 flex justify-end">
-          {qIndex >= 0 && <StepDots total={QUESTION_STEPS.length} current={qIndex} className="hidden sm:flex" />}
+          <button type="button" onClick={skipOnboarding} className="rounded-full px-3 py-2 text-sm font-medium text-text2 transition-colors hover:bg-white/5 hover:text-text" aria-label="Passer l’onboarding et accéder à l’accueil">
+            Passer
+          </button>
         </div>
       </header>
-      {qIndex >= 0 && <StepDots total={QUESTION_STEPS.length} current={qIndex} className="sm:hidden justify-center relative z-10" />}
+      {qIndex >= 0 && <StepDots total={QUESTION_STEPS.length} current={qIndex} className="justify-center relative z-10" />}
 
       <main className="relative flex-1 flex flex-col items-center justify-center px-5 py-6 md:py-10">
         <AnimatePresence mode="wait">
