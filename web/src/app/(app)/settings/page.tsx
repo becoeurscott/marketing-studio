@@ -25,6 +25,7 @@ import { COUNTRIES, CURRENCIES, LANGUAGES, PAYMENT_METHODS, SOKOZIA_WHATSAPP, US
 import { selectCountry, selectCurrentBrand, useStore } from "@/lib/store";
 import { IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
 import { cn, formatDate, formatNumber } from "@/lib/utils";
+import { useInterfaceLanguage } from "@/lib/interface-language";
 import { accountDetails, changePassword, sendPasswordCode, updateProfile, type AccountDetails } from "./actions";
 
 const STYLE_LABELS: Record<string, string> = {
@@ -47,6 +48,7 @@ const SECTIONS: { id: SectionId; label: string; icon: LucideIcon; description: s
 ];
 
 export default function SettingsPage() {
+  const { language, t } = useInterfaceLanguage();
   const [section, setSection] = useState<SectionId>("account");
   const [account, setAccount] = useState<AccountDetails | null>(null);
   const current = SECTIONS.find((s) => s.id === section)!;
@@ -56,9 +58,9 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader
-        title="Paramètres"
-        description="Compte, pays et langues, boutique, notifications, apparence, marque, crédits, sécurité et aide."
-        actions={<form action={signOut}><Button type="submit" variant="secondary" leftIcon={<LogOut className="size-4" />}>Se déconnecter</Button></form>}
+        title={t("Paramètres")}
+        description={language === "en" ? "Manage your account, country, languages and preferences." : "Compte, pays et langues, boutique, notifications, apparence, marque, crédits, sécurité et aide."}
+        actions={<form action={signOut}><Button type="submit" variant="secondary" leftIcon={<LogOut className="size-4" />}>{t("Se déconnecter")}</Button></form>}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-start">
@@ -79,7 +81,7 @@ export default function SettingsPage() {
                     )}
                   >
                     <s.icon className={cn("size-4", active ? "text-highlight" : "text-muted")} />
-                    {s.label}
+                    {t(s.label)}
                   </button>
                 </li>
               );
@@ -89,8 +91,8 @@ export default function SettingsPage() {
 
         <div className="min-w-0 space-y-4">
           <div className="mb-1">
-            <h2 className="text-lg font-semibold tracking-tight">{current.label}</h2>
-            <p className="text-[13px] text-text2">{current.description}</p>
+            <h2 className="text-lg font-semibold tracking-tight">{t(current.label)}</h2>
+            {language === "fr" && <p className="text-[13px] text-text2">{current.description}</p>}
           </div>
           {section === "account" && <AccountSection account={account} onSaved={setAccount} />}
           {section === "market" && <MarketSection />}
@@ -299,6 +301,7 @@ function AppearanceSection() {
 /* ---------- Market ---------- */
 
 function MarketSection() {
+  const { language } = useInterfaceLanguage();
   const country = useStore(selectCountry);
   const setCountry = useStore((s) => s.setCountry);
   const prefs = useStore((s) => s.preferences);
@@ -315,6 +318,10 @@ function MarketSection() {
           <div className="rounded-md border border-border bg-surface p-3"><p className="text-muted text-[12px]">Monnaie</p><p className="font-medium mt-0.5">{currency.label} ({currency.symbol})</p></div>
           <div className="rounded-md border border-border bg-surface p-3"><p className="text-muted text-[12px]">Moyens de paiement</p><p className="font-medium mt-0.5">{info.payments.map((m) => PAYMENT_METHODS[m].label).join(", ")}</p></div>
         </div>
+      </Card>
+      <Card>
+        <CardHeader title={language === "en" ? "Navigation language" : "Langue de navigation"} subtitle={language === "en" ? "Changes the navigation and settings menu. Other screens are currently in French." : "Modifie la navigation et le menu des paramètres. Les autres écrans restent pour le moment en français."} />
+        <Select label={language === "en" ? "Language" : "Langue"} name="interfaceLanguage" value={prefs.interfaceLanguage ?? "fr"} onChange={(e) => setPreference("interfaceLanguage", e.target.value as "fr" | "en")} options={[{ value: "fr", label: "Français" }, { value: "en", label: "English" }]} />
       </Card>
       <Card>
         <CardHeader title="Langue des textes et voix off" subtitle="Langue proposée par défaut dans le rédacteur, les notes vocales et les vidéos UGC." />

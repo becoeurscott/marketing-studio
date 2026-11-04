@@ -11,12 +11,14 @@ import { IconButton } from "@/components/ui/IconButton";
 import { GlobalSearch } from "./GlobalSearch";
 import { titleForPath } from "./nav";
 import { useShell } from "./ShellContext";
+import { useInterfaceLanguage } from "@/lib/interface-language";
 
 export function TopBar() {
   const path = usePathname();
   const router = useRouter();
   const { title } = useShell();
   const unread = useStore(selectUnreadCount);
+  const { t } = useInterfaceLanguage();
   const [mobileSearch, setMobileSearch] = useState(false);
 
   return (
@@ -24,7 +26,7 @@ export function TopBar() {
       <Link href="/home" aria-label="Accueil Marketing Studio" className="md:hidden size-7 shrink-0">
         <img src="/brand-mark.png" alt="" aria-hidden="true" className="size-full rounded-md" />
       </Link>
-      <h1 className="text-[15px] md:text-base font-semibold tracking-tight truncate min-w-0 flex-1 md:flex-none md:max-w-[12rem] lg:max-w-xs">{title ?? titleForPath(path)}</h1>
+      <h1 className="text-[15px] md:text-base font-semibold tracking-tight truncate min-w-0 flex-1 md:flex-none md:max-w-[12rem] lg:max-w-xs">{t(title ?? titleForPath(path))}</h1>
 
       <GlobalSearch className="hidden md:block md:flex-1 max-w-md md:mx-auto" />
 

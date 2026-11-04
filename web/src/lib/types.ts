@@ -371,6 +371,8 @@ export interface Preferences {
   lightVideos?: boolean;
   /** Default language for texts and voice-overs. */
   language?: LanguageId;
+  /** Language used by translated parts of the interface. */
+  interfaceLanguage?: "fr" | "en";
 }
 
 export type FavoriteKind = "asset" | "template" | "prompt" | "creator";
