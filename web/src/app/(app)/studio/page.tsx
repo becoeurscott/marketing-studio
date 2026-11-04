@@ -37,7 +37,7 @@ export default function StudioPage() {
   const [prompt, setPrompt] = useState("");
   const [imgModel, setImgModel] = useState<ImageModelId>("marketing-studio-1k");
   const [vidModel, setVidModel] = useState<VideoModelId>("kling-3.0");
-  const [ratio, setRatio] = useState<AspectRatio>("4:5");
+  const [ratio, setRatio] = useState<AspectRatio>(() => useStore.getState().preferences.defaultRatio ?? "4:5");
   const [count, setCount] = useState(1);
   const [duration, setDuration] = useState<5 | 10 | 15>(5);
   const [productId, setProductId] = useState<string | null>(null);
@@ -74,7 +74,7 @@ export default function StudioPage() {
     if (m || c || model || pr || presetId) window.history.replaceState(null, "", "/studio");
   }, []);
 
-  const changeKind = (k: RunKind) => { setKind(k); setRatio(k === "image" ? "4:5" : "9:16"); };
+  const changeKind = (k: RunKind) => { setKind(k); setRatio(k === "image" ? useStore.getState().preferences.defaultRatio ?? "4:5" : "9:16"); };
 
   const selectVideoPreset = (next: HiggsfieldVideoPreset) => {
     setVideoPreset(next);

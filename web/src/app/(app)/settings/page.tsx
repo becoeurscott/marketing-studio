@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Bell, Building2, Camera, Check, CreditCard, ExternalLink, Globe2, KeyRound, LifeBuoy, LogOut, MessageCircle, Palette,
+  Bell, Building2, Camera, Check, CreditCard, ExternalLink, Globe2, KeyRound, LifeBuoy, LogOut, Palette,
   Shield, Sparkles, User as UserIcon, type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -21,7 +21,7 @@ import { Select } from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
 import { uploadPhoto } from "@/lib/higgsfield/client";
 import { imageModel } from "@/lib/higgsfield/models";
-import { COUNTRIES, CURRENCIES, LANGUAGES, PAYMENT_METHODS, SOKOZIA_WHATSAPP, USAGE_PACKS, countryOf, whatsappLink, type CountryCode, type LanguageId } from "@/lib/market";
+import { COUNTRIES, CURRENCIES, LANGUAGES, PAYMENT_METHODS, USAGE_PACKS, countryOf, type CountryCode, type LanguageId } from "@/lib/market";
 import { selectCountry, selectCurrentBrand, useStore } from "@/lib/store";
 import { IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
 import { cn, formatDate, formatNumber } from "@/lib/utils";
@@ -407,11 +407,9 @@ function CreditsSection({ account }: { account: AccountDetails | null }) {
   const credits = useStore((s) => s.credits);
   const transactions = useStore((s) => s.transactions);
   const country = useStore(selectCountry);
-  const user = useStore((s) => s.user);
   const money = useMoney();
   const info = countryOf(country);
   const mobile = info.payments.filter((m) => PAYMENT_METHODS[m].mobile).map((m) => PAYMENT_METHODS[m].label);
-  const email = account?.email ?? user.email;
 
   return (
     <>
@@ -445,15 +443,8 @@ function CreditsSection({ account }: { account: AccountDetails | null }) {
       </Card>
       <Card>
         <CardHeader title="Paiement" subtitle={`Mobile Money dans votre pays : ${mobile.join(", ") || "carte bancaire"}.`} />
-        <p className="text-[13px] text-text2">Le paiement Mobile Money directement dans Marketing Studio arrive bientôt. En attendant, écrivez-nous sur WhatsApp : nous rechargeons votre compte dès réception du paiement.</p>
-        <a
-          href={whatsappLink(SOKOZIA_WHATSAPP, `Bonjour Marketing Studio, je veux recharger des crédits pour le compte ${email}.`)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block mt-3"
-        >
-          <Button variant="secondary" leftIcon={<MessageCircle className="size-4" />}>Recharger via WhatsApp</Button>
-        </a>
+        <p className="text-[13px] text-text2">Choisissez une recharge dans votre espace crédits pour accéder aux options de paiement disponibles.</p>
+        <Link href="/credits" className="inline-block mt-3"><Button variant="secondary">Ouvrir les crédits</Button></Link>
       </Card>
     </>
   );
@@ -536,7 +527,6 @@ function SecuritySection({ account }: { account: AccountDetails | null }) {
 function HelpSection() {
   const links = [
     { label: "Centre d’aide et FAQ", description: "Guides et réponses aux questions fréquentes.", href: "/help", external: false },
-    { label: "Écrire au support sur WhatsApp", description: "Questions, recharges, problèmes : on vous répond sur WhatsApp.", href: whatsappLink(SOKOZIA_WHATSAPP, "Bonjour Marketing Studio, "), external: true },
     { label: "Crédits et tarifs", description: "Le fonctionnement des crédits et le prix des packs.", href: "/pricing", external: false },
   ];
   return (

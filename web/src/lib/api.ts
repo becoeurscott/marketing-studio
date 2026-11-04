@@ -282,7 +282,8 @@ export async function generateUGC(params: GenerateUGCParams, onProgress?: Progre
   const creator = creatorsSeed.find((c) => c.id === params.creatorId) ?? creatorsSeed[0];
   const product = assetUrl(params.productAssetId);
   const place = params.location ? ` Setting: ${params.location}.` : "";
-  const lang = languageLabel(params.language ?? "fr");
+  const language = params.language ?? useStore.getState().preferences.language ?? "fr";
+  const lang = languageLabel(language);
   const cost = ugcCredits(params.durationSec);
   const references = [creatorSheetUrl(creator), ...(product ? [product] : [])];
   const videoUrls = params.presetVideoUrl?.startsWith("https://") ? [params.presetVideoUrl] : undefined;
@@ -294,7 +295,7 @@ export async function generateUGC(params: GenerateUGCParams, onProgress?: Progre
     const poster = product ?? creator.portrait;
     return { id: uid("res"), url: job.videoUrl!, thumbnail: poster, poster, durationSec: params.durationSec, ratio: "9:16" as AspectRatio };
   });
-  record({ type: "video", prompt: params.script, status: "completed", thumbnails: [result.thumbnail], projectId: params.projectId ?? null, params: { creator: params.creatorId, tone: params.tone ?? "", language: params.language ?? "fr", durationSec: params.durationSec }, creditsUsed: cost });
+  record({ type: "video", prompt: params.script, status: "completed", thumbnails: [result.thumbnail], projectId: params.projectId ?? null, params: { creator: params.creatorId, tone: params.tone ?? "", language, durationSec: params.durationSec }, creditsUsed: cost });
   return result;
 }
 
