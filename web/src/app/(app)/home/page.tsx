@@ -11,6 +11,7 @@ import { FeatureBanner } from "@/components/home/FeatureBanner";
 import { TrendingVideos } from "@/components/home/TrendingVideos";
 import { UserGallery } from "@/components/home/UserGallery";
 import { CommunityVideos } from "@/components/home/CommunityVideos";
+import { creators } from "@/data/creators";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useStore } from "@/lib/store";
@@ -53,6 +54,21 @@ export default function HomePage() {
           </div>
         }
       />
+
+      <section aria-label="Créateurs IA" className="mb-8">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div><h2 className="text-lg font-semibold">Créateurs IA</h2><p className="text-sm text-text2">Choisissez un créateur pour votre prochaine vidéo.</p></div>
+          <Link href="/creators" className="shrink-0 text-sm font-medium text-highlight hover:underline">Voir tous →</Link>
+        </div>
+        <div className="no-scrollbar flex snap-x gap-3 overflow-x-auto pb-2">
+          {creators.map((creator) => (
+            <Link key={creator.id} href={`/studio?mode=ugc&creator=${encodeURIComponent(creator.id)}`} className="w-32 shrink-0 snap-start overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-accent/50 sm:w-36">
+              <img src={creator.avatarUrl} alt="" loading="lazy" className="aspect-[4/5] w-full object-cover" />
+              <div className="p-2.5"><p className="truncate text-sm font-medium">{creator.name}</p><p className="truncate text-xs text-text2">{creator.style}</p></div>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* 1. Feature banner (scrollable pills) */}
       <FeatureBanner />
