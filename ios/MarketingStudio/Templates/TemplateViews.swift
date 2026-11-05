@@ -18,35 +18,19 @@ struct PickedMovie: Transferable {
 
 // MARK: - Templates list
 
-/// "Modèles vidéo": every edit learned from a shared TikTok/Reels video, plus import from Photos.
+/// "Modèles vidéo": edits learned from shared TikTok/Reels videos. "Créer un modèle" picks the
+/// reference video, analyses it, then goes straight to filling its slots.
 struct VideoTemplatesView: View {
     @EnvironmentObject private var router: Router
     @StateObject private var store = TemplateStore.shared
+    @StateObject private var runner = TemplateRunner()
     @State private var importItem: PhotosPickerItem?
-    @State private var importing: Double?
-    @State private var error: String?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                howTo
-                PhotosPicker(selection: $importItem, matching: .videos, photoLibrary: .shared()) {
-                    Label("Importer une vidéo depuis Photos", systemImage: "square.and.arrow.down")
-                        .font(MSFont.control(15)).foregroundStyle(MSColor.onAccent)
-                        .frame(maxWidth: .infinity).frame(height: 50)
-                        .background(MSColor.accent, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
-                }
-                .disabled(importing != nil)
-                if let importing {
-                    VStack(alignment: .leading, spacing: 6) {
-                        ProgressView(value: importing).tint(MSColor.accent)
-                        Text("Analyse des coupes, du rythme et des textes…").msCaption()
-                    }
-                }
-                if let error { Text(L(error)).font(MSFont.body(13)).foregroundStyle(MSColor.danger) }
-
                 if store.templates.isEmpty {
-                    EmptyStateView(icon: "film.stack", title: "Aucun modèle pour l'instant", message: "Partagez une vidéo TikTok ou Instagram vers Marketing Studio : elle devient un modèle à remplir avec vos vidéos.", ctaTitle: nil) {}
+                    howTo
                 } else {
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                         ForEach(store.templates) { t in
@@ -56,23 +40,37 @@ struct VideoTemplatesView: View {
                         }
                     }
                 }
+                if let e = runner.error { Text(L(e)).font(MSFont.body(13)).foregroundStyle(MSColor.danger) }
             }
             .padding(MSSpacing.gutter)
+            .padding(.bottom, 90)
         }
         .msScreen()
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            PhotosPicker(selection: $importItem, matching: .videos, photoLibrary: .shared()) {
+                Label("Créer un modèle", systemImage: "plus.rectangle.on.rectangle")
+                    .font(MSFont.control(16)).foregroundStyle(MSColor.onAccent)
+                    .frame(maxWidth: .infinity).frame(height: 54)
+                    .background(MSColor.accent, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+            }
+            .padding(.horizontal, MSSpacing.gutter).padding(.vertical, 10)
+            .background(MSColor.bg)
+        }
         .navigationTitle("Modèles vidéo")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: importItem) { _, item in
             guard let item else { return }
-            Task { await importFromPhotos(item) }
+            importItem = nil
+            Task { await runner.create(from: item, store: store) }
         }
-        .task { await importInbox() }
+        .task { await runner.importInbox(store: store) }
+        .templateRunner(runner, store: store)
     }
 
     private var howTo: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Recréez n'importe quelle vidéo virale").msHeadline(18)
-            step("1", "Dans TikTok ou Instagram, enregistrez la vidéo puis partagez-la vers Marketing Studio.")
+            step("1", "Dans TikTok ou Instagram, enregistrez la vidéo puis partagez-la vers Marketing Studio, ou touchez « Créer un modèle ».")
             step("2", "On détecte chaque coupe, le rythme et les textes.")
             step("3", "Choisissez vos vidéos pour chaque plan : le montage est fait pour vous.")
         }
@@ -87,35 +85,6 @@ struct VideoTemplatesView: View {
                 .frame(width: 22, height: 22).background(MSColor.accent, in: Circle())
             Text(L(text)).font(MSFont.body(13)).foregroundStyle(MSColor.text2)
         }
-    }
-
-    private func importFromPhotos(_ item: PhotosPickerItem) async {
-        error = nil
-        importing = 0
-        defer { importing = nil; importItem = nil }
-        do {
-            guard let movie = try await item.loadTransferable(type: PickedMovie.self) else { throw TemplateError.noClip }
-            let t = try await TemplateAnalyzer.makeTemplate(from: movie.url, store: store) { p in Task { @MainActor in importing = p } }
-            try? FileManager.default.removeItem(at: movie.url)
-            MSHaptic.success()
-            router.push(.videoTemplate(id: t.id))
-        } catch {
-            self.error = (error as? LocalizedError)?.errorDescription ?? "Import impossible. Réessayez."
-        }
-    }
-
-    /// Videos shared from TikTok/Instagram through the share extension.
-    private func importInbox() async {
-        let files = TemplateStore.inboxVideos()
-        guard !files.isEmpty, importing == nil else { return }
-        importing = 0
-        defer { importing = nil }
-        var last: VideoTemplate?
-        for file in files {
-            if let t = try? await TemplateAnalyzer.makeTemplate(from: file, store: store, progress: { p in Task { @MainActor in importing = p } }) { last = t }
-            try? FileManager.default.removeItem(at: file)
-        }
-        if let last { MSHaptic.success(); router.push(.videoTemplate(id: last.id)) }
     }
 }
 
@@ -141,19 +110,12 @@ private struct VideoTemplateCard: View {
     }
 }
 
-// MARK: - Fill a template
+// MARK: - Template detail
 
 struct VideoTemplateDetailView: View {
     let templateId: String
     @StateObject private var store = TemplateStore.shared
-    @State private var clips: [Int: URL] = [:]
-    @State private var picking: [Int: PhotosPickerItem] = [:]
-    @State private var keepSound = true
-    @State private var showTexts = true
-    @State private var building = false
-    @State private var startedAt = Date()
-    @State private var result: URL?
-    @State private var error: String?
+    @StateObject private var runner = TemplateRunner()
 
     private var template: VideoTemplate? { store.templates.first { $0.id == templateId } }
 
@@ -161,115 +123,147 @@ struct VideoTemplateDetailView: View {
         Group {
             if let t = template {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        header(t)
-                        ForEach(t.shots) { shot in slot(shot) }
-                        options(t)
-                        if let error { Text(L(error)).font(MSFont.body(13)).foregroundStyle(MSColor.danger) }
-                        MSButton(title: building ? "Montage en cours…" : "Créer ma vidéo", icon: "wand.and.stars", isDisabled: clips.count < t.shots.count || building) {
-                            Task { await build(t) }
+                    VStack(alignment: .leading, spacing: 14) {
+                        LoopingVideoView(url: store.url(for: t).absoluteString, poster: nil, muted: false)
+                            .aspectRatio(9.0 / 16.0, contentMode: .fit)
+                            .frame(maxHeight: 420)
+                            .frame(maxWidth: .infinity)
+                            .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
+                        Text("\(t.shots.count) plans · \(Int(t.duration.rounded())) s").msHeadline(18)
+                        if !t.style.isEmpty { Text(L(t.style)).msBody(13) }
+                        ForEach(t.shots) { s in
+                            HStack(alignment: .top, spacing: 10) {
+                                Text("\(s.index + 1)").font(.system(size: 11, weight: .bold)).foregroundStyle(MSColor.onAccent)
+                                    .frame(width: 22, height: 22).background(MSColor.accent, in: Circle())
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("\(L(s.description)) · \(String(format: "%.1f", s.duration)) s").font(MSFont.body(14)).foregroundStyle(MSColor.text)
+                                    if let o = s.overlay { Text("« \(o) »").msCaption() }
+                                }
+                            }
                         }
+                        if let e = runner.error { Text(L(e)).font(MSFont.body(13)).foregroundStyle(MSColor.danger) }
                     }
                     .padding(MSSpacing.gutter)
+                    .padding(.bottom, 90)
                 }
-                .sheet(item: Binding(get: { result.map(ResultFile.init) }, set: { result = $0?.url })) { file in
-                    TemplateResultView(url: file.url, template: t, seconds: Date().timeIntervalSince(startedAt))
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    MSButton(title: "Utiliser ce modèle", icon: "wand.and.stars") { runner.fill = t }
+                        .padding(.horizontal, MSSpacing.gutter).padding(.vertical, 10).background(MSColor.bg)
                 }
             } else {
-                EmptyStateView(icon: "film.stack", title: "Modèle introuvable", message: "Il a peut-être été supprimé.", ctaTitle: nil) {}
+                EmptyStateView(icon: "film.stack", title: "Modèle introuvable", message: "Il a peut-être été supprimé.")
             }
         }
         .msScreen()
         .navigationTitle(L(template?.name ?? "Modèle"))
         .navigationBarTitleDisplayMode(.inline)
+        .templateRunner(runner, store: store)
     }
+}
 
-    private func header(_ t: VideoTemplate) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("\(t.shots.count) plans · \(Int(t.duration.rounded())) s").msHeadline(18)
-            if !t.style.isEmpty { Text(L(t.style)).msBody(13) }
-            Text("Choisissez une vidéo pour chaque plan. Elle sera coupée à la bonne durée.").msCaption()
-        }
-    }
+// MARK: - Flow controller: analyse → fill slots → assemble → result
 
-    private func slot(_ shot: TemplateShot) -> some View {
-        HStack(spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10, style: .continuous).fill(MSColor.elevated)
-                if let url = clips[shot.index] {
-                    ClipThumb(url: url)
-                } else {
-                    Image(systemName: "plus").font(.system(size: 18, weight: .bold)).foregroundStyle(MSColor.highlight)
-                }
-            }
-            .frame(width: 60, height: 90)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Plan \(shot.index + 1) · \(String(format: "%.1f", shot.duration)) s").font(MSFont.control(13)).foregroundStyle(MSColor.highlight)
-                Text(L(shot.description)).font(MSFont.body(14)).foregroundStyle(MSColor.text)
-                if let o = shot.overlay { Text("Texte : « \(o) »").msCaption().lineLimit(2) }
-            }
-            Spacer(minLength: 0)
-            PhotosPicker(selection: Binding(get: { picking[shot.index] }, set: { picking[shot.index] = $0 }), matching: .videos, photoLibrary: .shared()) {
-                Text(clips[shot.index] == nil ? "Choisir" : "Changer").font(MSFont.control(13)).foregroundStyle(MSColor.onAccent)
-                    .padding(.horizontal, 12).frame(height: 34).background(MSColor.accent, in: Capsule())
-            }
-        }
-        .padding(10)
-        .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
-        .onChange(of: picking[shot.index]) { _, item in
-            guard let item else { return }
-            Task {
-                if let movie = try? await item.loadTransferable(type: PickedMovie.self) { clips[shot.index] = movie.url }
-            }
-        }
-    }
+@MainActor
+final class TemplateRunner: ObservableObject {
+    @Published var analyzing: Double?
+    @Published var assembling: Double?
+    @Published var fill: VideoTemplate?
+    @Published var result: (url: URL, template: VideoTemplate, seconds: Double)?
+    @Published var error: String?
+    @Published var keepSound = true
+    @Published var showTexts = true
 
-    private func options(_ t: VideoTemplate) -> some View {
-        VStack(spacing: 0) {
-            if t.hasAudio {
-                Toggle(isOn: $keepSound) { Text("Garder le son de la vidéo d'origine").font(MSFont.body(14)) }
-                    .padding(12)
-            }
-            if t.shots.contains(where: { $0.overlay != nil }) {
-                Toggle(isOn: $showTexts) { Text("Ajouter les mêmes textes à l'écran").font(MSFont.body(14)) }
-                    .padding(12)
-            }
-        }
-        .tint(MSColor.accent)
-        .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
-    }
-
-    private func build(_ t: VideoTemplate) async {
+    func create(from item: PhotosPickerItem, store: TemplateStore) async {
         error = nil
-        building = true
-        startedAt = Date()
-        defer { building = false }
+        analyzing = 0
+        defer { analyzing = nil }
         do {
-            let ordered = t.shots.compactMap { clips[$0.index] }
-            result = try await VideoAssembler.assemble(template: t, sourceURL: store.url(for: t), clips: ordered,
-                                                       options: .init(keepOriginalSound: keepSound, showTexts: showTexts))
+            guard let movie = try await item.loadTransferable(type: PickedMovie.self) else { throw TemplateError.noClip }
+            let t = try await analyze(movie.url, store: store)
+            try? FileManager.default.removeItem(at: movie.url)
+            fill = t
+        } catch {
+            self.error = (error as? LocalizedError)?.errorDescription ?? "Import impossible. Réessayez."
+        }
+    }
+
+    func importInbox(store: TemplateStore) async {
+        let files = TemplateStore.inboxVideos()
+        guard !files.isEmpty, analyzing == nil else { return }
+        analyzing = 0
+        defer { analyzing = nil }
+        var last: VideoTemplate?
+        for file in files {
+            if let t = try? await analyze(file, store: store) { last = t }
+            try? FileManager.default.removeItem(at: file)
+        }
+        fill = last
+    }
+
+    private func analyze(_ url: URL, store: TemplateStore) async throws -> VideoTemplate {
+        let started = Date()
+        let t = try await TemplateAnalyzer.makeTemplate(from: url, store: store) { p in Task { @MainActor in self.analyzing = p } }
+        // Let the animation finish its steps even on very short videos.
+        let left = 1.6 - Date().timeIntervalSince(started)
+        if left > 0 { analyzing = 1; try? await Task.sleep(for: .seconds(left)) }
+        MSHaptic.success()
+        return t
+    }
+
+    func assemble(_ t: VideoTemplate, assets: [PHAsset], store: TemplateStore) async {
+        error = nil
+        assembling = 0.05
+        let started = Date()
+        defer { assembling = nil }
+        do {
+            var clips: [AVAsset] = []
+            for (i, a) in assets.enumerated() {
+                guard let av = await LibraryVideos.avAsset(a) else { throw TemplateError.noClip }
+                clips.append(av)
+                assembling = 0.05 + 0.45 * Double(i + 1) / Double(assets.count)
+            }
+            assembling = 0.6
+            let url = try await VideoAssembler.assemble(template: t, sourceURL: store.url(for: t), clips: clips,
+                                                        options: .init(keepOriginalSound: keepSound, showTexts: showTexts))
+            assembling = 1
             MSHaptic.success()
+            result = (url, t, Date().timeIntervalSince(started))
         } catch {
             self.error = (error as? LocalizedError)?.errorDescription ?? "Le montage a échoué. Réessayez."
         }
     }
 }
 
-private struct ResultFile: Identifiable { let url: URL; var id: String { url.path } }
+private struct TemplateRunnerModifier: ViewModifier {
+    @ObservedObject var runner: TemplateRunner
+    let store: TemplateStore
 
-private struct ClipThumb: View {
-    let url: URL
-    @State private var image: UIImage?
-    var body: some View {
-        Group { if let image { Image(uiImage: image).resizable().scaledToFill() } else { Color.clear } }
-            .task {
-                let gen = AVAssetImageGenerator(asset: AVURLAsset(url: url))
-                gen.appliesPreferredTrackTransform = true
-                gen.maximumSize = CGSize(width: 200, height: 200)
-                if let cg = try? await gen.image(at: .zero).image { image = UIImage(cgImage: cg) }
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                if let p = runner.analyzing {
+                    TemplateWorkingOverlay(title: "Analyse de la vidéo", steps: ["Détection des coupes…", "Mesure du rythme…", "Lecture des textes…", "Préparation du modèle…"], progress: p)
+                        .transition(.opacity)
+                } else if let p = runner.assembling {
+                    TemplateWorkingOverlay(title: "Montage de votre vidéo", steps: ["Import de vos vidéos…", "Découpe au bon rythme…", "Ajout des textes…", "Export HD…"], progress: p)
+                        .transition(.opacity)
+                }
             }
+            .animation(MSAnimation.gentle, value: runner.analyzing != nil || runner.assembling != nil)
+            .fullScreenCover(item: $runner.fill) { t in
+                TemplateSlotPicker(template: t) { assets in
+                    Task { await runner.assemble(t, assets: assets, store: store) }
+                }
+            }
+            .sheet(isPresented: Binding(get: { runner.result != nil }, set: { if !$0 { runner.result = nil } })) {
+                if let r = runner.result { TemplateResultView(url: r.url, template: r.template, seconds: r.seconds) }
+            }
+    }
+}
+
+extension View {
+    func templateRunner(_ runner: TemplateRunner, store: TemplateStore) -> some View {
+        modifier(TemplateRunnerModifier(runner: runner, store: store))
     }
 }
 

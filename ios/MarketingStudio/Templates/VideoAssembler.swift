@@ -8,7 +8,7 @@ enum VideoAssembler {
 
     struct Options { var keepOriginalSound = true; var showTexts = true }
 
-    static func assemble(template: VideoTemplate, sourceURL: URL, clips: [URL], options: Options) async throws -> URL {
+    static func assemble(template: VideoTemplate, sourceURL: URL, clips: [AVAsset], options: Options) async throws -> URL {
         guard clips.count == template.shots.count else { throw TemplateError.noClip }
         let composition = AVMutableComposition()
         guard let videoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else { throw TemplateError.exportFailed }
@@ -17,8 +17,7 @@ enum VideoAssembler {
 
         var cursor = CMTime.zero
         let useOriginalSound = options.keepOriginalSound && template.hasAudio
-        for (shot, clipURL) in zip(template.shots, clips) {
-            let asset = AVURLAsset(url: clipURL)
+        for (shot, asset) in zip(template.shots, clips) {
             guard let track = try await asset.loadTracks(withMediaType: .video).first else { throw TemplateError.noClip }
             let clipDuration = try await asset.load(.duration)
             let want = CMTime(seconds: shot.duration, preferredTimescale: 600)

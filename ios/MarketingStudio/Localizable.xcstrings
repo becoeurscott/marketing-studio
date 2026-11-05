@@ -20791,6 +20791,193 @@
           }
         }
       }
+    },
+    "Ajout des textes…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adding text…"
+          }
+        }
+      }
+    },
+    "Analyse de la vidéo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analyzing video"
+          }
+        }
+      }
+    },
+    "Autorisez l'accès à vos vidéos dans Réglages › Marketing Studio › Photos.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow access to your videos in Settings › Marketing Studio › Photos."
+          }
+        }
+      }
+    },
+    "Créer un modèle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a template"
+          }
+        }
+      }
+    },
+    "Dans TikTok ou Instagram, enregistrez la vidéo puis partagez-la vers Marketing Studio, ou touchez « Créer un modèle ».": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In TikTok or Instagram, save the video then share it to Marketing Studio, or tap “Create a template”."
+          }
+        }
+      }
+    },
+    "Découpe au bon rythme…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trimming to the beat…"
+          }
+        }
+      }
+    },
+    "Détection des coupes…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detecting cuts…"
+          }
+        }
+      }
+    },
+    "Export HD…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporting HD…"
+          }
+        }
+      }
+    },
+    "Import de vos vidéos…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importing your videos…"
+          }
+        }
+      }
+    },
+    "Lecture des textes…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading text…"
+          }
+        }
+      }
+    },
+    "Mesure du rythme…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Measuring rhythm…"
+          }
+        }
+      }
+    },
+    "Montage de votre vidéo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editing your video"
+          }
+        }
+      }
+    },
+    "Préparation du modèle…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing template…"
+          }
+        }
+      }
+    },
+    "Récents": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent"
+          }
+        }
+      }
+    },
+    "Suivant": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
+          }
+        }
+      }
+    },
+    "Trop courte": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too short"
+          }
+        }
+      }
+    },
+    "Utiliser ce modèle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use this template"
+          }
+        }
+      }
     }
   }
 }

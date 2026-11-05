@@ -85,6 +85,7 @@
 		EBFCC1AB2812E3C23ECECA77 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB90A0F3FED0CD9A3A50133E /* HelpView.swift */; };
 		EC9A8B5FD6001B8F3D26E394 /* RemoteImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD2962A000565401952B924 /* RemoteImage.swift */; };
 		EDA42717A74945403692A07C /* StudioSessions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8E5772FB8BE3531C9E4DD /* StudioSessions.swift */; };
+		EDC54C401AFD757B625FF5BF /* TemplateFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10FFADA589CF1D8D8B7C943A /* TemplateFlow.swift */; };
 		EDF31EE99854585DC4DB79E2 /* ImageEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0A8F0BD9373598D52732DC /* ImageEditorView.swift */; };
 		F00254A0BD1366F233DDBB50 /* CampaignDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CE933C8C1E69016D88F52B8 /* CampaignDetailView.swift */; };
 		F0B16BCE8AFB2DD3DC7F7C30 /* ProjectDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5501DC2618845D244C19432A /* ProjectDetailView.swift */; };
@@ -128,6 +129,7 @@
 		0625F667D361BFA06EFBE838 /* ProductShootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductShootView.swift; sourceTree = "<group>"; };
 		08A0740B97967525144AB30C /* VideoGeneratorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoGeneratorView.swift; sourceTree = "<group>"; };
 		0CB3DD0FE9AAB6818D23245F /* SegmentedTabs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedTabs.swift; sourceTree = "<group>"; };
+		10FFADA589CF1D8D8B7C943A /* TemplateFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateFlow.swift; sourceTree = "<group>"; };
 		12A5C7982D2F52AC78EFCABA /* BrandVoiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandVoiceView.swift; sourceTree = "<group>"; };
 		18E3ACD8A4740BE6F8DEB9A2 /* TemplateDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateDetailView.swift; sourceTree = "<group>"; };
 		1C86F6EC3B779C6AD9E61BB3 /* TemplateShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = TemplateShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -427,6 +429,7 @@
 			isa = PBXGroup;
 			children = (
 				E07627BE4CFB5E99481BAEE7 /* TemplateAnalyzer.swift */,
+				10FFADA589CF1D8D8B7C943A /* TemplateFlow.swift */,
 				4A47C26DC2BAAF9AB441E7B5 /* TemplateViews.swift */,
 				6F5B78BF2DD4D13EA8C99547 /* VideoAssembler.swift */,
 				70A68C3E364869C446C297BB /* VideoTemplate.swift */,
@@ -656,6 +659,7 @@
 				278C0FD0F2ED3D01973C702F /* StudioView.swift in Sources */,
 				48B39E515C5DA28851AA95B1 /* TemplateAnalyzer.swift in Sources */,
 				E5ABE7DAF28A9773D6E37C23 /* TemplateDetailView.swift in Sources */,
+				EDC54C401AFD757B625FF5BF /* TemplateFlow.swift in Sources */,
 				FE0C3148BC1F1604A38B172E /* TemplateViews.swift in Sources */,
 				C3122E0DA02A569522194A9F /* TemplatesView.swift in Sources */,
 				64D636F36CF5668481243A5E /* Theme.swift in Sources */,
