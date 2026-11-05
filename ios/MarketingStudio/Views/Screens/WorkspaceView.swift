@@ -80,7 +80,7 @@ struct WorkspaceView: View {
                 Text("SK").font(.system(size: 20, weight: .bold, design: .rounded)).foregroundStyle(.white)
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text(workspaceName).msTitle(24)
+                Text(L(workspaceName)).msTitle(24)
                 HStack(spacing: 6) {
                     MSBadge(text: store.plan.title, tone: .accent)
                     Text("\(store.projects.count) projets · \(store.campaigns.count) campagnes").msCaption()
@@ -98,10 +98,10 @@ struct WorkspaceView: View {
             AvatarView(url: m.avatarURL, name: m.name, size: 42)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(m.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                    Text(L(m.name)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
                     if m.email == store.user.email { Text("Vous").msCaption() }
                 }
-                Text(m.email).msCaption().lineLimit(1)
+                Text(L(m.email)).msCaption().lineLimit(1)
             }
             Spacer()
             if m.role == .owner {
@@ -114,7 +114,7 @@ struct WorkspaceView: View {
                                 store.changeRole(m.id, to: r)
                                 router.toast("\(m.name) est maintenant \(r.title)", style: .success)
                             } label: {
-                                Label(r.title, systemImage: m.role == r ? "checkmark" : roleIcon(r))
+                                Label(L(r.title), systemImage: m.role == r ? "checkmark" : roleIcon(r))
                             }
                         }
                     }
@@ -149,7 +149,7 @@ struct WorkspaceView: View {
     private func legendRow(_ r: MemberRole, _ text: String) -> some View {
         HStack(spacing: 12) {
             MSBadge(text: r.title, tone: roleTone(r), icon: roleIcon(r)).frame(width: 84, alignment: .leading)
-            Text(text).msBody(13)
+            Text(L(text)).msBody(13)
             Spacer()
         }
         .padding(.horizontal, 14).padding(.vertical, 12)
@@ -198,7 +198,7 @@ struct InviteMemberSheet: View {
                             MSChip(title: r.title, selected: role == r) { role = r }
                         }
                     }
-                    Text(roleHint).msCaption()
+                    Text(L(roleHint)).msCaption()
                 }
                 Spacer(minLength: 0)
                 MSButton(title: sending ? "Envoi de l’invitation" : "Envoyer l’invitation", icon: sending ? nil : "paperplane.fill", isLoading: sending, isDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty || !emailValid) {

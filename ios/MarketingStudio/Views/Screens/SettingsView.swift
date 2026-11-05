@@ -76,9 +76,25 @@ struct SettingsView: View {
                         }
                         Spacer()
                         HStack(spacing: 4) {
-                            Circle().fill(MSColor.accent).frame(width: 16, height: 16)
-                            Circle().fill(MSColor.accent2).frame(width: 16, height: 16)
-                            Circle().fill(MSColor.highlight).frame(width: 16, height: 16)
+                            ForEach([("lime", "Vert", 0xD1FE17), ("blue", "Bleu", 0x70C7FF), ("pink", "Rose", 0xFF91C1)], id: \.0) { id, name, hex in
+                                Button {
+                                    var updated = store.preferences
+                                    updated.accentColor = id
+                                    store.preferences = updated
+                                } label: {
+                                    Circle().fill(Color(hex: UInt(hex))).frame(width: 24, height: 24)
+                                        .overlay {
+                                            if (store.preferences.accentColor ?? "lime") == id {
+                                                Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(.black)
+                                            }
+                                        }
+                                        .frame(width: 36, height: 44)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel("Couleur d’accent : \(name)")
+                                .accessibilityAddTraits((store.preferences.accentColor ?? "lime") == id ? .isSelected : [])
+                            }
                         }
                     }
                     .padding(.horizontal, 12).frame(minHeight: 56)
@@ -171,7 +187,7 @@ struct SettingsView: View {
 
     private func pickerGroup(_ title: String, _ options: [String], _ binding: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).msHeadline(15)
+            Text(L(title)).msHeadline(15)
             FlowLayout(spacing: 8) {
                 ForEach(options, id: \.self) { o in
                     MSChip(title: o, selected: binding.wrappedValue == o) { binding.wrappedValue = o }
@@ -194,9 +210,9 @@ struct SettingsView: View {
                             showCountry = false
                         } label: {
                             HStack(spacing: 12) {
-                                Text(c.flag).font(.system(size: 24))
+                                Text(L(c.flag)).font(.system(size: 24))
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(c.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                                    Text(L(c.name)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
                                     Text(c.payments.compactMap { Market.paymentMethods[$0]?.label }.joined(separator: " · ")).msCaption().lineLimit(1)
                                 }
                                 Spacer()
@@ -245,8 +261,8 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 icon(name)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                    if let subtitle { Text(subtitle).msCaption().lineLimit(1) }
+                    Text(L(title)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                    if let subtitle { Text(L(subtitle)).msCaption().lineLimit(1) }
                 }
                 Spacer()
                 Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(MSColor.muted)
@@ -261,8 +277,8 @@ struct SettingsView: View {
         HStack(spacing: 12) {
             icon(name)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                if let subtitle { Text(subtitle).msCaption().lineLimit(1) }
+                Text(L(title)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                if let subtitle { Text(L(subtitle)).msCaption().lineLimit(1) }
             }
             Spacer()
             Toggle("", isOn: isOn).labelsHidden().tint(MSColor.accent)

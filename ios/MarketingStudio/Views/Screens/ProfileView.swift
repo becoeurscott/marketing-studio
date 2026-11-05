@@ -78,8 +78,8 @@ struct ProfileView: View {
                 .buttonStyle(MSPressStyle())
             }
             VStack(spacing: 4) {
-                Text(store.user.name).msTitle(26)
-                Text(store.user.email).msBody(14)
+                Text(L(store.user.name)).msTitle(26)
+                Text(L(store.user.email)).msBody(14)
                 HStack(spacing: 6) {
                     MSBadge(text: store.user.role, tone: .neutral)
                     MSBadge(text: store.user.company, tone: .neutral, icon: "building.2")
@@ -98,9 +98,9 @@ struct ProfileView: View {
         HStack(spacing: 12) {
             Image(systemName: icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.text2)
                 .frame(width: 28, height: 28).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-            Text(label).msBody(14)
+            Text(L(label)).msBody(14)
             Spacer()
-            Text(value).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
+            Text(L(value)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
         }
         .padding(.horizontal, 12).frame(height: 50)
     }
@@ -116,7 +116,7 @@ struct ProfileView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         ForEach(rows, id: \.0) { label, values in
                             HStack(alignment: .top, spacing: 10) {
-                                Text(label).msCaption().frame(width: 70, alignment: .leading)
+                                Text(L(label)).msCaption().frame(width: 70, alignment: .leading)
                                 FlowLayout(spacing: 6) {
                                     ForEach(values, id: \.self) { MSBadge(text: $0, tone: .neutral) }
                                 }
@@ -148,7 +148,7 @@ struct EditProfileSheet: View {
                         AvatarView(url: nil, name: name, size: 64)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Compte").msCaption()
-                            Text(email).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
+                            Text(L(email)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
                         }
                     }
                     MSTextField(label: "Nom", placeholder: "Votre nom", text: $name, icon: "person", autocapitalization: .words)

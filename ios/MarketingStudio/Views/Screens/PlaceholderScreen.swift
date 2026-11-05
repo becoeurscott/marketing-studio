@@ -17,7 +17,7 @@ struct PlaceholderScreen: View {
             .padding(.top, 60)
         }
         .msScreen()
-        .navigationTitle(title)
+        .navigationTitle(L(title))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
     }

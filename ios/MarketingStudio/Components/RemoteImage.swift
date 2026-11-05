@@ -58,7 +58,7 @@ struct AvatarView: View {
     var body: some View {
         ZStack {
             Circle().fill(MSColor.elevated)
-            Text(initials)
+            Text(L(initials))
                 .font(.system(size: size * 0.36, weight: .semibold, design: .rounded))
                 .foregroundStyle(MSColor.text2)
             if let url, let u = URL(string: url) {

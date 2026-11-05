@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, BadgeDollarSign, Coins, LayoutGrid, ScrollText, Settings2, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, BadgeDollarSign, Coins, CreditCard, LayoutGrid, ScrollText, Settings2, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ const NAV = [
   { href: "/admin/users", label: "Utilisateurs", icon: Users },
   { href: "/admin/jobs", label: "Générations", icon: Sparkles },
   { href: "/admin/credits", label: "Crédits", icon: Coins },
+  { href: "/admin/payments", label: "Paiements", icon: CreditCard },
   { href: "/admin/pricing", label: "Tarifs", icon: BadgeDollarSign },
   { href: "/admin/settings", label: "Higgsfield", icon: Settings2 },
   { href: "/admin/audit", label: "Journal", icon: ScrollText },

@@ -21,8 +21,8 @@ struct EmptyStateView: View {
                     .foregroundStyle(MSColor.text2)
             }
             VStack(spacing: 6) {
-                Text(title).msHeadline(18).multilineTextAlignment(.center)
-                Text(message).msBody(14).multilineTextAlignment(.center).lineSpacing(2)
+                Text(L(title)).msHeadline(18).multilineTextAlignment(.center)
+                Text(L(message)).msBody(14).multilineTextAlignment(.center).lineSpacing(2)
             }
             .frame(maxWidth: 300)
             if let ctaTitle, let action {
@@ -47,7 +47,7 @@ struct ErrorStateView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 28, weight: .medium))
                 .foregroundStyle(MSColor.warning)
-            Text(message).msHeadline(17)
+            Text(L(message)).msHeadline(17)
             HStack(spacing: 10) {
                 MSButton(title: "Réessayer", style: .primary, size: .compact, fullWidth: false, action: retry)
                 if let back {

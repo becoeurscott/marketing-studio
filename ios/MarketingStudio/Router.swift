@@ -41,6 +41,7 @@ enum AppRoute: Hashable {
     case studio
     case imageGenerator
     case videoGenerator
+    case videoGeneratorWithPrompt(prompt: String)
     case ugcCreator
     case ugcCreatorWithScript(script: String)
     case productShoot

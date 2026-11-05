@@ -13,7 +13,7 @@ struct SegmentedTabs: View {
                     MSHaptic.tap()
                     withAnimation(MSAnimation.snappy) { selection = i }
                 } label: {
-                    Text(tab)
+                    Text(L(tab))
                         .font(.system(size: 13, weight: .semibold))
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
@@ -53,7 +53,7 @@ struct UnderlineTabs: View {
                         withAnimation(MSAnimation.snappy) { selection = i }
                     } label: {
                         VStack(spacing: 8) {
-                            Text(tab)
+                            Text(L(tab))
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(selection == i ? MSColor.text : MSColor.muted)
                             ZStack {

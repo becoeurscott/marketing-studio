@@ -86,7 +86,7 @@ struct CopywriterView: View {
                     if !f.tip.isEmpty {
                         HStack(alignment: .top, spacing: 8) {
                             Image(systemName: "lightbulb.fill").foregroundStyle(MSColor.accent)
-                            Text(f.tip).msBody(13, color: MSColor.text2)
+                            Text(L(f.tip)).msBody(13, color: MSColor.text2)
                         }
                     }
                     MSTextField(label: f.productLabel, placeholder: f.productHint, text: $product, icon: "shippingbox")
@@ -181,7 +181,7 @@ struct CopywriterView: View {
                         Text("Ton de marque · \(store.brand.voice.tone)").font(MSFont.control(14)).foregroundStyle(MSColor.text)
                         MSBadge(text: "Utilisé dans les textes générés", tone: .success)
                     }
-                    Text(store.brand.voice.writingStyle).msCaption().lineLimit(2)
+                    Text(L(store.brand.voice.writingStyle)).msCaption().lineLimit(2)
                 }
                 Spacer()
                 Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(MSColor.muted)
@@ -243,9 +243,9 @@ struct CopywriterView: View {
                             MSBadge(text: Self.toolLabel(r.tool), tone: .accent)
                             MSBadge(text: Self.toneLabel(r.tone))
                             Spacer()
-                            Text(r.createdAt.relativeString).msCaption()
+                            Text(L(r.createdAt.relativeString)).msCaption()
                         }
-                        Text(r.text).msBody(13).lineLimit(3)
+                        Text(L(r.text)).msBody(13).lineLimit(3)
                         HStack { Spacer(); ResultAction(title: "Copier", icon: "doc.on.doc") { copy(r) } }
                     }
                 }
@@ -316,7 +316,7 @@ struct CopyResultCard: View {
                 Spacer()
                 if saved { MSBadge(text: "Enregistré", tone: .success, icon: "checkmark") }
             }
-            Text(result.text)
+            Text(L(result.text))
                 .msBody(15, color: MSColor.text)
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)

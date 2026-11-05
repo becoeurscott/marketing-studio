@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import type { HfPreset } from "@/lib/higgsfield/types";
 
 /**
- * Higgsfield Marketing Studio ad templates (75 layouts available through the API).
+ * Higgsfield Marketing Studio ad templates fetched from the live API catalog.
  * The selected template is applied to the merchant's product photo.
  */
 export function AdTemplatePicker({ value, onChange, disabled }: { value: string | null; onChange: (preset: HfPreset | null) => void; disabled?: boolean }) {
@@ -18,9 +18,10 @@ export function AdTemplatePicker({ value, onChange, disabled }: { value: string 
   useEffect(() => {
     if (!open || items) return;
     let alive = true;
+    setError(false);
     fetch("/api/hf/presets")
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((d: { items: HfPreset[] }) => { if (alive) setItems(d.items.filter((p) => p.preview)); })
+      .then((d: { items: HfPreset[] }) => { if (alive) setItems(d.items); })
       .catch(() => alive && setError(true));
     return () => { alive = false; };
   }, [open, items]);
@@ -42,7 +43,7 @@ export function AdTemplatePicker({ value, onChange, disabled }: { value: string 
         )}
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium">{selected?.name ?? (value ? "Modèle choisi" : "Mise en page libre")}</span>
-          <span className="block text-[12px] text-muted">{disabled ? "Ajoutez d'abord une photo produit" : "75 modèles de pub · toucher pour choisir"}</span>
+          <span className="block text-[12px] text-muted">{disabled ? "Ajoutez d'abord une photo produit" : "Modèles Marketing Studio · toucher pour choisir"}</span>
         </span>
       </button>
 
@@ -58,7 +59,7 @@ export function AdTemplatePicker({ value, onChange, disabled }: { value: string 
             </button>
             {items.map((p) => (
               <button key={p.id} type="button" onClick={() => { onChange(p); setOpen(false); }} className={cn("group relative aspect-[3/4] overflow-hidden rounded-md border", p.id === value ? "border-accent ring-2 ring-accent/40" : "border-border-strong hover:border-white/25")}>
-                <img src={p.preview!} alt={p.name} loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+                {p.preview ? <img src={p.preview} alt={p.name} loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" /> : <span className="grid size-full place-items-center bg-elevated"><LayoutTemplate className="size-8 text-text2" /></span>}
                 <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-1.5 pt-6 text-left text-[11px] font-medium text-white line-clamp-2">{p.name}</span>
                 {p.id === value && <span className="absolute right-1.5 top-1.5 grid size-5 place-items-center rounded-full bg-accent text-on-accent"><Check className="size-3" /></span>}
               </button>

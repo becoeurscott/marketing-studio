@@ -98,12 +98,12 @@ struct AssetsView: View {
                     Spacer()
                     Menu {
                         Picker("Trier", selection: $sort) {
-                            ForEach(SortOrder.allCases) { s in Text(s.label).tag(s) }
+                            ForEach(SortOrder.allCases) { s in Text(L(s.label)).tag(s) }
                         }
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "arrow.up.arrow.down").font(.system(size: 11, weight: .bold))
-                            Text(sort.label)
+                            Text(L(sort.label))
                         }
                         .font(MSFont.control(13)).foregroundStyle(MSColor.text2)
                     }

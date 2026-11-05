@@ -23,3 +23,6 @@ xcuserdata/
 # Local secrets (never commit keys)
 .env*
 !.env.example
+
+# Xcode build output
+build/

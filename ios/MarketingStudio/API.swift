@@ -16,6 +16,7 @@ struct ImageGenParams {
     /// Image model id or label ("Marketing Studio", "Soul 2").
     var model: String = "marketing-studio-1k"
     var count: Int = 2
+    var presetId: String? = nil
 }
 
 struct VideoGenParams {
@@ -40,6 +41,7 @@ struct UGCParams {
     var language: String = "fr"
     var duration: Int = 15
     var projectId: String? = nil
+    var presetId: String? = nil
 }
 
 struct ProductShootParams {
@@ -158,11 +160,11 @@ enum API {
         return r == "4:5" ? "3:4" : r
     }
 
-    private static func images(_ prompt: String, count: Int, ratio: String?, imageUrls: [String]? = nil, model: String? = nil, upscale: Bool = false) async throws -> [String] {
+    private static func images(_ prompt: String, count: Int, ratio: String?, imageUrls: [String]? = nil, model: String? = nil, upscale: Bool = false, presetId: String? = nil) async throws -> [String] {
         try await withThrowingTaskGroup(of: [String].self) { group in
             for _ in 0..<count {
                 group.addTask {
-                    try await APIClient.run(GenerationRequest(kind: .image, model: model, prompt: prompt, imageUrls: imageUrls, aspectRatio: imageRatio(ratio), upscale: upscale ? true : nil)).images
+                    try await APIClient.run(GenerationRequest(kind: .image, model: model, prompt: prompt, imageUrls: imageUrls, aspectRatio: imageRatio(ratio), upscale: upscale ? true : nil, presetId: presetId)).images
                 }
             }
             var out: [String] = []
@@ -189,9 +191,9 @@ enum API {
         let prompt = "\(p.prompt). \(details)\(product != nil ? ". Garde le produit de la photo fournie exactement identique (forme, couleurs, étiquette)." : "")"
         // Soul 2 can't use a product photo: it renders from the text only.
         let refs = product != nil && model.acceptsImages ? [product!] : nil
-        let cost = model.credits * count
+        let cost = AIModels.creditsFor(usd: model.usd * (p.presetId != nil ? 1.1 : 1)) * count
         let urls = try await charged(store, cost: cost) {
-            try await images(prompt, count: count, ratio: p.ratio, imageUrls: refs, model: model.id)
+            try await images(prompt, count: count, ratio: p.ratio, imageUrls: refs, model: model.id, presetId: p.presetId)
         }
         let g = store.addGeneration(kind: .image, prompt: p.prompt, thumbnails: urls, projectId: p.projectId, model: model.label, credits: cost)
         store.pushNotification(kind: .generationComplete, title: "Génération terminée", message: "\(urls.count) image\(urls.count > 1 ? "s sont prêtes" : " est prête") pour « \(p.prompt.prefix(40)) ».")
@@ -287,14 +289,15 @@ enum API {
         let lang = Market.languageLabel(p.language)
         let cost = AIModels.ugcCredits(seconds: p.duration)
         let references = [creator.sheetURL] + (product.map { [$0] } ?? [])
-        let place = " Setting: \(StudioOptions.label(p.location))."
+        let preset = UGCPresets.preset(p.presetId)
+        let place = preset.map { " Scene: \($0.direction)" } ?? " Setting: \(StudioOptions.label(p.location))."
         let prompt = "Vertical selfie-style UGC video. The person is exactly the one in the character sheet: \(creator.look).\(product != nil ? " She/he holds and shows the product from the product photo, keeping it identical." : "")\(place) Talking naturally to the camera in \(lang), tone \(p.tone.lowercased()), says: « \(p.script) »"
         progress("Choix de \(creator.name)")
         let job = try await charged(store, cost: cost) {
             try await APIClient.run(GenerationRequest(kind: .video, prompt: prompt, aspectRatio: "9:16", durationSec: p.duration, light: store.preferences.lightVideos, references: references), onStatus: stepper(progress))
         }
         let poster = product ?? creator.avatarURL
-        let g = store.addGeneration(kind: .video, prompt: "UGC · \(creator.name) · \(p.script)", thumbnails: [poster], projectId: p.projectId, model: "UGC", credits: cost)
+        let g = store.addGeneration(kind: .video, prompt: "UGC\(preset.map { " · \($0.title)" } ?? "") · \(creator.name) · \(p.script)", thumbnails: [poster], projectId: p.projectId, model: "UGC", credits: cost)
         store.pushNotification(kind: .generationComplete, title: "Vidéo UGC prête", message: "\(creator.name) présente votre produit en \(lang).")
         return GeneratedVideo(id: IDGen.make("out"), posterURL: poster, videoURL: job.videoUrl ?? "", duration: p.duration, generationId: g.id)
     }

@@ -105,7 +105,7 @@ struct BrandVoiceView: View {
                         SkeletonView(cornerRadius: 6).frame(height: 14).frame(maxWidth: 180)
                     }
                 } else {
-                    Text(sample).msBody(15, color: MSColor.text).lineSpacing(4)
+                    Text(L(sample)).msBody(15, color: MSColor.text).lineSpacing(4)
                         .id(sampleIndex)
                         .transition(.opacity)
                 }

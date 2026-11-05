@@ -50,14 +50,14 @@ struct CampaignDetailView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle(c.name)
+        .navigationTitle(L(c.name))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Menu {
                         ForEach(CampaignStatus.allCases) { s in
                             Button { store.setCampaignStatus(c.id, s); router.toast("Statut : \(s.title.lowercased())") } label: {
-                                Label(s.title, systemImage: c.status == s ? "checkmark" : "")
+                                Label(L(s.title), systemImage: c.status == s ? "checkmark" : "")
                             }
                         }
                     } label: { Label("Changer le statut", systemImage: "flag") }
@@ -96,7 +96,7 @@ struct CampaignDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(c.name).msTitle(26)
+                    Text(L(c.name)).msTitle(26)
                     Text("\(c.objective.title) · Créée le \(c.createdAt.shortString)").msCaption()
                 }
                 Spacer()
@@ -159,7 +159,7 @@ struct CampaignDetailView: View {
                                 RemoteImage(url: p.thumbnailURL, cornerRadius: 8).frame(width: 40, height: 40)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Projet").msCaption()
-                                    Text(p.name).font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                                    Text(L(p.name)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(MSColor.muted)
@@ -204,8 +204,8 @@ struct CampaignDetailView: View {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.text2).frame(width: 20)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(label).msCaption()
-                    Text(value).font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                    Text(L(label)).msCaption()
+                    Text(L(value)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
                 }
             }
         }
@@ -261,7 +261,7 @@ struct CampaignDetailView: View {
                         MSCard(padding: 14) {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
-                                    Text(row.0).msCaption(color: MSColor.text2)
+                                    Text(L(row.0)).msCaption(color: MSColor.text2)
                                     Spacer()
                                     Button {
                                         UIPasteboard.general.string = "\(row.1)\n\n\(row.2)\n\n\(row.3)"
@@ -270,8 +270,8 @@ struct CampaignDetailView: View {
                                         Image(systemName: "doc.on.doc").font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.text2)
                                     }
                                 }
-                                Text(row.1).msHeadline(16)
-                                Text(row.2).msBody(14).lineSpacing(2)
+                                Text(L(row.1)).msHeadline(16)
+                                Text(L(row.2)).msBody(14).lineSpacing(2)
                                 MSBadge(text: row.3, tone: .accent, icon: "arrow.right")
                             }
                         }
@@ -357,7 +357,7 @@ struct CalendarItemRow: View {
                         .overlay(Image(systemName: "photo").foregroundStyle(MSColor.muted).font(.system(size: 13)))
                 }
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(item.title).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
+                    Text(L(item.title)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
                     HStack(spacing: 5) {
                         Image(systemName: item.platform.icon).font(.system(size: 10, weight: .semibold))
                         Text("\(item.platform.title) · \(item.format)")
@@ -388,8 +388,8 @@ struct AdVariationCard: View {
                         .padding(10)
                     }
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(variation.headline).msHeadline(16)
-                    Text(variation.primaryText).msBody(14).lineSpacing(2)
+                    Text(L(variation.headline)).msHeadline(16)
+                    Text(L(variation.primaryText)).msBody(14).lineSpacing(2)
                     HStack {
                         MSBadge(text: variation.cta, tone: .accent, icon: "arrow.right")
                         Spacer()

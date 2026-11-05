@@ -21,6 +21,8 @@ export interface GenerationRequest {
   presetId?: string;
   /** Video only: reference images (creator character sheet, product photo) for Seedance 2.5 reference-to-video. */
   references?: string[];
+  /** Video only: reference clips for Seedance 2.5 reference-to-video. */
+  videoUrls?: string[];
   /** Image only, with a preset: optional model/person reference photo placed after the product. */
   modelReferenceUrl?: string;
   /** Video only (Kling 3.0): custom shots rendered as one video; durations are summed for generation and billing. */

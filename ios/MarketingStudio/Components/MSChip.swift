@@ -14,7 +14,7 @@ struct MSChip: View {
         } label: {
             HStack(spacing: 6) {
                 if let icon { Image(systemName: icon).font(.system(size: 12, weight: .semibold)) }
-                Text(title).font(MSFont.control())
+                Text(L(title)).font(MSFont.control())
             }
             .foregroundStyle(selected ? MSColor.highlight : MSColor.text2)
             .padding(.horizontal, 14)

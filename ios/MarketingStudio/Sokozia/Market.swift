@@ -3,10 +3,12 @@ import Foundation
 /// Backend endpoints. Generation, credits and uploads go through sokozia.com (same API as the web
 /// app, authenticated with the InsForge access token); sign-in talks to InsForge directly.
 enum SokoziaConfig {
-    static let siteURL = URL(string: "https://sokozia.vercel.app")!
-    static let authURL = URL(string: "https://h8fj6hqu.eu-central.insforge.app")!
+    static let siteURL = URL(string: "https://zyg59zew.insforge.site")!
+    static let authURL = URL(string: "https://zyg59zew.us-east.insforge.app")!
+    /// Public anon key (safe to ship; required by InsForge for sign-up).
+    static let anonKey = "anon_13fa89e12ea8e12c4cbfe196a3d711e3628baf2b3dfd02280b6219249cb158c5"
     /// Google sign-in returns here, then to the app through the `sokozia://` scheme.
-    static let oauthReturnURL = "https://sokozia.vercel.app/api/auth/mobile-callback"
+    static let oauthReturnURL = "https://zyg59zew.insforge.site/api/auth/mobile-callback"
     static let callbackScheme = "sokozia"
     /// Credits granted by the server on the first sign-in.
     static let welcomeCredits = 50
@@ -262,4 +264,23 @@ enum Market {
         }
         .sorted { $0.1 < $1.1 }
     }
+}
+
+/// Curated trending videos on Home (mirrors web `src/data/trendingVideos.ts`); tapping one recreates it in the video generator.
+struct TrendingVideo: Identifiable, Hashable {
+    let id: String
+    let title: String
+    let prompt: String
+
+    var url: String { "\(SokoziaConfig.siteURL.absoluteString)/trending/\(id).mp4" }
+    var poster: String { "\(SokoziaConfig.siteURL.absoluteString)/trending/\(id).jpg" }
+
+    static let all: [TrendingVideo] = [
+        TrendingVideo(id: "trend-1", title: "Bar noir et blanc", prompt: "Black and white cinematic close-up of a charming man in a striped shirt and dark waistcoat sitting at a bar table, smiling and pointing at the camera, beer bottles on the table, soft film grain, shallow depth of field"),
+        TrendingVideo(id: "trend-2", title: "Freestyle au stade", prompt: "A young man in glasses, black t-shirt and jeans does football freestyle tricks on the pitch of a packed stadium at night, a player tries to tackle him, crowd cheering, stadium lights, handheld vertical sports footage"),
+        TrendingVideo(id: "trend-3", title: "Night drive", prompt: "A stylish woman with long black hair and a cream knit top flips her hair while driving a luxury car at night, purple ambient interior lighting, city lights through the windshield, vertical lifestyle video"),
+        TrendingVideo(id: "trend-4", title: "Liasses de billets", prompt: "Low-angle vertical shot of a young man in sunglasses and a black hoodie fanning thick stacks of banknotes toward the camera in a bedroom, ceiling fan above, playful flex energy, smartphone style"),
+        TrendingVideo(id: "trend-5", title: "Voiture miniature", prompt: "A detailed grey sports car miniature sits on a train window ledge, green countryside rushing past outside, the toy car seems to drive alongside the landscape, macro shot, natural daylight, shallow depth of field"),
+        TrendingVideo(id: "trend-6", title: "Agents en costume", prompt: "Two men in black suits, white shirts and dark sunglasses dance with exaggerated expressions in front of a wooden fence with ivy, the front one shouts and grips his head toward the camera, funny viral vertical video"),
+    ]
 }

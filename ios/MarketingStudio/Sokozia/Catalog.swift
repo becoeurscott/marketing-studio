@@ -8,16 +8,17 @@ enum Catalog {
     /// Absolute URL of a file published with the web app (public/…).
     static func media(_ path: String) -> String { SokoziaConfig.siteURL.appendingPathComponent(path).absoluteString }
 
-    // MARK: Creators (16)
+    // MARK: Creators (36)
 
-    private static func c(_ id: String, _ name: String, _ gender: String, _ age: Int, _ style: String, _ languages: [String], _ country: String, _ bio: String, _ featured: Bool, look: String) -> Creator {
+    private static func c(_ id: String, _ name: String, _ gender: String, _ age: Int, _ style: String, _ languages: [String], _ country: String, _ bio: String, _ featured: Bool, hasIntro: Bool = true, look: String) -> Creator {
         Creator(
             id: id, name: name, gender: gender,
             ageRange: age < 25 ? "18–24" : age < 30 ? "25–29" : age < 35 ? "30–34" : "35+",
             age: age, style: style, languages: languages, country: country,
             avatarURL: media("creators/\(id)/portrait.jpg"),
             sheetURL: media("creators/\(id)/sheet.jpg"),
-            introURL: media("creators/\(id)/intro.mp4"),
+            // No intro clip yet: an empty URL shows the portrait instead of a broken player.
+            introURL: hasIntro ? media("creators/\(id)/intro.mp4") : "",
             look: look, bio: bio, featured: featured
         )
     }
@@ -55,6 +56,46 @@ enum Catalog {
           look: "Amina, 40-year-old Cameroonian businesswoman, dark brown skin, confident mature face, short sleek bob haircut, pearl earrings, wearing a tailored emerald-green blazer over a patterned ndop-inspired top"),
         c("creator_zara", "Wanjiru", "Femme", 29, "Luxe & élégance", ["Anglais",  "Swahili"], "Kenya", "Finition éditoriale, révélations lentes et cadrages élégants.", false,
           look: "Wanjiru, 29-year-old Kenyan woman, rich brown skin, long elegant neck, sharp cheekbones, sleek low bun with a middle part, minimal gold jewelry, wearing a champagne satin slip dress with a cream tailored blazer"),
+        c("creator_coumba", "Coumba", "Femme", 26, "Mariage & cérémonies", ["Français", "Wolof"], "Sénégal", "Tenues de cérémonie, baptêmes et mariages : élégance et émotion.", false, hasIntro: false,
+          look: "Coumba, 26-year-old Senegalese woman, dark ebony skin, elegant oval face with defined cheekbones, warm genuine smile, waist-length goddess locs (bohemian locs with soft curly ends) swept over one shoulder with thin gold cuffs, gold drop earrings, wearing a champagne-gold lace tailored midi dress with a high neckline and delicate embroidery, gold strappy heels"),
+        c("creator_nadege", "Nadège", "Femme", 27, "Sport & fitness", ["Français", "Anglais"], "Cameroun", "Routines sport, compléments et tenues de training, énergie à fond.", false, hasIntro: false,
+          look: "Nadège, 27-year-old Cameroonian woman, medium-deep brown skin, athletic toned build, defined jawline, bright confident smile, sleek high braided ponytail (one long braid down her back) with laid edges, small gold stud earrings, wearing a lilac zip-up training jacket with a white stripe, matching lilac leggings and white sneakers"),
+        c("creator_binta", "Binta", "Femme", 25, "Bijoux & accessoires", ["Français", "Peul"], "Guinée", "Bijoux, sacs et accessoires en gros plan, avec beaucoup de style.", false, hasIntro: false,
+          look: "Binta, 25-year-old Guinean woman, deep dark-brown skin, heart-shaped face with high cheekbones, playful closed-lip smile, short tapered natural coils dyed honey blonde, oversized gold hoop earrings and layered gold chain necklaces, bold berry lipstick, wearing a fuchsia-pink satin puff-sleeve blouse tucked into high-waisted black wide-leg trousers, gold strappy sandals"),
+        c("creator_ange", "Ange", "Femme", 23, "Ongles & beauté des mains", ["Français", "Dioula"], "Côte d'Ivoire", "Nail art, soins des mains et unboxings girly, très gros plans.", false, hasIntro: false,
+          look: "Ange, 23-year-old Ivorian woman, warm medium-brown skin, soft oval face, sweet open smile, long silky jet-black straight hair with a middle part falling past her chest, small gold huggie earrings, long almond nails in glossy baby pink, soft glam makeup with glossy pink lips, wearing a baby-pink ribbed knit sweater with a matching baby-pink knit midi skirt and white sneakers"),
+        c("creator_rokhaya", "Rokhaya", "Femme", 31, "Maternité & bébé", ["Français", "Wolof"], "Sénégal", "Produits bébé et maman testés à la maison, conseils de grande sœur.", false, hasIntro: false,
+          look: "Rokhaya, 31-year-old Senegalese woman, dark brown skin, serene round-oval face, gentle motherly smile, traditional Fulani braids with a center braid, long braids decorated with small amber beads, cowrie shells and silver rings, small silver earrings, wearing a flowing full-length white cotton boubou with rich gold embroidery at the neckline, white trousers and gold flat sandals"),
+        c("creator_esther", "Esther", "Femme", 24, "Musique & danse", ["Français", "Lingala"], "RD Congo", "Danse, sons du moment et transitions rythmées, le produit dans le flow.", false, hasIntro: false,
+          look: "Esther, 24-year-old Congolese woman from Kinshasa, rich dark-brown skin, expressive lively face with defined cheekbones, big joyful laughing smile, large voluminous round natural afro with a wide orange satin headband, chunky gold hoop earrings, wearing a bright orange ribbed crop top under an open blue-orange-yellow wax-print shirt, high-waisted wide-leg trousers in the same wax print and white sneakers"),
+        c("creator_laetitia", "Laetitia", "Femme", 29, "Parfums & senteurs", ["Français"], "Gabon", "Parfums, encens et huiles : révélations lentes et ambiance sensuelle.", false, hasIntro: false,
+          look: "Laetitia, 29-year-old Gabonese woman, deep brown skin with cool undertones, elegant long face with sculpted cheekbones, soft sophisticated half-smile, chin-length bouncy curly bob with glossy defined ringlets and a deep side part, pearl drop earrings, thin gold chain, dark berry lipstick and subtle smoky eyes, wearing a burgundy silk slip midi dress with nude strappy heels"),
+        c("creator_sali", "Sali", "Femme", 32, "Déco & intérieur", ["Français", "Mooré"], "Burkina Faso", "Déco, meubles et objets artisanaux mis en scène dans un intérieur chaleureux.", false, hasIntro: false,
+          look: "Sali, 32-year-old Burkinabè woman, dark brown skin, calm oval face with mature features, warm relaxed smile, neat straight-back cornrows woven with thin gold thread gathered into a low chignon bun, small round wooden earrings, a stack of carved wooden bangles on one wrist, natural minimal makeup, wearing a terracotta-orange linen jumpsuit with a wide collar and tan leather flat sandals"),
+        c("creator_maimouna", "Maïmouna", "Femme", 28, "Voyage & découverte", ["Français", "Bambara"], "Mali", "Vlogs de voyage, hôtels, transport et bons plans à travers l'Afrique.", false, hasIntro: false,
+          look: "Maïmouna, 28-year-old Malian woman, medium-dark brown skin, oval face with high cheekbones, adventurous bright smile, two long jumbo feed-in braids falling over both shoulders down to her waist, small gold hoop earrings, light natural makeup, wearing a knee-length belted khaki safari shirt dress with rolled sleeves, a colorful bogolan-pattern scarf loosely tied around her neck and brown leather ankle boots"),
+        c("creator_princesse", "Princesse", "Femme", 22, "Sneakers & streetwear", ["Français", "Éwé"], "Togo", "Sneakers, streetwear et looks du jour, ton cool et direct.", false, hasIntro: false,
+          look: "Princesse, 22-year-old Togolese woman, dark brown skin, defined cheekbones and a pointed chin, cool confident smirk, long passion twists dyed copper-ginger falling past her shoulders with a few gold cuffs, gold nameplate necklace and small gold hoops, wearing an oversized cropped light-wash denim jacket over a white ribbed tank top, beige cargo pants and chunky white sneakers"),
+        c("creator_serge", "Serge", "Homme", 33, "Auto & moto", ["Français", "Anglais"], "Cameroun", "Motos, voitures et accessoires testés sur la route, ton franc.", false, hasIntro: false,
+          look: "Serge, 33-year-old Cameroonian man, dark brown skin, strong square jaw, broad shoulders, confident easy smile, short 360 waves haircut with a sharp line-up, full well-groomed short beard, steel chain-link bracelet, wearing a black leather biker jacket over a charcoal crew-neck t-shirt, dark jeans and black leather boots"),
+        c("creator_abdoulaye", "Abdoulaye", "Homme", 28, "Barbier & soins homme", ["Français", "Wolof"], "Sénégal", "Coupes, barbe, tondeuses et soins pour hommes, démos au salon.", false, hasIntro: false,
+          look: "Abdoulaye, 28-year-old Senegalese man, very dark ebony skin, sculpted cheekbones and a defined jaw, calm charming smile, high-top fade with a crisp razor part and sharp line-up, thin beard outlining the jaw, small silver stud earring, wearing a crisp white short-sleeve barber tunic over a black t-shirt, black trousers and black sneakers"),
+        c("creator_kwame", "Kwame", "Homme", 30, "Mode homme", ["Anglais", "Twi"], "Ghana", "Costumes, chemises et chaussures pour hommes, looks soignés.", false, hasIntro: false,
+          look: "Kwame, 30-year-old Ghanaian man, deep brown skin, elegant long face with high cheekbones, refined subtle smile, short neat twists on top with tapered sides, clean-shaven, thin gold-rim round glasses, wearing a tailored mustard-yellow double-breasted blazer over a black turtleneck with a kente-pattern pocket square, slim black trousers and brown leather loafers"),
+        c("creator_ousmane", "Ousmane", "Homme", 38, "Agriculture & élevage", ["Français", "Peul"], "Guinée", "Semences, engrais, outils et élevage expliqués au champ, sans détour.", false, hasIntro: false,
+          look: "Ousmane, 38-year-old Guinean man, dark brown sun-kissed skin, weathered strong face with smile lines, warm proud grin, short cropped hair, salt-and-pepper short beard, wearing a woven straw hat tilted back, a faded denim work shirt with rolled sleeves over a white undershirt, khaki work trousers and brown rubber boots"),
+        c("creator_patrick", "Patrick", "Homme", 35, "Électroménager", ["Français", "Dioula"], "Côte d'Ivoire", "Frigos, ventilos, mixeurs : démonstrations claires et conseils d'achat.", false, hasIntro: false,
+          look: "Patrick, 35-year-old Ivorian man, medium-dark brown skin, round friendly face, reassuring wide smile, low-cut short hair, neat moustache, silver wristwatch, wearing a light-blue button-down oxford shirt with rolled sleeves under a navy knit vest, beige chinos and brown leather shoes"),
+        c("creator_junior", "Junior", "Homme", 24, "Football", ["Français", "Lingala"], "RD Congo", "Maillots, crampons et soirées match entre potes, toute l'ambiance du foot.", false, hasIntro: false,
+          look: "Junior, 24-year-old Congolese man from Kinshasa, rich dark-brown skin, athletic lean build, defined jaw, big energetic smile, short bleached-blonde curly top with a low fade, clean-shaven, black wrist sweatband, wearing a blue and red striped football jersey without logos, black football shorts, white socks and black football boots"),
+        c("creator_idrissa", "Idrissa", "Homme", 41, "Bricolage & outils", ["Français", "Haoussa"], "Niger", "Outils, quincaillerie et réparations à la maison, gestes précis.", false, hasIntro: false,
+          look: "Idrissa, 41-year-old Nigerien man, dark brown skin, sturdy build, strong mature face, calm capable smile, closely shaved head, thick black moustache and short goatee, carpenter pencil behind his ear, wearing a rust-orange canvas work jacket over a grey henley shirt, dark work trousers and tan work boots"),
+        c("creator_desire", "Désiré", "Homme", 32, "Finance & Mobile Money", ["Français", "Fon"], "Bénin", "Applis, épargne, assurance et Mobile Money expliqués simplement.", false, hasIntro: false,
+          look: "Désiré, 32-year-old Beninese man, medium brown skin, oval face with a defined jaw, trustworthy confident smile, neat short afro tapered on the sides, trimmed short beard, thin black rectangular glasses, wearing a slim-fit navy suit with a white open-collar shirt and no tie, brown leather shoes"),
+        c("creator_hamidou", "Hamidou", "Homme", 29, "Street food & grillades", ["Français", "Mooré"], "Burkina Faso", "Brochettes, grillades et maquis : il goûte, il rit, ça donne faim.", false, hasIntro: false,
+          look: "Hamidou, 29-year-old Burkinabè man, dark brown skin, warm round-oval face, huge hearty laugh, short starter locs under a red bandana headwrap, short scruffy beard, wearing a black chef apron over a white t-shirt with a white kitchen towel over one shoulder, black trousers and black sneakers"),
+        c("creator_thierry", "Thierry", "Homme", 27, "Solaire & électricité", ["Français", "Éwé"], "Togo", "Panneaux solaires, batteries et installations électriques, tests concrets.", false, hasIntro: false,
+          look: "Thierry, 27-year-old Togolese man, medium-dark brown skin, slim build, sharp angular face, curious bright smile, neat coily high-top with a temple fade, light stubble, wearing a high-visibility yellow safety vest over a navy polo shirt, grey cargo work trousers and black safety boots, white hard hat in hand"),
     ]
 
     // MARK: Templates (24)

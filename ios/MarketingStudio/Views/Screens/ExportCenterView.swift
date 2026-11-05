@@ -96,7 +96,7 @@ struct ExportCenterView: View {
                         MSChip(title: q.label, selected: quality == q) { quality = q }
                     }
                 }
-                Text(qualityHint).msCaption()
+                Text(L(qualityHint)).msCaption()
             }
             .padding(.horizontal, MSSpacing.gutter)
 
@@ -165,7 +165,7 @@ struct ExportCenterView: View {
                             HStack(spacing: 12) {
                                 Image(systemName: on ? "checkmark.circle.fill" : "circle").foregroundStyle(on ? MSColor.accent : MSColor.muted)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(c.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
+                                    Text(L(c.name)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
                                     Text("\(c.assetIds.count) visuels · \(c.variations.count) publicités").msCaption()
                                 }
                                 Spacer()
@@ -232,7 +232,7 @@ struct ExportCenterView: View {
             }
             VStack(spacing: 4) {
                 Text("Export terminé").msHeadline(20)
-                Text(a.name).msBody(14).multilineTextAlignment(.center)
+                Text(L(a.name)).msBody(14).multilineTextAlignment(.center)
             }
             MSCard(padding: 12) {
                 HStack(spacing: 12) {

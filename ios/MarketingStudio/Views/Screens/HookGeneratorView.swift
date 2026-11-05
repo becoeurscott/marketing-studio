@@ -166,7 +166,7 @@ struct HookRow: View {
                     .frame(width: 28, height: 28)
                     .background(MSColor.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(hook.text).msBody(15, color: MSColor.text).fixedSize(horizontal: false, vertical: true)
+                    Text(L(hook.text)).msBody(15, color: MSColor.text).fixedSize(horizontal: false, vertical: true)
                     MSBadge(text: hook.category)
                 }
                 Spacer(minLength: 0)

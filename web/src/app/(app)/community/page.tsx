@@ -4,6 +4,8 @@ import { Loader2, RefreshCcw, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { usePageTitle } from "@/components/shell/ShellContext";
+import { HiggsfieldVideoPresetPicker } from "@/components/studio/HiggsfieldExamples";
+import { sokoziaShowcaseVideos } from "@/data/sokozia-showcase";
 import type { CommunityPost } from "@/lib/community";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +36,9 @@ export default function CommunityPage() {
   useEffect(() => { void load(true); }, [load]);
 
   const recreate = (p: CommunityPost) => router.push(`/studio?mode=${p.kind}&prompt=${encodeURIComponent(p.prompt)}`);
+  const usePreset = (preset: { id: string; mode: "video" | "ugc" }) => {
+    router.push(`/studio?mode=${preset.mode}&videoPreset=${encodeURIComponent(preset.id)}`);
+  };
   const unpublish = async (p: CommunityPost) => {
     await fetch(`/api/community/${p.id}`, { method: "DELETE" });
     setPosts((cur) => cur.filter((x) => x.id !== p.id));
@@ -54,6 +59,34 @@ export default function CommunityPage() {
         </div>
       </div>
 
+      {tab !== "image" && (
+        <div className="mb-8 rounded-2xl border border-white/10 bg-white/[0.02] px-3 md:px-5 py-4">
+          <HiggsfieldVideoPresetPicker onSelect={usePreset} />
+        </div>
+      )}
+
+      {tab !== "image" && (
+        <section className="mb-8" aria-label="Vidéos UGC TikTok Higgsfield">
+          <div className="mb-3">
+            <h2 className="text-lg font-semibold text-white">Vidéos UGC TikTok Higgsfield</h2>
+            <p className="mt-1 text-sm text-white/55">Des exemples verticaux pour TikTok, Reels et Shorts. Touchez une vidéo pour l’utiliser dans le Studio.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
+            {sokoziaShowcaseVideos.map((video) => (
+              <article key={video.id} className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+                <button type="button" onClick={() => router.push(`/studio?mode=ugc&prompt=${encodeURIComponent(video.prompt)}`)} className="group block w-full text-left">
+                  <div className="relative aspect-[9/16] bg-black">
+                    <video src={video.source} poster={video.poster} autoPlay muted loop playsInline preload="metadata" className="size-full object-cover" aria-label={video.name} />
+                    <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-1 text-[11px] text-white/85 group-hover:bg-accent group-hover:text-black">Utiliser</span>
+                  </div>
+                  <p className="p-3 text-sm font-medium text-white">{video.name}</p>
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
       {!loading && posts.length === 0 ? (
         <div className="py-24 text-center text-text2">
           <p>Rien de publié pour l’instant.</p>
@@ -66,7 +99,7 @@ export default function CommunityPage() {
               <button type="button" onClick={() => setOpen(p)} className="block w-full">
                 {p.kind === "image"
                   ? <img src={p.url} alt={p.prompt} loading="lazy" className="w-full" />
-                  : <video src={p.url} poster={p.poster ?? undefined} muted loop playsInline preload="metadata" onMouseEnter={(e) => void e.currentTarget.play().catch(() => {})} onMouseLeave={(e) => e.currentTarget.pause()} className="w-full" />}
+                  : <video src={p.url} poster={p.poster ?? undefined} autoPlay muted loop playsInline preload="metadata" className="w-full" />}
               </button>
               <div className="pointer-events-none absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/85 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                 <p className="text-[12px] text-white line-clamp-2">{p.prompt}</p>

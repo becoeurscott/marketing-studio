@@ -11,8 +11,8 @@ struct CreativeSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(MSFont.control(13)).foregroundStyle(MSColor.text2)
-                if let subtitle { Text(subtitle).msCaption() }
+                Text(L(title)).font(MSFont.control(13)).foregroundStyle(MSColor.text2)
+                if let subtitle { Text(L(subtitle)).msCaption() }
             }
             content()
         }
@@ -63,7 +63,7 @@ struct ProductPicker: View {
                                             .padding(5)
                                     }
                                 }
-                            Text(asset.name).msCaption(color: selected ? MSColor.text : MSColor.muted).lineLimit(1).frame(width: 84, alignment: .leading)
+                            Text(L(asset.name)).msCaption(color: selected ? MSColor.text : MSColor.muted).lineLimit(1).frame(width: 84, alignment: .leading)
                         }
                     }
                     .buttonStyle(MSPressStyle())
@@ -87,7 +87,7 @@ struct PlatformPreviewFrame<Content: View>: View {
                 .aspectRatio(ratio, contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
-            Text(label).msCaption()
+            Text(L(label)).msCaption()
         }
     }
 }
@@ -123,7 +123,7 @@ struct ResultAction: View {
         } label: {
             HStack(spacing: 5) {
                 Image(systemName: icon).font(.system(size: 11, weight: .semibold))
-                Text(title).font(MSFont.control(12))
+                Text(L(title)).font(MSFont.control(12))
             }
             .foregroundStyle(tint)
             .padding(.horizontal, 10)
@@ -150,7 +150,7 @@ struct CreativeErrorView: View {
     var body: some View {
         VStack(spacing: 12) {
             ErrorStateView(message: isCredits ? "Crédits insuffisants." : "Une erreur s'est produite.", retry: retry, back: back)
-            Text(error.localizedDescription).msBody(13).multilineTextAlignment(.center).padding(.horizontal, MSSpacing.gutter)
+            Text(L(error.localizedDescription)).msBody(13).multilineTextAlignment(.center).padding(.horizontal, MSSpacing.gutter)
             if isCredits {
                 MSButton(title: "Recharger des crédits", icon: "bolt.fill", style: .secondary, size: .compact, fullWidth: false) {
                     router.present(.buyCredits)
@@ -186,7 +186,7 @@ struct CampaignPickerSheet: View {
                                 HStack(spacing: 12) {
                                     Image(systemName: c.objective.icon).foregroundStyle(MSColor.highlight).frame(width: 30)
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(c.name).font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                                        Text(L(c.name)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
                                         Text("\(c.assetIds.count) ressources · \(c.platforms.map { $0.title }.joined(separator: ", "))").msCaption().lineLimit(1)
                                     }
                                     Spacer()

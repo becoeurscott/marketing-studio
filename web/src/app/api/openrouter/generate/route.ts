@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { accountSummary } from "@/lib/account";
+import { accountSummary, refundJob } from "@/lib/account";
+import { adminClient } from "@/lib/insforge/admin";
 import { guard } from "@/lib/higgsfield/guard";
 import { getSessionUser } from "@/lib/insforge/server";
 import { generateImage, isOpenRouterConfigured, OPENROUTER_IMAGE_MODELS } from "@/lib/openrouter";
@@ -28,15 +29,24 @@ export async function POST(request: Request) {
   const count = Math.min(Math.max(body.n ?? 1, 1), 4);
   const totalCredits = CREDITS_PER_IMAGE * count;
 
-  const account = await accountSummary(user.id);
-  if (account.credits < totalCredits) {
-    return NextResponse.json({ error: "Crédits insuffisants.", needed: totalCredits, balance: account.credits }, { status: 402 });
+  const account = await accountSummary(user.id); // make sure the account exists
+  const db = adminClient().database;
+  const { data: jobId, error: debitError } = await db.rpc("ms_start_job", {
+    p_user: user.id, p_kind: "image", p_model: model.id, p_cost: totalCredits, p_description: `OpenRouter — ${model.label}`.slice(0, 200),
+  });
+  if (debitError) {
+    if (/insufficient_credits/.test(debitError.message)) {
+      return NextResponse.json({ error: "Crédits insuffisants.", needed: totalCredits, balance: account.credits }, { status: 402 });
+    }
+    return NextResponse.json({ error: "Débit des crédits impossible." }, { status: 500 });
   }
 
   try {
     const results = await generateImage({ model: body.model, prompt: body.prompt, n: count, size: body.size });
+    await db.from("ms_jobs").update({ status: "completed", finalized: true, updated_at: new Date().toISOString() }).eq("id", jobId);
     return NextResponse.json({ images: results, credits: totalCredits });
   } catch (error) {
+    await refundJob(jobId as string, "failed");
     const msg = error instanceof Error ? error.message : "Erreur de génération.";
     return NextResponse.json({ error: msg }, { status: 500 });
   }

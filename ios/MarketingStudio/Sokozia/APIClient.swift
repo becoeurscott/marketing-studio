@@ -18,8 +18,43 @@ struct GenerationRequest: Encodable {
     /// Video only: reference images (creator sheet, product) for reference-to-video.
     var references: [String]?
     /// Image only: influencer photo with one of our creators (the server builds the director prompt).
+    var presetId: String? = nil
     var influencer: Influencer?
     struct Influencer: Encodable { var creatorId: String; var shot: String?; var variation: Int? }
+}
+
+struct AgentRequest: Encodable {
+    struct Message: Encodable { var role: String; var content: String }
+    struct Item: Encodable { var id: String; var name: String; var hint: String? }
+    var messages: [Message]
+    var products: [Item]
+    var creators: [Item]
+    var styles: [Item]
+    var ugcFormats: [Item]
+    var credits: Int
+}
+
+struct AgentAction: Decodable, Hashable {
+    var type: String
+    var productId: String?
+    var creatorId: String?
+    var styleId: String?
+    var ugcFormatId: String?
+    var script: String?
+    var prompt: String?
+    var durationSec: Int?
+    var summary: String
+}
+
+struct AgentResponse: Decodable {
+    var reply: String
+    var action: AgentAction?
+}
+
+struct MarketingPreset: Decodable, Identifiable, Hashable {
+    let id: String
+    let name: String
+    let preview: String?
 }
 
 struct GenerationJob: Decodable {
@@ -42,6 +77,7 @@ struct AccountSummary: Decodable {
     }
     var credits: Int
     var plan: String
+    var onboardingDone: Bool?
     var ledger: [Entry]
 }
 
@@ -78,6 +114,12 @@ enum APIClient {
         try await call("api/account")
     }
 
+    private struct OKReply: Decodable { var ok: Bool? }
+
+    static func completeOnboarding() async throws {
+        let _: OKReply = try await call("api/account/onboarding", method: "POST")
+    }
+
     // MARK: Billing (Stripe monthly passes)
 
     struct Subscription: Decodable { var plan: String?; var status: String; var current_period_end: String? }
@@ -104,6 +146,17 @@ enum APIClient {
         let r: URLReply = try await call("api/billing/portal", method: "POST", json: Empty())
         guard let u = URL(string: r.url) else { throw APIError.failed("Lien invalide.") }
         return u
+    }
+
+    private struct PresetCatalog: Decodable { let items: [MarketingPreset] }
+
+    static func agent(_ req: AgentRequest) async throws -> AgentResponse {
+        try await call("api/agent", method: "POST", json: req)
+    }
+
+    static func marketingPresets() async throws -> [MarketingPreset] {
+        let catalog: PresetCatalog = try await call("api/hf/presets")
+        return catalog.items
     }
 
     // MARK: Generation

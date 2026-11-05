@@ -38,6 +38,7 @@ final class AuthService: NSObject, ObservableObject {
     @Published private(set) var user: SessionUser?
     /// True until the stored session has been checked at launch.
     @Published private(set) var restoring = true
+    private var appleDelegate: AppleSignInDelegate?
 
     private var accessToken: String?
     private var refreshToken: String?
@@ -116,22 +117,65 @@ final class AuthService: NSObject, ObservableObject {
     private var webSession: ASWebAuthenticationSession?
 
     func signInWithGoogle() async throws {
+        try await signInWithOAuth(
+            provider: "google",
+            prompt: "select_account",
+            unavailableMessage: "Connexion Google indisponible."
+        )
+    }
+
+    // MARK: Apple
+
+    /// Native Sign in with Apple sheet; the Apple identity token is exchanged with InsForge.
+    func signInWithApple() async throws {
+        let rawNonce = Self.randomVerifier()
+        let hashed = SHA256.hash(data: Data(rawNonce.utf8)).map { String(format: "%02x", $0) }.joined()
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.fullName, .email]
+        request.nonce = hashed
+
+        let credential: ASAuthorizationAppleIDCredential = try await withCheckedThrowingContinuation { cont in
+            let delegate = AppleSignInDelegate(cont)
+            let controller = ASAuthorizationController(authorizationRequests: [request])
+            controller.delegate = delegate
+            controller.presentationContextProvider = self
+            appleDelegate = delegate
+            controller.performRequests()
+        }
+        appleDelegate = nil
+        guard let tokenData = credential.identityToken, let token = String(data: tokenData, encoding: .utf8) else {
+            throw AuthError.message("Connexion Apple interrompue. Réessayez.")
+        }
+        let r: TokenResponse = try await post("/api/auth/id-token?client_type=mobile", ["provider": "apple", "token": token, "nonce": rawNonce])
+        save(r)
+        // Apple only shares the name on the first sign-in.
+        let name = [credential.fullName?.givenName, credential.fullName?.familyName].compactMap { $0 }.joined(separator: " ")
+        if !name.isEmpty, var u = user, u.name.isEmpty {
+            u.name = name
+            user = u
+        }
+    }
+
+    // MARK: OAuth
+
+    private func signInWithOAuth(provider: String, prompt: String?, unavailableMessage: String) async throws {
         let verifier = Self.randomVerifier()
         let challenge = Data(SHA256.hash(data: Data(verifier.utf8))).base64URL
-        var c = URLComponents(url: SokoziaConfig.authURL.appendingPathComponent("api/auth/oauth/google"), resolvingAgainstBaseURL: false)!
-        c.queryItems = [
+        var queryItems = [
             URLQueryItem(name: "redirect_uri", value: SokoziaConfig.oauthReturnURL),
             URLQueryItem(name: "code_challenge", value: challenge),
-            URLQueryItem(name: "prompt", value: "select_account"),
         ]
+        if let prompt { queryItems.append(URLQueryItem(name: "prompt", value: prompt)) }
+        var c = URLComponents(url: SokoziaConfig.authURL.appendingPathComponent("api/auth/oauth/\(provider)"), resolvingAgainstBaseURL: false)!
+        c.queryItems = queryItems
         let start: AuthURLResponse = try await send(URLRequest(url: c.url!))
-        guard let authURL = URL(string: start.authUrl) else { throw AuthError.message("Connexion Google indisponible.") }
+        guard let authURL = URL(string: start.authUrl) else { throw AuthError.message(unavailableMessage) }
 
         let callback: URL = try await withCheckedThrowingContinuation { cont in
             let session = ASWebAuthenticationSession(url: authURL, callbackURLScheme: SokoziaConfig.callbackScheme) { url, error in
                 if let url { cont.resume(returning: url) }
                 else if let e = error as? ASWebAuthenticationSessionError, e.code == .canceledLogin { cont.resume(throwing: AuthError.cancelled) }
-                else { cont.resume(throwing: AuthError.message("Connexion Google interrompue. Réessayez.")) }
+                else { cont.resume(throwing: AuthError.message("Connexion \(provider == "apple" ? "Apple" : "Google") interrompue. Réessayez.")) }
             }
             session.presentationContextProvider = self
             session.prefersEphemeralWebBrowserSession = false
@@ -141,7 +185,7 @@ final class AuthService: NSObject, ObservableObject {
         webSession = nil
         let items = URLComponents(url: callback, resolvingAgainstBaseURL: false)?.queryItems ?? []
         guard let code = items.first(where: { $0.name == "insforge_code" })?.value else {
-            throw AuthError.message("Connexion Google refusée. Réessayez.")
+            throw AuthError.message("Connexion refusée. Réessayez.")
         }
         let r: TokenResponse = try await post("/api/auth/oauth/exchange?client_type=mobile", ["code": code, "code_verifier": verifier])
         save(r)
@@ -267,6 +311,7 @@ final class AuthService: NSObject, ObservableObject {
         var req = URLRequest(url: URL(string: path, relativeTo: SokoziaConfig.authURL)!)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(SokoziaConfig.anonKey)", forHTTPHeaderField: "Authorization")
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
         req.timeoutInterval = 30
         return req
@@ -301,6 +346,9 @@ final class AuthService: NSObject, ObservableObject {
     /// Same wording as the web app.
     static func french(_ message: String, status: Int) -> String {
         let m = message.lowercased()
+        if m.contains("oauth") && (m.contains("config") || m.contains("configured")) {
+            return "La connexion avec ce fournisseur n’est pas encore configurée. Réessayez plus tard."
+        }
         if m.contains("already") { return "Un compte existe déjà avec cet e-mail. Connectez-vous." }
         if m.contains("verif") { return "Votre e-mail n’est pas encore vérifié. Entrez le code reçu." }
         if m.contains("invalid") || m.contains("credential") || m.contains("password") { return "E-mail ou mot de passe incorrect." }
@@ -333,6 +381,31 @@ extension AuthService: ASWebAuthenticationPresentationContextProviding {
         MainActor.assumeIsolated {
             UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.keyWindow }.first ?? ASPresentationAnchor()
         }
+    }
+}
+
+extension AuthService: ASAuthorizationControllerPresentationContextProviding {
+    nonisolated func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        MainActor.assumeIsolated {
+            UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.keyWindow }.first ?? ASPresentationAnchor()
+        }
+    }
+}
+
+final class AppleSignInDelegate: NSObject, ASAuthorizationControllerDelegate {
+    private var cont: CheckedContinuation<ASAuthorizationAppleIDCredential, Error>?
+    init(_ cont: CheckedContinuation<ASAuthorizationAppleIDCredential, Error>) { self.cont = cont }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        if let c = authorization.credential as? ASAuthorizationAppleIDCredential { cont?.resume(returning: c) }
+        else { cont?.resume(throwing: AuthError.message("Connexion Apple interrompue. Réessayez.")) }
+        cont = nil
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        if (error as? ASAuthorizationError)?.code == .canceled { cont?.resume(throwing: AuthError.cancelled) }
+        else { cont?.resume(throwing: AuthError.message("Connexion Apple indisponible. Réessayez.")) }
+        cont = nil
     }
 }
 

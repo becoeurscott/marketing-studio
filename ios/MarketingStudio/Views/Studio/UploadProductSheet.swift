@@ -97,7 +97,7 @@ struct UploadProductSheet: View {
                                         .clipShape(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
                                         .overlay(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous).strokeBorder(MSColor.border, lineWidth: 1))
                                         .overlay(alignment: .bottomLeading) {
-                                            Text(a.name).font(MSFont.caption(10)).foregroundStyle(.white).lineLimit(1)
+                                            Text(L(a.name)).font(MSFont.caption(10)).foregroundStyle(.white).lineLimit(1)
                                                 .padding(.horizontal, 6).padding(.vertical, 3)
                                                 .background(.black.opacity(0.55), in: Capsule()).padding(5)
                                         }

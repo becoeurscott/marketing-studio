@@ -4,6 +4,8 @@ import SwiftUI
 struct VideoGeneratorView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var router: Router
+    /// Pre-fills the concept, e.g. when recreating a trending video from Home.
+    var initialPrompt: String? = nil
     @StateObject private var session = VideoGenSession()
     @State private var showUpload = false
 
@@ -53,6 +55,9 @@ struct VideoGeneratorView: View {
         .navigationTitle("Générateur de vidéos")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { MSTopBarItems() }
+        .onAppear {
+            if let initialPrompt, !initialPrompt.isEmpty, session.concept.isEmpty { session.concept = initialPrompt }
+        }
         .msSheet(isPresented: $showUpload, detents: [.large]) {
             UploadProductSheet { asset in withAnimation(MSAnimation.snappy) { session.sourceAsset = asset } }
         }
@@ -80,7 +85,7 @@ struct VideoGeneratorView: View {
         } label: {
             HStack(spacing: 5) {
                 Image(systemName: icon).font(.system(size: 12, weight: .semibold))
-                Text(title).font(MSFont.control(12))
+                Text(L(title)).font(MSFont.control(12))
             }
             .foregroundStyle(tint ?? MSColor.text)
             .padding(.horizontal, 11)

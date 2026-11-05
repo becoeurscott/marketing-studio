@@ -16,7 +16,7 @@ struct PricingView: View {
                     ForEach(Market.monthlyPlans) { p in
                         HStack {
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(p.name).msHeadline(16)
+                                Text(L(p.name)).msHeadline(16)
                                 Text("\(p.credits.formatted(.number.locale(Locale(identifier: "fr_FR")))) crédits / mois · \(p.pitch)").msCaption()
                             }
                             Spacer()
@@ -81,8 +81,8 @@ struct PlanCard: View {
                         .frame(width: 34, height: 34)
                         .background((recommended ? MSColor.accent.opacity(0.14) : MSColor.elevated), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(plan.title).msHeadline(18)
-                        Text(plan.tagline).msCaption()
+                        Text(L(plan.title)).msHeadline(18)
+                        Text(L(plan.tagline)).msCaption()
                     }
                 }
                 Spacer()
@@ -100,7 +100,7 @@ struct PlanCard: View {
                 ForEach(plan.features, id: \.self) { f in
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(recommended ? MSColor.highlight : MSColor.success)
-                        Text(f).msBody(14, color: MSColor.text)
+                        Text(L(f)).msBody(14, color: MSColor.text)
                     }
                 }
             }
@@ -157,8 +157,8 @@ struct UpgradeSheet: View {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(selected.title).msHeadline(20)
-                            Text(selected.tagline).msCaption()
+                            Text(L(selected.title)).msHeadline(20)
+                            Text(L(selected.tagline)).msCaption()
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 0) {
@@ -207,7 +207,7 @@ struct UpgradeSheet: View {
                 ForEach(selected.features.prefix(3), id: \.self) { f in
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.circle.fill").foregroundStyle(MSColor.success).font(.system(size: 14))
-                        Text(f).msBody(14, color: MSColor.text)
+                        Text(L(f)).msBody(14, color: MSColor.text)
                     }
                 }
             }
@@ -226,9 +226,9 @@ struct UpgradeSheet: View {
 
     private func row(_ label: String, _ value: String) -> some View {
         HStack {
-            Text(label).msBody(14)
+            Text(L(label)).msBody(14)
             Spacer()
-            Text(value).font(MSFont.control(14)).foregroundStyle(MSColor.text)
+            Text(L(value)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
         }
     }
 }
@@ -260,14 +260,14 @@ struct PaywallSheet: View {
                 MSCard {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text(suggested.title).msHeadline(16)
+                            Text(L(suggested.title)).msHeadline(16)
                             Spacer()
                             Text("\(store.price(suggested.monthlyPriceXof))/mois").font(MSFont.control(14)).foregroundStyle(MSColor.text)
                         }
                         ForEach(suggested.features.prefix(3), id: \.self) { f in
                             HStack(spacing: 8) {
                                 Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(MSColor.success)
-                                Text(f).msBody(13)
+                                Text(L(f)).msBody(13)
                             }
                         }
                     }

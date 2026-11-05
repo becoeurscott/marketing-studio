@@ -83,7 +83,7 @@ struct ProjectCard: View {
                         }
                     }
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(project.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(2).multilineTextAlignment(.leading)
+                    Text(L(project.name)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(2).multilineTextAlignment(.leading)
                     Text("\(store.assets(in: project.id).count) visuels").msCaption()
                     Text("Créé le \(project.createdAt.shortString)").msCaption()
                 }

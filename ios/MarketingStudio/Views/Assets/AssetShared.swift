@@ -13,7 +13,9 @@ struct AssetCell: View {
     var body: some View {
         Button(action: action) {
             Group {
-                if asset.imageURL.isEmpty {
+                if asset.kind == .video, let videoURL = asset.videoURL, !videoURL.isEmpty {
+                    LoopingVideoView(url: videoURL, poster: asset.imageURL.isEmpty ? nil : asset.imageURL, muted: true)
+                } else if asset.imageURL.isEmpty {
                     // Video without a poster (text-to-video).
                     RoundedRectangle(cornerRadius: 12, style: .continuous).fill(MSColor.elevated)
                         .overlay(Image(systemName: "play.rectangle.fill").font(.system(size: 26)).foregroundStyle(MSColor.highlight))
@@ -159,7 +161,7 @@ struct MoveAssetSheet: View {
                     RoundedRectangle(cornerRadius: 8, style: .continuous).fill(MSColor.elevated).frame(width: 40, height: 40)
                         .overlay(Image(systemName: "tray").foregroundStyle(MSColor.muted).font(.system(size: 13)))
                 }
-                Text(name).font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                Text(L(name)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
                 Spacer()
                 if current { Image(systemName: "checkmark").font(.system(size: 12, weight: .bold)).foregroundStyle(MSColor.highlight) }
             }
@@ -197,7 +199,7 @@ struct UseInCampaignSheet: View {
                                 Image(systemName: c.objective.icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.text2)
                                     .frame(width: 36, height: 36).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(c.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
+                                    Text(L(c.name)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
                                     Text("\(c.assetIds.count) ressources").msCaption()
                                 }
                                 Spacer()

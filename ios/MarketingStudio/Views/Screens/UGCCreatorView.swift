@@ -112,7 +112,7 @@ struct UGCCreatorView: View {
             if let product {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill").foregroundStyle(MSColor.success)
-                    Text(product.name).font(MSFont.control(13)).foregroundStyle(MSColor.text).lineLimit(1)
+                    Text(L(product.name)).font(MSFont.control(13)).foregroundStyle(MSColor.text).lineLimit(1)
                     Spacer()
                     Button {
                         MSHaptic.tap()
@@ -313,7 +313,7 @@ struct CreatorPickCard: View {
                             Image(systemName: "checkmark.circle.fill").font(.system(size: 16, weight: .bold)).foregroundStyle(.white, MSColor.accent).padding(6)
                         }
                     }
-                Text(creator.name).font(MSFont.control(13)).foregroundStyle(selected ? MSColor.text : MSColor.text2)
+                Text(L(creator.name)).font(MSFont.control(13)).foregroundStyle(selected ? MSColor.text : MSColor.text2)
                 Text("\(creator.age) ans · \(creator.style)").msCaption().lineLimit(1)
             }
             .frame(width: 96, alignment: .leading)

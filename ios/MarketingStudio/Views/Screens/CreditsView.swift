@@ -128,8 +128,8 @@ struct CreditsView: View {
             Image(systemName: icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.text2)
                 .frame(width: 30, height: 30).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                Text(subtitle).msCaption()
+                Text(L(title)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                Text(L(subtitle)).msCaption()
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
@@ -137,7 +137,7 @@ struct CreditsView: View {
                     Image(systemName: "bolt.fill").font(.system(size: 9, weight: .bold)).foregroundStyle(MSColor.highlight)
                     Text("\(cost)").font(.system(size: 15, weight: .semibold, design: .rounded)).foregroundStyle(MSColor.text)
                 }
-                Text(each).msCaption()
+                Text(L(each)).msCaption()
             }
         }
         .padding(.horizontal, 14)
@@ -157,8 +157,8 @@ struct TransactionRow: View {
                 .frame(width: 30, height: 30)
                 .background((isSpend ? MSColor.elevated : MSColor.success.opacity(0.12)), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             VStack(alignment: .leading, spacing: 2) {
-                Text(tx.reason).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
-                Text(tx.createdAt.relativeString).msCaption()
+                Text(L(tx.reason)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
+                Text(L(tx.createdAt.relativeString)).msCaption()
             }
             Spacer()
             Text((isSpend ? "" : "+") + tx.amount.formatted(.number.locale(Locale(identifier: "fr_FR"))))
@@ -198,12 +198,12 @@ struct WebTopUpCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 Image(systemName: "iphone.and.arrow.forward").font(.system(size: 18, weight: .semibold)).foregroundStyle(MSColor.highlight)
-                Text(title).msHeadline(16)
+                Text(L(title)).msHeadline(16)
             }
-            Text(subtitle).msBody(14)
+            Text(L(subtitle)).msBody(14)
             HStack(spacing: 8) {
                 ForEach(["Wave", "Orange Money", "MTN MoMo", "Carte"], id: \.self) { m in
-                    Text(m).font(MSFont.caption(11)).foregroundStyle(MSColor.text)
+                    Text(L(m)).font(MSFont.caption(11)).foregroundStyle(MSColor.text)
                         .padding(.horizontal, 8).padding(.vertical, 4).background(MSColor.elevated, in: Capsule())
                 }
             }

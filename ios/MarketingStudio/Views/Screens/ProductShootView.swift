@@ -104,7 +104,7 @@ struct ProductShootView: View {
                         HStack(spacing: 14) {
                             RemoteImage(url: product.imageURL, cornerRadius: 12).frame(width: 84, height: 84)
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(product.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
+                                Text(L(product.name)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
                                 Text("\(product.width) × \(product.height) · \(product.tags.joined(separator: ", "))").msCaption().lineLimit(1)
                                 Text("Touchez pour modifier").msCaption(color: MSColor.highlight)
                             }
@@ -241,8 +241,8 @@ struct ProductShootView: View {
                 .frame(width: 104, height: 128)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(sel ? MSColor.accent : MSColor.border, lineWidth: sel ? 2 : 1))
-                Text(name).font(MSFont.caption(12)).foregroundStyle(sel ? MSColor.text : MSColor.text2).lineLimit(1)
-                Text(product).msCaption(color: MSColor.muted).lineLimit(1)
+                Text(L(name)).font(MSFont.caption(12)).foregroundStyle(sel ? MSColor.text : MSColor.text2).lineLimit(1)
+                Text(L(product)).msCaption(color: MSColor.muted).lineLimit(1)
             }
             .frame(width: 104, alignment: .leading)
         }
@@ -360,7 +360,7 @@ struct ProductUploadSheet: View {
                                     Button { finish(a) } label: {
                                         VStack(alignment: .leading, spacing: 6) {
                                             RemoteImage(url: a.imageURL, cornerRadius: 10).frame(width: 84, height: 84)
-                                            Text(a.name).msCaption(color: MSColor.text2).lineLimit(1).frame(width: 84, alignment: .leading)
+                                            Text(L(a.name)).msCaption(color: MSColor.text2).lineLimit(1).frame(width: 84, alignment: .leading)
                                         }
                                     }
                                     .buttonStyle(MSPressStyle())
@@ -382,7 +382,7 @@ struct ProductUploadSheet: View {
                                         RemoteImage(url: url, cornerRadius: 10)
                                             .aspectRatio(1, contentMode: .fit)
                                             .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(pickedURL == url ? MSColor.accent : .clear, lineWidth: 2))
-                                        Text(s.name).msCaption(color: pickedURL == url ? MSColor.text : MSColor.muted).lineLimit(1)
+                                        Text(L(s.name)).msCaption(color: pickedURL == url ? MSColor.text : MSColor.muted).lineLimit(1)
                                     }
                                 }
                                 .buttonStyle(MSPressStyle())

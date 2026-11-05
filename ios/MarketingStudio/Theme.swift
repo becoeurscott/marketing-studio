@@ -24,9 +24,22 @@ enum MSColor {
     static let border = Color.white.opacity(0.08)
     static let borderStrong = Color.white.opacity(0.14)
 
-    static let accent = Color(hex: 0xD1FE17)
-    static let accent2 = Color(hex: 0xA6CF0C)
-    static let highlight = Color(hex: 0xD1FE17)
+    nonisolated(unsafe) static var selectedAccent: String = "lime"
+    static var accent: Color {
+        switch selectedAccent {
+        case "blue": return Color(hex: 0x70C7FF)
+        case "pink": return Color(hex: 0xFF91C1)
+        default: return Color(hex: 0xD1FE17)
+        }
+    }
+    static var accent2: Color {
+        switch selectedAccent {
+        case "blue": return Color(hex: 0x3F9BD9)
+        case "pink": return Color(hex: 0xD85D96)
+        default: return Color(hex: 0xA6CF0C)
+        }
+    }
+    static var highlight: Color { accent }
     static let green = Color(hex: 0xA6CF0C)
     static let onAccent = Color(hex: 0x0A0A0A)
 
@@ -38,11 +51,11 @@ enum MSColor {
     static let text2 = Color(hex: 0xA1A1AA)
     static let muted = Color(hex: 0x71717A)
 
-    static let accentGradient = LinearGradient(
+    static var accentGradient: LinearGradient { LinearGradient(
         colors: [accent, accent2],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
-    )
+    ) }
 }
 
 // MARK: - Spacing / Radius
@@ -178,3 +191,20 @@ enum MSHaptic {
     static func success() { if enabled { UINotificationFeedbackGenerator().notificationOccurred(.success) } }
     static func warning() { if enabled { UINotificationFeedbackGenerator().notificationOccurred(.warning) } }
 }
+
+/// Marketing Studio brand mark.
+struct MSBrandMark: View {
+    var size: CGFloat = 32
+
+    var body: some View {
+        Image("BrandMark")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
+    }
+}
+
+/// Translates app text held in a String (French source → phone language). Unknown text, such as
+/// user content, comes back unchanged.
+func L(_ s: String) -> String { Bundle.main.localizedString(forKey: s, value: s, table: "Localizable") }

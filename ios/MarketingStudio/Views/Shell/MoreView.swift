@@ -69,7 +69,7 @@ struct MoreView: View {
                                             .foregroundStyle(MSColor.text2)
                                             .frame(width: 30, height: 30)
                                             .background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                                        Text(row.title).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                                        Text(L(row.title)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
                                         Spacer()
                                         if let badge = row.badge { MSBadge(text: badge, tone: .neutral) }
                                         Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(MSColor.muted)
@@ -102,8 +102,8 @@ struct MoreView: View {
             HStack(spacing: 12) {
                 AvatarView(url: store.user.avatarURL, name: store.user.name, size: 48)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(store.user.name).msHeadline(16)
-                    Text(store.user.company).msCaption()
+                    Text(L(store.user.name)).msHeadline(16)
+                    Text(L(store.user.company)).msCaption()
                 }
                 Spacer()
                 MSBadge(text: store.plan.title, tone: .accent)

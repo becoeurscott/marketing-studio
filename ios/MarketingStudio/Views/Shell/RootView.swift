@@ -7,11 +7,19 @@ struct RootView: View {
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var auth: AuthService
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage("hasSeenOpening") private var hasSeenOpening = false
     @State private var splash = true
     @State private var opening = true
+    @State private var signInBurst = false
 
     /// Loading screen while the account loads, then the home screen eases in.
     private func playOpening() async {
+        if store.preferences.reduceMotion {
+            await API.refreshAccount(store)
+            splash = false
+            opening = false
+            return
+        }
         splash = true
         opening = true
         let started = Date()
@@ -25,7 +33,10 @@ struct RootView: View {
     var body: some View {
         ZStack {
             MSColor.bg.ignoresSafeArea()
-            if auth.restoring {
+            if !hasSeenOpening {
+                WelcomeOpening { withAnimation(MSAnimation.slow) { hasSeenOpening = true } }
+                    .transition(.opacity)
+            } else if auth.restoring {
                 LaunchSplash()
             } else if auth.user == nil || store.accountId != auth.user?.id {
                 AuthView()
@@ -46,10 +57,24 @@ struct RootView: View {
                     .transition(.opacity)
             }
         }
+        .tint(MSColor.accent)
+        .transaction { transaction in
+            if store.preferences.reduceMotion {
+                transaction.animation = nil
+                transaction.disablesAnimations = true
+            }
+        }
         .animation(MSAnimation.slow, value: store.onboardingDone)
         .animation(MSAnimation.slow, value: auth.user?.id)
         .task { await auth.restore() }
-        .onChange(of: auth.user, initial: true) { _, user in
+        .onChange(of: auth.user, initial: true) { old, user in
+            if old == nil, user != nil, !auth.restoring, !store.preferences.reduceMotion {
+                withAnimation(.easeOut(duration: 0.2)) { signInBurst = true }
+                Task {
+                    try? await Task.sleep(for: .seconds(2.2))
+                    withAnimation(.easeInOut(duration: 0.45)) { signInBurst = false }
+                }
+            }
             if let user {
                 if store.accountId != user.id { store.load(for: user) }
                 Task { await API.refreshAccount(store) }
@@ -61,6 +86,13 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active, auth.isSignedIn { Task { await API.refreshAccount(store) } }
             if phase == .background { store.saveNow() }
+        }
+        .overlay {
+            if signInBurst {
+                SignInLogoAnimation(name: auth.user?.name ?? "")
+                    .transition(.opacity)
+                    .zIndex(10)
+            }
         }
         .toastOverlay()
         .sheet(item: $router.presentedSheet) { sheet in
@@ -83,13 +115,9 @@ struct LaunchSplash: View {
             RadialGradient(colors: [MSColor.accent.opacity(pulse ? 0.22 : 0.10), .clear], center: .center, startRadius: 10, endRadius: 260)
                 .ignoresSafeArea()
             VStack(spacing: 18) {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(MSColor.accentGradient)
-                    .frame(width: 84, height: 84)
-                    .overlay(Text("M").font(.system(size: 46, weight: .heavy, design: .rounded)).foregroundStyle(MSColor.onAccent))
+                MSBrandMark(size: 88)
                     .shadow(color: MSColor.accent.opacity(0.45), radius: pulse ? 30 : 14)
                     .scaleEffect(pulse ? 1.04 : 0.96)
-                Text("Marketing Studio").font(.system(size: 22, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
                 Capsule().fill(MSColor.elevated).frame(width: 120, height: 4)
                     .overlay(alignment: .leading) {
                         Capsule().fill(MSColor.accent).frame(width: 40, height: 4).offset(x: sweep ? 80 : 0)
@@ -100,6 +128,69 @@ struct LaunchSplash: View {
         .onAppear {
             withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) { pulse = true }
             withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { sweep = true }
+        }
+    }
+}
+
+
+/// Played once right after a fresh sign-in: the logo pops in, light rings ripple out, a check mark
+/// lands on it and the user is greeted before the app appears.
+struct SignInLogoAnimation: View {
+    var name: String
+    @State private var logoIn = false
+    @State private var ripple = false
+    @State private var check = false
+    @State private var textIn = false
+
+    private var firstName: String { name.split(separator: " ").first.map(String.init) ?? "" }
+
+    var body: some View {
+        ZStack {
+            MSColor.bg.ignoresSafeArea()
+            RadialGradient(colors: [MSColor.accent.opacity(logoIn ? 0.25 : 0), .clear], center: .center, startRadius: 10, endRadius: 320)
+                .ignoresSafeArea()
+            VStack(spacing: 26) {
+                ZStack {
+                    ForEach(0..<3, id: \.self) { i in
+                        Circle()
+                            .strokeBorder(MSColor.accent.opacity(0.5), lineWidth: 2)
+                            .frame(width: 110, height: 110)
+                            .scaleEffect(ripple ? 2.6 + CGFloat(i) * 0.5 : 0.8)
+                            .opacity(ripple ? 0 : 0.8)
+                            .animation(.easeOut(duration: 1.4).delay(0.25 + Double(i) * 0.18), value: ripple)
+                    }
+                    MSBrandMark(size: 96)
+                        .shadow(color: MSColor.accent.opacity(0.6), radius: logoIn ? 32 : 0)
+                        .scaleEffect(logoIn ? 1 : 0.2)
+                        .rotationEffect(.degrees(logoIn ? 0 : -90))
+                        .opacity(logoIn ? 1 : 0)
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundStyle(MSColor.onAccent, MSColor.accent)
+                        .background(Circle().fill(MSColor.bg).padding(2))
+                        .offset(x: 44, y: 40)
+                        .scaleEffect(check ? 1 : 0.01)
+                        .opacity(check ? 1 : 0)
+                }
+                .frame(height: 160)
+                VStack(spacing: 6) {
+                    Text(firstName.isEmpty ? "Bienvenue !" : "Bienvenue, \(firstName) !")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundStyle(MSColor.text)
+                    Text("Votre studio est prêt.")
+                        .font(MSFont.body(15))
+                        .foregroundStyle(MSColor.text2)
+                }
+                .opacity(textIn ? 1 : 0)
+                .offset(y: textIn ? 0 : 14)
+            }
+        }
+        .onAppear {
+            MSHaptic.success()
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.62)) { logoIn = true }
+            ripple = true
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.55).delay(0.7)) { check = true }
+            withAnimation(.easeOut(duration: 0.5).delay(0.9)) { textIn = true }
         }
     }
 }

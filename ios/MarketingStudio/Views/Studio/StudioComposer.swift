@@ -1,5 +1,7 @@
 import SwiftUI
 import PhotosUI
+import AVKit
+import Combine
 
 /// Floating Studio composer (SPEC §9 generation bar, redesigned):
 /// [media slots] / [inline prompt with product + creator chips] / [model][duration][ratio][more] ... [Generate].
@@ -18,6 +20,9 @@ struct StudioComposer: View {
     var onMore: () -> Void
     var onGenerate: () -> Void
 
+    @State private var examplePicker = false
+    @State private var presetPicker = false
+    @State private var ugcPresetPicker = false
     @FocusState private var promptFocused: Bool
 
     // MARK: Derived
@@ -84,6 +89,28 @@ struct StudioComposer: View {
         VStack(alignment: .leading, spacing: 14) {
             slots
             promptArea
+            if mode == .ugc {
+                Button { promptFocused = false; ugcPresetPicker = true } label: {
+                    Label(ugc.preset.map { "Format : \($0.title)" } ?? "Choisir un format UGC", systemImage: ugc.preset?.icon ?? "rectangle.stack.badge.play")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .disabled(busy)
+            }
+            if mode == .video || mode == .ugc {
+                Button { promptFocused = false; examplePicker = true } label: {
+                    Label("Exemples vidéo Higgsfield", systemImage: "play.rectangle")
+                        .font(.subheadline)
+                }
+            }
+            if mode == .image && image.supportsPresets {
+                Button { promptFocused = false; presetPicker = true } label: {
+                    Label(image.activePreset?.name ?? "Modèles Marketing Studio", systemImage: "rectangle.grid.2x2")
+                        .font(.subheadline)
+                }
+                .disabled(image.productAsset == nil || busy)
+                Text(image.productAsset == nil ? "Ajoutez une photo produit pour choisir une mise en page." : image.activePreset == nil ? "Choisissez une mise en page pour votre produit." : "Supplément de 10 % inclus dans les crédits affichés.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             controls
         }
         .padding(16)
@@ -94,6 +121,11 @@ struct StudioComposer: View {
         .padding(.bottom, 8)
         .animation(MSAnimation.snappy, value: promptFocused)
         .animation(MSAnimation.gentle, value: mode)
+        .sheet(isPresented: $examplePicker) { HiggsfieldVideoExamples() }
+        .sheet(isPresented: $ugcPresetPicker) { UGCPresetPicker(selection: $ugc.preset) }
+        .sheet(isPresented: $presetPicker) {
+            MarketingPresetPicker(selection: $image.preset)
+        }
         .onChange(of: promptFocused) { _, f in composing = f }
     }
 
@@ -192,7 +224,7 @@ struct StudioComposer: View {
     private func tokenView(_ token: Token) -> some View {
         switch token {
         case .text(let s):
-            Text(s).font(MSFont.body(15)).foregroundStyle(MSColor.text).fixedSize()
+            Text(L(s)).font(MSFont.body(15)).foregroundStyle(MSColor.text).fixedSize()
         case .product:
             Button {
                 MSHaptic.tap()
@@ -264,7 +296,7 @@ struct StudioComposer: View {
                             Section("Un seul plan") {
                                 ForEach(API.influencerShots, id: \.id) { s in
                                     Button { MSHaptic.tap(); image.multiShot = false; image.shot = s.id } label: {
-                                        if !image.multiShot && image.shot == s.id { Label(s.label, systemImage: "checkmark") } else { Text(s.label) }
+                                        if !image.multiShot && image.shot == s.id { Label(L(s.label), systemImage: "checkmark") } else { Text(L(s.label)) }
                                     }
                                 }
                             }
@@ -312,7 +344,7 @@ struct StudioComposer: View {
     private func controlPillLabel(icon: String, text: String?) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon).font(.system(size: 13, weight: .semibold))
-            if let text { Text(text).font(MSFont.control(13)).lineLimit(1).fixedSize() }
+            if let text { Text(L(text)).font(MSFont.control(13)).lineLimit(1).fixedSize() }
         }
         .foregroundStyle(MSColor.text)
         .padding(.horizontal, text == nil ? 11 : 10)
@@ -401,7 +433,7 @@ struct MediaSlot: View {
     static func placeholder(icon: String, title: String?, dashed: Bool) -> some View {
         VStack(spacing: 5) {
             Image(systemName: icon).font(.system(size: 22, weight: .medium)).foregroundStyle(MSColor.text2)
-            if let title { Text(title).font(MSFont.caption(11)).foregroundStyle(MSColor.muted) }
+            if let title { Text(L(title)).font(MSFont.caption(11)).foregroundStyle(MSColor.muted) }
         }
         .frame(width: size, height: size)
         .background(MSColor.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -436,7 +468,7 @@ struct PromptChip: View {
             }
             .frame(width: 20, height: 20)
             .clipShape(RoundedRectangle(cornerRadius: circular ? 10 : 5, style: .continuous))
-            Text(text).font(MSFont.control(14)).lineLimit(1).foregroundStyle(filled ? MSColor.text : MSColor.text2)
+            Text(L(text)).font(MSFont.control(14)).lineLimit(1).foregroundStyle(filled ? MSColor.text : MSColor.text2)
         }
         .padding(.leading, 4)
         .padding(.trailing, 9)
@@ -471,11 +503,11 @@ struct ModelPickerSheet: View {
                                 .frame(width: 40, height: 40)
                                 .background(on ? MSColor.accent.opacity(0.14) : MSColor.elevated, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(m.name).msHeadline(15)
-                                Text(m.tagline).msCaption().lineLimit(1)
+                                Text(L(m.name)).msHeadline(15)
+                                Text(L(m.tagline)).msCaption().lineLimit(1)
                             }
                             Spacer()
-                            Text(m.speed).font(MSFont.mono(11)).foregroundStyle(MSColor.muted)
+                            Text(L(m.speed)).font(MSFont.mono(11)).foregroundStyle(MSColor.muted)
                             if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(MSColor.accent) }
                         }
                         .padding(12)
@@ -535,7 +567,7 @@ struct RatioPickerPill: View {
             HStack(spacing: 7) {
                 let s = Self.shape(ratio, max: 15)
                 RoundedRectangle(cornerRadius: 2.5).strokeBorder(MSColor.accent, lineWidth: 1.6).frame(width: s.width, height: s.height).frame(width: 16, height: 16)
-                Text(ratio).font(MSFont.control(13)).lineLimit(1).fixedSize()
+                Text(L(ratio)).font(MSFont.control(13)).lineLimit(1).fixedSize()
             }
             .foregroundStyle(MSColor.text)
             .padding(.horizontal, 10)
@@ -563,7 +595,7 @@ struct RatioPickerPill: View {
                                     .overlay(RoundedRectangle(cornerRadius: 5, style: .continuous).strokeBorder(selected ? MSColor.accent : MSColor.border, lineWidth: selected ? 2 : 1))
                                     .frame(width: s.width, height: s.height)
                                     .frame(width: 40, height: 40)
-                                Text(r).font(MSFont.caption(12)).foregroundStyle(selected ? MSColor.accent : MSColor.text2)
+                                Text(L(r)).font(MSFont.caption(12)).foregroundStyle(selected ? MSColor.accent : MSColor.text2)
                             }
                             .padding(6)
                             .background(selected ? MSColor.accent.opacity(0.08) : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -576,5 +608,179 @@ struct RatioPickerPill: View {
             .presentationCompactAdaptation(.popover)
             .preferredColorScheme(.dark)
         }
+    }
+}
+
+
+/// Live ad layouts from the shared server; credentials stay on the server.
+private struct MarketingPresetPicker: View {
+    @Binding var selection: MarketingPreset?
+    @Environment(\.dismiss) private var dismiss
+    @State private var items: [MarketingPreset] = []
+    @State private var loading = true
+    @State private var error: String?
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    Button("Mise en page libre") { selection = nil; dismiss() }
+                    if loading { ProgressView("Chargement des modèles…") }
+                    if let error {
+                        Text(L(error)).font(.callout)
+                        Button("Réessayer") { Task { await load() } }
+                    }
+                    if !loading && error == nil && items.isEmpty {
+                        Text("Aucun modèle disponible pour le moment.").foregroundStyle(.secondary)
+                    }
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        ForEach(items) { preset in
+                            Button { selection = preset; dismiss() } label: {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    AsyncImage(url: preset.preview.flatMap(URL.init(string:))) { image in
+                                        image.resizable().scaledToFill()
+                                    } placeholder: {
+                                        Rectangle().fill(.quaternary)
+                                            .overlay(Image(systemName: "rectangle.grid.2x2"))
+                                    }
+                                    .frame(height: 160).clipped().cornerRadius(12)
+                                    HStack {
+                                        Text(L(preset.name)).font(.caption).lineLimit(2)
+                                        if selection?.id == preset.id { Image(systemName: "checkmark.circle.fill") }
+                                    }
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }.padding()
+            }
+            .navigationTitle("Modèles de pub")
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } } }
+            .task { await load() }
+        }
+    }
+
+    @MainActor private func load() async {
+        loading = true
+        error = nil
+        defer { loading = false }
+        do { items = try await APIClient.marketingPresets() }
+        catch is CancellationError { }
+        catch { self.error = error.localizedDescription }
+    }
+}
+
+
+private struct HiggsfieldVideoExample: Identifiable {
+    var id: String { source }
+    let name: String
+    let category: String
+    let url: String
+    let source: String
+    static let all: [Self] = [
+        .init(name: "Green Tea Macro", category: "Motion", url: "https://cdn.higgsfield.ai/marketing-studio-motion-preview/68a696dc-2c2e-43b1-b285-511c8783db1f.mp4", source: "https://higgsfield.ai/marketing-studio/preset/green-tea-macro-6089a97b-4e49-43ed-9338-09a9c63e2783"),
+        .init(name: "Pixel Block Yard", category: "Motion", url: "https://cdn.higgsfield.ai/marketing-studio-motion-preview/353daae1-e520-486b-b7d5-83f026169305.mp4", source: "https://higgsfield.ai/marketing-studio/preset/pixel-block-yard-000b690e-7f6d-4a7c-9196-a90f15494bb6"),
+        .init(name: "Before and After", category: "UGC", url: "https://d29nkk4626dxhc.cloudfront.net/marketing_studio_video_preset/a6bd1da8-b768-425e-beb6-821075efbc2e-6748bfc5a91afbfc.mp4", source: "https://higgsfield.ai/marketing-studio/preset/before-and-after-3728af13-8efa-4703-a10f-69b142c2df52"),
+        .init(name: "Monospace Callouts", category: "Motion", url: "https://cdn.higgsfield.ai/marketing-studio-motion-preview/aef59e19-f388-4dcc-b55a-e43a5c48c835.mp4", source: "https://higgsfield.ai/marketing-studio/preset/monospace-callouts-46406130-acc3-43f0-b6fe-554a22cad279")
+    ]
+}
+
+private struct HiggsfieldVideoExamples: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var category = "Tous"
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Exemples UGC et motion de Higgsfield Marketing Studio.")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                    Picker("Catégorie", selection: $category) {
+                        ForEach(["Tous", "UGC", "Motion"], id: \.self) { Text($0).tag($0) }
+                    }.pickerStyle(.segmented)
+                    ForEach(HiggsfieldVideoExample.all.filter { category == "Tous" || $0.category == category }) { example in
+                        HiggsfieldExamplePlayer(example: example)
+                    }
+                }.padding()
+            }
+            .navigationTitle("Inspiration vidéo")
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } } }
+        }
+    }
+}
+
+private struct HiggsfieldExamplePlayer: View {
+    let example: HiggsfieldVideoExample
+    @State private var player: AVPlayer?
+    @State private var unavailable = false
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            VideoPlayer(player: player)
+                .frame(height: 300).clipShape(RoundedRectangle(cornerRadius: 12))
+            if unavailable { Text("Aperçu indisponible. Consultez cet exemple sur Higgsfield.").font(.caption).foregroundStyle(.secondary) }
+            Text(L(example.name)).font(.headline)
+            Text(L(example.category)).font(.caption).foregroundStyle(.secondary)
+            if let source = URL(string: example.source) {
+                Link("Voir sur Higgsfield ↗", destination: source)
+            }
+        }
+        .onAppear { if player == nil, let url = URL(string: example.url) { player = AVPlayer(url: url) } }
+        .onReceive(player?.currentItem?.publisher(for: \.status).eraseToAnyPublisher() ?? Empty<AVPlayerItem.Status, Never>().eraseToAnyPublisher()) { status in
+            unavailable = status == .failed
+        }
+        .onDisappear { player?.pause(); player = nil }
+    }
+}
+
+
+// MARK: - UGC preset picker
+
+struct UGCPresetPicker: View {
+    @Binding var selection: UGCPreset?
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                Text("Choisissez un format, puis votre créateur et votre produit : la vidéo est créée automatiquement.")
+                    .font(MSFont.body(14)).foregroundStyle(MSColor.text2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, MSSpacing.gutter)
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                    ForEach(UGCPresets.all) { p in
+                        let on = selection?.id == p.id
+                        Button {
+                            MSHaptic.tap()
+                            selection = on ? nil : p
+                            dismiss()
+                        } label: {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Image(systemName: p.icon)
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundStyle(MSColor.highlight)
+                                    .frame(width: 40, height: 40)
+                                    .background(MSColor.accent.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                Text(L(p.title)).font(.system(size: 15, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
+                                Text(L(p.hint)).font(.system(size: 12)).foregroundStyle(MSColor.text2).lineLimit(2)
+                                Text("\(p.duration) s · \(AIModels.ugcCredits(seconds: p.duration)) crédits").font(.system(size: 11, weight: .medium)).foregroundStyle(MSColor.muted)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)
+                            .padding(12)
+                            .background(on ? MSColor.accent.opacity(0.12) : MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous).strokeBorder(on ? MSColor.accent : MSColor.border, lineWidth: on ? 1.5 : 1))
+                        }
+                        .buttonStyle(MSPressStyle())
+                    }
+                }
+                .padding(MSSpacing.gutter)
+            }
+            .background(MSColor.bg.ignoresSafeArea())
+            .navigationTitle("Formats UGC")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } }
+            }
+        }
+        .presentationDetents([.large])
     }
 }

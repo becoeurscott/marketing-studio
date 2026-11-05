@@ -95,6 +95,7 @@ final class AppStore: ObservableObject {
         copyResults = state.copyResults
         savedHooks = state.savedHooks
         isLoading = false
+        applyDevicePreferences()
     }
 
     /// Loads the workspace of the signed-in account (empty on first use on this device).
@@ -120,6 +121,7 @@ final class AppStore: ObservableObject {
     func applyAccount(_ summary: AccountSummary) {
         credits = summary.credits
         if let p = Plan(rawValue: summary.plan) { plan = p; user.plan = p }
+        if summary.onboardingDone == true && !onboardingDone { onboardingDone = true }
         let iso = ISO8601DateFormatter()
         iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         let plain = ISO8601DateFormatter()
@@ -132,6 +134,7 @@ final class AppStore: ObservableObject {
     private func applyDevicePreferences() {
         MSHaptic.enabled = preferences.haptics
         MSAnimation.reduced = preferences.reduceMotion
+        MSColor.selectedAccent = preferences.accentColor ?? "lime"
         AIModels.lightVideos = preferences.lightVideos
     }
 
@@ -265,6 +268,7 @@ final class AppStore: ObservableObject {
     func completeOnboarding(_ answers: OnboardingAnswers) {
         onboardingAnswers = answers
         onboardingDone = true
+        Task { try? await APIClient.completeOnboarding() }
     }
 
     // MARK: - Projects

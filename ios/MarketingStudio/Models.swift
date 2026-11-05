@@ -478,6 +478,10 @@ struct OnboardingAnswers: Codable, Hashable {
     var wants: [String] = []
     var platforms: [String] = []
     var goal: [String] = []
+    var style: String?
+    var boldness: String?
+    var productName: String?
+    var productCategory: String?
 }
 
 struct UserPreferences: Codable, Hashable {
@@ -494,6 +498,8 @@ struct UserPreferences: Codable, Hashable {
     var defaultModel: String = "Standard"
     var defaultStyle: String = "Product Photography"
     var reduceMotion: Bool = false
+    /// Optional for compatibility with accounts saved before accent colors were selectable.
+    var accentColor: String? = nil
 }
 
 enum FavoriteKind: String, Codable, CaseIterable, Identifiable {

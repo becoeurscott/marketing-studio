@@ -109,15 +109,15 @@ struct GenerationHistoryRow: View {
                     }
                 }
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(generation.prompt).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(2).multilineTextAlignment(.leading)
+                    Text(L(generation.prompt)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(2).multilineTextAlignment(.leading)
                     HStack(spacing: 5) {
                         Image(systemName: generation.kind.icon).font(.system(size: 9, weight: .bold))
-                        Text(generation.kind.title)
+                        Text(L(generation.kind.title))
                         Text("·")
-                        Text(generation.createdAt.relativeString)
+                        Text(L(generation.createdAt.relativeString))
                         if let p = generation.projectId.flatMap({ store.project($0) }) {
                             Text("·")
-                            Text(p.name).lineLimit(1)
+                            Text(L(p.name)).lineLimit(1)
                         }
                     }
                     .msCaption()
@@ -173,7 +173,7 @@ struct GenerationDetailSheet: View {
 
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Prompt").msCaption(color: MSColor.text2)
-                            Text(g.prompt).msBody(15, color: MSColor.text).lineSpacing(2)
+                            Text(L(g.prompt)).msBody(15, color: MSColor.text).lineSpacing(2)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .msCard(padding: 12)
                         }
@@ -188,7 +188,7 @@ struct GenerationDetailSheet: View {
                                         router.toast("Copié", style: .success, icon: "doc.on.doc")
                                     } label: { Image(systemName: "doc.on.doc").font(.system(size: 12, weight: .semibold)).foregroundStyle(MSColor.text2) }
                                 }
-                                Text(text).msBody(14).lineSpacing(3)
+                                Text(L(text)).msBody(14).lineSpacing(3)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .msCard(padding: 12)
                             }

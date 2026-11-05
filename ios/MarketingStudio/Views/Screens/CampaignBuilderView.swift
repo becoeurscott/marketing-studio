@@ -129,8 +129,8 @@ struct CampaignBuilderView: View {
 
     private func stepTitle(_ title: String, _ subtitle: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title).msTitle(26)
-            Text(subtitle).msBody(14)
+            Text(L(title)).msTitle(26)
+            Text(L(subtitle)).msBody(14)
         }
     }
 
@@ -150,7 +150,7 @@ struct CampaignBuilderView: View {
                                 .frame(width: 42, height: 42)
                                 .background(objective == o ? MSColor.accent.opacity(0.14) : MSColor.elevated, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(o.title).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                                Text(L(o.title)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
                                 Text(objectiveHint(o)).msCaption()
                             }
                             Spacer()
@@ -194,7 +194,7 @@ struct CampaignBuilderView: View {
                         Image(systemName: "paintpalette").foregroundStyle(MSColor.text2)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Depuis le kit de marque \(store.brand.name)").font(MSFont.control(13)).foregroundStyle(MSColor.text)
-                            Text(store.brand.audience).msCaption().lineLimit(2)
+                            Text(L(store.brand.audience)).msCaption().lineLimit(2)
                         }
                         Spacer()
                         Button("Utiliser") { audience = store.brand.audience }
@@ -223,7 +223,7 @@ struct CampaignBuilderView: View {
                                 Spacer()
                                 Image(systemName: on ? "checkmark.circle.fill" : "circle").foregroundStyle(on ? MSColor.accent : MSColor.muted)
                             }
-                            Text(p.title).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                            Text(L(p.title)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
                         }
                         .padding(14)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -253,7 +253,7 @@ struct CampaignBuilderView: View {
                                 .frame(width: 40, height: 40)
                                 .background(on ? MSColor.accent.opacity(0.14) : MSColor.elevated, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(f.title).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                                Text(L(f.title)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
                                 Text(formatHint(f)).msCaption()
                             }
                             Spacer()
@@ -319,8 +319,8 @@ struct CampaignBuilderView: View {
             HStack(spacing: 12) {
                 Image(systemName: icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.text2).frame(width: 20)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(label).msCaption()
-                    Text(value).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(2).multilineTextAlignment(.leading)
+                    Text(L(label)).msCaption()
+                    Text(L(value)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(2).multilineTextAlignment(.leading)
                 }
                 Spacer()
                 if action != nil { Image(systemName: "pencil").font(.system(size: 12, weight: .semibold)).foregroundStyle(MSColor.muted) }

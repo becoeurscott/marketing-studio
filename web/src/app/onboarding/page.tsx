@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { StepDots } from "@/components/ui/ProgressIndicator";
@@ -14,10 +14,11 @@ import {
 } from "@/components/onboarding/RevealScreens";
 import { SAMPLE_PRODUCT, type ProductInfo } from "@/components/onboarding/shared";
 import { useHydrated, useStore } from "@/lib/store";
+import { COUNTRIES, type CountryCode } from "@/lib/market";
 import type { CampaignObjective, PlanId } from "@/lib/types";
 
 const STEPS = [
-  "opening", "upload", "analysis", "goal", "platforms", "style", "brand", "boldness", "generation",
+  "opening", "country", "upload", "analysis", "goal", "platforms", "style", "brand", "boldness", "generation",
   "photos", "ugc", "ads", "copy", "campaign", "formats", "value", "workflow", "card", "calendar", "paywall",
 ] as const;
 type Step = (typeof STEPS)[number];
@@ -36,6 +37,7 @@ export default function OnboardingPage() {
   const complete = useStore((s) => s.completeOnboarding);
   const createCampaign = useStore((s) => s.createCampaign);
   const setPlan = useStore((s) => s.setPlan);
+  const setCountry = useStore((s) => s.setCountry);
   const projectId = useStore((s) => s.currentProjectId ?? s.projects[0]?.id ?? null);
   const done = useStore((s) => s.onboardingDone);
 
@@ -43,6 +45,7 @@ export default function OnboardingPage() {
   const [history, setHistory] = useState<Step[]>([]);
   const [finished, setFinished] = useState(false);
   const [product, setProduct] = useState<ProductInfo>(SAMPLE_PRODUCT);
+  const [chosenCountry, setChosenCountry] = useState<CountryCode | "">("");
 
   useEffect(() => {
     if (hydrated && done && !finished) router.replace("/home");
@@ -70,6 +73,12 @@ export default function OnboardingPage() {
     });
   };
   const onGenerated = useCallback(() => setStep("photos"), []);
+
+  const skipOnboarding = () => {
+    setFinished(true);
+    complete();
+    router.replace("/home");
+  };
 
   const saveProduct = (p: ProductInfo) => {
     setProduct(p);
@@ -104,6 +113,20 @@ export default function OnboardingPage() {
   const screen = (() => {
     switch (step) {
       case "opening": return <OpeningScreen onStart={next} onLogin={() => { complete(); router.push("/home"); }} />;
+      case "country": return (
+        <div className="w-full max-w-md text-center">
+          <p className="text-sm font-medium text-highlight">Votre marché</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight">Dans quel pays vendez-vous ?</h1>
+          <p className="mt-3 text-sm text-text2">Nous adapterons la monnaie et les moyens de paiement à votre pays.</p>
+          <label htmlFor="onboarding-country" className="mt-8 block text-left text-sm font-medium">Pays de vente</label>
+          <select id="onboarding-country" value={chosenCountry} onChange={(e) => setChosenCountry(e.target.value as CountryCode | "")} className="mt-2 h-12 w-full rounded-xl border border-white/15 bg-surface px-4 text-text">
+            <option value="">Choisissez votre pays</option>
+            {COUNTRIES.map((country) => <option key={country.code} value={country.code}>{country.flag} {country.name}</option>)}
+          </select>
+          <button type="button" disabled={!chosenCountry} onClick={() => { if (chosenCountry) { setCountry(chosenCountry); setAnswers({ country: chosenCountry }); next(); } }} className="mt-6 h-12 w-full rounded-xl bg-accent font-semibold text-on-accent disabled:cursor-not-allowed disabled:opacity-40">Continuer</button>
+          <p className="mt-4 text-xs text-muted">Vous pourrez le modifier dans les paramètres.</p>
+        </div>
+      );
       case "upload": return <UploadScreen onPick={(p) => { saveProduct(p); go("analysis"); }} />;
       case "analysis": return <AnalysisScreen product={product} onChange={saveProduct} onConfirm={next} />;
       case "goal": return <GoalScreen value={answers.goal} onChange={(v) => setAnswers({ goal: v })} onNext={next} />;
@@ -141,16 +164,16 @@ export default function OnboardingPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="size-7 rounded-md bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shadow-glow">
-            <Sparkles className="size-4 text-on-accent" />
-          </span>
+          <img src="/brand-mark.png" alt="" aria-hidden="true" className="size-7 rounded-md" />
           <span className="text-[15px] font-semibold tracking-tight">Marketing Studio</span>
         </div>
         <div className="w-20 flex justify-end">
-          {qIndex >= 0 && <StepDots total={QUESTION_STEPS.length} current={qIndex} className="hidden sm:flex" />}
+          <button type="button" onClick={skipOnboarding} className="rounded-full px-3 py-2 text-sm font-medium text-text2 transition-colors hover:bg-white/5 hover:text-text" aria-label="Passer l’onboarding et accéder à l’accueil">
+            Passer
+          </button>
         </div>
       </header>
-      {qIndex >= 0 && <StepDots total={QUESTION_STEPS.length} current={qIndex} className="sm:hidden justify-center relative z-10" />}
+      {qIndex >= 0 && <StepDots total={QUESTION_STEPS.length} current={qIndex} className="justify-center relative z-10" />}
 
       <main className="relative flex-1 flex flex-col items-center justify-center px-5 py-6 md:py-10">
         <AnimatePresence mode="wait">

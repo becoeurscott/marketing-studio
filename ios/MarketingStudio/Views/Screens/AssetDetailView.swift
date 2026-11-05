@@ -59,7 +59,7 @@ struct AssetDetailView: View {
                     .padding(.horizontal, MSSpacing.gutter)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(a.name).msTitle(24)
+                    Text(L(a.name)).msTitle(24)
                     Text("Ajoutée le \(a.createdAt.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened).locale(Locale(identifier: "fr_FR"))))").msCaption()
                 }
                 .padding(.horizontal, MSSpacing.gutter)
@@ -110,7 +110,7 @@ struct AssetDetailView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle(a.name)
+        .navigationTitle(L(a.name))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
@@ -144,8 +144,8 @@ struct AssetDetailView: View {
 
     private func detailRow(_ label: String, _ value: String) -> some View {
         HStack(alignment: .top) {
-            Text(label).msCaption(color: MSColor.text2).frame(width: 90, alignment: .leading)
-            Text(value).font(MSFont.control(13)).foregroundStyle(MSColor.text).multilineTextAlignment(.trailing).frame(maxWidth: .infinity, alignment: .trailing)
+            Text(L(label)).msCaption(color: MSColor.text2).frame(width: 90, alignment: .leading)
+            Text(L(value)).font(MSFont.control(13)).foregroundStyle(MSColor.text).multilineTextAlignment(.trailing).frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
@@ -161,7 +161,7 @@ struct AssetDetailView: View {
             HStack(spacing: 10) {
                 Image(systemName: icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(tint == MSColor.text ? MSColor.text2 : tint)
                     .frame(width: 30, height: 30).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                Text(title).font(MSFont.control(13)).foregroundStyle(tint).lineLimit(1)
+                Text(L(title)).font(MSFont.control(13)).foregroundStyle(tint).lineLimit(1)
                 Spacer(minLength: 0)
             }
         }

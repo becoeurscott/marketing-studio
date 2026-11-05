@@ -12,10 +12,10 @@ struct MSTextField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            if let label { Text(label).msCaption(color: MSColor.text2) }
+            if let label { Text(L(label)).msCaption(color: MSColor.text2) }
             HStack(spacing: 10) {
                 if let icon { Image(systemName: icon).foregroundStyle(MSColor.muted).font(.system(size: 14)) }
-                TextField("", text: $text, prompt: Text(placeholder).foregroundStyle(MSColor.muted))
+                TextField("", text: $text, prompt: Text(L(placeholder)).foregroundStyle(MSColor.muted))
                     .font(MSFont.body())
                     .foregroundStyle(MSColor.text)
                     .keyboardType(keyboard)
@@ -49,10 +49,10 @@ struct MSTextEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            if let label { Text(label).msCaption(color: MSColor.text2) }
+            if let label { Text(L(label)).msCaption(color: MSColor.text2) }
             ZStack(alignment: .topLeading) {
                 if text.isEmpty {
-                    Text(placeholder)
+                    Text(L(placeholder))
                         .font(MSFont.body())
                         .foregroundStyle(MSColor.muted)
                         .padding(.horizontal, 14)
