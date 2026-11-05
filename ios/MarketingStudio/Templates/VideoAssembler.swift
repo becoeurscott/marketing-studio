@@ -1,4 +1,5 @@
 import AVFoundation
+import CoreImage
 import UIKit
 
 /// Rebuilds a template with the user's clips: same shot durations, same texts at the same time,
@@ -13,7 +14,7 @@ enum VideoAssembler {
         let composition = AVMutableComposition()
         guard let videoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else { throw TemplateError.exportFailed }
         let audioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
-        let layer = AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack)
+        var segments: [(range: CMTimeRange, transform: CGAffineTransform)] = []
 
         var cursor = CMTime.zero
         let useOriginalSound = options.keepOriginalSound && template.hasAudio
@@ -34,7 +35,7 @@ enum VideoAssembler {
             }
             let size = try await track.load(.naturalSize)
             let transform = try await track.load(.preferredTransform)
-            layer.setTransform(fill(size: size, transform: transform), at: cursor)
+            segments.append((CMTimeRange(start: cursor, duration: want), fill(size: size, transform: transform)))
             cursor = cursor + want
         }
 
@@ -46,16 +47,26 @@ enum VideoAssembler {
             }
         }
 
-        let instruction = AVMutableVideoCompositionInstruction()
-        instruction.timeRange = CMTimeRange(start: .zero, duration: cursor)
-        instruction.layerInstructions = [layer]
-        let video = AVMutableVideoComposition()
-        video.renderSize = renderSize
-        video.frameDuration = CMTime(value: 1, timescale: 30)
-        video.instructions = [instruction]
-        if options.showTexts, template.shots.contains(where: { $0.overlay != nil }) {
-            video.animationTool = textOverlay(template)
+        // Frames are framed and captioned with Core Image (the Core Animation tool crashes on some devices).
+        let captions = options.showTexts ? captionImages(template) : [:]
+        let size = renderSize
+        let video = AVMutableVideoComposition(asset: composition) { request in
+            let time = request.compositionTime
+            let source = request.sourceImage
+            let segment = segments.last { CMTimeCompare($0.range.start, time) <= 0 } ?? segments[0]
+            let h = source.extent.height
+            // Track transforms use top-left origin; Core Image uses bottom-left.
+            let flipIn = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: h)
+            let flipOut = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: size.height)
+            var frame = source.transformed(by: flipIn.concatenating(segment.transform).concatenating(flipOut))
+                .cropped(to: CGRect(origin: .zero, size: size))
+            frame = frame.composited(over: CIImage(color: .black).cropped(to: CGRect(origin: .zero, size: size)))
+            let index = segments.firstIndex { $0.range.containsTime(time) } ?? (segments.count - 1)
+            if let caption = captions[index] { frame = caption.composited(over: frame) }
+            request.finish(with: frame, context: nil)
         }
+        video.renderSize = size
+        video.frameDuration = CMTime(value: 1, timescale: 30)
 
         let out = FileManager.default.temporaryDirectory.appendingPathComponent("template-\(UUID().uuidString).mp4")
         guard let export = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) else { throw TemplateError.exportFailed }
@@ -82,45 +93,33 @@ enum VideoAssembler {
         return scaled.concatenating(CGAffineTransform(translationX: dx, y: dy))
     }
 
-    /// Captions burned in with Core Animation, each visible only during its shot.
-    private static func textOverlay(_ template: VideoTemplate) -> AVVideoCompositionCoreAnimationTool {
-        let parent = CALayer()
-        parent.frame = CGRect(origin: .zero, size: renderSize)
-        let videoLayer = CALayer()
-        videoLayer.frame = parent.frame
-        parent.addSublayer(videoLayer)
-
-        for shot in template.shots {
+    /// One full-frame transparent image per captioned shot (text in a dark rounded box, lower third).
+    private static func captionImages(_ template: VideoTemplate) -> [Int: CIImage] {
+        var out: [Int: CIImage] = [:]
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = false
+        let renderer = UIGraphicsImageRenderer(size: renderSize, format: format)
+        for (i, shot) in template.shots.enumerated() {
             guard let text = shot.overlay, !text.isEmpty else { continue }
-            let label = CATextLayer()
-            let font = UIFont.systemFont(ofSize: 64, weight: .heavy)
-            label.string = NSAttributedString(string: text, attributes: [.font: font, .foregroundColor: UIColor.white])
-            label.alignmentMode = .center
-            label.isWrapped = true
-            label.contentsScale = 2
-            let width = renderSize.width - 160
-            let height = min(420, CGFloat(text.count / 18 + 1) * 84 + 40)
-            label.frame = CGRect(x: 80, y: renderSize.height * 0.22, width: width, height: height)
-            label.backgroundColor = UIColor.black.withAlphaComponent(0.45).cgColor
-            label.cornerRadius = 24
-            label.opacity = 0
-
-            let show = CABasicAnimation(keyPath: "opacity")
-            show.fromValue = 1
-            show.toValue = 1
-            show.beginTime = AVCoreAnimationBeginTimeAtZero + shot.start(in: template)
-            show.duration = shot.duration
-            show.isRemovedOnCompletion = true
-            label.add(show, forKey: "show")
-            parent.addSublayer(label)
+            let image = renderer.image { _ in
+                let style = NSMutableParagraphStyle()
+                style.alignment = .center
+                let attrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 64, weight: .heavy),
+                    .foregroundColor: UIColor.white,
+                    .paragraphStyle: style,
+                ]
+                let maxWidth = renderSize.width - 200
+                let bounds = (text as NSString).boundingRect(with: CGSize(width: maxWidth, height: 600), options: [.usesLineFragmentOrigin], attributes: attrs, context: nil)
+                let box = CGRect(x: (renderSize.width - bounds.width) / 2 - 36, y: renderSize.height * 0.68,
+                                 width: bounds.width + 72, height: bounds.height + 40)
+                UIColor.black.withAlphaComponent(0.45).setFill()
+                UIBezierPath(roundedRect: box, cornerRadius: 24).fill()
+                (text as NSString).draw(with: box.insetBy(dx: 36, dy: 20), options: [.usesLineFragmentOrigin], attributes: attrs, context: nil)
+            }
+            if let cg = image.cgImage { out[i] = CIImage(cgImage: cg) }
         }
-        return AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videoLayer, in: parent)
-    }
-}
-
-private extension TemplateShot {
-    /// Start time in the rebuilt video (sum of the previous shots).
-    func start(in template: VideoTemplate) -> Double {
-        template.shots.prefix(index).reduce(0) { $0 + $1.duration }
+        return out
     }
 }

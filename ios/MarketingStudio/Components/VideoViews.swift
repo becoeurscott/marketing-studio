@@ -313,7 +313,7 @@ struct VideoMarquee: View {
                         let signed = max(-1, min(1, (center - mid) / max(mid, 1)))
                         let d = abs(signed)
                         let eased = d * d * (3 - 2 * d)
-                        card(c)
+                        card(c, playing: abs(center - mid) < cardWidth * 1.6)
                             .scaleEffect(0.72 + 0.28 * eased)
                             .rotation3DEffect(.degrees(Double(-signed) * 28), axis: (x: 0, y: 1, z: 0), perspective: 0.6)
                             .zIndex(Double(d))
@@ -330,8 +330,16 @@ struct VideoMarquee: View {
         .accessibilityHidden(true)
     }
 
-    private func card(_ c: Card) -> some View {
-        LoopingVideoView(url: Showcase.video(c.video), poster: Showcase.poster(c.video))
+    /// Only cards near the middle play video; the others show their poster, which keeps memory
+    /// low (a dozen live players can get the app killed on older iPhones).
+    private func card(_ c: Card, playing: Bool) -> some View {
+        Group {
+            if playing {
+                LoopingVideoView(url: Showcase.video(c.video), poster: Showcase.poster(c.video))
+            } else {
+                RemoteImage(url: Showcase.poster(c.video), cornerRadius: 0)
+            }
+        }
             .frame(width: cardWidth, height: cardWidth * 16 / 9)
             .overlay(LinearGradient(colors: [.clear, .black.opacity(0.75)], startPoint: .center, endPoint: .bottom))
             .overlay(alignment: .topLeading) {
