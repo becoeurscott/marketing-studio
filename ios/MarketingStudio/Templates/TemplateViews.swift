@@ -116,6 +116,7 @@ struct VideoTemplateDetailView: View {
     let templateId: String
     @StateObject private var store = TemplateStore.shared
     @StateObject private var runner = TemplateRunner()
+    @State private var previewSound = true
 
     private var template: VideoTemplate? { store.templates.first { $0.id == templateId } }
 
@@ -124,11 +125,22 @@ struct VideoTemplateDetailView: View {
             if let t = template {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
-                        LoopingVideoView(url: store.url(for: t).absoluteString, poster: nil, muted: false)
+                        LoopingVideoView(url: store.url(for: t).absoluteString, poster: nil, muted: !previewSound)
                             .aspectRatio(9.0 / 16.0, contentMode: .fit)
                             .frame(maxHeight: 420)
                             .frame(maxWidth: .infinity)
                             .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
+                            .overlay(alignment: .bottomTrailing) {
+                                if t.hasAudio {
+                                    Button { previewSound.toggle() } label: {
+                                        Image(systemName: previewSound ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                                            .font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
+                                            .frame(width: 40, height: 40).background(.black.opacity(0.55), in: Circle())
+                                    }
+                                    .padding(12)
+                                    .accessibilityLabel(previewSound ? "Couper le son" : "Activer le son")
+                                }
+                            }
                         Text("\(t.shots.count) plans · \(Int(t.duration.rounded())) s").msHeadline(18)
                         if !t.style.isEmpty { Text(L(t.style)).msBody(13) }
                         ForEach(t.shots) { s in
@@ -141,6 +153,23 @@ struct VideoTemplateDetailView: View {
                                 }
                             }
                         }
+                        VStack(spacing: 0) {
+                            Toggle(isOn: $runner.keepSound) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Utiliser le son du modèle").font(MSFont.body(14))
+                                    Text(t.hasAudio ? "Musique et voix de la vidéo d'origine" : "Cette vidéo n'a pas de son").msCaption()
+                                }
+                            }
+                            .disabled(!t.hasAudio)
+                            .padding(12)
+                            if t.shots.contains(where: { $0.overlay != nil }) {
+                                Divider().overlay(MSColor.border)
+                                Toggle(isOn: $runner.showTexts) { Text("Ajouter les mêmes textes à l'écran").font(MSFont.body(14)) }
+                                    .padding(12)
+                            }
+                        }
+                        .tint(MSColor.accent)
+                        .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
                         if let e = runner.error { Text(L(e)).font(MSFont.body(13)).foregroundStyle(MSColor.danger) }
                     }
                     .padding(MSSpacing.gutter)
@@ -275,6 +304,10 @@ struct TemplateResultView: View {
     let seconds: Double
     @Environment(\.dismiss) private var dismiss
     @State private var saved = false
+    @State private var savedId: String?
+    @State private var posting = false
+    @State private var note: String?
+    @State private var showShare = false
     @State private var player: AVPlayer?
 
     private var manual: String {
@@ -284,58 +317,172 @@ struct TemplateResultView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    VideoPlayer(player: player)
-                        .aspectRatio(9.0 / 16.0, contentMode: .fit)
-                        .frame(maxHeight: 460)
-                        .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
-                    HStack(spacing: 12) {
-                        Image(systemName: "bolt.fill").font(.system(size: 20, weight: .bold)).foregroundStyle(MSColor.onAccent)
-                            .frame(width: 44, height: 44).background(MSColor.accent, in: Circle())
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Monté en \(max(1, Int(seconds.rounded()))) s").msHeadline(17)
-                            Text("À la main, il vous aurait fallu environ \(manual).").msBody(13)
-                        }
-                        Spacer(minLength: 0)
-                    }
-                    .padding(14)
-                    .background(MSColor.accent.opacity(0.10), in: RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
+            VStack(spacing: 12) {
+                VideoPlayer(player: player)
+                    .aspectRatio(9.0 / 16.0, contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
 
-                    ShareLink(item: url) {
-                        Label("Publier sur TikTok, Instagram, WhatsApp…", systemImage: "square.and.arrow.up")
-                            .font(MSFont.control(15)).foregroundStyle(MSColor.onAccent)
-                            .frame(maxWidth: .infinity).frame(height: 50)
-                            .background(MSColor.accent, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+                HStack(spacing: 10) {
+                    Image(systemName: "bolt.fill").font(.system(size: 14, weight: .bold)).foregroundStyle(MSColor.onAccent)
+                        .frame(width: 30, height: 30).background(MSColor.accent, in: Circle())
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Monté en \(max(1, Int(seconds.rounded()))) s").font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                        Text("À la main, il vous aurait fallu environ \(manual).").font(.system(size: 12)).foregroundStyle(MSColor.text2)
                     }
-                    Button { Task { await saveToPhotos() } } label: {
-                        Label(saved ? "Enregistrée dans Photos" : "Enregistrer dans Photos", systemImage: saved ? "checkmark.circle.fill" : "arrow.down.to.line")
-                            .font(MSFont.control(15)).foregroundStyle(MSColor.text)
-                            .frame(maxWidth: .infinity).frame(height: 50)
-                            .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
-                    }
-                    .disabled(saved)
+                    Spacer(minLength: 0)
                 }
-                .padding(MSSpacing.gutter)
+                .padding(10)
+                .background(MSColor.accent.opacity(0.10), in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+
+                HStack(spacing: 0) {
+                    ForEach(SocialTarget.allCases) { target in
+                        Button { Task { await post(to: target) } } label: {
+                            VStack(spacing: 4) {
+                                SocialIcon(target: target).frame(width: 40, height: 40)
+                                Text(target.label).font(.system(size: 10, weight: .medium)).foregroundStyle(MSColor.text2)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(MSPressStyle())
+                        .disabled(posting)
+                    }
+                    ShareLink(item: url) {
+                        VStack(spacing: 4) {
+                            Image(systemName: "ellipsis").font(.system(size: 16, weight: .bold)).foregroundStyle(MSColor.text)
+                                .frame(width: 40, height: 40).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                            Text("Autres").font(.system(size: 10, weight: .medium)).foregroundStyle(MSColor.text2)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+                if let note { Text(L(note)).font(.system(size: 11)).foregroundStyle(MSColor.muted).lineLimit(2) }
+
+                Button { Task { await saveToPhotos() } } label: {
+                    Label(saved ? "Enregistrée dans Photos" : "Enregistrer dans Photos", systemImage: saved ? "checkmark.circle.fill" : "arrow.down.to.line")
+                        .font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                        .frame(maxWidth: .infinity).frame(height: 42)
+                        .background(MSColor.card, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+                }
+                .disabled(saved)
             }
+            .padding(.horizontal, MSSpacing.gutter)
+            .padding(.bottom, 8)
             .background(MSColor.bg.ignoresSafeArea())
             .navigationTitle("Votre vidéo")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } } }
-            .onAppear { player = AVPlayer(url: url); player?.play() }
+            .sheet(isPresented: $showShare) { ActivitySheet(items: [url]) }
+            .onAppear {
+                try? AVAudioSession.sharedInstance().setCategory(.playback)
+                try? AVAudioSession.sharedInstance().setActive(true)
+                player = AVPlayer(url: url)
+                player?.play()
+            }
             .onDisappear { player?.pause() }
         }
         .preferredColorScheme(.dark)
     }
 
-    private func saveToPhotos() async {
-        guard await PHPhotoLibrary.requestAuthorization(for: .addOnly) == .authorized else { return }
+    @discardableResult
+    private func saveToPhotos() async -> String? {
+        if let savedId { return savedId }
+        guard await PHPhotoLibrary.requestAuthorization(for: .addOnly) == .authorized else {
+            note = "Autorisez l'ajout à Photos dans Réglages pour publier."
+            return nil
+        }
+        var id: String?
         do {
             try await PHPhotoLibrary.shared().performChanges {
-                PHAssetCreationRequest.creationRequestForAssetFromVideo(atFileURL: url)
+                id = PHAssetCreationRequest.creationRequestForAssetFromVideo(atFileURL: url)?.placeholderForCreatedAsset?.localIdentifier
             }
             saved = true
+            savedId = id
             MSHaptic.success()
         } catch {}
+        return id
     }
+
+    /// Saves the video, then opens the network on its posting screen (Instagram receives the video
+    /// directly; TikTok and Facebook show it first in their gallery). Falls back to the share sheet.
+    private func post(to target: SocialTarget) async {
+        posting = true
+        defer { posting = false }
+        if target == .whatsapp { showShare = true; return }
+        guard let id = await saveToPhotos() else { return }
+        if let link = target.url(localIdentifier: id), UIApplication.shared.canOpenURL(link) {
+            note = target == .instagram ? nil : "Vidéo enregistrée : choisissez-la en premier dans la galerie."
+            await UIApplication.shared.open(link)
+        } else {
+            note = "\(target.label) n'est pas installé : choisissez une autre application."
+            showShare = true
+        }
+    }
+}
+
+enum SocialTarget: String, CaseIterable, Identifiable {
+    case tiktok, instagram, whatsapp, facebook
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .tiktok: return "TikTok"
+        case .instagram: return "Instagram"
+        case .whatsapp: return "WhatsApp"
+        case .facebook: return "Facebook"
+        }
+    }
+
+    func url(localIdentifier: String) -> URL? {
+        switch self {
+        case .instagram:
+            let id = localIdentifier.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? localIdentifier
+            return URL(string: "instagram://library?LocalIdentifier=\(id)")
+        case .tiktok: return URL(string: "snssdk1233://")
+        case .facebook: return URL(string: "fb://")
+        case .whatsapp: return nil
+        }
+    }
+}
+
+/// Simple brand-coloured badges (no third-party logo files bundled).
+private struct SocialIcon: View {
+    let target: SocialTarget
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous).fill(background)
+            if target == .tiktok {
+                RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
+            }
+            switch target {
+            case .tiktok:
+                Image(systemName: "music.note").font(.system(size: 18, weight: .bold)).foregroundStyle(.white)
+                    .shadow(color: Color(red: 0.15, green: 0.95, blue: 0.94), radius: 0, x: -1.5, y: -1.5)
+                    .shadow(color: Color(red: 1, green: 0.17, blue: 0.33), radius: 0, x: 1.5, y: 1.5)
+            case .instagram:
+                RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(.white, lineWidth: 2.2).frame(width: 21, height: 21)
+                Circle().strokeBorder(.white, lineWidth: 2.2).frame(width: 9.5, height: 9.5)
+                Circle().fill(.white).frame(width: 2.8, height: 2.8).offset(x: 6, y: -6)
+            case .whatsapp:
+                Image(systemName: "phone.fill").font(.system(size: 14, weight: .bold)).foregroundStyle(.white)
+                    .padding(6).overlay(Circle().strokeBorder(.white, lineWidth: 2))
+            case .facebook:
+                Text("f").font(.system(size: 25, weight: .heavy, design: .rounded)).foregroundStyle(.white).offset(x: 1.5, y: 2)
+            }
+        }
+    }
+
+    private var background: AnyShapeStyle {
+        switch target {
+        case .tiktok: return AnyShapeStyle(Color.black)
+        case .instagram: return AnyShapeStyle(LinearGradient(colors: [Color(red: 0.98, green: 0.76, blue: 0.24), Color(red: 0.95, green: 0.2, blue: 0.4), Color(red: 0.6, green: 0.2, blue: 0.85)], startPoint: .bottomLeading, endPoint: .topTrailing))
+        case .whatsapp: return AnyShapeStyle(Color(red: 0.15, green: 0.83, blue: 0.4))
+        case .facebook: return AnyShapeStyle(Color(red: 0.09, green: 0.47, blue: 0.95))
+        }
+    }
+}
+
+private struct ActivitySheet: UIViewControllerRepresentable {
+    let items: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController { UIActivityViewController(activityItems: items, applicationActivities: nil) }
+    func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
 }

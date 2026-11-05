@@ -28,7 +28,10 @@ struct LoopingVideoView: View {
         .clipped()
         .onAppear(perform: start)
         .onDisappear(perform: stop)
-        .onChange(of: muted) { _, m in player?.isMuted = m }
+        .onChange(of: muted) { _, m in
+            if !m { try? AVAudioSession.sharedInstance().setCategory(.playback); try? AVAudioSession.sharedInstance().setActive(true) }
+            player?.isMuted = m
+        }
         .onChange(of: url) { _, _ in stop(); start() }
     }
 

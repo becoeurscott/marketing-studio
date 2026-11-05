@@ -33,6 +33,14 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>instagram</string>
+		<string>snssdk1233</string>
+		<string>tiktok</string>
+		<string>fb</string>
+		<string>whatsapp</string>
+	</array>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Marketing Studio enregistre vos vidéos montées dans Photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

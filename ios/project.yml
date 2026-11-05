@@ -61,6 +61,12 @@ targets:
               - sokozia
         NSPhotoLibraryUsageDescription: Marketing Studio utilise vos photos et vidéos pour créer vos visuels et remplir vos modèles vidéo.
         NSPhotoLibraryAddUsageDescription: Marketing Studio enregistre vos vidéos montées dans Photos.
+        LSApplicationQueriesSchemes:
+          - instagram
+          - snssdk1233
+          - tiktok
+          - fb
+          - whatsapp
     dependencies:
       - target: TemplateShare
         embed: true

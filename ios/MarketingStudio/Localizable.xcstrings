@@ -20978,6 +20978,127 @@
           }
         }
       }
+    },
+    "Utiliser le son du modèle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use the template's sound"
+          }
+        }
+      }
+    },
+    "Musique et voix de la vidéo d'origine": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Music and voice from the original video"
+          }
+        }
+      }
+    },
+    "Cette vidéo n'a pas de son": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This video has no sound"
+          }
+        }
+      }
+    },
+    "Couper le son": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mute"
+          }
+        }
+      }
+    },
+    "Activer le son": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn sound on"
+          }
+        }
+      }
+    },
+    "Publier directement": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Post directly"
+          }
+        }
+      }
+    },
+    "Autres applications…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other apps…"
+          }
+        }
+      }
+    },
+    "Vidéo enregistrée : choisissez-la en premier dans la galerie.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video saved: pick it first in the gallery."
+          }
+        }
+      }
+    },
+    "Autorisez l'ajout à Photos dans Réglages pour publier.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow adding to Photos in Settings to post."
+          }
+        }
+      }
+    },
+    "%@ n'est pas installé : choisissez une autre application.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ isn't installed: choose another app."
+          }
+        }
+      }
+    },
+    "Autres": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More"
+          }
+        }
+      }
     }
   }
 }
