@@ -9,7 +9,13 @@ enum VideoAssembler {
 
     struct Options { var keepOriginalSound = true; var showTexts = true }
 
-    static func assemble(template: VideoTemplate, sourceURL: URL, clips: [AVAsset], options: Options) async throws -> URL {
+    static func assemble(template: VideoTemplate, sourceURL: URL, clips: [AVAsset], starts: [Double] = [], options: Options) async throws -> URL {
+        let (composition, video) = try await makeComposition(template: template, sourceURL: sourceURL, clips: clips, starts: starts, options: options)
+        return try await export(composition, video: video)
+    }
+
+    /// Builds the edit in memory: playable right away in the editor (`AVPlayerItem`), exported later.
+    static func makeComposition(template: VideoTemplate, sourceURL: URL, clips: [AVAsset], starts: [Double] = [], options: Options) async throws -> (AVComposition, AVVideoComposition) {
         guard clips.count == template.shots.count else { throw TemplateError.noClip }
         let composition = AVMutableComposition()
         guard let videoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else { throw TemplateError.exportFailed }
@@ -18,12 +24,15 @@ enum VideoAssembler {
 
         var cursor = CMTime.zero
         let useOriginalSound = options.keepOriginalSound && template.hasAudio
-        for (shot, asset) in zip(template.shots, clips) {
+        for (i, (shot, asset)) in zip(template.shots, clips).enumerated() {
             guard let track = try await asset.loadTracks(withMediaType: .video).first else { throw TemplateError.noClip }
             let clipDuration = try await asset.load(.duration)
             let want = CMTime(seconds: shot.duration, preferredTimescale: 600)
-            let used = CMTimeMinimum(clipDuration, want)
-            let range = CMTimeRange(start: .zero, duration: used)
+            // Start inside the clip (from the timeline editor); keep at least 0.2 s of footage.
+            let maxStart = max(0, clipDuration.seconds - 0.2)
+            let start = CMTime(seconds: min(max(0, starts.indices.contains(i) ? starts[i] : 0), maxStart), preferredTimescale: 600)
+            let used = CMTimeMinimum(clipDuration - start, want)
+            let range = CMTimeRange(start: start, duration: used)
             try videoTrack.insertTimeRange(range, of: track, at: cursor)
             if !useOriginalSound, let a = try await asset.loadTracks(withMediaType: .audio).first {
                 try? audioTrack?.insertTimeRange(range, of: a, at: cursor)
@@ -67,6 +76,10 @@ enum VideoAssembler {
         }
         video.renderSize = size
         video.frameDuration = CMTime(value: 1, timescale: 30)
+        return (composition, video)
+    }
+
+    static func export(_ composition: AVComposition, video: AVVideoComposition) async throws -> URL {
 
         let out = FileManager.default.temporaryDirectory.appendingPathComponent("template-\(UUID().uuidString).mp4")
         guard let export = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) else { throw TemplateError.exportFailed }

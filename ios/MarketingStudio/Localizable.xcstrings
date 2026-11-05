@@ -21099,6 +21099,149 @@
           }
         }
       }
+    },
+    "Montage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        }
+      }
+    },
+    "Remplacer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace"
+          }
+        }
+      }
+    },
+    "Son du modèle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Template sound"
+          }
+        }
+      }
+    },
+    "Texte à l'écran (vide = aucun)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On-screen text (empty = none)"
+          }
+        }
+      }
+    },
+    "Début dans votre vidéo : %@ s": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start in your video: %@ s"
+          }
+        }
+      }
+    },
+    "Plan %lld / %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shot %lld / %lld"
+          }
+        }
+      }
+    },
+    "Application de vos modifications…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applying your changes…"
+          }
+        }
+      }
+    },
+    "%@ s au total": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ s total"
+          }
+        }
+      }
+    },
+    "Couper la vidéo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trim video"
+          }
+        }
+      }
+    },
+    "Utiliser la vidéo entière": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use whole video"
+          }
+        }
+      }
+    },
+    "Couper et continuer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trim and continue"
+          }
+        }
+      }
+    },
+    "Découpe…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trimming…"
+          }
+        }
+      }
+    },
+    "Sélection : %.1f s": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selection: %.1f s"
+          }
+        }
+      }
     }
   }
 }

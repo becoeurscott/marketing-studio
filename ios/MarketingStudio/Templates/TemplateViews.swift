@@ -201,6 +201,14 @@ final class TemplateRunner: ObservableObject {
     @Published var error: String?
     @Published var keepSound = true
     @Published var showTexts = true
+    /// Editing state kept after an export so the timeline editor can rebuild the video.
+    @Published var editing = false
+    /// Reference video waiting to be trimmed before it becomes a template.
+    @Published var trimSource: URL?
+    @Published var edit: VideoTemplate?
+    @Published var clips: [AVAsset] = []
+    @Published var starts: [Double] = []
+    var editStarted = Date()
 
     func create(from item: PhotosPickerItem, store: TemplateStore) async {
         error = nil
@@ -208,25 +216,33 @@ final class TemplateRunner: ObservableObject {
         defer { analyzing = nil }
         do {
             guard let movie = try await item.loadTransferable(type: PickedMovie.self) else { throw TemplateError.noClip }
-            let t = try await analyze(movie.url, store: store)
-            try? FileManager.default.removeItem(at: movie.url)
-            fill = t
+            analyzing = nil
+            trimSource = movie.url
         } catch {
             self.error = (error as? LocalizedError)?.errorDescription ?? "Import impossible. Réessayez."
         }
     }
 
+    /// Videos shared from TikTok/Instagram: the first one opens in the trimmer, the others wait.
     func importInbox(store: TemplateStore) async {
-        let files = TemplateStore.inboxVideos()
-        guard !files.isEmpty, analyzing == nil else { return }
+        guard trimSource == nil, analyzing == nil, let file = TemplateStore.inboxVideos().first else { return }
+        let copy = FileManager.default.temporaryDirectory.appendingPathComponent("shared-\(UUID().uuidString).\(file.pathExtension)")
+        guard (try? FileManager.default.copyItem(at: file, to: copy)) != nil else { return }
+        try? FileManager.default.removeItem(at: file)
+        trimSource = copy
+    }
+
+    /// Called with the trimmed reference (or the original when the user keeps it whole).
+    func analyzeTrimmed(_ url: URL, store: TemplateStore) async {
+        error = nil
         analyzing = 0
         defer { analyzing = nil }
-        var last: VideoTemplate?
-        for file in files {
-            if let t = try? await analyze(file, store: store) { last = t }
-            try? FileManager.default.removeItem(at: file)
+        do {
+            fill = try await analyze(url, store: store)
+            try? FileManager.default.removeItem(at: url)
+        } catch {
+            self.error = (error as? LocalizedError)?.errorDescription ?? "Import impossible. Réessayez."
         }
-        fill = last
     }
 
     private func analyze(_ url: URL, store: TemplateStore) async throws -> VideoTemplate {
@@ -251,8 +267,35 @@ final class TemplateRunner: ObservableObject {
                 clips.append(av)
                 assembling = 0.05 + 0.45 * Double(i + 1) / Double(assets.count)
             }
-            assembling = 0.6
-            let url = try await VideoAssembler.assemble(template: t, sourceURL: store.url(for: t), clips: clips,
+            // A clip reused in several slots continues where the previous slot stopped, so shots differ.
+            var used: [String: Double] = [:]
+            var offsets: [Double] = []
+            for (shot, a) in zip(t.shots, assets) {
+                let at = used[a.localIdentifier] ?? 0
+                offsets.append(at + shot.duration <= a.duration ? at : 0)
+                used[a.localIdentifier] = at + shot.duration
+            }
+            self.clips = clips
+            self.starts = offsets
+            self.edit = t
+            self.editStarted = started
+            assembling = nil
+            MSHaptic.success()
+            editing = true
+        } catch {
+            self.error = (error as? LocalizedError)?.errorDescription ?? "Le montage a échoué. Réessayez."
+        }
+    }
+
+    /// Rebuilds the video after timeline edits (durations, starts, texts, replaced clips).
+    func reassemble(store: TemplateStore) async {
+        guard let t = edit, clips.count == t.shots.count else { return }
+        error = nil
+        assembling = 0.3
+        let started = editStarted
+        defer { assembling = nil }
+        do {
+            let url = try await VideoAssembler.assemble(template: t, sourceURL: store.url(for: t), clips: clips, starts: starts,
                                                         options: .init(keepOriginalSound: keepSound, showTexts: showTexts))
             assembling = 1
             MSHaptic.success()
@@ -279,16 +322,38 @@ private struct TemplateRunnerModifier: ViewModifier {
                 }
             }
             .animation(MSAnimation.gentle, value: runner.analyzing != nil || runner.assembling != nil)
+            .fullScreenCover(isPresented: $runner.editing) { TemplateTimelineEditor(runner: runner, store: store) }
+            .fullScreenCover(item: Binding(get: { runner.trimSource.map(TrimFile.init) }, set: { runner.trimSource = $0?.url })) { file in
+                VideoTrimmer(url: file.url) { trimmed in
+                    runner.trimSource = nil
+                    Task { await runner.analyzeTrimmed(trimmed, store: store) }
+                } onCancel: {
+                    runner.trimSource = nil
+                }
+                .ignoresSafeArea()
+            }
             .fullScreenCover(item: $runner.fill) { t in
                 TemplateSlotPicker(template: t) { assets in
                     Task { await runner.assemble(t, assets: assets, store: store) }
                 }
             }
             .sheet(isPresented: Binding(get: { runner.result != nil }, set: { if !$0 { runner.result = nil } })) {
-                if let r = runner.result { TemplateResultView(url: r.url, template: r.template, seconds: r.seconds) }
+                if let r = runner.result {
+                    TemplateResultView(url: r.url, template: r.template, seconds: r.seconds) {
+                        runner.result = nil
+                        Task { try? await Task.sleep(for: .milliseconds(450)); runner.editing = true }
+                    }
+                        .overlay {
+                            if let p = runner.assembling {
+                                TemplateWorkingOverlay(title: "Montage de votre vidéo", steps: ["Application de vos modifications…", "Découpe au bon rythme…", "Ajout des textes…", "Export HD…"], progress: p)
+                            }
+                        }
+                }
             }
     }
 }
+
+private struct TrimFile: Identifiable { let url: URL; var id: String { url.path } }
 
 extension View {
     func templateRunner(_ runner: TemplateRunner, store: TemplateStore) -> some View {
@@ -302,6 +367,7 @@ struct TemplateResultView: View {
     let url: URL
     let template: VideoTemplate
     let seconds: Double
+    var onEdit: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
     @State private var saved = false
     @State private var savedId: String?
@@ -371,7 +437,14 @@ struct TemplateResultView: View {
             .background(MSColor.bg.ignoresSafeArea())
             .navigationTitle("Votre vidéo")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } } }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } }
+                if let onEdit {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button { player?.pause(); onEdit() } label: { Label("Modifier", systemImage: "slider.horizontal.below.rectangle") }
+                    }
+                }
+            }
             .sheet(isPresented: $showShare) { ActivitySheet(items: [url]) }
             .onAppear {
                 try? AVAudioSession.sharedInstance().setCategory(.playback)
@@ -380,6 +453,7 @@ struct TemplateResultView: View {
                 player?.play()
             }
             .onDisappear { player?.pause() }
+            .onChange(of: url) { _, u in player?.pause(); player = AVPlayer(url: u); player?.play(); saved = false; savedId = nil }
         }
         .preferredColorScheme(.dark)
     }
