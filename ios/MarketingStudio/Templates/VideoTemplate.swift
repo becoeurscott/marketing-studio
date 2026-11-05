@@ -93,8 +93,8 @@ private extension URL {
 enum CutDetector {
     struct Shot { var start: Double; var duration: Double; var keyframe: UIImage }
 
-    /// Samples ~10 frames per second at low resolution and starts a new shot where the picture
-    /// changes sharply (luma histogram distance). Shots shorter than `minShot` are merged.
+    /// Samples ~10 frames per second, crops black letterbox bands, and starts a new shot where the
+    /// picture changes sharply (pixel and brightness-histogram distances). Shots under `minShot` merge.
     static func detect(_ url: URL, minShot: Double = 0.35, progress: @escaping (Double) -> Void = { _ in }) async throws -> [Shot] {
         let asset = AVURLAsset(url: url)
         let duration = try await asset.load(.duration).seconds
@@ -103,27 +103,33 @@ enum CutDetector {
 
         let gen = AVAssetImageGenerator(asset: asset)
         gen.appliesPreferredTrackTransform = true
-        gen.maximumSize = CGSize(width: 96, height: 96)
+        gen.maximumSize = CGSize(width: 96, height: 160)
         gen.requestedTimeToleranceBefore = CMTime(value: 1, timescale: 30)
         gen.requestedTimeToleranceAfter = CMTime(value: 1, timescale: 30)
 
-        let step = 0.1
-        var cuts: [Double] = [0]
-        var previous: [Double]?
+        var frames: [(Double, CGImage)] = []
         var t = 0.0
         while t < duration {
-            if let cg = try? await gen.image(at: CMTime(seconds: t, preferredTimescale: 600)).image {
-                let h = histogram(cg)
-                if let p = previous {
-                    let d = zip(h, p).reduce(0) { $0 + abs($1.0 - $1.1) } / 2
-                    if d > 0.32, t - (cuts.last ?? 0) >= minShot { cuts.append(t) }
-                }
-                previous = h
+            if let cg = try? await gen.image(at: CMTime(seconds: t, preferredTimescale: 600)).image { frames.append((t, cg)) }
+            t += 0.1
+            progress(min(t / duration, 1) * 0.6)
+        }
+        let crop = contentRect(stride(from: 0, to: frames.count, by: max(1, frames.count / 12)).map { frames[$0].1 })
+
+        var cuts: [Double] = [0]
+        var previous: [Double]?
+        for (time, image) in frames {
+            let g = gray(image, crop: crop)
+            if let p = previous {
+                let pixel = zip(g, p).reduce(0) { $0 + abs($1.0 - $1.1) } / Double(g.count)
+                let hist = histogramDistance(g, p)
+                let isCut = pixel > 0.14 || hist > 0.30 || (pixel > 0.09 && hist > 0.18)
+                if isCut, time - (cuts.last ?? 0) >= minShot { cuts.append(time) }
             }
-            t += step
-            progress(min(t / duration, 1) * 0.8)
+            previous = g
         }
         if duration - (cuts.last ?? 0) < minShot, cuts.count > 1 { cuts.removeLast() }
+        progress(0.7)
 
         let big = AVAssetImageGenerator(asset: asset)
         big.appliesPreferredTrackTransform = true
@@ -135,19 +141,47 @@ enum CutDetector {
             let frame = (try? await big.image(at: mid).image).map { UIImage(cgImage: $0) } ?? UIImage()
             shots.append(Shot(start: start, duration: end - start, keyframe: frame))
         }
-        progress(0.9)
+        progress(0.8)
         return shots
     }
 
-    private static func histogram(_ image: CGImage) -> [Double] {
-        let w = 32, h = 32, bins = 32
+    /// 48×48 grayscale of the frame, optionally cropped to the picture area.
+    private static func gray(_ image: CGImage, crop: CGRect?) -> [Double] {
+        let source = crop.flatMap { image.cropping(to: $0) } ?? image
+        let w = 48, h = 48
         var pixels = [UInt8](repeating: 0, count: w * h)
         guard let ctx = CGContext(data: &pixels, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w,
                                   space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue) else { return [] }
-        ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
-        var hist = [Double](repeating: 0, count: bins)
-        for p in pixels { hist[Int(p) * bins / 256] += 1 }
-        return hist.map { $0 / Double(w * h) }
+        ctx.draw(source, in: CGRect(x: 0, y: 0, width: w, height: h))
+        return pixels.map { Double($0) / 255 }
+    }
+
+    private static func histogramDistance(_ a: [Double], _ b: [Double]) -> Double {
+        var h1 = [Double](repeating: 0, count: 16), h2 = h1
+        for v in a { h1[min(15, Int(v * 16))] += 1 }
+        for v in b { h2[min(15, Int(v * 16))] += 1 }
+        return zip(h1, h2).reduce(0) { $0 + abs($1.0 - $1.1) } / Double(2 * max(a.count, 1))
+    }
+
+    /// Rows that are never lit across sample frames are letterbox bands; returns the picture area.
+    private static func contentRect(_ frames: [CGImage]) -> CGRect? {
+        guard let first = frames.first else { return nil }
+        let w = first.width, h = first.height
+        var rowMax = [Double](repeating: 0, count: h)
+        for image in frames {
+            var p = [UInt8](repeating: 0, count: w * h)
+            guard let c = CGContext(data: &p, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w,
+                                    space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue) else { continue }
+            c.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
+            for y in 0..<h {
+                var sum = 0
+                for x in 0..<w { sum += Int(p[y * w + x]) }
+                rowMax[y] = max(rowMax[y], Double(sum) / Double(w))
+            }
+        }
+        let lit = rowMax.indices.filter { rowMax[$0] > 18 }
+        guard let top = lit.first, let bottom = lit.last, bottom - top > h / 5, bottom - top < h - 2 else { return nil }
+        return CGRect(x: 0, y: h - 1 - bottom, width: w, height: bottom - top + 1)
     }
 }
 
