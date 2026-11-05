@@ -1,5 +1,6 @@
 "use client";
 
+import { CanvaTemplates } from "@/components/canva/CanvaTemplates";
 import { LayoutTemplate } from "lucide-react";
 import { useMemo, useState } from "react";
 import { TemplateCard } from "@/components/library/TemplateCard";
@@ -35,6 +36,8 @@ export default function TemplatesPage() {
   return (
     <>
       <PageHeader title="Modèles" description="Partez d’un format qui a fait ses preuves. Chaque modèle ouvre le Studio préconfiguré." />
+
+      <CanvaTemplates />
 
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
         <SearchBar value={q} onChange={setQ} placeholder="Rechercher un modèle…" className="md:w-72" />

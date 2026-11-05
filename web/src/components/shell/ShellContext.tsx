@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { MotionConfig } from "framer-motion";
 import { useIsWide } from "@/components/studio/useMediaQuery";
 import { useStore } from "@/lib/store";
 
@@ -33,11 +34,17 @@ export function ShellProvider({ children }: { children: ReactNode }) {
   // Sidebar and motion preferences come from Paramètres (saved with the account).
   const collapsedPref = useStore((s) => s.preferences.compactSidebar ?? false);
   const reducedMotion = useStore((s) => s.preferences.reducedMotion ?? false);
+  const accentColor = useStore((s) => s.preferences.accentColor ?? "lime");
   const setPreference = useStore((s) => s.setPreference);
   const setSidebarCollapsed = (v: boolean) => setPreference("compactSidebar", v);
   useEffect(() => {
     document.documentElement.classList.toggle("reduce-motion", reducedMotion);
+    return () => document.documentElement.classList.remove("reduce-motion");
   }, [reducedMotion]);
+  useEffect(() => {
+    document.documentElement.dataset.accent = accentColor;
+    return () => { delete document.documentElement.dataset.accent; };
+  }, [accentColor]);
   const wide = useIsWide();
   const sidebarCollapsed = collapsedPref || !wide;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -50,7 +57,7 @@ export function ShellProvider({ children }: { children: ReactNode }) {
         sidebarCollapsed, sidebarLocked: !wide, setSidebarCollapsed, mobileMenuOpen, setMobileMenuOpen, immersive, setImmersive,
       }}
     >
-      {children}
+      <MotionConfig reducedMotion={reducedMotion ? "always" : "user"} transition={reducedMotion ? { duration: 0 } : undefined}>{children}</MotionConfig>
     </ShellContext.Provider>
   );
 }

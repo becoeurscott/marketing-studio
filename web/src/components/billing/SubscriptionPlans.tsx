@@ -9,10 +9,16 @@ import { MONTHLY_PLANS } from "@/lib/market";
 import { cn, formatDate, formatNumber } from "@/lib/utils";
 
 interface Current { plan: string | null; status: string; current_period_end: string | null }
+type DisplayCurrency = "local" | "eur";
+
+function euroPrice(amountXof: number): string {
+  return `€${(amountXof / 655.957).toFixed(2).replace(".", ",")}`;
+}
 
 /** Monthly passes paid by card (Stripe Checkout). Credits are added each paid month. */
-export function SubscriptionPlans() {
-  const money = useMoney();
+export function SubscriptionPlans({ currency = "local" }: { currency?: DisplayCurrency }) {
+  const localMoney = useMoney();
+  const money = currency === "eur" ? euroPrice : localMoney;
   const toast = useToast();
   const [current, setCurrent] = useState<Current | null>(null);
   const [busy, setBusy] = useState<string | null>(null);

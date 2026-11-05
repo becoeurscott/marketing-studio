@@ -44,7 +44,7 @@ struct ContentCalendarView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(c.name).msTitle(24)
+                    Text(L(c.name)).msTitle(24)
                     HStack(spacing: 8) {
                         legend(.draft); legend(.scheduled); legend(.published)
                     }
@@ -69,7 +69,7 @@ struct ContentCalendarView: View {
     private func legend(_ s: CalendarStatus) -> some View {
         HStack(spacing: 4) {
             Circle().fill(color(for: s)).frame(width: 6, height: 6)
-            Text(s.title).msCaption()
+            Text(L(s.title)).msCaption()
         }
     }
 

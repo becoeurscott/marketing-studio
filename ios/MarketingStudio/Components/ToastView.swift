@@ -8,7 +8,7 @@ struct ToastView: View {
             Image(systemName: toast.icon ?? defaultIcon)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(tint)
-            Text(toast.message)
+            Text(L(toast.message))
                 .font(MSFont.control(14))
                 .foregroundStyle(MSColor.text)
                 .lineLimit(2)

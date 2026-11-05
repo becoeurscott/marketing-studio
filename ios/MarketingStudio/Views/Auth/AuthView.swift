@@ -25,6 +25,17 @@ struct AuthView: View {
     var body: some View {
         ZStack {
             MSColor.bg.ignoresSafeArea()
+            if step == .welcome {
+                BackgroundVideoCycler().ignoresSafeArea()
+                LinearGradient(stops: [
+                    .init(color: .black.opacity(0.35), location: 0),
+                    .init(color: .black.opacity(0.15), location: 0.25),
+                    .init(color: .black.opacity(0.75), location: 0.55),
+                    .init(color: .black.opacity(0.95), location: 1),
+                ], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+                .transition(.opacity)
+            }
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
                     if step != .welcome { backButton }
@@ -45,7 +56,7 @@ struct AuthView: View {
 
     @ViewBuilder private var content: some View {
         switch step {
-        case .welcome: welcome
+        case .welcome: welcome.frame(minHeight: UIScreen.main.bounds.height - 100, alignment: .bottom)
         case .emailCode:
             form(title: "Recevoir un code", subtitle: "Pas de mot de passe : on vous envoie un code à 6 chiffres par e-mail.") {
                 emailField
@@ -134,17 +145,28 @@ struct AuthView: View {
 
     private var welcome: some View {
         VStack(alignment: .leading, spacing: 22) {
-            heroCollage
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    RoundedRectangle(cornerRadius: 7, style: .continuous).fill(MSColor.accentGradient).frame(width: 26, height: 26)
-                        .overlay(Text("M").font(.system(size: 15, weight: .heavy, design: .rounded)).foregroundStyle(MSColor.onAccent))
-                    Text("Marketing Studio").font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(MSColor.text)
-                }
-                Text("Vos pubs, photos et vidéos UGC en quelques minutes.").msTitle(30)
-                Text("Pour les commerçants africains : prix en FCFA, Mobile Money, statuts WhatsApp et créateurs qui parlent vos langues.").msBody(15)
+            Spacer(minLength: 0)
+            VStack(spacing: 14) {
+                MSBrandMark(size: 64)
+                Text("Bienvenue")
+                    .msTitle(30)
             }
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.center)
+            .shadow(color: .black.opacity(0.6), radius: 8, y: 2)
             VStack(spacing: 10) {
+                Button { run { try await auth.signInWithApple() } } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "apple.logo").font(.system(size: 17, weight: .semibold))
+                        Text("Continuer avec Apple").font(MSFont.control(15))
+                    }
+                    .foregroundStyle(Color(hex: 0x111111))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
+                }
+                .buttonStyle(MSPressStyle())
+                .disabled(busy)
                 Button { run { try await auth.signInWithGoogle() } } label: {
                     HStack(spacing: 10) {
                         Text("G").font(.system(size: 17, weight: .bold)).foregroundStyle(Color(hex: 0x4285F4))
@@ -155,7 +177,6 @@ struct AuthView: View {
                 }
                 .buttonStyle(MSPressStyle())
                 .disabled(busy)
-                MSButton(title: "Recevoir un code par e-mail", icon: "envelope.fill") { go(.emailCode) }
                 MSButton(title: "E-mail et mot de passe", icon: "key.fill", style: .secondary) { go(.password) }
             }
             Text("En continuant, vous acceptez les conditions d’utilisation de Marketing Studio. \(SokoziaConfig.welcomeCredits) crédits offerts à l’inscription.")
@@ -165,23 +186,8 @@ struct AuthView: View {
 
     /// Real creators and styles generated for Sokozia.
     private var heroCollage: some View {
-        let items = [Catalog.creators[0].avatarURL, Catalog.styles[0].imageURL, Catalog.creators[2].avatarURL, Catalog.styles[3].imageURL, Catalog.creators[1].avatarURL, Catalog.styles[4].imageURL]
-        return HStack(alignment: .top, spacing: 8) {
-            ForEach(0..<3, id: \.self) { col in
-                VStack(spacing: 8) {
-                    ForEach(0..<2, id: \.self) { row in
-                        RemoteImage(url: items[col * 2 + row], cornerRadius: 14)
-                            .frame(height: col == 1 ? (row == 0 ? 120 : 170) : (row == 0 ? 160 : 130))
-                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    }
-                }
-                .padding(.top, col == 1 ? 24 : 0)
-            }
-        }
-        .frame(height: 330, alignment: .top)
-        .clipped()
-        .mask(LinearGradient(colors: [.black, .black, .clear], startPoint: .top, endPoint: .bottom))
-        .padding(.top, 8)
+        ShowcaseWall(names: ["vendeuse-marche-wax", "grwm-perruque", "unboxing-telephone"], height: 360)
+            .padding(.top, 12)
     }
 
     // MARK: Building blocks
@@ -189,8 +195,8 @@ struct AuthView: View {
     private func form<Content: View>(title: String, subtitle: String, @ViewBuilder _ content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(title).msTitle(28)
-                Text(subtitle).msBody(15)
+                Text(L(title)).msTitle(28)
+                Text(L(subtitle)).msBody(15)
             }
             content()
         }
@@ -242,7 +248,7 @@ struct AuthView: View {
     private func banner(_ text: String, tone: Color, icon: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: icon).foregroundStyle(tone)
-            Text(text).msBody(14, color: MSColor.text)
+            Text(L(text)).msBody(14, color: MSColor.text)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)

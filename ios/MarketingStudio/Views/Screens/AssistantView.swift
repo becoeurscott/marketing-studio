@@ -17,14 +17,19 @@ struct AssistantView: View {
         let id = UUID()
         var text: String
         var fromUser: Bool
+        var action: AgentAction? = nil
+        var mediaURL: String? = nil
+        var actionState: ActionState = .idle
     }
 
-    private let suggestions: [(title: String, icon: String, route: AppRoute)] = [
-        ("Générer une campagne", "flag", .campaignBuilder),
-        ("Générer un shooting produit", "camera", .productShoot),
-        ("Générer un UGC", "person.wave.2", .ugcCreator),
-        ("Rédiger un texte publicitaire", "text.quote", .copywriter),
-        ("Générer une vidéo", "video", .videoGenerator),
+    enum ActionState: Equatable { case idle, running, done, failed }
+
+    private let suggestions: [(title: String, icon: String)] = [
+        ("Une vidéo UGC pour mon produit", "person.wave.2"),
+        ("Un shooting photo de mon produit", "camera"),
+        ("Un statut WhatsApp promo", "bubble.left"),
+        ("Des accroches pour vendre plus", "text.quote"),
+        ("Une vidéo produit de 10 s", "video"),
     ]
 
     var body: some View {
@@ -86,7 +91,8 @@ struct AssistantView: View {
     private func bubble(_ m: AssistantMessage) -> some View {
         HStack(alignment: .bottom, spacing: 8) {
             if m.fromUser { Spacer(minLength: 40) } else { assistantAvatar(size: 24) }
-            Text(m.text)
+            VStack(alignment: .leading, spacing: 8) {
+            Text(L(m.text))
                 .font(MSFont.body(14))
                 .foregroundStyle(MSColor.text)
                 .padding(.horizontal, 14)
@@ -96,9 +102,44 @@ struct AssistantView: View {
                     in: RoundedRectangle(cornerRadius: 16, style: .continuous)
                 )
                 .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(m.fromUser ? .clear : MSColor.border, lineWidth: 1))
+                if let media = m.mediaURL {
+                    RemoteImage(url: media, cornerRadius: 14)
+                        .frame(width: 200, height: 250)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .onTapGesture { go(.assets) }
+                }
+                if let a = m.action { actionCard(a, message: m) }
+            }
             if !m.fromUser { Spacer(minLength: 40) }
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+
+    private func actionCard(_ a: AgentAction, message m: AssistantMessage) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: icon(a)).font(.system(size: 13, weight: .bold)).foregroundStyle(MSColor.highlight)
+                Text(L(a.summary)).font(MSFont.control(13)).foregroundStyle(MSColor.text)
+            }
+            switch m.actionState {
+            case .idle, .failed:
+                Button { run(m) } label: {
+                    Text(m.actionState == .failed ? "Réessayer · \(cost(a)) crédits" : "Lancer · \(cost(a)) crédits")
+                        .font(MSFont.control(14)).foregroundStyle(MSColor.onAccent)
+                        .frame(maxWidth: .infinity).frame(height: 40)
+                        .background(MSColor.accent, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .buttonStyle(MSPressStyle())
+            case .running:
+                HStack(spacing: 8) { ProgressView().tint(MSColor.highlight); Text("Création en cours…").msCaption() }
+            case .done:
+                Label("Terminé", systemImage: "checkmark.circle.fill").font(MSFont.control(13)).foregroundStyle(MSColor.highlight)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: 280, alignment: .leading)
+        .background(MSColor.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(MSColor.accent.opacity(0.4), lineWidth: 1))
     }
 
     private var typingIndicator: some View {
@@ -120,11 +161,11 @@ struct AssistantView: View {
                 ForEach(suggestions, id: \.title) { s in
                     Button {
                         MSHaptic.tap()
-                        send(s.title, thenRoute: s.route)
+                        send(s.title)
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: s.icon).font(.system(size: 11, weight: .semibold)).foregroundStyle(MSColor.highlight)
-                            Text(s.title).font(MSFont.control(12)).foregroundStyle(MSColor.text)
+                            Text(L(s.title)).font(MSFont.control(12)).foregroundStyle(MSColor.text)
                         }
                         .padding(.horizontal, 12)
                         .frame(height: 32)
@@ -185,39 +226,106 @@ struct AssistantView: View {
         messages = [AssistantMessage(text: "Je travaille sur \(store.currentProject?.name ?? "votre projet"). Vous voulez des photos produit, un script UGC ou la campagne complète ?", fromUser: false)]
     }
 
-    private func send(_ text: String, thenRoute route: AppRoute? = nil) {
+    private func send(_ text: String) {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty, !typing else { return }
         draft = ""
         withAnimation(MSAnimation.snappy) { messages.append(AssistantMessage(text: t, fromUser: true)) }
         Task {
             withAnimation(MSAnimation.gentle) { typing = true }
-            let reply = await API.assistantReply(to: t, store: store)
-            let final = route.map { "C'est parti. J'ouvre \(routeTitle($0)) avec les paramètres de votre marque." } ?? reply
+            let reply: AssistantMessage
+            do {
+                let r = try await APIClient.agent(agentRequest())
+                reply = AssistantMessage(text: r.reply, fromUser: false, action: r.action)
+            } catch {
+                reply = AssistantMessage(text: (error as? LocalizedError)?.errorDescription ?? "Je n'arrive pas à répondre pour le moment. Réessayez.", fromUser: false)
+            }
             withAnimation(MSAnimation.snappy) {
                 typing = false
-                messages.append(AssistantMessage(text: final, fromUser: false))
+                messages.append(reply)
             }
-            if let route {
-                try? await Task.sleep(for: .milliseconds(700))
-                go(route)
+        }
+    }
+
+    private var productAssets: [Asset] {
+        Array(store.assets.filter { $0.kind == .image }.sorted { $0.createdAt > $1.createdAt }.prefix(30))
+    }
+
+    private func agentRequest() -> AgentRequest {
+        AgentRequest(
+            messages: messages.dropFirst().map { .init(role: $0.fromUser ? "user" : "assistant", content: $0.text) },
+            products: productAssets.map { .init(id: $0.id, name: $0.name, hint: nil) },
+            creators: store.creators.map { .init(id: $0.id, name: $0.name, hint: "\($0.gender), \($0.age) ans, \($0.style)") },
+            styles: Catalog.styles.map { .init(id: $0.id, name: $0.name, hint: $0.description) },
+            ugcFormats: UGCPresets.all.map { .init(id: $0.id, name: $0.title, hint: $0.hint) },
+            credits: store.credits
+        )
+    }
+
+    private func icon(_ a: AgentAction) -> String {
+        switch a.type {
+        case "ugc": return "person.wave.2"
+        case "shoot": return "camera.aperture"
+        case "video": return "video"
+        default: return "text.quote"
+        }
+    }
+
+    private func duration(_ a: AgentAction) -> Int {
+        a.durationSec ?? UGCPresets.preset(a.ugcFormatId)?.duration ?? 10
+    }
+
+    private func cost(_ a: AgentAction) -> Int {
+        switch a.type {
+        case "ugc": return AIModels.ugcCredits(seconds: duration(a))
+        case "shoot": return AIModels.imageModel(nil).credits * 2
+        case "video": return AIModels.videoCredits(AIModels.defaultVideo, seconds: duration(a), withPhoto: a.productId != nil)
+        default: return 0
+        }
+    }
+
+    private func update(_ id: UUID, _ change: (inout AssistantMessage) -> Void) {
+        guard let i = messages.firstIndex(where: { $0.id == id }) else { return }
+        withAnimation(MSAnimation.snappy) { change(&messages[i]) }
+    }
+
+    private func run(_ m: AssistantMessage) {
+        guard let a = m.action, m.actionState != .running else { return }
+        MSHaptic.tap()
+        update(m.id) { $0.actionState = .running }
+        Task {
+            do {
+                let result: AssistantMessage
+                switch a.type {
+                case "ugc":
+                    let v = try await API.generateUGC(UGCParams(productAssetId: a.productId, creatorId: a.creatorId ?? "", script: a.script ?? UGCPresets.preset(a.ugcFormatId)?.script ?? "", duration: duration(a), projectId: store.currentProjectId, presetId: a.ugcFormatId), store: store) { _ in }
+                    store.addAsset(name: "UGC · \(a.summary)", kind: .video, imageURL: v.posterURL, projectId: store.currentProjectId, tags: ["ugc", "assistant"], durationSeconds: v.duration, videoURL: v.videoURL)
+                    result = AssistantMessage(text: "Votre vidéo UGC est prête. Elle est dans Ressources.", fromUser: false, mediaURL: v.posterURL)
+                case "shoot":
+                    let imgs = try await API.generateProductShoot(ProductShootParams(productAssetId: a.productId, styleId: a.styleId, count: 2, projectId: store.currentProjectId), store: store)
+                    for img in imgs { store.addAsset(name: "Shooting · \(a.summary)", kind: .image, imageURL: img.url, projectId: store.currentProjectId, tags: ["shooting", "assistant"]) }
+                    result = AssistantMessage(text: "Voici votre shooting (\(imgs.count) photos), aussi dans Ressources.", fromUser: false, mediaURL: imgs.first?.url)
+                case "video":
+                    let v = try await API.generateVideo(VideoGenParams(prompt: a.prompt ?? a.summary, sourceAssetId: a.productId, duration: duration(a), projectId: store.currentProjectId), store: store) { _ in }
+                    store.addAsset(name: "Vidéo · \(a.summary)", kind: .video, imageURL: v.posterURL, projectId: store.currentProjectId, tags: ["video", "assistant"], durationSeconds: v.duration, videoURL: v.videoURL)
+                    result = AssistantMessage(text: "Votre vidéo est prête. Elle est dans Ressources.", fromUser: false, mediaURL: v.posterURL.isEmpty ? nil : v.posterURL)
+                default:
+                    let product = productAssets.first { $0.id == a.productId }?.name ?? (a.prompt ?? "mon produit")
+                    let c = try await API.generateCopy(CopyParams(product: product, audience: "clients sur WhatsApp et les réseaux"), store: store)
+                    result = AssistantMessage(text: c.text, fromUser: false)
+                }
+                update(m.id) { $0.actionState = .done }
+                MSHaptic.success()
+                withAnimation(MSAnimation.snappy) { messages.append(result) }
+            } catch {
+                update(m.id) { $0.actionState = .failed }
+                withAnimation(MSAnimation.snappy) { messages.append(AssistantMessage(text: (error as? LocalizedError)?.errorDescription ?? "La création a échoué. Vos crédits ne sont pas débités.", fromUser: false)) }
             }
         }
     }
 
     private func go(_ route: AppRoute) {
         if let onRoute { onRoute(route) } else { router.push(route) }
-    }
-
-    private func routeTitle(_ r: AppRoute) -> String {
-        switch r {
-        case .campaignBuilder: return "le Créateur de campagne"
-        case .productShoot: return "le Shooting produit IA"
-        case .ugcCreator: return "le Créateur UGC"
-        case .copywriter: return "le Rédacteur"
-        case .videoGenerator: return "le Générateur vidéo"
-        default: return "l'outil"
-        }
     }
 
     private func scrollToEnd(_ proxy: ScrollViewProxy) {

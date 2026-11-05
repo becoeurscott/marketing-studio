@@ -153,7 +153,14 @@ final class ImageGenSession: ObservableObject {
     @Published var camera = "Medium"
     @Published var composition = "Centered"
     @Published var model = StudioOptions.models[0]
+    @Published var preset: MarketingPreset?
+    var supportsPresets: Bool { AIModels.imageModel(model).id.hasPrefix("marketing-studio") && creator == nil }
+    var activePreset: MarketingPreset? { supportsPresets && productAsset != nil ? preset : nil }
     @Published var productAsset: Asset?
+    /// Influencer photo: a creator posing with the product (server adds the director prompt).
+    @Published var creator: Creator?
+    @Published var multiShot = false
+    @Published var shot = "hold"
     /// Sentence built by the Studio composer ("Créer une photo produit de mon parfum"); not user-editable.
     @Published var leadIn = ""
 
@@ -163,8 +170,8 @@ final class ImageGenSession: ObservableObject {
     @Published private(set) var busyAction: String?
 
     /// Images per generation.
-    var count = 2
-    var cost: Int { AIModels.imageModel(model).credits * count }
+    @Published var count = 2
+    var cost: Int { AIModels.creditsFor(usd: AIModels.imageModel(model).usd * (activePreset != nil ? 1.1 : 1)) * count }
 
     init(defaults: UserPreferences? = nil) {
         if let defaults {
@@ -178,7 +185,7 @@ final class ImageGenSession: ObservableObject {
     var isGenerating: Bool { phase == .generating }
     var hasResults: Bool { !results.isEmpty }
 
-    var canGenerate: Bool { !prompt.trimmingCharacters(in: .whitespaces).isEmpty || productAsset != nil || !leadIn.isEmpty }
+    var canGenerate: Bool { !prompt.trimmingCharacters(in: .whitespaces).isEmpty || productAsset != nil || !leadIn.isEmpty || creator != nil }
 
     var effectivePrompt: String {
         let p = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -208,10 +215,15 @@ final class ImageGenSession: ObservableObject {
             prompt: effectivePrompt, style: style, ratio: ratio, background: background,
             lighting: lighting, camera: camera, composition: composition,
             productAssetId: productAsset?.id, projectId: store.currentProjectId,
-            model: model, count: count
+            model: model, count: count, presetId: activePreset?.id
         )
         do {
-            let out = try await API.generateImage(params, store: store)
+            let out: [GeneratedImage]
+            if let c = creator {
+                out = try await API.generateInfluencer(creatorId: c.id, prompt: prompt, productAssetId: productAsset?.id, ratio: ratio, model: model, count: count, multi: multiShot, shot: shot, store: store)
+            } else {
+                out = try await API.generateImage(params, store: store)
+            }
             let name = String(params.prompt.prefix(32))
             results = out.enumerated().map { i, g in
                 let asset = store.addAsset(name: "\(name) · \(i + 1)", kind: .image, imageURL: g.url, projectId: store.currentProjectId, tags: [style, ratio, "generated"])
@@ -346,6 +358,7 @@ final class UGCGenSession: ObservableObject {
     @Published var leadIn = ""
     @Published var productAsset: Asset?
     @Published var creator: Creator?
+    @Published var preset: UGCPreset? { didSet { if let preset { duration = preset.duration } } }
     @Published var duration = 15
     @Published var ratio = "9:16"
     @Published var location = "Boutique"
@@ -367,6 +380,7 @@ final class UGCGenSession: ObservableObject {
         let lead = leadIn.trimmingCharacters(in: .whitespacesAndNewlines)
         if !lead.isEmpty { return s.isEmpty ? lead : "\(lead). \(s)" }
         if !s.isEmpty { return s }
+        if let preset { return preset.script }
         return "Bonjour ! Je vous présente \(productAsset?.name ?? "mon produit préféré"). Écrivez-nous sur WhatsApp pour commander."
     }
 
@@ -378,7 +392,7 @@ final class UGCGenSession: ObservableObject {
     func generate(store: AppStore, router: Router) async {
         guard !isGenerating, let creator else { return }
         phase = .generating(step: 0)
-        let params = UGCParams(productAssetId: productAsset?.id, creatorId: creator.id, script: effectiveScript, location: location, tone: tone, language: language, duration: duration, projectId: store.currentProjectId)
+        let params = UGCParams(productAssetId: productAsset?.id, creatorId: creator.id, script: effectiveScript, location: location, tone: tone, language: language, duration: duration, projectId: store.currentProjectId, presetId: preset?.id)
         do {
             var idx = -1
             let v = try await API.generateUGC(params, store: store) { [weak self] _ in

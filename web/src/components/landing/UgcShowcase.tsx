@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { DEMO_HREF } from "./Hero";
 import { CtaButton, Reveal, SectionTitle } from "./motion";
 
@@ -10,7 +11,7 @@ export interface UgcVideo {
   sector: string;
 }
 
-/** Generated with Marketing Studio (Higgsfield Marketing Studio image → Seedance 2.5), stored in /public/showcase/ugc. */
+/** Higgsfield Marketing Studio examples (image → Seedance 2.5), stored in /public/showcase/ugc. */
 export const UGC_VIDEOS: UgcVideo[] = [
   { slug: "temoignage-karite", style: "Témoignage", sector: "Cosmétiques" },
   { slug: "vendeuse-marche-wax", style: "Vendeuse au marché", sector: "Couture & wax" },
@@ -69,9 +70,9 @@ export function UgcShowcase() {
     <section id="ugc" className="scroll-mt-24 py-24 sm:py-32">
       <div className="px-4 sm:px-6">
         <SectionTitle
-          eyebrow="Vidéos UGC"
-          title="Des créateurs africains qui présentent vos produits"
-          text="Témoignage, déballage, marché, maquis, livraison WhatsApp : dix styles de vidéos créées avec Marketing Studio, en français, prêtes pour TikTok, Facebook et vos statuts."
+          eyebrow="Community · UGC TikTok · Higgsfield"
+          title="Des vidéos qui arrêtent le scroll"
+          text="Témoignage, déballage, marché, maquis ou livraison WhatsApp : des formats verticaux créés pour TikTok, Reels et Shorts."
         />
       </div>
       <Reveal className="mt-14">
@@ -79,8 +80,9 @@ export function UgcShowcase() {
           {UGC_VIDEOS.map((v) => <UgcCard key={v.slug} v={v} />)}
         </div>
       </Reveal>
-      <Reveal className="mt-10 flex justify-center">
+      <Reveal className="mt-10 flex flex-wrap justify-center gap-3">
         <CtaButton href={DEMO_HREF}>Créer ma vidéo UGC</CtaButton>
+        <Link href="/community" className="inline-flex h-11 items-center rounded-full border border-white/10 px-5 text-sm text-text2 transition-colors hover:border-white/20 hover:text-text">Voir dans Community</Link>
       </Reveal>
     </section>
   );

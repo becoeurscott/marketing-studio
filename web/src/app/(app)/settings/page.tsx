@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Bell, Building2, Camera, Check, CreditCard, ExternalLink, Globe2, KeyRound, LifeBuoy, LogOut, MessageCircle, Palette,
+  Bell, Building2, Camera, Check, CreditCard, ExternalLink, Globe2, KeyRound, LifeBuoy, LogOut, Palette,
   Shield, Sparkles, User as UserIcon, type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -21,10 +21,11 @@ import { Select } from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
 import { uploadPhoto } from "@/lib/higgsfield/client";
 import { imageModel } from "@/lib/higgsfield/models";
-import { COUNTRIES, CURRENCIES, LANGUAGES, PAYMENT_METHODS, SOKOZIA_WHATSAPP, USAGE_PACKS, countryOf, whatsappLink, type CountryCode, type LanguageId } from "@/lib/market";
+import { COUNTRIES, CURRENCIES, LANGUAGES, PAYMENT_METHODS, USAGE_PACKS, countryOf, type CountryCode, type LanguageId } from "@/lib/market";
 import { selectCountry, selectCurrentBrand, useStore } from "@/lib/store";
 import { IMAGE_STYLES, RATIOS, type AspectRatio, type ImageStyle } from "@/lib/types";
 import { cn, formatDate, formatNumber } from "@/lib/utils";
+import { useInterfaceLanguage } from "@/lib/interface-language";
 import { accountDetails, changePassword, sendPasswordCode, updateProfile, type AccountDetails } from "./actions";
 
 const STYLE_LABELS: Record<string, string> = {
@@ -47,6 +48,7 @@ const SECTIONS: { id: SectionId; label: string; icon: LucideIcon; description: s
 ];
 
 export default function SettingsPage() {
+  const { language, t } = useInterfaceLanguage();
   const [section, setSection] = useState<SectionId>("account");
   const [account, setAccount] = useState<AccountDetails | null>(null);
   const current = SECTIONS.find((s) => s.id === section)!;
@@ -56,9 +58,9 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader
-        title="Paramètres"
-        description="Compte, pays et langues, boutique, notifications, apparence, marque, crédits, sécurité et aide."
-        actions={<form action={signOut}><Button type="submit" variant="secondary" leftIcon={<LogOut className="size-4" />}>Se déconnecter</Button></form>}
+        title={t("Paramètres")}
+        description={language === "en" ? "Manage your account, country, languages and preferences." : "Compte, pays et langues, boutique, notifications, apparence, marque, crédits, sécurité et aide."}
+        actions={<form action={signOut}><Button type="submit" variant="secondary" leftIcon={<LogOut className="size-4" />}>{t("Se déconnecter")}</Button></form>}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-start">
@@ -79,7 +81,7 @@ export default function SettingsPage() {
                     )}
                   >
                     <s.icon className={cn("size-4", active ? "text-highlight" : "text-muted")} />
-                    {s.label}
+                    {t(s.label)}
                   </button>
                 </li>
               );
@@ -89,8 +91,8 @@ export default function SettingsPage() {
 
         <div className="min-w-0 space-y-4">
           <div className="mb-1">
-            <h2 className="text-lg font-semibold tracking-tight">{current.label}</h2>
-            <p className="text-[13px] text-text2">{current.description}</p>
+            <h2 className="text-lg font-semibold tracking-tight">{t(current.label)}</h2>
+            {language === "fr" && <p className="text-[13px] text-text2">{current.description}</p>}
           </div>
           {section === "account" && <AccountSection account={account} onSaved={setAccount} />}
           {section === "market" && <MarketSection />}
@@ -277,6 +279,16 @@ function AppearanceSection() {
     <>
       <Card>
         <CardHeader title="Interface" subtitle="Marketing Studio utilise un thème sombre, pensé pour mettre vos visuels en valeur." />
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+          <div><p className="text-sm font-medium">Couleur d’accent</p><p className="text-[13px] text-text2">Utilisée pour les actions principales et la sélection.</p></div>
+          <div className="flex gap-2" role="group" aria-label="Couleur d’accent">
+            {([{ id: "lime", label: "Vert", color: "#d1fe17" }, { id: "blue", label: "Bleu", color: "#70c7ff" }, { id: "pink", label: "Rose", color: "#ff91c1" }] as const).map((color) => (
+              <button key={color.id} type="button" aria-label={color.label} aria-pressed={(prefs.accentColor ?? "lime") === color.id} onClick={() => setPreference("accentColor", color.id)} className="flex size-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2">
+                <span className="flex size-7 items-center justify-center rounded-full" style={{ backgroundColor: color.color }}>{(prefs.accentColor ?? "lime") === color.id && <Check className="size-4 text-black" />}</span>
+              </button>
+            ))}
+          </div>
+        </div>
         <Toggle
           label="Barre latérale compacte"
           description={sidebarLocked ? "S’applique sur les grands écrans (la barre est déjà réduite sur cet écran)." : "Réduire la barre latérale aux icônes."}
@@ -299,6 +311,7 @@ function AppearanceSection() {
 /* ---------- Market ---------- */
 
 function MarketSection() {
+  const { language } = useInterfaceLanguage();
   const country = useStore(selectCountry);
   const setCountry = useStore((s) => s.setCountry);
   const prefs = useStore((s) => s.preferences);
@@ -315,6 +328,10 @@ function MarketSection() {
           <div className="rounded-md border border-border bg-surface p-3"><p className="text-muted text-[12px]">Monnaie</p><p className="font-medium mt-0.5">{currency.label} ({currency.symbol})</p></div>
           <div className="rounded-md border border-border bg-surface p-3"><p className="text-muted text-[12px]">Moyens de paiement</p><p className="font-medium mt-0.5">{info.payments.map((m) => PAYMENT_METHODS[m].label).join(", ")}</p></div>
         </div>
+      </Card>
+      <Card>
+        <CardHeader title={language === "en" ? "Navigation language" : "Langue de navigation"} subtitle={language === "en" ? "Changes the navigation and settings menu. Other screens are currently in French." : "Modifie la navigation et le menu des paramètres. Les autres écrans restent pour le moment en français."} />
+        <Select label={language === "en" ? "Language" : "Langue"} name="interfaceLanguage" value={prefs.interfaceLanguage ?? "fr"} onChange={(e) => setPreference("interfaceLanguage", e.target.value as "fr" | "en")} options={[{ value: "fr", label: "Français" }, { value: "en", label: "English" }]} />
       </Card>
       <Card>
         <CardHeader title="Langue des textes et voix off" subtitle="Langue proposée par défaut dans le rédacteur, les notes vocales et les vidéos UGC." />
@@ -390,11 +407,9 @@ function CreditsSection({ account }: { account: AccountDetails | null }) {
   const credits = useStore((s) => s.credits);
   const transactions = useStore((s) => s.transactions);
   const country = useStore(selectCountry);
-  const user = useStore((s) => s.user);
   const money = useMoney();
   const info = countryOf(country);
   const mobile = info.payments.filter((m) => PAYMENT_METHODS[m].mobile).map((m) => PAYMENT_METHODS[m].label);
-  const email = account?.email ?? user.email;
 
   return (
     <>
@@ -428,15 +443,8 @@ function CreditsSection({ account }: { account: AccountDetails | null }) {
       </Card>
       <Card>
         <CardHeader title="Paiement" subtitle={`Mobile Money dans votre pays : ${mobile.join(", ") || "carte bancaire"}.`} />
-        <p className="text-[13px] text-text2">Le paiement Mobile Money directement dans Marketing Studio arrive bientôt. En attendant, écrivez-nous sur WhatsApp : nous rechargeons votre compte dès réception du paiement.</p>
-        <a
-          href={whatsappLink(SOKOZIA_WHATSAPP, `Bonjour Marketing Studio, je veux recharger des crédits pour le compte ${email}.`)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block mt-3"
-        >
-          <Button variant="secondary" leftIcon={<MessageCircle className="size-4" />}>Recharger via WhatsApp</Button>
-        </a>
+        <p className="text-[13px] text-text2">Choisissez une recharge dans votre espace crédits pour accéder aux options de paiement disponibles.</p>
+        <Link href="/credits" className="inline-block mt-3"><Button variant="secondary">Ouvrir les crédits</Button></Link>
       </Card>
     </>
   );
@@ -519,7 +527,6 @@ function SecuritySection({ account }: { account: AccountDetails | null }) {
 function HelpSection() {
   const links = [
     { label: "Centre d’aide et FAQ", description: "Guides et réponses aux questions fréquentes.", href: "/help", external: false },
-    { label: "Écrire au support sur WhatsApp", description: "Questions, recharges, problèmes : on vous répond sur WhatsApp.", href: whatsappLink(SOKOZIA_WHATSAPP, "Bonjour Marketing Studio, "), external: true },
     { label: "Crédits et tarifs", description: "Le fonctionnement des crédits et le prix des packs.", href: "/pricing", external: false },
   ];
   return (

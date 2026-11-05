@@ -13,7 +13,7 @@ struct MainTabView: View {
                         }
                 }
                 .tabItem {
-                    Label(tab.title, systemImage: router.selectedTab == tab ? tab.selectedIcon : tab.icon)
+                    Label(L(tab.title), systemImage: router.selectedTab == tab ? tab.selectedIcon : tab.icon)
                 }
                 .tag(tab)
             }

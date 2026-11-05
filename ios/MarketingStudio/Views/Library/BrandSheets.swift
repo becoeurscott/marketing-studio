@@ -41,6 +41,24 @@ struct ColorSwatch: View {
 
 // MARK: - Edit a single text field of the brand
 
+/// Built-in iOS fonts, so each preview works without downloading a font.
+enum BrandFonts {
+    static let options: [(name: String, postScript: String)] = [
+        ("Avenir Next", "AvenirNext-Regular"), ("Helvetica Neue", "HelveticaNeue"),
+        ("Georgia", "Georgia"), ("Baskerville", "Baskerville"),
+        ("Didot", "Didot"), ("Futura", "Futura-Medium"),
+        ("Palatino", "Palatino-Roman"), ("Times New Roman", "TimesNewRomanPSMT"),
+        ("Trebuchet MS", "TrebuchetMS"), ("Verdana", "Verdana"),
+        ("Menlo", "Menlo-Regular"), ("Courier", "Courier")
+    ]
+
+    static func preview(_ name: String, size: CGFloat) -> Font {
+        let postScript = options.first(where: { $0.name == name })?.postScript ?? name
+        guard UIFont(name: postScript, size: size) != nil else { return .system(size: size) }
+        return .custom(postScript, size: size)
+    }
+}
+
 enum BrandField: String, Identifiable, CaseIterable {
     case name, website, description, industry, audience, fonts
     var id: String { rawValue }
@@ -61,7 +79,7 @@ enum BrandField: String, Identifiable, CaseIterable {
         case .description: return "Que vend la marque et quelles sont ses valeurs ?"
         case .industry: return "ex. Beauté, Café, Fitness"
         case .audience: return "À qui s'adresse-t-elle ?"
-        case .fonts: return "Séparées par des virgules, ex. Inter, Playfair Display"
+        case .fonts: return "Choisissez les polices"
         }
     }
     var multiline: Bool { self == .description || self == .audience }
@@ -73,13 +91,22 @@ struct BrandFieldEditSheet: View {
     @EnvironmentObject private var router: Router
     @Environment(\.dismiss) private var dismiss
     @State private var value = ""
+    @State private var headingFont = "Avenir Next"
+    @State private var bodyFont = "Helvetica Neue"
 
     private let industries = ["Beauté", "Mode", "Alimentation", "Technologie", "Fitness", "Immobilier", "Café", "Maison", "Finance", "Voyage"]
 
     var body: some View {
         BottomSheetContainer(title: field.title) {
             VStack(alignment: .leading, spacing: 14) {
-                if field.multiline {
+                if field == .fonts {
+                    fontMenu("Police des titres", selection: $headingFont)
+                    fontMenu("Police du texte", selection: $bodyFont)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Votre marque").font(BrandFonts.preview(headingFont, size: 23)).foregroundStyle(MSColor.text)
+                        Text("Un aperçu de votre texte.").font(BrandFonts.preview(bodyFont, size: 15)).foregroundStyle(MSColor.text2)
+                    }.padding(12).frame(maxWidth: .infinity, alignment: .leading).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 12))
+                } else if field.multiline {
                     MSTextEditor(placeholder: field.placeholder, text: $value, minHeight: 120)
                 } else {
                     MSTextField(placeholder: field.placeholder, text: $value,
@@ -94,7 +121,7 @@ struct BrandFieldEditSheet: View {
                     }
                 }
                 Spacer(minLength: 0)
-                MSButton(title: "Enregistrer", icon: "checkmark", isDisabled: value.trimmingCharacters(in: .whitespaces).isEmpty) {
+                MSButton(title: "Enregistrer", icon: "checkmark", isDisabled: field != .fonts && value.trimmingCharacters(in: .whitespaces).isEmpty) {
                     var b = store.brand
                     let v = value.trimmingCharacters(in: .whitespacesAndNewlines)
                     switch field {
@@ -103,7 +130,7 @@ struct BrandFieldEditSheet: View {
                     case .description: b.description = v
                     case .industry: b.industry = v
                     case .audience: b.audience = v
-                    case .fonts: b.fonts = v.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+                    case .fonts: b.fonts = [headingFont, bodyFont]
                     }
                     store.updateBrand(b)
                     router.toast("\(field.title) mis à jour", style: .success)
@@ -121,8 +148,34 @@ struct BrandFieldEditSheet: View {
             case .description: value = b.description
             case .industry: value = b.industry
             case .audience: value = b.audience
-            case .fonts: value = b.fonts.joined(separator: ", ")
+            case .fonts:
+                headingFont = b.fonts.first ?? "Avenir Next"
+                bodyFont = b.fonts.dropFirst().first ?? "Helvetica Neue"
             }
+        }
+    }
+
+    private func fontMenu(_ title: String, selection: Binding<String>) -> some View {
+        Menu {
+            if !BrandFonts.options.contains(where: { $0.name == selection.wrappedValue }) {
+                Button(selection.wrappedValue) { }
+            }
+            ForEach(BrandFonts.options, id: \.name) { option in
+                Button { selection.wrappedValue = option.name } label: {
+                    if selection.wrappedValue == option.name { Label(option.name, systemImage: "checkmark") }
+                    else { Text(option.name) }
+                }
+            }
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(L(title)).msCaption()
+                    Text(selection.wrappedValue).font(BrandFonts.preview(selection.wrappedValue, size: 16)).foregroundStyle(MSColor.text)
+                }
+                Spacer()
+                Image(systemName: "chevron.up.chevron.down").foregroundStyle(MSColor.muted)
+            }
+            .padding(12).frame(maxWidth: .infinity, minHeight: 54).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 12))
         }
     }
 }

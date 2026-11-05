@@ -109,7 +109,7 @@ struct FavoritesView: View {
                             Image(systemName: g.kind.icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.text2)
                                 .frame(width: 34, height: 34).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(g.prompt).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(3).multilineTextAlignment(.leading)
+                                Text(L(g.prompt)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(3).multilineTextAlignment(.leading)
                                 Text("\(g.kind.title) · \(g.model)").msCaption()
                             }
                             Spacer()
@@ -137,7 +137,7 @@ struct FavoritesView: View {
                         HStack(spacing: 12) {
                             AvatarView(url: c.avatarURL, name: c.name, size: 46)
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(c.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                                Text(L(c.name)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
                                 Text("\(c.age) · \(c.style) · \(c.languages.joined(separator: ", "))").msCaption().lineLimit(1)
                             }
                             Spacer()

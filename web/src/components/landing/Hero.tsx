@@ -8,9 +8,10 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
-import { Camera, Clapperboard, Megaphone, Menu, Sparkles, X } from "lucide-react";
+import { Camera, Clapperboard, Megaphone, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { currentAccount } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
 import { CREATIVES, Creative } from "./Creative";
 import { CtaButton, EASE, Particles } from "./motion";
@@ -19,9 +20,9 @@ import { CtaButton, EASE, Particles } from "./motion";
 export const DEMO_HREF = "/inscription";
 
 const NAV = [
-  { href: "#fonctionnalites", label: "Fonctionnalités" },
-  { href: "#whatsapp", label: "WhatsApp" },
-  { href: "#creations", label: "Créations" },
+  { href: "#ugc", label: "Vidéos" },
+  { href: "#presets", label: "Presets" },
+  { href: "#styles", label: "Styles" },
   { href: "#tarifs", label: "Tarifs" },
   { href: "#faq", label: "FAQ" },
 ];
@@ -29,9 +30,7 @@ const NAV = [
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-[17px]">
-      <span className="size-8 rounded-lg bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shadow-[0_0_20px_rgba(209,254,23,0.45)]">
-        <Sparkles className="size-4 text-on-accent" />
-      </span>
+      <img src="/brand-mark.png" alt="" aria-hidden="true" className="size-8 rounded-lg shadow-[0_0_20px_rgba(209,254,23,0.35)]" />
       Marketing Studio
     </Link>
   );
@@ -42,6 +41,20 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  useEffect(() => {
+    let active = true;
+    const checkSession = () => {
+      void currentAccount().then((user) => {
+        if (active) setSignedIn(Boolean(user));
+      }).catch(() => {
+        if (active) setSignedIn(false);
+      });
+    };
+    checkSession();
+    window.addEventListener("focus", checkSession);
+    return () => { active = false; window.removeEventListener("focus", checkSession); };
+  }, []);
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 24));
   useEffect(() => {
     if (!menuOpen) return;
@@ -87,14 +100,14 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-        <Link href="/connexion" className="hidden sm:inline-flex h-9 items-center px-3 text-sm text-text2 hover:text-text transition-colors">
+        {signedIn === false && <Link href="/connexion" className="hidden sm:inline-flex h-9 items-center px-3 text-sm text-text2 hover:text-text transition-colors">
           Connexion
-        </Link>
+        </Link>}
         <Link
-          href={DEMO_HREF}
+          href={signedIn ? "/home" : DEMO_HREF}
           className="group inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition-colors"
         >
-          Commencer
+          {signedIn ? "Mon espace" : "Commencer"}
           <span className="transition-transform group-hover:translate-x-0.5">↗</span>
         </Link>
         {/* Section menu for phones/tablets (the nav links are hidden below lg) */}
@@ -123,9 +136,9 @@ export function SiteHeader() {
                 {n.label}
               </a>
             ))}
-            <Link href="/connexion" onClick={() => setMenuOpen(false)} className="sm:hidden flex h-11 items-center justify-end rounded-xl px-3 text-[15px] text-text2 hover:text-text hover:bg-white/5 transition-colors border-t border-white/5 mt-1 pt-1">
+            {signedIn === false && <Link href="/connexion" onClick={() => setMenuOpen(false)} className="sm:hidden flex h-11 items-center justify-end rounded-xl px-3 text-[15px] text-text2 hover:text-text hover:bg-white/5 transition-colors border-t border-white/5 mt-1 pt-1">
               Connexion
-            </Link>
+            </Link>}
           </motion.nav>
       )}
     </motion.header>
@@ -206,17 +219,17 @@ export function Hero() {
   const orbScale = useTransform(scrollYProgress, [0, 1], [1, 1.3]);
   const contentY = useTransform(scrollYProgress, [0, 1], [0, -80]);
 
-  const words = "Des contenus marketing qui vendent vraiment".split(" ");
+  const words = "Des pubs qui vendent".split(" ");
 
   return (
     <section ref={ref} className="relative overflow-hidden pt-36 sm:pt-44">
       <motion.div
         aria-hidden
         style={{ y: orbY, scale: orbScale }}
-        className="pointer-events-none absolute -top-[380px] left-1/2 -translate-x-[70%] size-[760px] rounded-full bg-[radial-gradient(circle_at_center,rgba(209,254,23,0.9),rgba(166,207,12,0.45)_35%,transparent_68%)] blur-2xl opacity-70"
+        className="pointer-events-none absolute -top-[380px] left-1/2 -translate-x-[70%] size-[760px] rounded-full bg-[radial-gradient(circle_at_center,rgba(209,254,23,0.55),rgba(166,207,12,0.2)_35%,transparent_68%)] blur-3xl opacity-60"
       />
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,transparent_30%,#070707_75%)]" />
-      <Particles count={50} />
+      <Particles count={24} />
 
       <motion.div style={{ y: contentY }} className="relative mx-auto max-w-5xl px-4 sm:px-6 text-center">
         <motion.span
@@ -226,7 +239,7 @@ export function Hero() {
           className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[11px] sm:px-3.5 sm:py-1.5 sm:text-xs text-text2 backdrop-blur max-w-full"
         >
           <span className="size-1.5 shrink-0 rounded-full bg-green shadow-[0_0_8px_#a6cf0c]" />
-          Le studio marketing IA des commerçants africains
+          Le studio marketing IA pour vendre en ligne
         </motion.span>
 
         <h1 className="mt-7 text-[42px] leading-[1.02] sm:text-6xl lg:text-7xl font-medium tracking-[-0.04em] text-balance">
@@ -249,8 +262,7 @@ export function Hero() {
           transition={{ duration: 0.9, delay: 0.7, ease: EASE }}
           className="mt-6 mx-auto max-w-2xl text-base sm:text-lg text-text2 leading-relaxed"
         >
-          Photos produit, vidéos UGC, statuts WhatsApp et pubs avec vos prix en FCFA : Marketing Studio transforme une simple
-          photo prise au téléphone en contenus prêts à vendre sur WhatsApp, TikTok et Facebook. Dès 1 000 FCFA, en Mobile Money.
+          Une photo suffit. Choisissez un style, ajoutez votre prix et obtenez une pub prête pour WhatsApp, TikTok ou Facebook.
         </motion.p>
 
         <motion.div
@@ -259,9 +271,9 @@ export function Hero() {
           transition={{ duration: 0.9, delay: 0.85, ease: EASE }}
           className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3"
         >
-          <CtaButton href={DEMO_HREF}>Essayer la démo</CtaButton>
-          <CtaButton href="#creations" variant="ghost">
-            Voir les créations
+          <CtaButton href={DEMO_HREF}>Créer ma première pub</CtaButton>
+          <CtaButton href="#ugc" variant="ghost">
+            Voir les exemples
           </CtaButton>
         </motion.div>
       </motion.div>
@@ -283,7 +295,7 @@ export function Hero() {
       >
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-xs sm:text-sm text-text2 backdrop-blur">
           {HERO_TAGS.map(({ icon: Icon, label }, i) => (
-            <span key={label} className="flex items-center gap-2">
+          <span key={label} className="flex items-center gap-2">
               {i > 0 && <span className="size-1 rounded-full bg-highlight" />}
               <Icon className="size-4 text-highlight" />
               {label}
@@ -291,6 +303,8 @@ export function Hero() {
           ))}
         </div>
       </motion.div>
+
+      <p className="relative mt-5 text-center text-xs text-muted">Sans abonnement · dès 1 000 FCFA · paiement Mobile Money</p>
 
       {/* Floor glow under the carousel. */}
       <div aria-hidden className="pointer-events-none mx-auto mt-10 h-40 max-w-4xl bg-[radial-gradient(ellipse_at_top,rgba(209,254,23,0.35),transparent_70%)]" />

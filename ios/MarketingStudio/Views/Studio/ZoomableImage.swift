@@ -65,7 +65,7 @@ struct StudioZoomableImage: View {
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: icon).font(.system(size: 11, weight: .semibold))
-                Text(label).font(MSFont.caption(11))
+                Text(L(label)).font(MSFont.caption(11))
             }
             .foregroundStyle(MSColor.text)
             .padding(.horizontal, 10)

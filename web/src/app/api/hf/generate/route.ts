@@ -5,6 +5,22 @@ import type { GenerationRequest } from "@/lib/higgsfield/types";
 import { getSessionUser } from "@/lib/insforge/server";
 import { attachRequest } from "@/lib/jobs";
 import { webhookUrlFor } from "@/lib/higgsfield/webhook-token";
+import { creators, creatorSheetUrl } from "@/data/creators";
+import { imageModel } from "@/lib/higgsfield/models";
+import { influencerPrompt } from "@/lib/influencer";
+
+/** Influencer photo: creator sheet first, product second, short user idea wrapped in the director prompt. */
+function applyInfluencer(body: GenerationRequest) {
+  const inf = body.influencer;
+  if (!inf || body.kind !== "image") return;
+  const c = creators.find((x) => x.id === inf.creatorId);
+  if (!c) throw new Error("Créateur inconnu.");
+  const product = (body.imageUrls ?? []).find((u) => typeof u === "string" && u.startsWith("https://"));
+  body.prompt = influencerPrompt({ name: c.name, look: c.look ?? "", country: c.country ?? "", userPrompt: String(body.prompt ?? ""), shot: inf.shot, hasProduct: !!product, variation: Number(inf.variation) || 0 });
+  body.imageUrls = [creatorSheetUrl(c), ...(product ? [product] : [])];
+  if (!imageModel(body.model).acceptsImages) body.model = "marketing-studio-1k";
+  body.presetId = undefined;
+}
 
 export async function POST(request: Request) {
   const blocked = guard(request, { limit: Number(process.env.HF_HOURLY_LIMIT) || 60 });
@@ -14,6 +30,7 @@ export async function POST(request: Request) {
   let body: GenerationRequest;
   try {
     body = (await request.json()) as GenerationRequest;
+    applyInfluencer(body);
     toModelInput(body);
   } catch (error) {
     return errorResponse(error);

@@ -40,7 +40,7 @@ struct GenerationErrorView: View {
             VStack(spacing: 6) {
                 ErrorStateView(message: "Une erreur est survenue.", retry: retry, back: back)
                 if !message.isEmpty {
-                    Text(message).msCaption().multilineTextAlignment(.center).padding(.horizontal, 24).padding(.top, -28)
+                    Text(L(message)).msCaption().multilineTextAlignment(.center).padding(.horizontal, 24).padding(.top, -28)
                 }
             }
         }

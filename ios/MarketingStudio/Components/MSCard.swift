@@ -42,7 +42,7 @@ struct MSBadge: View {
     var body: some View {
         HStack(spacing: 4) {
             if let icon { Image(systemName: icon).font(.system(size: 9, weight: .bold)) }
-            Text(text).font(.system(size: 11, weight: .semibold))
+            Text(L(text)).font(.system(size: 11, weight: .semibold))
         }
         .foregroundStyle(foreground)
         .padding(.horizontal, 8)
@@ -105,14 +105,14 @@ struct SectionHeader: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).msHeadline(17)
-                if let subtitle { Text(subtitle).msCaption() }
+                Text(L(title)).msHeadline(17)
+                if let subtitle { Text(L(subtitle)).msCaption() }
             }
             Spacer()
             if let actionTitle, let action {
                 Button(action: action) {
                     HStack(spacing: 3) {
-                        Text(actionTitle)
+                        Text(L(actionTitle))
                         Image(systemName: "chevron.right").font(.system(size: 10, weight: .bold))
                     }
                     .font(MSFont.control(13))
@@ -141,8 +141,8 @@ struct StatTile: View {
                     .frame(width: 30, height: 30)
                     .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(value).msHeadline(22)
-                    Text(label).msCaption()
+                    Text(L(value)).msHeadline(22)
+                    Text(L(label)).msCaption()
                 }
             }
         }

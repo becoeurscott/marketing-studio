@@ -137,6 +137,10 @@ struct ImageResultsView: View {
                 action(session.busyAction == "upscale" ? "Agrandissement" : "Agrandir", "arrow.up.left.and.arrow.down.right", loading: session.busyAction == "upscale") {
                     Task { await session.upscaleSelected(store: store, router: router) }
                 }
+                action("Variantes", "square.on.square") { session.multiShot = false; session.count = 4; onRegenerate() }
+                if session.creator != nil {
+                    action("Autres plans", "camera.metering.multispot") { session.multiShot = true; session.count = 4; onRegenerate() }
+                }
                 action("Régénérer", "arrow.clockwise") { onRegenerate() }
                 action("Utiliser dans une campagne", "flag") { showCampaignPicker = true }
             }
@@ -156,7 +160,7 @@ struct ImageResultsView: View {
                 } else {
                     Image(systemName: icon).font(.system(size: 12, weight: .semibold))
                 }
-                Text(title).font(MSFont.control(12))
+                Text(L(title)).font(MSFont.control(12))
             }
             .foregroundStyle(tint ?? MSColor.text)
             .padding(.horizontal, 11)
@@ -201,7 +205,7 @@ struct StudioUseInCampaignSheet: View {
                                         .frame(width: 36, height: 36)
                                         .background(MSColor.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(c.name).msHeadline(15).lineLimit(1)
+                                        Text(L(c.name)).msHeadline(15).lineLimit(1)
                                         Text("\(c.assetIds.count) ressources · \(c.platforms.map { $0.title }.joined(separator: ", "))").msCaption().lineLimit(1)
                                     }
                                     Spacer()

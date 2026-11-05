@@ -1,6 +1,6 @@
 "use client";
 
-import { Clapperboard, Megaphone, RefreshCw, Save, Video, X } from "lucide-react";
+import { ArrowLeftRight, Clapperboard, Gift, Hand, Megaphone, Mic, Package, Quote, RefreshCw, Save, Scale, Shirt, Sparkles, Tag, UtensilsCrossed, Video, X, Zap, type LucideIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { Canvas, ControlField, CreatorCard, ErrorState, ProductPicker, StudioControls } from "@/components/creative";
@@ -28,6 +28,7 @@ type UgcTone = (typeof TONES)[number];
 const TONE_LABELS: Record<UgcTone, string> = { Excited: "Enthousiaste", Casual: "Décontracté", Professional: "Professionnel", Funny: "Drôle", Luxury: "Luxe", Authentic: "Authentique" };
 const LOCATIONS = ["Boutique", "Marché", "Maquis", "Salon de coiffure", "Cour familiale", "Salon", "Chambre", "Cuisine", "Rue", "Studio"];
 const DURATIONS = ["5", "10", "15"] as const;
+const UGC_ICONS: Record<string, LucideIcon> = { ArrowLeftRight, Package, Quote, Hand, Sparkles, UtensilsCrossed, Shirt, Zap, Mic, Tag, Scale, Gift };
 
 type Phase = { kind: "idle" } | { kind: "loading"; step: number } | { kind: "done"; result: VideoResult } | { kind: "error"; error: unknown };
 
@@ -61,6 +62,7 @@ function UGCPage() {
     // Swap the script only if it is still the default or another format's starter script.
     if (script === DEFAULT_SCRIPT || UGC_TYPES.some((t) => t.script === script)) setScript(next.script);
     setUgcTypeId(id);
+    setDuration(String(next.durationSec) as (typeof DURATIONS)[number]);
   };
   const [tone, setTone] = useState<UgcTone>(() => {
     const t = preset?.tone ? capitalize(preset.tone) : "";
@@ -121,8 +123,27 @@ function UGCPage() {
           {featured.map((c) => <CreatorCard key={c.id} creator={c} compact selected={c.id === creatorId} onSelect={() => setCreatorId(c.id)} />)}
         </div>
       </ControlField>
-      <ControlField label="Type de vidéo" hint={ugcType.hint}>
-        <ChipGroup size="sm" options={UGC_TYPES.map((t) => ({ value: t.id, label: t.label }))} value={ugcTypeId} onChange={pickUgcType} />
+      <ControlField label="Format UGC" hint="Choisissez un format, puis votre créateur et votre produit.">
+        <div className="grid grid-cols-2 gap-2">
+          {UGC_TYPES.map((t) => {
+            const Icon = UGC_ICONS[t.icon] ?? Video;
+            const on = t.id === ugcTypeId;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => pickUgcType(t.id)}
+                aria-pressed={on}
+                className={cn("flex flex-col items-start gap-1 rounded-xl border p-2.5 text-left transition-colors", on ? "border-accent bg-accent/10" : "border-border bg-card hover:bg-elevated")}
+              >
+                <Icon className="size-4 text-highlight" />
+                <span className="text-[13px] font-semibold leading-tight">{t.label}</span>
+                <span className="text-[11px] text-text2 leading-snug line-clamp-2">{t.hint}</span>
+                <span className="text-[10px] text-muted">{t.durationSec} s · {ugcCredits(t.durationSec)} crédits</span>
+              </button>
+            );
+          })}
+        </div>
       </ControlField>
       <Textarea label="Script" value={script} onChange={(e) => setScript(e.target.value)} rows={4} hint={`${script.length} caractères`} />
       <Select label="Lieu" value={location} onChange={(e) => setLocation(e.target.value)} options={LOCATIONS.map((l) => ({ value: l, label: l }))} />

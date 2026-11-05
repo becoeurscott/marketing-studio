@@ -48,7 +48,7 @@ struct CampaignCard: View {
                     }
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(alignment: .top) {
-                        Text(campaign.name)
+                        Text(L(campaign.name))
                             .font(MSFont.control(15))
                             .foregroundStyle(MSColor.text)
                             .lineLimit(2)
@@ -150,7 +150,7 @@ struct CalendarItemEditSheet: View {
                             HStack(spacing: 12) {
                                 if let a = assetId.flatMap({ store.asset($0) }) {
                                     RemoteImage(url: a.imageURL, cornerRadius: 8).frame(width: 44, height: 44)
-                                    Text(a.name).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
+                                    Text(L(a.name)).font(MSFont.control(14)).foregroundStyle(MSColor.text).lineLimit(1)
                                 } else {
                                     Image(systemName: "photo.badge.plus").foregroundStyle(MSColor.muted).frame(width: 44, height: 44)
                                         .background(MSColor.card, in: RoundedRectangle(cornerRadius: 8, style: .continuous))

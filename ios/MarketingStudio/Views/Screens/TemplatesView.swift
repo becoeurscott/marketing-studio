@@ -105,7 +105,7 @@ struct TemplateCard: View {
                         .buttonStyle(MSPressStyle())
                         .padding(6)
                     }
-                Text(template.title)
+                Text(L(template.title))
                     .font(MSFont.control(14))
                     .foregroundStyle(MSColor.text)
                     .lineLimit(2)

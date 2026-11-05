@@ -110,8 +110,8 @@ struct HelpView: View {
                 Image(systemName: icon).font(.system(size: 15, weight: .semibold)).foregroundStyle(MSColor.text2)
                     .frame(width: 32, height: 32).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(MSFont.control(14)).foregroundStyle(MSColor.text)
-                    Text(subtitle).msCaption()
+                    Text(L(title)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                    Text(L(subtitle)).msCaption()
                 }
             }
         }
@@ -127,7 +127,7 @@ struct HelpView: View {
                 }
             } label: {
                 HStack(spacing: 12) {
-                    Text(f.q).font(MSFont.control(15)).foregroundStyle(MSColor.text).multilineTextAlignment(.leading)
+                    Text(L(f.q)).font(MSFont.control(15)).foregroundStyle(MSColor.text).multilineTextAlignment(.leading)
                     Spacer()
                     Image(systemName: "chevron.down").font(.system(size: 11, weight: .bold)).foregroundStyle(MSColor.muted)
                         .rotationEffect(.degrees(open ? 180 : 0))
@@ -137,7 +137,7 @@ struct HelpView: View {
             }
             .buttonStyle(MSPressStyle())
             if open {
-                Text(f.a).msBody(14).lineSpacing(3)
+                Text(L(f.a)).msBody(14).lineSpacing(3)
                     .padding(.horizontal, 14).padding(.bottom, 14)
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }

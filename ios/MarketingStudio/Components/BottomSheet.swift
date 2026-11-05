@@ -14,8 +14,8 @@ struct BottomSheetContainer<Content: View>: View {
                 .padding(.bottom, 12)
             if title != nil || subtitle != nil {
                 VStack(alignment: .leading, spacing: 4) {
-                    if let title { Text(title).msHeadline(20) }
-                    if let subtitle { Text(subtitle).msBody(14) }
+                    if let title { Text(L(title)).msHeadline(20) }
+                    if let subtitle { Text(L(subtitle)).msBody(14) }
                 }
                 .padding(.horizontal, MSSpacing.gutter)
                 .padding(.bottom, 16)

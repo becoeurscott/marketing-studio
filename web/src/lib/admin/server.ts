@@ -99,6 +99,17 @@ export async function listLedger(q: { action?: string; query?: string; userId?: 
   return { total: num(r.total), items: r.items };
 }
 
+export interface PaymentRow { id: string; user_id: string; email: string | null; pack_id: string; credits: number; amount: number; currency: string; country: string; amount_xof: number; status: string; provider: string | null; created_at: string; updated_at: string }
+export interface PaymentSummary { revenueXof30: number; revenueXofAll: number; completed30: number; pending: number; failed30: number; buyers: number; activeSubs: number; onboarded: number; accounts: number }
+
+export async function listPayments(q: { status?: string; query?: string; page?: number; pageSize?: number }): Promise<Page<PaymentRow> & { summary: PaymentSummary }> {
+  await requireAdmin();
+  const size = Math.min(q.pageSize ?? 25, 100);
+  const r = await rpc<Page<PaymentRow> & { summary: PaymentSummary }>("ms_admin_payments", { p_status: q.status ?? "", p_query: q.query ?? "", p_limit: size, p_offset: (q.page ?? 0) * size });
+  const summary = Object.fromEntries(Object.entries(r.summary).map(([k, v]) => [k, num(v)])) as unknown as PaymentSummary;
+  return { total: num(r.total), items: r.items, summary };
+}
+
 export async function listAudit(q: { targetId?: string; limit?: number } = {}): Promise<AuditRow[]> {
   await requireAdmin();
   let query = adminClient().database.from("ms_admin_audit").select("*").order("created_at", { ascending: false }).limit(Math.min(q.limit ?? 50, 200));

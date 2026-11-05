@@ -263,8 +263,8 @@ struct CreativeAdVariationCard: View {
                     RemoteImage(url: variation.visualURL)
                     LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .center, endPoint: .bottom)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(variation.headline).font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(.white).lineLimit(2)
-                        Text(variation.cta)
+                        Text(L(variation.headline)).font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(.white).lineLimit(2)
+                        Text(L(variation.cta))
                             .font(MSFont.control(12)).foregroundStyle(.black)
                             .padding(.horizontal, 12).padding(.vertical, 6)
                             .background(.white, in: Capsule())
@@ -295,7 +295,7 @@ struct CreativeAdVariationCard: View {
     private func labeled(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label.uppercased()).font(.system(size: 10, weight: .semibold)).tracking(0.6).foregroundStyle(MSColor.muted)
-            Text(value).msBody(14, color: MSColor.text)
+            Text(L(value)).msBody(14, color: MSColor.text)
         }
     }
 }

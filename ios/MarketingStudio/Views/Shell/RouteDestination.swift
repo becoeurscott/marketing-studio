@@ -8,8 +8,9 @@ struct RouteDestination: View {
     var body: some View {
         switch route {
         case .studio: StudioView()
-        case .imageGenerator: ImageGeneratorView()
+        case .imageGenerator: StudioView()
         case .videoGenerator: VideoGeneratorView()
+        case .videoGeneratorWithPrompt(let prompt): VideoGeneratorView(initialPrompt: prompt)
         case .ugcCreator: UGCCreatorView()
         case .ugcCreatorWithScript(let script): UGCCreatorView(initialScript: script)
         case .productShoot: ProductShootView()

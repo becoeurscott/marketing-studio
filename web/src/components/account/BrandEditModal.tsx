@@ -15,7 +15,8 @@ import { cn } from "@/lib/utils";
 export type BrandSection = "identity" | "colors" | "fonts" | "details";
 
 const TITLES: Record<BrandSection, string> = { identity: "Identité de marque", colors: "Palette de couleurs", fonts: "Typographie", details: "Positionnement" };
-const FONTS = ["Inter", "Playfair Display", "DM Sans", "Space Grotesk", "Manrope", "Fraunces", "IBM Plex Sans", "Sora"];
+const FONTS = ["Inter", "Playfair Display", "DM Sans", "Space Grotesk", "Manrope", "Fraunces", "IBM Plex Sans", "Sora", "Avenir Next", "Helvetica Neue", "Georgia", "Baskerville", "Didot", "Futura", "Palatino", "Times New Roman", "Trebuchet MS", "Verdana", "Menlo", "Courier"];
+const fontOptions = (current: string) => [...new Set([current, ...FONTS].filter(Boolean))].map((f) => ({ value: f, label: f }));
 const INDUSTRIES = ["Beauty", "Fashion", "Food & Beverage", "Technology", "Fitness", "Home", "Real Estate", "Finance", "Education", "Other"];
 
 /** French display labels for industry values (values stay in English for logic). */
@@ -86,8 +87,8 @@ function BrandForm({ brand, section, onClose }: { brand: Brand; section: BrandSe
       {section === "colors" && <ColorPalette value={colors} onChange={setColors} />}
       {section === "fonts" && (
         <>
-          <Select label="Police des titres" name="heading" value={heading} onChange={(e) => setHeading(e.target.value)} options={FONTS.map((f) => ({ value: f, label: f }))} />
-          <Select label="Police du texte" name="body" value={body} onChange={(e) => setBody(e.target.value)} options={FONTS.map((f) => ({ value: f, label: f }))} />
+          <Select label="Police des titres" name="heading" value={heading} onChange={(e) => setHeading(e.target.value)} options={fontOptions(heading)} />
+          <Select label="Police du texte" name="body" value={body} onChange={(e) => setBody(e.target.value)} options={fontOptions(body)} />
           <div className="rounded-md bg-surface border border-border p-4">
             <p className="text-xl font-bold tracking-tight" style={{ fontFamily: heading }}>{brand.name} illumine vos matinées</p>
             <p className="text-sm text-text2 mt-1.5" style={{ fontFamily: body }}>Aperçu du texte courant. Phrases courtes, ton assuré, jamais trop formel.</p>

@@ -1,7 +1,7 @@
 import "server-only";
 import { headers } from "next/headers";
 import { adminClient } from "./insforge/admin";
-import { UPSCALE_USD, creditsForUsd, imageModel, videoCredits, videoModel } from "./higgsfield/models";
+import { imageCredits, imageModel, videoCredits, videoModel } from "./higgsfield/models";
 import { sanitizeShots } from "./higgsfield/server";
 import type { GenerationRequest } from "./higgsfield/types";
 
@@ -23,6 +23,7 @@ export type WelcomeStatus = "granted" | "already" | "unverified" | "ip_limit";
 export interface AccountSummary {
   credits: number;
   plan: string;
+  onboardingDone: boolean;
   ledger: LedgerEntry[];
   /** What happened to the welcome bonus on this call. */
   welcome: WelcomeStatus;
@@ -46,20 +47,20 @@ export async function accountSummary(userId: string): Promise<AccountSummary> {
   // Welcome bonus: once, verified e-mails only, max 3 per IP address per 24 h (enforced in SQL).
   const { data: welcome } = await db.rpc("ms_grant_welcome", { p_user: userId, p_welcome: WELCOME_CREDITS, p_ip: await clientIp() });
   const [{ data: acc }, { data: ledger }] = await Promise.all([
-    db.from("ms_accounts").select("credits, plan").eq("user_id", userId).limit(1),
+    db.from("ms_accounts").select("credits, plan, onboarding_done").eq("user_id", userId).limit(1),
     db.from("ms_credit_ledger").select("id, amount, balance_after, action, description, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(50),
   ]);
-  const row = (acc?.[0] as { credits: number; plan: string } | undefined) ?? { credits: 0, plan: "starter" };
-  return { credits: row.credits, plan: row.plan, ledger: (ledger ?? []) as LedgerEntry[], welcome: (welcome as WelcomeStatus | null) ?? "already" };
+  const row = (acc?.[0] as { credits: number; plan: string; onboarding_done: boolean } | undefined) ?? { credits: 0, plan: "starter", onboarding_done: false };
+  return { credits: row.credits, plan: row.plan, onboardingDone: row.onboarding_done, ledger: (ledger ?? []) as LedgerEntry[], welcome: (welcome as WelcomeStatus | null) ?? "already" };
 }
 
 /** Server-side price of one generation job, from the same catalog the UI shows. */
 export function jobCost(req: GenerationRequest): number {
-  if (req.kind === "image") return req.upscale ? creditsForUsd(UPSCALE_USD) : imageModel(req.model).credits;
-  const withPhoto = (req.imageUrls?.length ?? 0) > 0 || (req.references?.length ?? 0) > 0;
+  if (req.kind === "image") return imageCredits(req.model, !!req.presetId, !!req.upscale);
+  const withPhoto = (req.imageUrls?.length ?? 0) > 0 || (req.references?.length ?? 0) > 0 || (req.videoUrls?.length ?? 0) > 0;
   const shots = !withPhoto && videoModel(req.model).id === "kling-3.0" ? sanitizeShots(req.shots) : [];
   const seconds = shots.length ? shots.reduce((s, x) => s + x.duration, 0) : Number(req.durationSec) || 5;
-  return videoCredits(req.kind === "video" && (req.references?.length ?? 0) > 0 ? "seedance-2.5" : req.model, seconds, withPhoto, req.light === true);
+  return videoCredits(req.kind === "video" && ((req.references?.length ?? 0) > 0 || (req.videoUrls?.length ?? 0) > 0) ? "seedance-2.5" : req.model, seconds, withPhoto, req.light === true);
 }
 
 export class InsufficientCreditsError extends Error {

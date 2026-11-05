@@ -58,9 +58,16 @@ export function toModelInput(req: GenerationRequest): [string, Record<string, un
 
   switch (req.kind as GenerationKind) {
     case "image": {
+      if (req.presetId && !imageModel(req.model).id.startsWith("marketing-studio")) throw new Error("Choisissez Standard ou HD pour appliquer une mise en page Marketing Studio.");
       if (imageModel(req.model).id === "soul-2") {
         const soulRatios = ["9:16", "16:9", "4:3", "3:4", "1:1", "2:3", "3:2"];
         return [imageModel("soul-2").endpoint, { prompt, batch_size: 1, resolution: "1080p", aspect_ratio: soulRatios.includes(req.aspectRatio ?? "") ? req.aspectRatio : "3:4", enhance_prompt: true }];
+      }
+      if (imageModel(req.model).id === "nano-banana-pro") {
+        const nbRatios = ["1:1", "3:2", "2:3", "4:3", "3:4", "16:9", "9:16"];
+        const ratio = nbRatios.includes(req.aspectRatio ?? "") ? req.aspectRatio : "3:4";
+        const resolution = req.upscale ? "4k" : "1k";
+        return [imageModel("nano-banana-pro").endpoint, { prompt, aspect_ratio: ratio, resolution, ...(images.length ? { image_urls: images } : {}) }];
       }
       const ratio = IMAGE_RATIOS.has(req.aspectRatio ?? "") ? req.aspectRatio : "auto";
       const resolution = req.upscale ? "4k" : imageModel(req.model).resolution ?? "2k";
@@ -75,11 +82,12 @@ export function toModelInput(req: GenerationRequest): [string, Record<string, un
     }
     case "video": {
       const refs = (req.references ?? []).filter(isHttpsUrl).slice(0, 4);
-      if (refs.length) {
-        // Consistent characters: Seedance 2.5 reference-to-video with the creator sheet (+ product photo).
+      const videos = (req.videoUrls ?? []).filter(isHttpsUrl).slice(0, 1);
+      if (refs.length || videos.length) {
+        // Seedance 2.5 reference-to-video: product/avatar images and, when selected in Studio, a video-style reference.
         const m = videoModel(DEFAULT_VIDEO_MODEL);
         const ratio = m.ratios.includes(req.aspectRatio ?? "") ? req.aspectRatio : "9:16";
-        return [m.ref!, { prompt, image_urls: refs, duration: clampDuration(m, Number(req.durationSec) || 5), resolution: m.resolution(!!req.light), aspect_ratio: ratio, generate_audio: req.audio ?? true }];
+        return [m.ref!, { prompt, ...(refs.length ? { image_urls: refs } : {}), ...(videos.length ? { video_urls: videos } : {}), duration: clampDuration(m, Number(req.durationSec) || 5), resolution: m.resolution(!!req.light), aspect_ratio: ratio, generate_audio: req.audio ?? true }];
       }
       // A product photo can only be animated by a model with an image-to-video mode.
       const chosen = videoModel(req.model);

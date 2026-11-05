@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { ApiError, generateImage, generateUGC, generateVideo } from "@/lib/api";
+import { ApiError, generateImage, generateInfluencer, generateUGC, generateVideo } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import type { AspectRatio } from "@/lib/types";
 import { uid } from "@/lib/utils";
@@ -20,6 +20,8 @@ export interface Run {
   urls: string[];
   poster?: string;
   error?: { code: string; message: string };
+  /** What produced this run, to make variations / more shots of it. */
+  input?: RunInput;
   createdAt: number;
 }
 
@@ -29,11 +31,19 @@ export interface RunInput {
   modelLabel: string;
   ratio: AspectRatio;
   imageModel?: ImageModelId;
+  presetId?: string;
   count?: number;
   videoModel?: VideoModelId;
   durationSec?: 5 | 10 | 15;
   productAssetId?: string | null;
   creatorId?: string | null;
+  /** Selected public Marketing Studio example used as a Seedance video reference. */
+  videoPresetId?: string;
+  videoReferenceUrl?: string;
+  videoDirection?: string;
+  /** Image + creator: influencer photo. */
+  shotMode?: "multi" | "variations";
+  shot?: string;
 }
 
 /**
@@ -49,19 +59,21 @@ export function useStudioRuns() {
     const projectId = s.currentProjectId;
     const id = uid("run");
     const slots = input.kind === "image" ? input.count ?? 1 : 1;
-    setRuns((all) => [{ id, kind: input.kind, prompt: input.prompt, modelLabel: input.modelLabel, ratio: input.ratio, status: "running", slots, urls: [], createdAt: Date.now() }, ...all]);
+    setRuns((all) => [{ id, kind: input.kind, prompt: input.prompt, modelLabel: input.modelLabel, ratio: input.ratio, status: "running", slots, urls: [], createdAt: Date.now(), input }, ...all]);
     const name = (input.prompt.trim() || (input.kind === "image" ? "Visuel généré" : "Vidéo générée")).slice(0, 48);
     try {
       if (input.kind === "image") {
-        const out = await generateImage({ prompt: input.prompt, ratio: input.ratio, model: input.imageModel, count: slots, productAssetId: input.productAssetId, projectId });
+        const out = input.creatorId
+          ? await generateInfluencer({ creatorId: input.creatorId, prompt: input.prompt, productAssetId: input.productAssetId, ratio: input.ratio, model: input.imageModel, count: slots, mode: input.shotMode ?? "variations", shot: input.shot, projectId })
+          : await generateImage({ prompt: input.prompt, ratio: input.ratio, model: input.imageModel, presetId: input.presetId, count: slots, productAssetId: input.productAssetId, projectId });
         for (const r of out) s.addAsset({ name, type: "image", url: r.url, thumbnail: r.thumbnail, projectId, favorite: false, width: 1600, height: 2000, sizeKb: 1400, tags: ["generated"] });
         patch(id, { status: "done", urls: out.map((r) => r.url) });
       } else {
         const src = s.assets.find((a) => a.id === input.productAssetId);
         const dur = input.durationSec ?? 5;
         const out = input.kind === "ugc" && input.creatorId
-          ? await generateUGC({ creatorId: input.creatorId, script: input.prompt, durationSec: dur, productAssetId: input.productAssetId, projectId })
-          : await generateVideo({ concept: input.prompt, durationSec: dur, ratio: input.ratio, model: input.videoModel, sourceAssetId: input.productAssetId, sourceUrl: src?.url, projectId });
+          ? await generateUGC({ creatorId: input.creatorId, script: input.prompt, durationSec: dur, productAssetId: input.productAssetId, presetVideoUrl: input.videoReferenceUrl, formatDirection: input.videoDirection, projectId })
+          : await generateVideo({ concept: input.prompt, durationSec: dur, ratio: input.ratio, model: input.videoModel, sourceAssetId: input.productAssetId, sourceUrl: src?.url, creatorId: input.creatorId, presetVideoUrl: input.videoReferenceUrl, style: input.videoDirection, projectId });
         const poster = out.poster || src?.url || "";
         s.addAsset({ name, type: "video", url: out.url, thumbnail: out.thumbnail || poster, projectId, favorite: false, width: 1080, height: 1920, durationSec: out.durationSec, sizeKb: 4200, tags: ["generated"] });
         patch(id, { status: "done", urls: [out.url], poster });

@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { isActive, primaryNav } from "./nav";
 import { useShell } from "./ShellContext";
+import { useInterfaceLanguage } from "@/lib/interface-language";
 
 export const SIDEBAR_W = 240;
 export const SIDEBAR_W_COLLAPSED = 64;
@@ -21,6 +22,7 @@ export function Sidebar() {
   const user = useStore((s) => s.user);
   const credits = useStore((s) => s.credits);
   const plan = useStore((s) => s.plan);
+  const { t } = useInterfaceLanguage();
 
   return (
     <motion.aside
@@ -30,9 +32,7 @@ export function Sidebar() {
     >
       {/* Logo */}
       <Link href="/home" className={cn("flex items-center h-14 border-b border-border shrink-0", collapsed ? "justify-center" : "px-4 gap-2.5")}>
-        <span className="size-7 rounded-md bg-gradient-to-br from-highlight via-accent to-green flex items-center justify-center shadow-glow">
-          <Sparkles className="size-4 text-on-accent" />
-        </span>
+        <img src="/brand-mark.png" alt="" aria-hidden="true" className="size-7 shrink-0 rounded-md" />
         {!collapsed && <span className="text-[15px] font-semibold tracking-tight">Marketing Studio</span>}
       </Link>
 
@@ -52,10 +52,10 @@ export function Sidebar() {
             >
               {active && <motion.span layoutId="sidebar-active" className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-accent" />}
               <item.icon className={cn("size-[18px] shrink-0", active && "text-highlight")} />
-              {!collapsed && <span>{item.label}</span>}
+              {!collapsed && <span>{t(item.label)}</span>}
             </Link>
           );
-          return collapsed ? <Tooltip key={item.href} label={item.label} side="right" className="w-full">{link}</Tooltip> : link;
+          return collapsed ? <Tooltip key={item.href} label={t(item.label)} side="right" className="w-full">{link}</Tooltip> : link;
         })}
       </nav>
 
@@ -89,7 +89,7 @@ export function Sidebar() {
             title="Se déconnecter"
             className={cn("flex items-center h-8 w-full rounded-md text-[12px] text-muted hover:text-text hover:bg-white/4 transition-colors", collapsed ? "justify-center" : "px-2.5 gap-3")}
           >
-            <LogOut className="size-4" />{!collapsed && "Se déconnecter"}
+            <LogOut className="size-4" />{!collapsed && t("Se déconnecter")}
           </button>
         </form>
         {/* Below 1280px the sidebar stays collapsed, so the toggle is only offered on wide screens */}

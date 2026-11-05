@@ -42,7 +42,7 @@ struct ProjectDetailView: View {
             .padding(.bottom, 40)
         }
         .msScreen()
-        .navigationTitle(project.name)
+        .navigationTitle(L(project.name))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
@@ -73,8 +73,8 @@ struct ProjectDetailView: View {
                     .padding(10)
                 }
             VStack(alignment: .leading, spacing: 6) {
-                Text(project.name).msTitle(26)
-                Text(project.description).msBody(14).lineSpacing(2)
+                Text(L(project.name)).msTitle(26)
+                Text(L(project.description)).msBody(14).lineSpacing(2)
                 Text("Créé le \(project.createdAt.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(Locale(identifier: "fr_FR")))) · Mis à jour \(project.updatedAt.relativeString)").msCaption()
             }
             HStack(spacing: 10) {
@@ -171,7 +171,7 @@ struct ProjectDetailView: View {
                                     .frame(width: 36, height: 36)
                                     .background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                                 VStack(alignment: .leading, spacing: 3) {
-                                    Text(c.name).font(MSFont.control(14)).foregroundStyle(MSColor.text)
+                                    Text(L(c.name)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
                                     Text("\(c.platforms.map { $0.title }.joined(separator: " · ")) · \(c.assetIds.count) visuels").msCaption().lineLimit(1)
                                 }
                                 Spacer()

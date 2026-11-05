@@ -51,7 +51,7 @@ struct ProgressIndicator: View {
             if let title {
                 HStack(spacing: 10) {
                     ProgressView().tint(MSColor.highlight)
-                    Text(title).msHeadline(15)
+                    Text(L(title)).msHeadline(15)
                 }
             }
             VStack(alignment: .leading, spacing: 10) {
@@ -67,7 +67,7 @@ struct ProgressIndicator: View {
                                 Circle().fill(MSColor.accent).frame(width: 7, height: 7)
                             }
                         }
-                        Text(step)
+                        Text(L(step))
                             .font(MSFont.control(14))
                             .foregroundStyle(i <= currentStep ? MSColor.text : MSColor.muted)
                         Spacer()

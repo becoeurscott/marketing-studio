@@ -13,8 +13,6 @@ import { SearchBar } from "@/components/ui/SearchBar";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
-import { delay } from "@/lib/api";
-import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 const APP_VERSION = "0.9.0 (prototype)";
@@ -40,7 +38,6 @@ const LINKS: { label: string; description: string; icon: LucideIcon; href: strin
 const SHORTCUTS: [string, string][] = [["⌘ K", "Tout rechercher"], ["⌘ Entrée", "Générer"], ["⌘ Z / ⇧ ⌘ Z", "Annuler / rétablir dans le Studio"], ["F", "Ajuster le canevas"], ["Échap", "Fermer les fenêtres"]];
 
 export default function HelpPage() {
-  const user = useStore((s) => s.user);
   const toast = useToast();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<number | null>(0);
@@ -98,7 +95,7 @@ export default function HelpPage() {
         <div className="space-y-4">
           <Card>
             <h3 className="text-[15px] font-semibold mb-1 flex items-center gap-2"><LifeBuoy className="size-4 text-highlight" /> Contact</h3>
-            <p className="text-[13px] text-text2">Nous répondons sous un jour ouvré.</p>
+            <p className="text-[13px] text-text2">Contactez le support par e-mail.</p>
             <div className="mt-3 space-y-2 text-[13px]">
               <a href={`mailto:${LEGAL.supportEmail}`} className="flex items-center gap-2 text-text2 hover:text-text"><Mail className="size-4" /> {LEGAL.supportEmail}</a>
               <a href="#" onClick={(e) => { e.preventDefault(); toast.info("Communauté", "Le forum de la communauté sera disponible dans la version complète."); }} className="flex items-center gap-2 text-text2 hover:text-text"><ExternalLink className="size-4" /> Forum de la communauté</a>
@@ -117,34 +114,30 @@ export default function HelpPage() {
             <p className="text-[13px] text-text2">Marketing Studio <span className="text-text font-medium">v{APP_VERSION}</span></p>
             <p className="text-[12px] text-muted mt-1">Prototype frontend. L’IA, les paiements et la publication sont entièrement simulés.</p>
             <div className="flex gap-3 mt-2 text-[12px]">
-              <a href="#" onClick={(e) => e.preventDefault()} className="text-text2 hover:text-text">Conditions</a>
-              <a href="#" onClick={(e) => e.preventDefault()} className="text-text2 hover:text-text">Confidentialité</a>
-              <a href="#" onClick={(e) => e.preventDefault()} className="text-text2 hover:text-text">État du service</a>
+              <Link href="/conditions" className="text-text2 hover:text-text">Conditions</Link>
+              <Link href="/confidentialite" className="text-text2 hover:text-text">Confidentialité</Link>
             </div>
           </Card>
         </div>
       </div>
 
-      <Modal open={contact} onClose={() => setContact(false)} title="Contacter le support" description={`Nous vous répondrons à ${user.email}.`}>
-        <ContactForm key={String(contact)} onClose={() => setContact(false)} onSent={() => toast.success("Message envoyé", "Nous vous répondrons sous un jour ouvré.")} />
+      <Modal open={contact} onClose={() => setContact(false)} title="Contacter le support" description="Préparez un message dans votre application de messagerie.">
+        <ContactForm key={String(contact)} onClose={() => setContact(false)} />
       </Modal>
     </>
   );
 }
 
-function ContactForm({ onClose, onSent }: { onClose: () => void; onSent: () => void }) {
+function ContactForm({ onClose }: { onClose: () => void }) {
   const [topic, setTopic] = useState("question");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [sending, setSending] = useState(false);
-  const submit = async (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) { setError("Expliquez-nous ce qui se passe."); return; }
-    setSending(true);
-    await delay(700, 1100);
-    setSending(false);
-    onSent();
+    const params = new URLSearchParams({ subject: subject.trim() || `Support : ${topic}`, body: message.trim() });
+    window.location.href = `mailto:${LEGAL.supportEmail}?${params.toString()}`;
     onClose();
   };
   return (
@@ -153,8 +146,8 @@ function ContactForm({ onClose, onSent }: { onClose: () => void; onSent: () => v
       <Input label="Objet" name="subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Résumé en quelques mots" />
       <Textarea label="Message" name="message" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Décrivez votre problème ou votre question…" error={error} autoFocus />
       <div className="flex items-center justify-end gap-2 pt-2">
-        <Button type="button" variant="ghost" onClick={onClose} disabled={sending}>Annuler</Button>
-        <Button type="submit" loading={sending} leftIcon={<Send className="size-4" />}>Envoyer</Button>
+        <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
+        <Button type="submit" leftIcon={<Send className="size-4" />}>Ouvrir l’e-mail</Button>
       </div>
     </form>
   );

@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { isActive, primaryNav, secondaryNav } from "./nav";
 import { useShell } from "./ShellContext";
+import { useInterfaceLanguage } from "@/lib/interface-language";
 
 const tabs = primaryNav.slice(0, 4); // Home, Studio, Projects, Assets
 const more = [...primaryNav.slice(4), ...secondaryNav];
@@ -18,6 +19,7 @@ export function MobileNav() {
   const { mobileMenuOpen, setMobileMenuOpen } = useShell();
   const user = useStore((s) => s.user);
   const credits = useStore((s) => s.credits);
+  const { t } = useInterfaceLanguage();
   const moreActive = more.some((i) => isActive(i, path));
 
   return (
@@ -29,13 +31,13 @@ export function MobileNav() {
             return (
               <Link key={item.href} href={item.href} className={cn("flex flex-col items-center justify-center gap-0.5 min-w-0 text-[10.5px] font-medium", active ? "text-highlight" : "text-muted")}>
                 <item.icon className="size-5 shrink-0" />
-                <span className="max-w-full truncate px-0.5">{item.label}</span>
+                <span className="max-w-full truncate px-0.5">{t(item.label)}</span>
               </Link>
             );
           })}
           <button onClick={() => setMobileMenuOpen(true)} className={cn("flex flex-col items-center justify-center gap-0.5 text-[10.5px] font-medium", moreActive ? "text-highlight" : "text-muted")}>
             <MoreHorizontal className="size-5" />
-            Plus
+            {t("Plus")}
           </button>
         </div>
       </nav>
@@ -60,7 +62,7 @@ export function MobileNav() {
                 className={cn("flex items-center gap-2.5 h-11 px-3 rounded-md text-[13px] font-medium border", active ? "bg-accent/10 border-accent/40 text-highlight" : "bg-surface border-border text-text2")}
               >
                 <item.icon className="size-4" />
-                {item.label}
+                {t(item.label)}
               </Link>
             );
           })}

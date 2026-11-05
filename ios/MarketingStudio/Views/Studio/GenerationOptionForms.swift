@@ -199,8 +199,8 @@ struct CreatingVisualView: View {
                     Image(systemName: "sparkles").font(.system(size: 24, weight: .semibold)).foregroundStyle(MSColor.highlight)
                         .rotationEffect(.degrees(pulse ? 12 : -12))
                 }
-                Text(title).msHeadline(16)
-                Text(subtitle).msCaption()
+                Text(L(title)).msHeadline(16)
+                Text(L(subtitle)).msCaption()
             }
         }
         .aspectRatio(aspect, contentMode: .fit)

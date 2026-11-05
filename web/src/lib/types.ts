@@ -76,6 +76,8 @@ export interface Project {
 export type AssetType = "image" | "video" | "audio" | "logo" | "brand" | "export";
 
 export interface Asset {
+  /** Durable storage object key, when the asset was uploaded by this app. */
+  storageKey?: string;
   id: ID;
   name: string;
   type: AssetType;
@@ -362,6 +364,7 @@ export interface Preferences {
   defaultRatio: AspectRatio;
   defaultStyle: ImageStyle;
   reducedMotion: boolean;
+  accentColor?: "lime" | "blue" | "pink";
   emailNotifications: boolean;
   pushNotifications: boolean;
   compactSidebar: boolean;
@@ -371,6 +374,8 @@ export interface Preferences {
   lightVideos?: boolean;
   /** Default language for texts and voice-overs. */
   language?: LanguageId;
+  /** Language used by translated parts of the interface. */
+  interfaceLanguage?: "fr" | "en";
 }
 
 export type FavoriteKind = "asset" | "template" | "prompt" | "creator";

@@ -64,12 +64,13 @@ struct StudioView: View {
         .toolbar(.hidden, for: .navigationBar)
         .onChange(of: store.pendingCreatorId) { _, id in
             // "Utiliser en UGC" from the Creators screen while the Studio is open.
-            guard let id, let c = store.creator(id) else { return }
-            ugc.creator = c
+            guard id != nil else { return }
+            consumePendingCreator()
         }
         .onAppear {
             applyPreferencesIfFresh()
             consumePendingTemplate()
+            consumePendingCreator()
             if ugc.creator == nil { ugc.creator = store.creators.first }
         }
         .onChange(of: store.pendingTemplateId) { _, _ in consumePendingTemplate() }
@@ -85,7 +86,7 @@ struct StudioView: View {
             UploadProductSheet { asset in setProduct(asset) }
         }
         .msSheet(isPresented: $showCreatorPicker, detents: [.medium, .large]) {
-            CreatorPickerSheet(selection: $ugc.creator)
+            if mode == .image { CreatorPickerSheet(selection: $image.creator) } else { CreatorPickerSheet(selection: $ugc.creator) }
         }
         .msSheet(isPresented: $showModelPicker, detents: [.medium]) { modelSheet }
         .msSheet(isPresented: $showOptions, detents: [.medium, .large]) { optionsSheet }
@@ -241,7 +242,7 @@ struct StudioView: View {
             errorCanvas { GenerationErrorView(failure: f, retry: { generate() }, back: { image.reset() }) }
         case .idle:
             if let p = image.productAsset {
-                StudioCanvasMedia(url: p.imageURL) { fullscreen = FullscreenImageItem(url: p.imageURL, aspect: 0.8) }
+                StudioCanvasMedia(url: p.imageURL, contained: true) { fullscreen = FullscreenImageItem(url: p.imageURL, aspect: 0.8) }
                     .transition(.opacity)
             } else {
                 emptyCanvas(icon: "sparkles", title: "Commencez à créer", message: "Ajoutez un produit, décrivez la prise de vue, générez.", primary: "Importer un produit", primaryIcon: "square.and.arrow.up") {
@@ -265,7 +266,7 @@ struct StudioView: View {
             errorCanvas { GenerationErrorView(failure: f, retry: { generate() }, back: { video.reset() }) }
         case .idle:
             if let s = video.sourceAsset {
-                StudioCanvasMedia(url: s.imageURL) { fullscreen = FullscreenImageItem(url: s.imageURL, aspect: currentAspect) }
+                StudioCanvasMedia(url: s.imageURL, contained: true) { fullscreen = FullscreenImageItem(url: s.imageURL, aspect: currentAspect) }
                     .transition(.opacity)
             } else {
                 emptyCanvas(icon: "video", title: "Donnez vie à un produit", message: "Choisissez une image source, décrivez le mouvement, générez.", primary: "Choisir une image source", primaryIcon: "photo") {
@@ -290,10 +291,17 @@ struct StudioView: View {
         case .idle:
             if let c = ugc.creator {
                 // The creator introduces themself (muted, speaker button to listen).
-                CreatorIntroView(creator: c)
-                    .aspectRatio(9.0 / 16.0, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
-                    .frame(maxWidth: .infinity)
+                VStack(spacing: 10) {
+                    CreatorIntroView(creator: c)
+                        .aspectRatio(9.0 / 16.0, contentMode: .fit)
+                        .frame(maxHeight: 300)
+                        .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+                    Text("\(c.name) présentera votre produit").msCaption()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.top, 110)
+                .padding(.bottom, bottomInset + 16)
                     .id(c.id)
                     .transition(.opacity)
             } else {
@@ -367,8 +375,8 @@ struct StudioView: View {
                     Image(systemName: icon).font(.system(size: 28, weight: .semibold)).foregroundStyle(MSColor.highlight)
                 }
                 VStack(spacing: 4) {
-                    Text(title).msTitle(24)
-                    Text(message).msBody(14).multilineTextAlignment(.center)
+                    Text(L(title)).msTitle(24)
+                    Text(L(message)).msBody(14).multilineTextAlignment(.center)
                 }
                 HStack(spacing: 10) {
                     MSButton(title: primary, icon: primaryIcon, size: .compact, fullWidth: false, action: action)
@@ -377,8 +385,10 @@ struct StudioView: View {
                 .padding(.top, 4)
             }
             .padding(24)
-            .padding(.top, 90)
-            .padding(.bottom, bottomInset)
+            // Leave room for the floating composer while keeping the prompt visible.
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.top, 56)
+            .padding(.bottom, bottomInset * 0.5)
             .opacity(composing ? 0 : 1)
             .animation(MSAnimation.gentle, value: composing)
         }
@@ -428,7 +438,7 @@ struct StudioView: View {
         } label: {
             HStack(spacing: 5) {
                 Image(systemName: icon).font(.system(size: 12, weight: .semibold))
-                Text(title).font(MSFont.control(12))
+                Text(L(title)).font(MSFont.control(12))
             }
             .foregroundStyle(tint ?? MSColor.text)
             .padding(.horizontal, 11)
@@ -607,6 +617,16 @@ struct StudioView: View {
         markSaved()
     }
 
+    /// A creator picked elsewhere ("Utiliser en UGC") lands straight in the UGC slot.
+    private func consumePendingCreator() {
+        guard let id = store.pendingCreatorId, let c = store.creator(id) else { return }
+        store.pendingCreatorId = nil
+        withAnimation(MSAnimation.gentle) {
+            ugc.creator = c
+            mode = .ugc
+        }
+    }
+
     private func applyPreferencesIfFresh() {
         guard image.results.isEmpty, image.prompt.isEmpty else { return }
         image.style = store.preferences.defaultStyle
@@ -655,15 +675,23 @@ struct StudioView: View {
 struct StudioCanvasMedia: View {
     var url: String?
     var dimmed: Bool = false
+    var contained: Bool = false
     var onTap: (() -> Void)? = nil
 
     var body: some View {
         GeometryReader { geo in
             ZStack {
                 if let url {
-                    RemoteImage(url: url, contentMode: .fill)
-                        .frame(width: geo.size.width, height: geo.size.height)
-                        .clipped()
+                    if contained {
+                        MSColor.bg
+                        RemoteImage(url: url, contentMode: .fit, cornerRadius: 16)
+                            .frame(width: geo.size.width * 0.78, height: geo.size.height * 0.43)
+                            .offset(y: -geo.size.height * 0.06)
+                    } else {
+                        RemoteImage(url: url, contentMode: .fill)
+                            .frame(width: geo.size.width, height: geo.size.height)
+                            .clipped()
+                    }
                 } else {
                     MSColor.surface
                 }
@@ -696,7 +724,7 @@ struct StudioModePill: View {
                     MSHaptic.tap()
                     select(m)
                 } label: {
-                    Text(m.title)
+                    Text(L(m.title))
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(mode == m ? MSColor.text : MSColor.text2)
                         .padding(.horizontal, 13)
@@ -713,7 +741,7 @@ struct StudioModePill: View {
             }
             Menu {
                 ForEach(StudioMode.allCases.filter { !$0.isCanvas }) { m in
-                    Button { select(m) } label: { Text(m.title) }
+                    Button { select(m) } label: { Text(L(m.title)) }
                 }
             } label: {
                 Image(systemName: "chevron.down")

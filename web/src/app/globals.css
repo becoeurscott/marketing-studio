@@ -43,6 +43,9 @@ html {
   color-scheme: dark;
 }
 
+html[data-accent="blue"] { --color-accent: #70c7ff; --color-accent2: #3f9bd9; --color-highlight: #a5dcff; --color-green: #3f9bd9; }
+html[data-accent="pink"] { --color-accent: #ff91c1; --color-accent2: #d85d96; --color-highlight: #ffc1dd; --color-green: #d85d96; }
+
 body {
   background: var(--color-bg);
   color: var(--color-text);

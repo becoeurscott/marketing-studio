@@ -25,7 +25,7 @@ struct CreatorsView: View {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Créateurs").msTitle(30)
-                    Text("16 créateurs IA africains pour vos vidéos UGC. Chaque créateur garde le même visage d'une vidéo à l'autre.").msBody(14)
+                    Text("\(store.creators.count) créateurs IA africains pour vos vidéos UGC. Chaque créateur garde le même visage d'une vidéo à l'autre.").msBody(14)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
@@ -116,10 +116,10 @@ struct CreatorCard: View {
                         MSBadge(text: creator.style, tone: .overlay).lineLimit(1).padding(8).padding(.trailing, 36)
                     }
                 HStack(spacing: 6) {
-                    Text(creator.name).font(MSFont.control(15)).foregroundStyle(MSColor.text)
+                    Text(L(creator.name)).font(MSFont.control(15)).foregroundStyle(MSColor.text)
                     Text("\(creator.age)").msCaption()
                 }
-                Text(creator.country).msCaption()
+                Text(L(creator.country)).msCaption()
                 Text(creator.languages.joined(separator: ", ")).msCaption(color: MSColor.text2).lineLimit(1)
             }
             .padding(10)
@@ -155,14 +155,14 @@ struct CreatorDetailSheet: View {
                         Spacer(minLength: 0)
                     }
                     HStack(alignment: .firstTextBaseline) {
-                        Text(creator.name).msTitle(26)
+                        Text(L(creator.name)).msTitle(26)
                         Text("\(creator.age)").msBody(16)
                         Spacer()
                         MSIconButton(icon: isFav ? "heart.fill" : "heart", tint: isFav ? MSColor.danger : MSColor.text) {
                             store.toggleFavorite(.creator, creator.id)
                         }
                     }
-                    Text(creator.bio).msBody(15).lineSpacing(3)
+                    Text(L(creator.bio)).msBody(15).lineSpacing(3)
                     HStack(spacing: 0) {
                         stat("Style", creator.style)
                         stat("Pays", creator.country)
@@ -194,7 +194,8 @@ struct CreatorDetailSheet: View {
                     MSButton(title: "Utiliser en UGC", icon: "video.fill") {
                         store.pendingCreatorId = creator.id
                         dismiss()
-                        router.push(.ugcCreator, on: .studio)
+                        router.popToRoot(on: .studio)
+                        router.select(.studio)
                         router.toast("\(creator.name) sélectionné(e) pour l'UGC", style: .success)
                     }
                     .padding(.top, 4)
@@ -207,8 +208,8 @@ struct CreatorDetailSheet: View {
 
     private func stat(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label).msCaption()
-            Text(value).font(MSFont.control(14)).foregroundStyle(MSColor.text)
+            Text(L(label)).msCaption()
+            Text(L(value)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

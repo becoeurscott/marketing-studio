@@ -45,7 +45,7 @@ struct ImageEditorView: View {
             Spacer()
             VStack(spacing: 1) {
                 Text("Éditeur d'image").msHeadline(15)
-                Text(tool).msCaption(color: MSColor.highlight)
+                Text(L(tool)).msCaption(color: MSColor.highlight)
             }
             Spacer()
             MSIconButton(icon: showInspector ? "slider.horizontal.below.rectangle" : "slider.horizontal.3", size: 34) {

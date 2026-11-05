@@ -44,7 +44,7 @@ struct BrandKitView: View {
                             .frame(width: 36, height: 36).background(MSColor.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                         VStack(alignment: .leading, spacing: 3) {
                             Text("Ton \(brand.voice.tone)").msHeadline(15)
-                            Text(brand.voice.writingStyle).msCaption().lineLimit(2)
+                            Text(L(brand.voice.writingStyle)).msCaption().lineLimit(2)
                         }
                         Spacer()
                         Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(MSColor.muted)
@@ -120,7 +120,7 @@ struct BrandKitView: View {
                     HStack(alignment: .firstTextBaseline) {
                         Button { editingField = .name } label: {
                             HStack(spacing: 6) {
-                                Text(brand.name).msHeadline(22)
+                                Text(L(brand.name)).msHeadline(22)
                                 Image(systemName: "pencil").font(.system(size: 12, weight: .semibold)).foregroundStyle(MSColor.muted)
                             }
                         }
@@ -128,7 +128,7 @@ struct BrandKitView: View {
                         Spacer()
                         MSBadge(text: brand.industry, tone: .accent)
                     }
-                    Text(brand.description).msBody(14).lineSpacing(2)
+                    Text(L(brand.description)).msBody(14).lineSpacing(2)
                     if !brand.website.isEmpty {
                         HStack(spacing: 6) {
                             Image(systemName: "globe").font(.system(size: 12)).foregroundStyle(MSColor.muted)
@@ -166,8 +166,8 @@ struct BrandKitView: View {
             ForEach(Array(brand.fonts.enumerated()), id: \.offset) { i, font in
                 MSCard(padding: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Aa").font(.system(size: 26, weight: i == 0 ? .bold : .regular, design: i == 0 ? .default : .serif)).foregroundStyle(MSColor.text)
-                        Text(font).font(MSFont.control(13)).foregroundStyle(MSColor.text).lineLimit(1)
+                        Text("Aa").font(BrandFonts.preview(font, size: 26)).foregroundStyle(MSColor.text)
+                        Text(L(font)).font(MSFont.control(13)).foregroundStyle(MSColor.text).lineLimit(1)
                         Text(i == 0 ? "Titres" : "Texte").msCaption()
                     }
                 }
@@ -200,8 +200,8 @@ struct BrandKitView: View {
                 Image(systemName: icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.text2)
                     .frame(width: 28, height: 28).background(MSColor.elevated, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(field.title).msCaption()
-                    Text(value).font(MSFont.body(14)).foregroundStyle(MSColor.text).lineLimit(2).multilineTextAlignment(.leading)
+                    Text(L(field.title)).msCaption()
+                    Text(L(value)).font(MSFont.body(14)).foregroundStyle(MSColor.text).lineLimit(2).multilineTextAlignment(.leading)
                 }
                 Spacer()
                 Image(systemName: "pencil").font(.system(size: 11, weight: .bold)).foregroundStyle(MSColor.muted)
@@ -226,7 +226,7 @@ struct BrandKitView: View {
                                 VStack(alignment: .leading, spacing: 6) {
                                     RemoteImage(url: a.imageURL, cornerRadius: 12).frame(width: 120, height: 120)
                                     Text(i == 0 ? "Logo principal" : (i == 1 ? "Icône" : "Image produit")).font(MSFont.control(12)).foregroundStyle(MSColor.text)
-                                    Text(a.name).msCaption().lineLimit(1)
+                                    Text(L(a.name)).msCaption().lineLimit(1)
                                 }
                                 .frame(width: 120, alignment: .leading)
                             }

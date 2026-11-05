@@ -20,7 +20,7 @@ export const XOF_PER_USD = 590;
 export const creditsForUsd = (usd: number) => Math.max(1, Math.ceil((usd * XOF_PER_USD * MARGIN) / CREDIT_XOF - 1e-9));
 
 export type VideoModelId = "seedance-2.5" | "kling-3.0" | "minimax-h3" | "wan-3.0-prime" | "seedance-2.0" | "cinema-studio-4.0";
-export type ImageModelId = "marketing-studio-1k" | "marketing-studio" | "soul-2";
+export type ImageModelId = "marketing-studio-1k" | "marketing-studio" | "nano-banana-pro" | "soul-2";
 
 export interface VideoModel {
   id: VideoModelId;
@@ -110,6 +110,7 @@ export interface ImageModel {
 export const IMAGE_MODELS: ImageModel[] = [
   { id: "marketing-studio-1k", label: "Standard", hint: "Votre produit reste identique · idéal WhatsApp et réseaux", endpoint: "marketing-studio/image", usd: 0.235, credits: 0, acceptsImages: true, resolution: "1k" },
   { id: "marketing-studio", label: "HD", hint: "Même rendu en haute définition · affiches et impression", endpoint: "marketing-studio/image", usd: 0.452, credits: 0, acceptsImages: true, resolution: "2k" },
+  { id: "nano-banana-pro", label: "Nano Banana Pro", hint: "Google Gemini 3 · texte lisible, scènes complexes, jusqu'à 4K", endpoint: "fal-ai/nano-banana-pro", usd: 0.15, credits: 0, acceptsImages: true },
   { id: "soul-2", label: "Éco", hint: "Idées, portraits et mode · très économique, le produit peut changer un peu", endpoint: "higgsfield-ai/soul/v2/standard", usd: 0.006, credits: 0, acceptsImages: false },
 ];
 
@@ -135,4 +136,9 @@ export function videoCredits(modelId: string | null | undefined, sec: number, wi
   const m = withPhoto && !videoModel(modelId).i2v ? videoModel(DEFAULT_VIDEO_MODEL) : videoModel(modelId);
   const usdPerSecond = light ? m.usdPerSecond : m.usdPerSecondHD ?? m.usdPerSecond;
   return creditsForUsd(usdPerSecond * clampDuration(m, sec));
+}
+
+/** Enhanced Marketing Studio presets add 10% to the provider cost. */
+export function imageCredits(modelId?: string | null, preset = false, upscale = false): number {
+  return creditsForUsd((upscale ? UPSCALE_USD : imageModel(modelId).usd) * (preset ? 1.1 : 1));
 }

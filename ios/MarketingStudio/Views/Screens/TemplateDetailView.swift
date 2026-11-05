@@ -53,8 +53,8 @@ struct TemplateDetailView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(t.category.title.uppercased(with: Locale(identifier: "fr_FR")))
                         .font(.system(size: 11, weight: .semibold)).tracking(0.8).foregroundStyle(MSColor.highlight)
-                    Text(t.title).msTitle(26)
-                    Text(t.description).msBody(15).lineSpacing(3)
+                    Text(L(t.title)).msTitle(26)
+                    Text(L(t.description)).msBody(15).lineSpacing(3)
                 }
                 .padding(.horizontal, MSSpacing.gutter)
 
@@ -64,7 +64,7 @@ struct TemplateDetailView: View {
                         ForEach(t.platforms) { p in
                             HStack(spacing: 6) {
                                 Image(systemName: p.icon).font(.system(size: 12, weight: .semibold))
-                                Text(p.title).font(MSFont.control(13))
+                                Text(L(p.title)).font(MSFont.control(13))
                             }
                             .foregroundStyle(MSColor.text2)
                             .padding(.horizontal, 12).frame(height: 32)
@@ -111,15 +111,15 @@ struct TemplateDetailView: View {
 
     private func presetRow(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(label).msCaption()
-            Text(value).msBody(14, color: MSColor.text)
+            Text(L(label)).msCaption()
+            Text(L(value)).msBody(14, color: MSColor.text)
         }
     }
 
     private func presetStat(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label).msCaption()
-            Text(value).font(MSFont.control(14)).foregroundStyle(MSColor.text)
+            Text(L(label)).msCaption()
+            Text(L(value)).font(MSFont.control(14)).foregroundStyle(MSColor.text)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

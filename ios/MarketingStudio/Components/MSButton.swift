@@ -26,7 +26,7 @@ struct MSButton: View {
                 } else if let icon {
                     Image(systemName: icon).font(.system(size: size == .regular ? 15 : 13, weight: .semibold))
                 }
-                Text(title)
+                Text(L(title))
                     .font(.system(size: size == .regular ? 16 : 14, weight: .semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)

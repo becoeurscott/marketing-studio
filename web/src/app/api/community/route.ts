@@ -14,7 +14,6 @@ function ownsMedia(url: unknown, userId: string): url is string {
 
 export async function GET(req: Request) {
   const user = await getSessionUser();
-  if (!user) return NextResponse.json({ error: "Connexion requise." }, { status: 401 });
   const q = new URL(req.url).searchParams;
   const kind = q.get("kind");
   const before = q.get("before");
@@ -24,7 +23,7 @@ export async function GET(req: Request) {
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: "Impossible de charger la communauté." }, { status: 500 });
   const posts: CommunityPost[] = ((data ?? []) as unknown as Row[]).map((r) => ({
-    id: r.id, kind: r.kind, url: r.url, poster: r.poster, prompt: r.prompt, modelLabel: r.model_label, ratio: r.ratio, author: r.author, mine: r.user_id === user.id, createdAt: r.created_at,
+    id: r.id, kind: r.kind, url: r.url, poster: r.poster, prompt: r.prompt, modelLabel: r.model_label, ratio: r.ratio, author: r.author, mine: r.user_id === user?.id, createdAt: r.created_at,
   }));
   return NextResponse.json({ posts });
 }

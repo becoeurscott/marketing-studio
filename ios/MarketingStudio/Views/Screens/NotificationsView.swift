@@ -129,11 +129,11 @@ struct NotificationRow: View {
                     }
                 }
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(notification.title)
+                    Text(L(notification.title))
                         .font(.system(size: 15, weight: notification.read ? .medium : .semibold))
                         .foregroundStyle(MSColor.text)
-                    Text(notification.message).msBody(13).lineLimit(2).multilineTextAlignment(.leading)
-                    Text(notification.createdAt.relativeString).msCaption()
+                    Text(L(notification.message)).msBody(13).lineLimit(2).multilineTextAlignment(.leading)
+                    Text(L(notification.createdAt.relativeString)).msCaption()
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(MSColor.muted).padding(.top, 10)

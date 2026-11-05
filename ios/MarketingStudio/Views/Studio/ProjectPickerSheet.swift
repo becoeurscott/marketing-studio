@@ -20,7 +20,7 @@ struct ProjectPickerSheet: View {
                             HStack(spacing: 12) {
                                 RemoteImage(url: p.thumbnailURL, cornerRadius: 10).frame(width: 46, height: 46)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(p.name).msHeadline(15).lineLimit(1)
+                                    Text(L(p.name)).msHeadline(15).lineLimit(1)
                                     Text("\(store.assets(in: p.id).count) ressources · mis à jour \(p.updatedAt.relativeString)").msCaption().lineLimit(1)
                                 }
                                 Spacer()

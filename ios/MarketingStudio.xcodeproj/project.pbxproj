@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CE2B1E7393D83C6810ADCE01 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = CE2B1E7393D83C6810ADCE02 /* PrivacyInfo.xcprivacy */; };
 		02B936E5EAA90EC0117B46D9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B787580E47B0787E67B55C2 /* Assets.xcassets */; };
+		C3D4E5F6A7B8C9D0E1F2A3B4 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = D4E5F6A7B8C9D0E1F2A3B4C5 /* Localizable.xcstrings */; };
 		0F2EEC8373644A8DBB6BA361 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF14A3279B2B2CECAA12092 /* SettingsView.swift */; };
 		14C0FF97620B6D3862A8847C /* BrandVoiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12A5C7982D2F52AC78EFCABA /* BrandVoiceView.swift */; };
 		1A4456456AC20815B01843FD /* Market.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF836D85BB6D142ECB231E40 /* Market.swift */; };
@@ -68,6 +68,7 @@
 		BAB3220D256064368C83A3CB /* MSChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9C142AF7B3E3964D8F7558 /* MSChip.swift */; };
 		C3122E0DA02A569522194A9F /* TemplatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 060001B1028607D5B5CAA4B6 /* TemplatesView.swift */; };
 		C68B2B1CCD1D2D3CCE9C47BB /* SkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 979DBAA7B97298084C68D352 /* SkeletonView.swift */; };
+		CE2B1E7393D83C6810ADCE01 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = CE2B1E7393D83C6810ADCE02 /* PrivacyInfo.xcprivacy */; };
 		D31DE399BC061FDDC59FD38B /* UploadProductSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BBC3F4ACA2D883D5FDF3C88 /* UploadProductSheet.swift */; };
 		D4418944AFB8B11C836D0D02 /* GenerationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB33E4D602D36F94500908B2 /* GenerationsView.swift */; };
 		D703D7D34CF9249E2C6C104F /* AssetShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7E36C2E285956F6E99E9E26 /* AssetShared.swift */; };
@@ -85,13 +86,13 @@
 		F00254A0BD1366F233DDBB50 /* CampaignDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CE933C8C1E69016D88F52B8 /* CampaignDetailView.swift */; };
 		F0B16BCE8AFB2DD3DC7F7C30 /* ProjectDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5501DC2618845D244C19432A /* ProjectDetailView.swift */; };
 		F4DFE7F06C54723069BCFAF7 /* AIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BC22D00247A3B7AC826250 /* AIModels.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* UGCPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* UGCPresets.swift */; };
 		F7F5F5A16825BED2BB033E00 /* GenerationOptionForms.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC24A67137E72D548DCA98B6 /* GenerationOptionForms.swift */; };
 		F9A2E76C917FF667C497927C /* BrandSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307A26C9081E30356F269605 /* BrandSheets.swift */; };
 		FC2A71C68CE3BBF3E36E2B1B /* CampaignsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0190BD09F9D5D7C71CA85001 /* CampaignsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		CE2B1E7393D83C6810ADCE02 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		0190BD09F9D5D7C71CA85001 /* CampaignsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignsView.swift; sourceTree = "<group>"; };
 		060001B1028607D5B5CAA4B6 /* TemplatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplatesView.swift; sourceTree = "<group>"; };
 		0625F667D361BFA06EFBE838 /* ProductShootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductShootView.swift; sourceTree = "<group>"; };
@@ -104,6 +105,7 @@
 		36210E39B566084D821B760F /* MarketingStudioApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketingStudioApp.swift; sourceTree = "<group>"; };
 		37074C16DBBE79438FC4BC40 /* AssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantView.swift; sourceTree = "<group>"; };
 		3B787580E47B0787E67B55C2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D4E5F6A7B8C9D0E1F2A3B4C5 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		3BCBBAD70D8C09D9658470EE /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		3E293703E8299FCCEE0F1F5F /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		41EAAFAAB9EC6BC2EF925C8C /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
@@ -121,6 +123,7 @@
 		70DA74FE99730FF63AA61859 /* CopywriterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopywriterView.swift; sourceTree = "<group>"; };
 		71A169ABE25486FAB7599A8C /* ZoomableImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableImage.swift; sourceTree = "<group>"; };
 		75BC22D00247A3B7AC826250 /* AIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIModels.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* UGCPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UGCPresets.swift; sourceTree = "<group>"; };
 		760FB4A624997884F54657E5 /* HookGeneratorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HookGeneratorView.swift; sourceTree = "<group>"; };
 		78C199256CD226F35FFA2017 /* StudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioView.swift; sourceTree = "<group>"; };
 		79E50652823A9428C3D5F606 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
@@ -139,7 +142,7 @@
 		9B204591C8D74661D7CC9892 /* PlaceholderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderScreen.swift; sourceTree = "<group>"; };
 		9BBC3F4ACA2D883D5FDF3C88 /* UploadProductSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadProductSheet.swift; sourceTree = "<group>"; };
 		9C4A77B1B1C8D6037CFD532F /* VideoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViews.swift; sourceTree = "<group>"; };
-		9EE771193F633A25FC99EFDC /* MarketingStudio.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MarketingStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9EE771193F633A25FC99EFDC /* MarketingStudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MarketingStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A30A992FD5DD02DB6CA3A9FC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		A51CBD7B899B75ABE2A5A4EC /* ExportCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportCenterView.swift; sourceTree = "<group>"; };
 		A5FB201B6D915C8E563FE521 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -159,6 +162,7 @@
 		C8EF4201943EA51D4C881D06 /* CreditBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditBadge.swift; sourceTree = "<group>"; };
 		CAD85C09E8D9CFCE37B8CB6D /* CreatorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatorsView.swift; sourceTree = "<group>"; };
 		CD16A23DA8D6B503F75C72C5 /* ContentCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentCalendarView.swift; sourceTree = "<group>"; };
+		CE2B1E7393D83C6810ADCE02 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D533A3F34B71174430E757BB /* UGCCreatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UGCCreatorView.swift; sourceTree = "<group>"; };
 		D7E59E8D8F78B9D3CC57C4DC /* ProjectPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPickerSheet.swift; sourceTree = "<group>"; };
 		D8C8B79734DA120B8993C6B0 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
@@ -219,6 +223,7 @@
 			isa = PBXGroup;
 			children = (
 				75BC22D00247A3B7AC826250 /* AIModels.swift */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* UGCPresets.swift */,
 				79E50652823A9428C3D5F606 /* APIClient.swift */,
 				D8C8B79734DA120B8993C6B0 /* AuthService.swift */,
 				EB66CE70C55EB98CB37FAE3B /* Catalog.swift */,
@@ -374,6 +379,7 @@
 				53AF6BBC22F0C9E77F44CA16 /* API.swift */,
 				B732968F87EE790D28DDF4AF /* AppStore.swift */,
 				3B787580E47B0787E67B55C2 /* Assets.xcassets */,
+				D4E5F6A7B8C9D0E1F2A3B4C5 /* Localizable.xcstrings */,
 				FF0F2791DCF0E721889780B5 /* Info.plist */,
 				36210E39B566084D821B760F /* MarketingStudioApp.swift */,
 				A79A5CA619D303D82FF53871 /* Models.swift */,
@@ -423,10 +429,9 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					473882E15B87A7EF1596DB62 = {
-						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -437,6 +442,7 @@
 			knownRegions = (
 				Base,
 				fr,
+				en,
 			);
 			mainGroup = 5C3173A3E487F54FF16FF850;
 			minimizedProjectReferenceProxies = 1;
@@ -456,6 +462,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				02B936E5EAA90EC0117B46D9 /* Assets.xcassets in Resources */,
+				C3D4E5F6A7B8C9D0E1F2A3B4 /* Localizable.xcstrings in Resources */,
 				CE2B1E7393D83C6810ADCE01 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -490,6 +497,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F4DFE7F06C54723069BCFAF7 /* AIModels.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* UGCPresets.swift in Sources */,
 				D831A5C796F811E5E8F4CC45 /* API.swift in Sources */,
 				4B80CC8A5FACA101E6606278 /* APIClient.swift in Sources */,
 				323B2C9D73674B6B3EEBEE29 /* AdCreatorView.swift in Sources */,
@@ -579,6 +587,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MarketingStudio/MarketingStudio.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -589,6 +598,7 @@
 				);
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sokozia.app;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				PRODUCT_NAME = MarketingStudio;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -633,7 +643,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = LGHS3SPMJ7;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -650,6 +660,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;
@@ -661,6 +672,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MarketingStudio/MarketingStudio.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -671,6 +683,7 @@
 				);
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sokozia.app;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				PRODUCT_NAME = MarketingStudio;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -715,7 +728,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = LGHS3SPMJ7;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -739,6 +752,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.9;
