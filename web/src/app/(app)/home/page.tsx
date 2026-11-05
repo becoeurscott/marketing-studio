@@ -8,8 +8,10 @@ import { useState } from "react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { ShowcaseBanner } from "@/components/home/ShowcaseBanner";
 import { FeatureBanner } from "@/components/home/FeatureBanner";
+import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { TrendingVideos } from "@/components/home/TrendingVideos";
 import { UserGallery } from "@/components/home/UserGallery";
+import { CommunityVideos } from "@/components/home/CommunityVideos";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useStore } from "@/lib/store";
@@ -53,11 +55,16 @@ export default function HomePage() {
         }
       />
 
-      {/* 1. Feature banner (scrollable pills) */}
+      {/* 1. Auto-sliding image banner */}
+      <HeroCarousel />
+
+      {/* 2. Feature banner (scrollable pills) */}
       <FeatureBanner />
 
       {/* 2. Showcase carousel */}
       <ShowcaseBanner />
+
+      <CommunityVideos />
 
       {/* 3. Quick actions (compact) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-8">

@@ -1,6 +1,7 @@
 "use client";
 
 import { Download, Images, Play, Save } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { useStore } from "@/lib/store";
 import type { Generation } from "@/lib/types";
@@ -74,7 +75,19 @@ export function UserGallery() {
     }
   }, [addAsset]);
 
-  if (completed.length === 0) return null;
+  if (completed.length === 0) {
+    return (
+      <section className="mb-8">
+        <h2 className="text-[17px] font-semibold tracking-tight mb-3">Mes créations</h2>
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border px-6 py-10 text-center">
+          <Images className="size-6 text-muted" />
+          <p className="text-[14px] font-medium">Pas encore de créations</p>
+          <p className="text-[12px] text-muted max-w-xs">Vos images et vidéos générées apparaîtront ici.</p>
+          <Link href="/studio" className="mt-2 rounded-lg bg-accent px-4 py-2 text-[13px] font-semibold text-on-accent hover:bg-highlight">Créer</Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mb-8">
