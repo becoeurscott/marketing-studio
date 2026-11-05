@@ -33,8 +33,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Marketing Studio enregistre vos vidéos montées dans Photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Marketing Studio utilise vos photos produit pour créer vos visuels et vidéos.</string>
+	<string>Marketing Studio utilise vos photos et vidéos pour créer vos visuels et remplir vos modèles vidéo.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -20296,6 +20296,501 @@
           }
         }
       }
+    },
+    "Bon retour !": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome back!"
+          }
+        }
+      }
+    },
+    "Bon retour, %@ !": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome back, %@!"
+          }
+        }
+      }
+    },
+    "Content de vous revoir.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good to see you again."
+          }
+        }
+      }
+    },
+    "Bienvenue, %@ !": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome, %@!"
+          }
+        }
+      }
+    },
+    "Bienvenue !": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome!"
+          }
+        }
+      }
+    },
+    " : received.file.pathExtension)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " : received.file.pathExtension)"
+          }
+        }
+      }
+    },
+    " : source.pathExtension.lowercased())": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " : source.pathExtension.lowercased())"
+          }
+        }
+      }
+    },
+    "%@ h \\(String(format: ": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@h \\(String(format: "
+          }
+        }
+      }
+    },
+    "%@ min": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@min"
+          }
+        }
+      }
+    },
+    "%@ plans · %@)) s": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ plans · %@))s"
+          }
+        }
+      }
+    },
+    "%@.\\(source.pathExtension.isEmpty ? ": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@.\\(source.pathExtension.isEmpty ? "
+          }
+        }
+      }
+    },
+    "%@.uuidString).\\(received.file.pathExtension.isEmpty ? ": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@.uuidString).\\(received.file.pathExtension.isEmpty ? "
+          }
+        }
+      }
+    },
+    ", m % 60))": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", m % 60))"
+          }
+        }
+      }
+    },
+    ", shot.duration)) s": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", shot.duration))s"
+          }
+        }
+      }
+    },
+    "Ajouter les mêmes textes à l'écran": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add same on-screen texts"
+          }
+        }
+      }
+    },
+    "Ajoutez une vidéo pour chaque plan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a video for each shot."
+          }
+        }
+      }
+    },
+    "Analyse des coupes, du rythme et des textes…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analyzing cuts, rhythm, and texts…"
+          }
+        }
+      }
+    },
+    "Aucun modèle pour l'instant": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No templates yet"
+          }
+        }
+      }
+    },
+    "Cette vidéo est trop courte pour en faire un modèle.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This video is too short to make a template."
+          }
+        }
+      }
+    },
+    "Changer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change"
+          }
+        }
+      }
+    },
+    "Choisir": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose"
+          }
+        }
+      }
+    },
+    "Choisissez une vidéo de 3 minutes maximum.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a video up to 3 minutes long."
+          }
+        }
+      }
+    },
+    "Choisissez une vidéo pour chaque plan. Elle sera coupée à la bonne durée.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a video for each shot. It will be trimmed to the correct duration."
+          }
+        }
+      }
+    },
+    "Choisissez vos vidéos pour chaque plan : le montage est fait pour vous.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose your videos for each shot: the edit is done for you."
+          }
+        }
+      }
+    },
+    "Créer ma vidéo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create my video"
+          }
+        }
+      }
+    },
+    "Dans TikTok ou Instagram, enregistrez la vidéo puis partagez-la vers Marketing Studio.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In TikTok or Instagram, save the video then share it to Marketing Studio."
+          }
+        }
+      }
+    },
+    "Enregistrer dans Photos": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save to Photos"
+          }
+        }
+      }
+    },
+    "Filmez votre produit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Film your product"
+          }
+        }
+      }
+    },
+    "Garder le son de la vidéo d'origine": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep original video sound"
+          }
+        }
+      }
+    },
+    "Import impossible. Réessayez.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import failed. Please try again."
+          }
+        }
+      }
+    },
+    "Importer une vidéo depuis Photos": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import a video from Photos"
+          }
+        }
+      }
+    },
+    "Le montage a échoué. Réessayez.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editing failed. Please try again."
+          }
+        }
+      }
+    },
+    "Modèles vidéo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video Templates"
+          }
+        }
+      }
+    },
+    "Mon modèle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My Template"
+          }
+        }
+      }
+    },
+    "Montage en cours…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editing in progress…"
+          }
+        }
+      }
+    },
+    "Monté en %@))) s": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edited in %@)))s"
+          }
+        }
+      }
+    },
+    "On détecte chaque coupe, le rythme et les textes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We detect every cut, rhythm, and text."
+          }
+        }
+      }
+    },
+    "Partagez une vidéo TikTok ou Instagram vers Marketing Studio : elle devient un modèle à remplir avec vos vidéos.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share a TikTok or Instagram video to Marketing Studio: it becomes a template to fill with your videos."
+          }
+        }
+      }
+    },
+    "Plan %@ · \\(String(format: ": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shot %@ · \\(String(format: "
+          }
+        }
+      }
+    },
+    "Publier sur TikTok, Instagram, WhatsApp…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Publish to TikTok, Instagram, WhatsApp…"
+          }
+        }
+      }
+    },
+    "Recréez n'importe quelle vidéo virale": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recreate any viral video"
+          }
+        }
+      }
+    },
+    "Texte : « %@ »": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text: “%@”"
+          }
+        }
+      }
+    },
+    "Votre vidéo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your video"
+          }
+        }
+      }
+    },
+    "what to film": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "what to film"
+          }
+        }
+      }
+    },
+    "À la main, il vous aurait fallu environ %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manually, it would have taken you approximately %@."
+          }
+        }
+      }
     }
   }
 }

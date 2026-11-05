@@ -23,6 +23,19 @@ struct GenerationRequest: Encodable {
     struct Influencer: Encodable { var creatorId: String; var shot: String?; var variation: Int? }
 }
 
+struct TemplateDescribeRequest: Encodable {
+    struct Shot: Encodable { var duration: Double; var frame: String }
+    var language: String
+    var shots: [Shot]
+}
+
+struct TemplateDescription: Decodable {
+    struct Shot: Decodable { var description: String; var overlay: String?; var framing: String }
+    var name: String
+    var style: String
+    var shots: [Shot]
+}
+
 struct AgentRequest: Encodable {
     struct Message: Encodable { var role: String; var content: String }
     struct Item: Encodable { var id: String; var name: String; var hint: String? }
@@ -149,6 +162,10 @@ enum APIClient {
     }
 
     private struct PresetCatalog: Decodable { let items: [MarketingPreset] }
+
+    static func describeTemplate(_ req: TemplateDescribeRequest) async throws -> TemplateDescription {
+        try await call("api/templates/describe", method: "POST", json: req)
+    }
 
     static func agent(_ req: AgentRequest) async throws -> AgentResponse {
         try await call("api/agent", method: "POST", json: req)

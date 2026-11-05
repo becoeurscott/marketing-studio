@@ -242,6 +242,7 @@ struct HomeView: View {
 
     private let actions: [QuickAction] = [
         .init(icon: "bubble.left.and.text.bubble.right.fill", label: "Assistant", route: .assistant, accent: true),
+        .init(icon: "film.stack", label: "Modèles vidéo", route: .videoTemplates, accent: false),
         .init(icon: "sparkles", label: "Image IA", route: .imageGenerator, accent: false),
         .init(icon: "video", label: "Vidéo", route: .videoGenerator, accent: false),
         .init(icon: "camera.aperture", label: "Shooting", route: .productShoot, accent: false),

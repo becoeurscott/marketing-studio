@@ -43,6 +43,8 @@ enum AppRoute: Hashable {
     case videoGenerator
     case videoGeneratorWithPrompt(prompt: String)
     case ugcCreator
+    case videoTemplates
+    case videoTemplate(id: String)
     case ugcCreatorWithScript(script: String)
     case productShoot
     case adCreator

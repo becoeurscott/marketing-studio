@@ -18,6 +18,8 @@ struct RouteDestination: View {
         case .copywriter: CopywriterView()
         case .hookGenerator: HookGeneratorView()
         case .assistant: AssistantView()
+        case .videoTemplates: VideoTemplatesView()
+        case .videoTemplate(let id): VideoTemplateDetailView(templateId: id)
         case .projects: ProjectsView()
         case .projectDetail(let id): ProjectDetailView(projectId: id)
         case .campaigns: CampaignsView()

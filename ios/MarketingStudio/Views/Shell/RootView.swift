@@ -11,6 +11,8 @@ struct RootView: View {
     @State private var splash = true
     @State private var opening = true
     @State private var signInBurst = false
+    /// Account id whose server state (credits, onboarding) has been loaded at least once.
+    @State private var accountChecked: String?
 
     /// Loading screen while the account loads, then the home screen eases in.
     private func playOpening() async {
@@ -41,6 +43,8 @@ struct RootView: View {
             } else if auth.user == nil || store.accountId != auth.user?.id {
                 AuthView()
                     .transition(.opacity)
+            } else if !store.onboardingDone && accountChecked != auth.user?.id {
+                LaunchSplash()
             } else if store.onboardingDone {
                 MainTabView()
                     .scaleEffect(opening ? 1.04 : 1)
@@ -77,7 +81,10 @@ struct RootView: View {
             }
             if let user {
                 if store.accountId != user.id { store.load(for: user) }
-                Task { await API.refreshAccount(store) }
+                Task {
+                    await API.refreshAccount(store)
+                    accountChecked = user.id
+                }
             } else if store.accountId != nil {
                 router.dismissSheet()
                 store.unload()
@@ -89,7 +96,7 @@ struct RootView: View {
         }
         .overlay {
             if signInBurst {
-                SignInLogoAnimation(name: auth.user?.name ?? "")
+                SignInLogoAnimation(name: auth.user?.name ?? "", returning: store.onboardingDone)
                     .transition(.opacity)
                     .zIndex(10)
             }
@@ -137,6 +144,8 @@ struct LaunchSplash: View {
 /// lands on it and the user is greeted before the app appears.
 struct SignInLogoAnimation: View {
     var name: String
+    /// Account already set up: greet with "welcome back" and go straight to the app.
+    var returning = false
     @State private var logoIn = false
     @State private var ripple = false
     @State private var check = false
@@ -174,10 +183,12 @@ struct SignInLogoAnimation: View {
                 }
                 .frame(height: 160)
                 VStack(spacing: 6) {
-                    Text(firstName.isEmpty ? "Bienvenue !" : "Bienvenue, \(firstName) !")
+                    Text(returning
+                         ? (firstName.isEmpty ? "Bon retour !" : "Bon retour, \(firstName) !")
+                         : (firstName.isEmpty ? "Bienvenue !" : "Bienvenue, \(firstName) !"))
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundStyle(MSColor.text)
-                    Text("Votre studio est prêt.")
+                    Text(returning ? "Content de vous revoir." : "Votre studio est prêt.")
                         .font(MSFont.body(15))
                         .foregroundStyle(MSColor.text2)
                 }
