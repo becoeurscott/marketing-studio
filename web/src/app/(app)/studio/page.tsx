@@ -37,7 +37,7 @@ export default function StudioPage() {
   const [prompt, setPrompt] = useState("");
   const [imgModel, setImgModel] = useState<ImageModelId>("marketing-studio-1k");
   const [vidModel, setVidModel] = useState<VideoModelId>("kling-3.0");
-  const [ratio, setRatio] = useState<AspectRatio>("4:5");
+  const [ratio, setRatio] = useState<AspectRatio>(() => useStore.getState().preferences.defaultRatio ?? "4:5");
   const [count, setCount] = useState(1);
   const [duration, setDuration] = useState<5 | 10 | 15>(5);
   const [productId, setProductId] = useState<string | null>(null);
@@ -47,6 +47,7 @@ export default function StudioPage() {
   const [videoPreset, setVideoPreset] = useState<HiggsfieldVideoPreset | null>(null);
   const activePreset = kind === "image" && !!productId && !creatorId && imgModel.startsWith("marketing-studio") ? preset : null;
   const [shot, setShot] = useState("hold");
+  const [productStyle, setProductStyle] = useState("studio");
 
   // Deep links: /studio?mode=ugc&creator=<id>, /studio?mode=video&model=<id>
   useEffect(() => {
@@ -73,7 +74,7 @@ export default function StudioPage() {
     if (m || c || model || pr || presetId) window.history.replaceState(null, "", "/studio");
   }, []);
 
-  const changeKind = (k: RunKind) => { setKind(k); setRatio(k === "image" ? "4:5" : "9:16"); };
+  const changeKind = (k: RunKind) => { setKind(k); setRatio(k === "image" ? useStore.getState().preferences.defaultRatio ?? "4:5" : "9:16"); };
 
   const selectVideoPreset = (next: HiggsfieldVideoPreset) => {
     setVideoPreset(next);
@@ -94,7 +95,7 @@ export default function StudioPage() {
     const creatorName = creators.find((c) => c.id === creatorId)?.name ?? "";
     const presetLabel = videoPreset ? ` · ${videoPreset.name}` : "";
     const modelLabel = kind === "image" && creatorId ? `Influenceur · ${creatorName} · ${imageModel(imgModel).label}` : kind === "image" ? imageModel(imgModel).label : kind === "ugc" ? `UGC · ${creators.find((c) => c.id === creatorId)?.name ?? ""}${presetLabel}` : `${videoPreset ? "Seedance 2.5" : videoModel(vidModel).label}${presetLabel}`;
-    void submit({ kind, prompt, modelLabel, ratio: kind === "ugc" ? "9:16" : ratio, imageModel: imgModel, presetId: activePreset?.id, count, videoModel: videoPreset ? "seedance-2.5" : vidModel, durationSec: duration, productAssetId: productId, creatorId, videoPresetId: videoPreset?.id, videoReferenceUrl: videoPreset?.url, videoDirection: videoPreset?.direction, shotMode, shot });
+    void submit({ kind, prompt, modelLabel, ratio: kind === "ugc" ? "9:16" : ratio, imageModel: imgModel, presetId: activePreset?.id, count, videoModel: videoPreset ? "seedance-2.5" : vidModel, durationSec: duration, productAssetId: productId, creatorId, videoPresetId: videoPreset?.id, videoReferenceUrl: videoPreset?.url, videoDirection: videoPreset?.direction, shotMode, shot, productStyle: !activePreset && kind === "image" && productId && !creatorId ? productStyle : undefined });
   };
 
   const empty = runs.length === 0 && !hasHistory;
@@ -143,6 +144,7 @@ export default function StudioPage() {
           enableCreatorForVideo={!!videoPreset}
           lockVideoModel={!!videoPreset}
           shotMode={shotMode} onShotMode={setShotMode} shot={shot} onShot={setShot}
+          productStyle={productStyle} onProductStyle={setProductStyle}
           cost={cost}
           onGenerate={generate}
         />

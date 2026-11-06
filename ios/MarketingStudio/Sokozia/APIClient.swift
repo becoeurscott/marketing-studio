@@ -21,6 +21,13 @@ struct GenerationRequest: Encodable {
     var presetId: String? = nil
     var influencer: Influencer?
     struct Influencer: Encodable { var creatorId: String; var shot: String?; var variation: Int? }
+    var productStyle: String?
+}
+
+struct MarketingPreset: Decodable, Identifiable, Hashable {
+    let id: String
+    let name: String
+    let preview: String?
 }
 
 struct TemplateDescribeRequest: Encodable {
@@ -64,12 +71,6 @@ struct AgentAction: Decodable, Hashable {
 struct AgentResponse: Decodable {
     var reply: String
     var action: AgentAction?
-}
-
-struct MarketingPreset: Decodable, Identifiable, Hashable {
-    let id: String
-    let name: String
-    let preview: String?
 }
 
 struct GenerationJob: Decodable {

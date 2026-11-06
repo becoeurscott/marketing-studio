@@ -1,6 +1,22 @@
 import SwiftUI
 import Combine
 
+struct ProductStyleOption {
+    let id: String
+    let label: String
+    let emoji: String
+    static let all: [ProductStyleOption] = [
+        .init(id: "studio", label: "Studio", emoji: "📸"),
+        .init(id: "lifestyle", label: "Lifestyle", emoji: "🏠"),
+        .init(id: "flatlay", label: "Flat lay", emoji: "🎨"),
+        .init(id: "outdoor", label: "Plein air", emoji: "🌿"),
+        .init(id: "bold", label: "Pub audacieuse", emoji: "⚡"),
+        .init(id: "minimal", label: "Minimaliste", emoji: "◻️"),
+        .init(id: "social", label: "Réseaux sociaux", emoji: "📱"),
+        .init(id: "luxury", label: "Luxe", emoji: "✨"),
+    ]
+}
+
 // MARK: - Option catalogs (SPEC §11, §14)
 
 enum StudioOptions {
@@ -161,6 +177,7 @@ final class ImageGenSession: ObservableObject {
     @Published var creator: Creator?
     @Published var multiShot = false
     @Published var shot = "hold"
+    @Published var productStyleId = "studio"
     /// Sentence built by the Studio composer ("Créer une photo produit de mon parfum"); not user-editable.
     @Published var leadIn = ""
 
@@ -215,7 +232,8 @@ final class ImageGenSession: ObservableObject {
             prompt: effectivePrompt, style: style, ratio: ratio, background: background,
             lighting: lighting, camera: camera, composition: composition,
             productAssetId: productAsset?.id, projectId: store.currentProjectId,
-            model: model, count: count, presetId: activePreset?.id
+            model: model, count: count, presetId: activePreset?.id,
+            productStyle: activePreset == nil && creator == nil && productAsset != nil ? productStyleId : nil
         )
         do {
             let out: [GeneratedImage]

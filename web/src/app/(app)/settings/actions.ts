@@ -42,9 +42,9 @@ export async function accountDetails(): Promise<AccountDetails | null> {
 export async function updateProfile(input: { name: string; avatarUrl?: string }): Promise<{ ok: boolean; error?: string }> {
   const name = input.name.trim().slice(0, 80);
   if (!name) return { ok: false, error: "Le nom est obligatoire." };
-  const avatar = input.avatarUrl && /^https:\/\//.test(input.avatarUrl) ? input.avatarUrl : undefined;
+  if (input.avatarUrl && !/^https:\/\//.test(input.avatarUrl)) return { ok: false, error: "L’adresse de la photo est invalide." };
   const client = await serverClient();
-  const { error } = await client.auth.setProfile({ name, ...(avatar ? { avatar_url: avatar } : {}) });
+  const { error } = await client.auth.setProfile({ name, ...(input.avatarUrl !== undefined ? { avatar_url: input.avatarUrl || null } : {}) });
   if (error) return { ok: false, error: "Impossible d’enregistrer le profil. Réessayez." };
   return { ok: true };
 }
