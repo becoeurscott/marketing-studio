@@ -3,229 +3,480 @@ import AVKit
 import PhotosUI
 import SwiftUI
 
-/// Timeline editor shown after a template video is built: pick a shot on the timeline, then change
-/// which part of the clip is used, its duration, its on-screen text, or replace the clip.
+/// CapCut-style editor: fixed playhead in the middle, drag the timeline to scrub, pinch to zoom,
+/// video / text / sound tracks, select a shot to trim it (right handle), split, replace, adjust,
+/// edit its text or delete it. Nothing is exported until "Exporter".
 struct TemplateTimelineEditor: View {
     @ObservedObject var runner: TemplateRunner
     let store: TemplateStore
     @Environment(\.dismiss) private var dismiss
-    @State private var selected = 0
-    @State private var player: AVPlayer?
-    @State private var replaceItem: PhotosPickerItem?
-    @State private var clipDurations: [Double] = []
-    @State private var thumbs: [Int: UIImage] = [:]
 
-    private let pointsPerSecond: CGFloat = 70
+    @State private var player = AVPlayer()
+    @State private var playing = false
+    @State private var time: Double = 0
+    @State private var selected: Int?
+    @State private var pps: CGFloat = 60
+    @State private var dragStartTime: Double?
+    @State private var pinchStart: CGFloat?
+    @State private var trimStart: Double?
+    @State private var clipDurations: [Double] = []
+    @State private var strips: [String: [UIImage]] = [:]
+    @State private var replaceItem: PhotosPickerItem?
+    @State private var sheet: Sheet?
+    @State private var observer: Any?
+
+    enum Sheet: String, Identifiable { case adjust, text; var id: String { rawValue } }
+
+    private var shots: [TemplateShot] { runner.edit?.shots ?? [] }
+    private var total: Double { shots.reduce(0) { $0 + $1.duration } }
+    private func startOf(_ i: Int) -> Double { shots.prefix(i).reduce(0) { $0 + $1.duration } }
+    private func shotAt(_ t: Double) -> Int {
+        var acc = 0.0
+        for (i, s) in shots.enumerated() { acc += s.duration; if t < acc - 0.0001 { return i } }
+        return max(0, shots.count - 1)
+    }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 14) {
-                VideoPlayer(player: player)
-                    .aspectRatio(9.0 / 16.0, contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: MSRadius.lg, style: .continuous))
-                if let t = runner.edit {
-                    timeline(t)
-                    inspector(t)
-                    globalToggles(t)
+        VStack(spacing: 0) {
+            topBar
+            VideoPlayer(player: player)
+                .disabled(true)
+                .aspectRatio(9.0 / 16.0, contentMode: .fit)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 30)
+            transport
+            timeline
+                .frame(height: 176)
+            toolbar
+        }
+        .background(Color.black.ignoresSafeArea())
+        .preferredColorScheme(.dark)
+        .task { await load() }
+        .task(id: previewKey) { await rebuildPreview() }
+        .onChange(of: replaceItem) { _, item in
+            guard let item else { return }
+            replaceItem = nil
+            Task { await replace(with: item) }
+        }
+        .sheet(item: $sheet) { s in
+            Group {
+                switch s {
+                case .adjust: adjustSheet
+                case .text: textSheet
                 }
             }
-            .padding(.horizontal, MSSpacing.gutter)
-            .padding(.bottom, 8)
-            .background(Color.black.ignoresSafeArea())
-            .navigationTitle("Montage")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Exporter") {
-                        player?.pause()
-                        dismiss()
-                        Task { await runner.reassemble(store: store) }
-                    }
-                    .fontWeight(.bold)
-                }
+            .presentationDetents([.height(230)])
+            .preferredColorScheme(.dark)
+        }
+        .onDisappear {
+            player.pause()
+            if let observer { player.removeTimeObserver(observer) }
+        }
+    }
+
+    // MARK: Top bar & transport
+
+    private var topBar: some View {
+        HStack {
+            Button { player.pause(); dismiss() } label: {
+                Image(systemName: "xmark").font(.system(size: 17, weight: .semibold)).foregroundStyle(.white)
+                    .frame(width: 38, height: 38)
             }
-            .task { await load() }
-            .task(id: previewKey) { await rebuildPreview() }
-            .onChange(of: replaceItem) { _, item in
-                guard let item else { return }
-                replaceItem = nil
-                Task { await replace(with: item) }
+            Spacer()
+            Text("Montage").font(MSFont.control(16)).foregroundStyle(.white)
+            Spacer()
+            Button {
+                player.pause()
+                dismiss()
+                Task { await runner.reassemble(store: store) }
+            } label: {
+                Text("Exporter").font(.system(size: 14, weight: .bold)).foregroundStyle(MSColor.onAccent)
+                    .padding(.horizontal, 14).frame(height: 34)
+                    .background(MSColor.accent, in: Capsule())
             }
         }
-        .preferredColorScheme(.dark)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+    }
+
+    private var transport: some View {
+        HStack {
+            Text("\(clock(time)) / \(clock(total))").font(.system(size: 12, weight: .medium).monospacedDigit()).foregroundStyle(.white.opacity(0.8))
+            Spacer()
+            Button { togglePlay() } label: {
+                Image(systemName: playing ? "pause.fill" : "play.fill").font(.system(size: 20, weight: .bold)).foregroundStyle(.white)
+                    .frame(width: 44, height: 36)
+            }
+            Spacer()
+            Text("\(shots.count) plans").font(.system(size: 12)).foregroundStyle(.white.opacity(0.5))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
     }
 
     // MARK: Timeline
 
-    private func timeline(_ t: VideoTemplate) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("Plan \(selected + 1) / \(t.shots.count)").font(MSFont.control(13)).foregroundStyle(MSColor.text)
-                Spacer()
-                Text(String(format: "%.1f s au total", t.duration)).font(.system(size: 12)).foregroundStyle(MSColor.muted)
-            }
-            ScrollViewReader { proxy in
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 3) {
-                        ForEach(t.shots) { s in
-                            Button { select(s.index) } label: { block(s) }
-                                .buttonStyle(.plain)
-                                .id(s.index)
-                        }
-                    }
-                    .padding(.vertical, 3)
+    private var timeline: some View {
+        GeometryReader { geo in
+            let mid = geo.size.width / 2
+            ZStack(alignment: .topLeading) {
+                Color(white: 0.06)
+                VStack(alignment: .leading, spacing: 6) {
+                    ruler.frame(height: 18)
+                    videoTrack.frame(height: 62)
+                    textTrack.frame(height: 26)
+                    soundTrack.frame(height: 26)
                 }
-                .onChange(of: selected) { _, i in withAnimation { proxy.scrollTo(i, anchor: .center) } }
+                .padding(.top, 8)
+                .offset(x: mid - CGFloat(time) * pps)
+
+                Rectangle().fill(.white).frame(width: 2, height: geo.size.height - 6)
+                    .shadow(color: .black.opacity(0.6), radius: 2)
+                    .offset(x: mid - 1, y: 3)
+                    .allowsHitTesting(false)
             }
+            .clipped()
+            .contentShape(Rectangle())
+            .gesture(scrub)
+            .simultaneousGesture(zoom)
         }
     }
 
-    private func block(_ s: TemplateShot) -> some View {
-        ZStack(alignment: .bottomLeading) {
-            Color.white.opacity(0.06)
-            if let img = thumbs[s.index] { Image(uiImage: img).resizable().scaledToFill() }
-            LinearGradient(colors: [.clear, .black.opacity(0.6)], startPoint: .center, endPoint: .bottom)
-            HStack(spacing: 3) {
-                Text("\(s.index + 1)").font(.system(size: 10, weight: .bold))
-                if s.overlay != nil { Image(systemName: "textformat").font(.system(size: 9, weight: .bold)) }
+    private var scrub: some Gesture {
+        DragGesture(minimumDistance: 4)
+            .onChanged { v in
+                if dragStartTime == nil { dragStartTime = time; player.pause(); playing = false }
+                let t = (dragStartTime ?? 0) - Double(v.translation.width / pps)
+                seek(min(max(0, t), max(0, total - 0.01)))
             }
-            .foregroundStyle(.white).padding(4)
-            Text(String(format: "%.1f", s.duration)).font(.system(size: 10, weight: .semibold)).foregroundStyle(.white)
-                .padding(4).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-        }
-        .frame(width: max(34, CGFloat(s.duration) * pointsPerSecond), height: 58)
-        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(selected == s.index ? MSColor.accent : .clear, lineWidth: 2.5))
+            .onEnded { _ in dragStartTime = nil }
     }
 
-    // MARK: Inspector for the selected shot
+    private var zoom: some Gesture {
+        MagnifyGesture()
+            .onChanged { v in
+                if pinchStart == nil { pinchStart = pps }
+                pps = min(220, max(24, (pinchStart ?? 60) * v.magnification))
+            }
+            .onEnded { _ in pinchStart = nil }
+    }
 
-    @ViewBuilder
-    private func inspector(_ t: VideoTemplate) -> some View {
-        if let shot = t.shots[safe: selected] {
-            let clipLength = clipDurations[safe: selected] ?? shot.duration
-            VStack(alignment: .leading, spacing: 10) {
+    private var ruler: some View {
+        let step: Double = pps < 40 ? 2 : 1
+        return ZStack(alignment: .topLeading) {
+            ForEach(Array(stride(from: 0.0, through: total, by: step)), id: \.self) { s in
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Début dans votre vidéo : \(String(format: "%.1f", runner.starts[safe: selected] ?? 0)) s").font(.system(size: 12)).foregroundStyle(MSColor.text2)
-                    Slider(value: Binding(get: { runner.starts[safe: selected] ?? 0 },
-                                          set: { v in if runner.starts.indices.contains(selected) { runner.starts[selected] = v } }),
-                           in: 0...max(0.01, clipLength - min(shot.duration, clipLength)))
-                        .tint(MSColor.accent)
-                        .onChange(of: runner.starts[safe: selected] ?? 0) { _, _ in refreshThumb(selected) }
+                    Text(clock(s)).font(.system(size: 9).monospacedDigit()).foregroundStyle(.white.opacity(0.45))
+                    Rectangle().fill(.white.opacity(0.3)).frame(width: 1, height: 4)
                 }
-                HStack(spacing: 10) {
-                    Text("Durée").font(.system(size: 12)).foregroundStyle(MSColor.text2)
-                    stepButton("minus") { changeDuration(by: -0.1) }
-                    Text(String(format: "%.1f s", shot.duration)).font(MSFont.control(14)).monospacedDigit().frame(minWidth: 52)
-                    stepButton("plus") { changeDuration(by: 0.1) }
-                    Spacer()
-                    PhotosPicker(selection: $replaceItem, matching: .videos, photoLibrary: .shared()) {
-                        Label("Remplacer", systemImage: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 13, weight: .semibold)).foregroundStyle(MSColor.onAccent)
-                            .padding(.horizontal, 10).frame(height: 32).background(MSColor.accent, in: Capsule())
+                .offset(x: CGFloat(s) * pps)
+            }
+        }
+    }
+
+    private var videoTrack: some View {
+        HStack(spacing: 2) {
+            ForEach(shots) { s in clipBlock(s) }
+        }
+    }
+
+    private func clipBlock(_ s: TemplateShot) -> some View {
+        let w = max(18, CGFloat(s.duration) * pps - 2)
+        let isSel = selected == s.index
+        let frames = strips[stripKey(s.index)] ?? []
+        return ZStack(alignment: .leading) {
+            Color(white: 0.16)
+            HStack(spacing: 0) {
+                ForEach(Array(frames.enumerated()), id: \.offset) { _, img in
+                    Image(uiImage: img).resizable().scaledToFill().frame(width: 40, height: 62).clipped()
+                }
+            }
+            .frame(width: w, alignment: .leading)
+            .clipped()
+            if w >= 40 {
+                Text(String(format: "%.1fs", s.duration)).font(.system(size: 9, weight: .bold)).foregroundStyle(.white)
+                    .lineLimit(1).fixedSize()
+                    .padding(.horizontal, 4).padding(.vertical, 2)
+                    .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 3))
+                    .padding(4)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+            }
+        }
+        .frame(width: w, height: 62)
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(isSel ? MSColor.accent : .clear, lineWidth: 2.5))
+        .overlay(alignment: .trailing) {
+            if isSel {
+                RoundedRectangle(cornerRadius: 3).fill(MSColor.accent).frame(width: 14, height: 62)
+                    .overlay(Capsule().fill(MSColor.onAccent).frame(width: 2.5, height: 18))
+                    .offset(x: 7)
+                    .gesture(trimGesture(s.index))
+            }
+        }
+        .onTapGesture { select(s.index) }
+    }
+
+    private func trimGesture(_ i: Int) -> some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { v in
+                if trimStart == nil { trimStart = shots[safe: i]?.duration }
+                let maxLen = max(0.3, (clipDurations[safe: i] ?? 60) - (runner.starts[safe: i] ?? 0))
+                let d = ((trimStart ?? 1) + Double(v.translation.width / pps))
+                setDuration(i, min(max(0.3, (d * 10).rounded() / 10), maxLen))
+            }
+            .onEnded { _ in trimStart = nil }
+    }
+
+    private var textTrack: some View {
+        HStack(spacing: 2) {
+            ForEach(shots) { s in
+                let w = max(18, CGFloat(s.duration) * pps - 2)
+                Group {
+                    if let o = s.overlay, runner.showTexts {
+                        HStack(spacing: 3) {
+                            Image(systemName: "textformat").font(.system(size: 9, weight: .bold))
+                            Text(o).font(.system(size: 10, weight: .medium)).lineLimit(1)
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5)
+                        .frame(width: w, height: 24, alignment: .leading)
+                        .background(Color(red: 0.55, green: 0.36, blue: 0.96).opacity(0.85), in: RoundedRectangle(cornerRadius: 5))
+                        .onTapGesture { select(s.index); sheet = .text }
+                    } else {
+                        Color.clear.frame(width: w, height: 24)
                     }
                 }
-                TextField(L("Texte à l'écran (vide = aucun)"), text: Binding(
-                    get: { runner.edit?.shots[safe: selected]?.overlay ?? "" },
-                    set: { v in
-                        let clean = v.trimmingCharacters(in: .whitespaces)
-                        runner.edit?.shots[selected].overlay = clean.isEmpty ? nil : String(v.prefix(120))
-                    }))
-                    .font(MSFont.body(14))
-                    .padding(.horizontal, 12).frame(height: 40)
-                    .background(MSColor.card, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
-            .padding(12)
-            .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: MSRadius.md, style: .continuous))
         }
     }
 
-    private func globalToggles(_ t: VideoTemplate) -> some View {
-        HStack(spacing: 16) {
-            Toggle(isOn: $runner.keepSound) { Label("Son du modèle", systemImage: "music.note").font(.system(size: 12, weight: .medium)) }
-                .disabled(!t.hasAudio)
-            Toggle(isOn: $runner.showTexts) { Label("Textes", systemImage: "textformat").font(.system(size: 12, weight: .medium)) }
+    private var soundTrack: some View {
+        Group {
+            if runner.keepSound, runner.edit?.hasAudio == true {
+                HStack(spacing: 4) {
+                    Image(systemName: "music.note").font(.system(size: 10, weight: .bold))
+                    Text("Son du modèle").font(.system(size: 10, weight: .medium))
+                    Spacer(minLength: 0)
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .frame(width: max(30, CGFloat(total) * pps), height: 24)
+                .background(Color(red: 0.13, green: 0.6, blue: 0.4).opacity(0.85), in: RoundedRectangle(cornerRadius: 5))
+            } else {
+                Color.clear.frame(width: 10, height: 24)
+            }
         }
-        .toggleStyle(.button)
-        .tint(MSColor.accent)
     }
 
-    private func stepButton(_ icon: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: icon).font(.system(size: 13, weight: .bold)).foregroundStyle(MSColor.text)
-                .frame(width: 32, height: 32).background(MSColor.card, in: Circle())
+    // MARK: Toolbar
+
+    private var toolbar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 4) {
+                if let i = selected {
+                    tool("scissors", "Diviser") { split(i) }
+                    PhotosPicker(selection: $replaceItem, matching: .videos, photoLibrary: .shared()) { toolLabel("arrow.triangle.2.circlepath", "Remplacer") }
+                    tool("slider.horizontal.3", "Ajuster") { sheet = .adjust }
+                    tool("textformat", "Texte") { sheet = .text }
+                    tool("trash", "Supprimer", disabled: shots.count <= 1) { delete(i) }
+                    tool("checkmark", "OK") { selected = nil }
+                } else {
+                    tool(runner.keepSound ? "speaker.wave.2.fill" : "speaker.slash.fill", "Son", active: runner.keepSound, disabled: runner.edit?.hasAudio != true) { runner.keepSound.toggle() }
+                    tool("textformat", "Textes", active: runner.showTexts) { runner.showTexts.toggle() }
+                    tool("hand.tap", "Choisir un plan") { select(shotAt(time)) }
+                }
+            }
+            .padding(.horizontal, 10)
         }
+        .frame(height: 70)
+        .background(Color(white: 0.09))
     }
 
-    // MARK: Actions
+    private func tool(_ icon: String, _ label: String, active: Bool = false, disabled: Bool = false, action: @escaping () -> Void) -> some View {
+        Button(action: { MSHaptic.tap(); action() }) { toolLabel(icon, label, active: active) }
+            .disabled(disabled)
+            .opacity(disabled ? 0.35 : 1)
+    }
+
+    private func toolLabel(_ icon: String, _ label: String, active: Bool = false) -> some View {
+        VStack(spacing: 5) {
+            Image(systemName: icon).font(.system(size: 18, weight: .medium))
+            Text(L(label)).font(.system(size: 10, weight: .medium))
+        }
+        .foregroundStyle(active ? MSColor.highlight : .white)
+        .frame(width: 64, height: 56)
+    }
+
+    // MARK: Sheets
+
+    private var adjustSheet: some View {
+        let i = selected ?? 0
+        let clipLength = clipDurations[safe: i] ?? 1
+        let dur = shots[safe: i]?.duration ?? 1
+        return VStack(alignment: .leading, spacing: 14) {
+            Text("Partie de votre vidéo utilisée").font(MSFont.control(15))
+            Text("Début : \(String(format: "%.1f", runner.starts[safe: i] ?? 0)) s · durée \(String(format: "%.1f", dur)) s").font(.system(size: 12)).foregroundStyle(MSColor.text2)
+            Slider(value: Binding(get: { runner.starts[safe: i] ?? 0 },
+                                  set: { v in if runner.starts.indices.contains(i) { runner.starts[i] = v; refreshStrip(i) } }),
+                   in: 0...max(0.01, clipLength - min(dur, clipLength)))
+                .tint(MSColor.accent)
+            Button("OK") { sheet = nil }.font(MSFont.control(15)).frame(maxWidth: .infinity)
+        }
+        .padding(20)
+    }
+
+    private var textSheet: some View {
+        let i = selected ?? 0
+        return VStack(alignment: .leading, spacing: 14) {
+            Text("Texte du plan \(i + 1)").font(MSFont.control(15))
+            TextField(L("Texte à l'écran (vide = aucun)"), text: Binding(
+                get: { runner.edit?.shots[safe: i]?.overlay ?? "" },
+                set: { v in
+                    guard runner.edit?.shots.indices.contains(i) == true else { return }
+                    let clean = v.trimmingCharacters(in: .whitespaces)
+                    runner.edit?.shots[i].overlay = clean.isEmpty ? nil : String(v.prefix(120))
+                }))
+                .font(MSFont.body(15))
+                .padding(.horizontal, 12).frame(height: 44)
+                .background(MSColor.card, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            Button("OK") { sheet = nil }.font(MSFont.control(15)).frame(maxWidth: .infinity)
+        }
+        .padding(20)
+    }
+
+    // MARK: Editing actions
 
     private func select(_ i: Int) {
         MSHaptic.tap()
         selected = i
-        let start = (runner.edit?.shots.prefix(i).reduce(0) { $0 + $1.duration }) ?? 0
-        player?.seek(to: CMTime(seconds: start, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        seek(startOf(i) + 0.01)
     }
 
-    private func changeDuration(by delta: Double) {
-        guard var t = runner.edit, t.shots.indices.contains(selected) else { return }
-        let clipLength = clipDurations[safe: selected] ?? 60
-        let start = runner.starts[safe: selected] ?? 0
-        let next = ((t.shots[selected].duration + delta) * 10).rounded() / 10
-        t.shots[selected].duration = min(max(0.3, next), max(0.3, clipLength - start))
+    private func setDuration(_ i: Int, _ d: Double) {
+        guard var t = runner.edit, t.shots.indices.contains(i) else { return }
+        t.shots[i].duration = d
         runner.edit = t
     }
 
+    /// Splits the selected shot at the playhead into two shots using the same clip.
+    private func split(_ i: Int) {
+        guard var t = runner.edit, t.shots.indices.contains(i) else { return }
+        let local = time - startOf(i)
+        guard local > 0.25, local < t.shots[i].duration - 0.25 else { return }
+        var second = t.shots[i]
+        second.duration = (t.shots[i].duration - local)
+        t.shots[i].duration = local
+        t.shots.insert(second, at: i + 1)
+        for k in t.shots.indices { t.shots[k].index = k }
+        runner.clips.insert(runner.clips[i], at: i + 1)
+        runner.starts.insert((runner.starts[safe: i] ?? 0) + local, at: i + 1)
+        clipDurations.insert(clipDurations[safe: i] ?? 0, at: i + 1)
+        runner.edit = t
+        rebuildStrips()
+        selected = i + 1
+    }
+
+    private func delete(_ i: Int) {
+        guard var t = runner.edit, t.shots.count > 1, t.shots.indices.contains(i) else { return }
+        t.shots.remove(at: i)
+        for k in t.shots.indices { t.shots[k].index = k }
+        runner.clips.remove(at: i)
+        if runner.starts.indices.contains(i) { runner.starts.remove(at: i) }
+        if clipDurations.indices.contains(i) { clipDurations.remove(at: i) }
+        runner.edit = t
+        selected = nil
+        rebuildStrips()
+        seek(min(time, max(0, total - 0.05)))
+    }
+
     private func replace(with item: PhotosPickerItem) async {
-        guard let movie = try? await item.loadTransferable(type: PickedMovie.self) else { return }
+        guard let i = selected, let movie = try? await item.loadTransferable(type: PickedMovie.self),
+              runner.clips.indices.contains(i) else { return }
         let asset = AVURLAsset(url: movie.url)
-        guard runner.clips.indices.contains(selected) else { return }
-        runner.clips[selected] = asset
-        runner.starts[selected] = 0
-        if let d = try? await asset.load(.duration).seconds, clipDurations.indices.contains(selected) { clipDurations[selected] = d }
-        refreshThumb(selected)
+        runner.clips[i] = asset
+        runner.starts[i] = 0
+        if let d = try? await asset.load(.duration).seconds, clipDurations.indices.contains(i) { clipDurations[i] = d }
+        refreshStrip(i)
+    }
+
+    // MARK: Playback
+
+    private func togglePlay() {
+        if playing { player.pause() } else {
+            if time >= total - 0.05 { seek(0) }
+            player.play()
+        }
+        playing.toggle()
+    }
+
+    private func seek(_ t: Double) {
+        time = t
+        player.seek(to: CMTime(seconds: t, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
     /// Changes whenever an edit affects the picture or sound, so the preview is rebuilt.
     private var previewKey: String {
-        let shots = runner.edit?.shots.map { "\($0.duration)|\($0.overlay ?? "")" }.joined(separator: ",") ?? ""
-        return "\(shots)#\(runner.starts)#\(runner.keepSound)#\(runner.showTexts)#\(runner.clips.map { ObjectIdentifier($0).hashValue })"
+        let s = shots.map { "\($0.duration)|\($0.overlay ?? "")" }.joined(separator: ",")
+        return "\(s)#\(runner.starts)#\(runner.keepSound)#\(runner.showTexts)#\(runner.clips.map { ObjectIdentifier($0).hashValue })"
     }
 
-    /// Live preview straight from the in-memory composition: nothing is exported until "Exporter".
     private func rebuildPreview() async {
         guard let t = runner.edit, runner.clips.count == t.shots.count else { return }
-        try? await Task.sleep(for: .milliseconds(250))
+        try? await Task.sleep(for: .milliseconds(200))
         guard !Task.isCancelled,
               let (composition, video) = try? await VideoAssembler.makeComposition(
                 template: t, sourceURL: store.url(for: t), clips: runner.clips, starts: runner.starts,
                 options: .init(keepOriginalSound: runner.keepSound, showTexts: runner.showTexts)) else { return }
         let item = AVPlayerItem(asset: composition)
         item.videoComposition = video
-        let at = t.shots.prefix(selected).reduce(0) { $0 + $1.duration }
-        try? AVAudioSession.sharedInstance().setCategory(.playback)
-        if player == nil { player = AVPlayer() }
-        player?.replaceCurrentItem(with: item)
-        await player?.seek(to: CMTime(seconds: at, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
-        player?.play()
+        player.replaceCurrentItem(with: item)
+        await player.seek(to: CMTime(seconds: min(time, max(0, total - 0.05)), preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        if playing { player.play() }
     }
 
     private func load() async {
+        try? AVAudioSession.sharedInstance().setCategory(.playback)
+        observer = player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { t in
+            MainActor.assumeIsolated {
+                guard playing, dragStartTime == nil else { return }
+                time = t.seconds
+                if t.seconds >= total - 0.03 { player.pause(); playing = false }
+            }
+        }
         var lengths: [Double] = []
         for c in runner.clips { lengths.append((try? await c.load(.duration).seconds) ?? 0) }
         clipDurations = lengths
-        for i in runner.clips.indices { refreshThumb(i) }
+        rebuildStrips()
     }
 
-    private func refreshThumb(_ i: Int) {
-        guard runner.clips.indices.contains(i) else { return }
+    // MARK: Thumbnails
+
+    private func stripKey(_ i: Int) -> String {
+        guard runner.clips.indices.contains(i) else { return "\(i)" }
+        return "\(ObjectIdentifier(runner.clips[i]).hashValue)-\(runner.starts[safe: i] ?? 0)-\(i)"
+    }
+
+    private func rebuildStrips() { for i in runner.clips.indices { refreshStrip(i) } }
+
+    /// A row of frames across the part of the clip the shot uses (one every ~0.6 s, at least one).
+    private func refreshStrip(_ i: Int) {
+        guard runner.clips.indices.contains(i), let shot = shots[safe: i] else { return }
+        let key = stripKey(i)
+        if strips[key] != nil { return }
         let gen = AVAssetImageGenerator(asset: runner.clips[i])
         gen.appliesPreferredTrackTransform = true
-        gen.maximumSize = CGSize(width: 160, height: 160)
-        let at = CMTime(seconds: (runner.starts[safe: i] ?? 0) + 0.05, preferredTimescale: 600)
+        gen.maximumSize = CGSize(width: 90, height: 90)
+        let start = runner.starts[safe: i] ?? 0
+        let count = max(1, min(8, Int(shot.duration / 0.6) + 1))
         Task {
-            if let cg = try? await gen.image(at: at).image { thumbs[i] = UIImage(cgImage: cg) }
+            var imgs: [UIImage] = []
+            for k in 0..<count {
+                let t = start + shot.duration * (Double(k) + 0.5) / Double(count)
+                if let cg = try? await gen.image(at: CMTime(seconds: t, preferredTimescale: 600)).image { imgs.append(UIImage(cgImage: cg)) }
+            }
+            strips[key] = imgs
         }
     }
+
+    private func clock(_ t: Double) -> String { String(format: "%02d:%02d", Int(t) / 60, Int(t) % 60) }
 }
