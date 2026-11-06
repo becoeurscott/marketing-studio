@@ -21242,6 +21242,39 @@
           }
         }
       }
+    },
+    "Supprimer le modèle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete template"
+          }
+        }
+      }
+    },
+    "Supprimer ce modèle ?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this template?"
+          }
+        }
+      }
+    },
+    "Le modèle et sa vidéo de référence seront supprimés de ce téléphone. Vos vidéos déjà exportées restent dans Photos.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The template and its reference video will be removed from this phone. Videos you already exported stay in Photos."
+          }
+        }
+      }
     }
   }
 }

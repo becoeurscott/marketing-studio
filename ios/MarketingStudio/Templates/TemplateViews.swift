@@ -36,7 +36,7 @@ struct VideoTemplatesView: View {
                         ForEach(store.templates) { t in
                             Button { router.push(.videoTemplate(id: t.id)) } label: { VideoTemplateCard(template: t, url: store.url(for: t)) }
                                 .buttonStyle(MSPressStyle())
-                                .contextMenu { Button("Supprimer", role: .destructive) { store.remove(t) } }
+                                .contextMenu { Button(role: .destructive) { store.remove(t) } label: { Label("Supprimer", systemImage: "trash") } }
                         }
                     }
                 }
@@ -117,6 +117,8 @@ struct VideoTemplateDetailView: View {
     @StateObject private var store = TemplateStore.shared
     @StateObject private var runner = TemplateRunner()
     @State private var previewSound = true
+    @State private var confirmDelete = false
+    @Environment(\.dismiss) private var dismiss
 
     private var template: VideoTemplate? { store.templates.first { $0.id == templateId } }
 
@@ -186,6 +188,24 @@ struct VideoTemplateDetailView: View {
         .msScreen()
         .navigationTitle(L(template?.name ?? "Modèle"))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if template != nil {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(role: .destructive) { confirmDelete = true } label: { Image(systemName: "trash") }
+                        .accessibilityLabel(L("Supprimer le modèle"))
+                }
+            }
+        }
+        .alert(L("Supprimer ce modèle ?"), isPresented: $confirmDelete) {
+            Button(L("Supprimer"), role: .destructive) {
+                if let t = template { store.remove(t) }
+                MSHaptic.success()
+                dismiss()
+            }
+            Button(L("Annuler"), role: .cancel) {}
+        } message: {
+            Text("Le modèle et sa vidéo de référence seront supprimés de ce téléphone. Vos vidéos déjà exportées restent dans Photos.")
+        }
         .templateRunner(runner, store: store)
     }
 }
