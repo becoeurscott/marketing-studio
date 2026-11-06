@@ -45,6 +45,17 @@
 	<string>Marketing Studio enregistre vos vidéos montées dans Photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Marketing Studio utilise vos photos et vidéos pour créer vos visuels et remplir vos modèles vidéo.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>TikTokSans.ttf</string>
+		<string>Montserrat.ttf</string>
+		<string>PlayfairDisplay.ttf</string>
+		<string>BebasNeue-Regular.ttf</string>
+		<string>Anton-Regular.ttf</string>
+		<string>Poppins-Bold.ttf</string>
+		<string>Poppins-Black.ttf</string>
+		<string>PermanentMarker-Regular.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

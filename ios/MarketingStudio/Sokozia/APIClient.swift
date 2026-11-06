@@ -31,9 +31,11 @@ struct TemplateDescribeRequest: Encodable {
 
 struct TemplateDescription: Decodable {
     struct Shot: Decodable { var description: String; var overlay: String?; var framing: String }
+    struct Caption: Decodable { var font: String; var weight: Int; var uppercase: Bool; var outline: Bool; var shadow: Bool; var animation: String }
     var name: String
     var style: String
     var shots: [Shot]
+    var caption: Caption?
 }
 
 struct AgentRequest: Encodable {

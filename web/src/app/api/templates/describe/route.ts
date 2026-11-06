@@ -17,7 +17,10 @@ interface Body {
 }
 
 export interface ShotDescription { description: string; overlay: string | null; framing: string }
-export interface TemplateDescription { name: string; style: string; shots: ShotDescription[] }
+export interface CaptionLook { font: string; weight: number; uppercase: boolean; outline: boolean; shadow: boolean; animation: "none" | "pop" }
+export interface TemplateDescription { name: string; style: string; shots: ShotDescription[]; caption: CaptionLook | null }
+
+const FONTS = ["tiktok-sans", "montserrat", "bebas-neue", "anton", "poppins", "playfair", "permanent-marker"] as const;
 
 export async function POST(request: Request) {
   const blocked = guard(request, { limit: 20 });
@@ -37,17 +40,20 @@ export async function POST(request: Request) {
   const instructions =
     `These are keyframes, one per shot, of a short social media video (TikTok/Reels), in order. Shot durations in seconds: ${shots.map((s) => s.duration.toFixed(1)).join(", ")}. ` +
     `For each shot, tell a small merchant what to film to recreate the same edit with their own product: a short instruction (max 10 words), ` +
-    `the exact on-screen text if any (null if none), and the framing (one of: close-up, medium, wide, selfie, hands, product). ` +
+    `the exact on-screen text if any, copied verbatim in its original language, never translated (null if none), and the framing (one of: close-up, medium, wide, selfie, hands, product). ` +
     `Also give the template a short catchy name (max 4 words) and describe the overall style in one sentence. ` +
-    `Write ${en ? "in English" : "in French"}. Do not mention brands or people's identity. ` +
-    `Reply ONLY with JSON: {"name": string, "style": string, "shots": [{"description": string, "overlay": string|null, "framing": string}]} with exactly ${shots.length} shots.`;
+    `If the video has on-screen captions, describe their look: the closest font among ${FONTS.join(", ")} ` +
+    `(tiktok-sans = rounded modern sans like TikTok's default; montserrat = geometric sans; bebas-neue / anton = tall condensed capitals; poppins = round geometric bold; playfair = elegant serif; permanent-marker = handwritten marker), ` +
+    `the weight (100-900), whether it is all caps, has an outline/stroke, a drop shadow, and whether captions pop in (scale up) or just appear ("pop" or "none"). ` +
+    `Write the instructions, name and style ${en ? "in English" : "in French"} (but keep on-screen texts verbatim). Do not mention brands or people's identity. ` +
+    `Reply ONLY with JSON: {"name": string, "style": string, "caption": null | {"font": string, "weight": number, "uppercase": boolean, "outline": boolean, "shadow": boolean, "animation": "none"|"pop"}, "shots": [{"description": string, "overlay": string|null, "framing": string}]} with exactly ${shots.length} shots.`;
 
   let raw = "";
   try {
     const res = await adminClient().ai.chat.completions.create({
       model: MODEL,
       temperature: 0.3,
-      maxTokens: 1500,
+      maxTokens: 1800,
       messages: [{
         role: "user",
         content: [
@@ -64,7 +70,17 @@ export async function POST(request: Request) {
   try {
     const parsed = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1)) as Partial<TemplateDescription>;
     const clean = (v: unknown, max: number) => String(v ?? "").replace(/\s+/g, " ").trim().slice(0, max);
+    const c = parsed.caption as Partial<CaptionLook> | null | undefined;
+    const caption: CaptionLook | null = c && typeof c === "object" ? {
+      font: FONTS.includes(c.font as (typeof FONTS)[number]) ? (c.font as string) : "tiktok-sans",
+      weight: Math.min(900, Math.max(100, Math.round(Number(c.weight) / 100) * 100 || 800)),
+      uppercase: !!c.uppercase,
+      outline: !!c.outline,
+      shadow: !!c.shadow,
+      animation: c.animation === "pop" ? "pop" : "none",
+    } : null;
     const out: TemplateDescription = {
+      caption,
       name: clean(parsed.name, 40) || (en ? "My template" : "Mon modèle"),
       style: clean(parsed.style, 200),
       shots: shots.map((_, i) => {

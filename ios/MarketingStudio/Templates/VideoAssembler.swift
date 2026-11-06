@@ -58,6 +58,7 @@ enum VideoAssembler {
 
         // Frames are framed and captioned with Core Image (the Core Animation tool crashes on some devices).
         let captions = options.showTexts ? captionImages(template) : [:]
+        let pop = template.captionStyle?.animation == "pop"
         let size = renderSize
         let video = AVMutableVideoComposition(asset: composition) { request in
             let time = request.compositionTime
@@ -71,7 +72,20 @@ enum VideoAssembler {
                 .cropped(to: CGRect(origin: .zero, size: size))
             frame = frame.composited(over: CIImage(color: .black).cropped(to: CGRect(origin: .zero, size: size)))
             let index = segments.firstIndex { $0.range.containsTime(time) } ?? (segments.count - 1)
-            if let caption = captions[index] { frame = caption.composited(over: frame) }
+            if let caption = captions[index] {
+                var image = caption.image
+                let local = (time - segments[index].range.start).seconds
+                if pop, local < 0.2 {
+                    // Pop-in: grow from 60 % to full size over the first 0.2 s of the shot.
+                    let p = local / 0.2
+                    let scale = 0.6 + 0.4 * (1 - (1 - p) * (1 - p))
+                    let c = caption.center
+                    image = image.transformed(by: CGAffineTransform(translationX: -c.x, y: -c.y)
+                        .concatenating(CGAffineTransform(scaleX: scale, y: scale))
+                        .concatenating(CGAffineTransform(translationX: c.x, y: c.y)))
+                }
+                frame = image.composited(over: frame)
+            }
             request.finish(with: frame, context: nil)
         }
         video.renderSize = size
@@ -107,31 +121,55 @@ enum VideoAssembler {
     }
 
     /// One full-frame transparent image per captioned shot (text in a dark rounded box, lower third).
-    private static func captionImages(_ template: VideoTemplate) -> [Int: CIImage] {
-        var out: [Int: CIImage] = [:]
+    /// One full-frame transparent image per captioned shot, drawn in the template's caption style,
+    /// plus the caption's centre (Core Image coordinates) for the pop-in animation.
+    private static func captionImages(_ template: VideoTemplate) -> [Int: (image: CIImage, center: CGPoint)] {
+        var out: [Int: (CIImage, CGPoint)] = [:]
+        let look = template.captionStyle ?? .default
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         format.opaque = false
         let renderer = UIGraphicsImageRenderer(size: renderSize, format: format)
+        let fontSize = min(150, max(34, CGFloat(look.lineHeight) * renderSize.height * 1.15))
+        let font = CaptionFonts.font(look.font, weight: look.weight, size: fontSize)
+        let textColor = UIColor(hexString: look.textColor) ?? .white
         for (i, shot) in template.shots.enumerated() {
-            guard let text = shot.overlay, !text.isEmpty else { continue }
+            guard var text = shot.overlay, !text.isEmpty else { continue }
+            if look.uppercase { text = text.uppercased() }
+            var center = CGPoint.zero
             let image = renderer.image { _ in
-                let style = NSMutableParagraphStyle()
-                style.alignment = .center
-                let attrs: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.systemFont(ofSize: 64, weight: .heavy),
-                    .foregroundColor: UIColor.white,
-                    .paragraphStyle: style,
-                ]
-                let maxWidth = renderSize.width - 200
-                let bounds = (text as NSString).boundingRect(with: CGSize(width: maxWidth, height: 600), options: [.usesLineFragmentOrigin], attributes: attrs, context: nil)
-                let box = CGRect(x: (renderSize.width - bounds.width) / 2 - 36, y: renderSize.height * 0.68,
-                                 width: bounds.width + 72, height: bounds.height + 40)
-                UIColor.black.withAlphaComponent(0.45).setFill()
-                UIBezierPath(roundedRect: box, cornerRadius: 24).fill()
-                (text as NSString).draw(with: box.insetBy(dx: 36, dy: 20), options: [.usesLineFragmentOrigin], attributes: attrs, context: nil)
+                let paragraph = NSMutableParagraphStyle()
+                paragraph.alignment = .center
+                var attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: textColor, .paragraphStyle: paragraph]
+                if let outline = UIColor(hexString: look.outlineColor) {
+                    attrs[.strokeColor] = outline
+                    attrs[.strokeWidth] = -6
+                }
+                if look.shadow && look.boxColor == nil {
+                    let shadow = NSShadow()
+                    shadow.shadowColor = UIColor.black.withAlphaComponent(0.55)
+                    shadow.shadowBlurRadius = fontSize * 0.12
+                    shadow.shadowOffset = CGSize(width: 0, height: fontSize * 0.05)
+                    attrs[.shadow] = shadow
+                }
+                let maxWidth = renderSize.width * 0.86
+                let bounds = (text as NSString).boundingRect(with: CGSize(width: maxWidth, height: renderSize.height), options: [.usesLineFragmentOrigin], attributes: attrs, context: nil)
+                let padX = look.boxColor == nil ? 0 : fontSize * 0.45, padY = look.boxColor == nil ? 0 : fontSize * 0.22
+                let cx = CGFloat(look.centerX) * renderSize.width
+                let cy = CGFloat(look.centerY) * renderSize.height
+                var box = CGRect(x: cx - bounds.width / 2 - padX, y: cy - bounds.height / 2 - padY,
+                                 width: bounds.width + padX * 2, height: bounds.height + padY * 2)
+                // Keep the caption inside the frame.
+                box.origin.x = min(max(box.minX, 24), renderSize.width - box.width - 24)
+                box.origin.y = min(max(box.minY, 80), renderSize.height - box.height - 80)
+                if let fill = UIColor(hexString: look.boxColor) {
+                    fill.withAlphaComponent(look.boxOpacity).setFill()
+                    UIBezierPath(roundedRect: box, cornerRadius: fontSize * 0.28).fill()
+                }
+                (text as NSString).draw(with: box.insetBy(dx: padX, dy: padY), options: [.usesLineFragmentOrigin], attributes: attrs, context: nil)
+                center = CGPoint(x: box.midX, y: renderSize.height - box.midY)
             }
-            if let cg = image.cgImage { out[i] = CIImage(cgImage: cg) }
+            if let cg = image.cgImage { out[i] = (CIImage(cgImage: cg), center) }
         }
         return out
     }

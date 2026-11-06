@@ -23,6 +23,8 @@ struct VideoTemplate: Codable, Identifiable, Hashable {
     /// File name of the source video inside the templates folder (kept for its sound and preview).
     var sourceFile: String
     var hasAudio: Bool
+    /// Look of the on-screen captions copied from the shared video (nil = app default).
+    var captionStyle: CaptionStyle? = nil
 
     var duration: Double { shots.reduce(0) { $0 + $1.duration } }
 
